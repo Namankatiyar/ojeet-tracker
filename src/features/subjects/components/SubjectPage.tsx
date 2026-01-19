@@ -212,29 +212,16 @@ export function SubjectPage({
                 <div className="subject-title">
                     <span className="subject-icon-large">{config.icon}</span>
                     <div>
-                        <div className="subject-title-row" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div className="subject-title-row">
                             <h1>{config.label}</h1>
                             {onAddChapter && (
                                 <button
                                     onClick={() => setIsEditing(!isEditing)}
-                                    className="icon-btn"
-                                    style={{
-                                        background: isEditing ? 'var(--accent)' : 'var(--bg-tertiary)',
-                                        color: isEditing ? 'var(--accent-text)' : 'var(--accent)',
-                                        border: `1px solid ${isEditing ? 'var(--accent)' : 'var(--border)'}`,
-                                        borderRadius: '6px',
-                                        padding: '0.2rem 0.5rem',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.35rem',
-                                        transition: 'all 0.2s',
-                                        height: '28px'
-                                    }}
+                                    className={`edit-toggle-btn ${isEditing ? 'editing' : ''}`}
                                     title={isEditing ? "Done Editing" : "Edit Chapters"}
                                 >
                                     {isEditing ? <Check size={14} /> : <Pencil size={14} />}
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                                    <span className="edit-toggle-text">
                                         {isEditing ? 'Done' : 'Edit'}
                                     </span>
                                 </button>
@@ -255,7 +242,7 @@ export function SubjectPage({
                         </p>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div className="subject-header-actions">
                     <div className="subject-progress-summary">
                         <ProgressBar progress={subjectProgress} height={12} />
                     </div>
@@ -271,20 +258,14 @@ export function SubjectPage({
                             {data.materialNames.map((material, mIndex) => (
                                 <th
                                     key={material}
-                                    className="material-header"
+                                    className={`material-header ${isEditing ? 'material-header-draggable' : ''}`}
                                     draggable={isEditing}
                                     onDragStart={(e) => handleDragStartMaterial(e, mIndex)}
                                     onDragEnter={(e) => handleDragEnterMaterial(e, mIndex)}
                                     onDragEnd={handleDragEndMaterial}
                                     onDragOver={(e) => e.preventDefault()}
-                                    style={{
-                                        cursor: isEditing ? 'grab' : 'default',
-                                        background: isEditing ? 'var(--bg-tertiary)' : undefined
-                                    }}
                                 >
-                                    <div
-                                        className="material-header-content"
-                                    >
+                                    <div className="material-header-content">
                                         <span>{material}</span>
 
                                         {!isEditing && onRemoveMaterial && (
@@ -301,59 +282,21 @@ export function SubjectPage({
                             ))}
                             <th className="priority-header">
                                 {isEditing ? 'Actions' : (
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                    <div className="priority-header-content">
                                         <span>Priority</span>
-                                        <div ref={filterRef} style={{ position: 'relative' }}>
+                                        <div ref={filterRef} className="filter-wrapper">
                                             <button
                                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                                                 className="filter-icon-btn"
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    padding: '4px',
-                                                    borderRadius: '4px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: 'var(--accent)',
-                                                    transition: 'all 0.2s',
-                                                    position: 'relative'
-                                                }}
                                                 title={`Filter: ${priorityFilter === 'all' ? 'All' : priorityFilter.charAt(0).toUpperCase() + priorityFilter.slice(1)}`}
                                             >
                                                 <Filter size={16} />
                                                 {priorityFilter !== 'all' && (
-                                                    <span style={{
-                                                        position: 'absolute',
-                                                        top: 0,
-                                                        right: 0,
-                                                        width: '6px',
-                                                        height: '6px',
-                                                        borderRadius: '50%',
-                                                        background: 'var(--accent)'
-                                                    }} />
+                                                    <span className="filter-dot" />
                                                 )}
                                             </button>
                                             {isFilterOpen && (
-                                                <div
-                                                    className="filter-dropdown"
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: 'calc(100% + 4px)',
-                                                        right: 0,
-                                                        background: 'var(--bg-secondary)',
-                                                        backdropFilter: 'blur(16px)',
-                                                        WebkitBackdropFilter: 'blur(16px)',
-                                                        border: '1px solid var(--border)',
-                                                        borderRadius: '8px',
-                                                        boxShadow: 'var(--shadow-lg)',
-                                                        zIndex: 100,
-                                                        minWidth: '100px',
-                                                        padding: '4px',
-                                                        animation: 'fadeIn 0.15s ease'
-                                                    }}
-                                                >
+                                                <div className="filter-dropdown-menu">
                                                     {[
                                                         { value: 'all', label: 'All', color: 'var(--text-muted)' },
                                                         { value: 'high', label: 'High', color: 'var(--priority-high)' },
@@ -367,27 +310,11 @@ export function SubjectPage({
                                                                 setPriorityFilter(opt.value as Priority | 'all');
                                                                 setIsFilterOpen(false);
                                                             }}
-                                                            style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'space-between',
-                                                                width: '100%',
-                                                                padding: '6px 10px',
-                                                                background: priorityFilter === opt.value ? 'var(--accent-light)' : 'transparent',
-                                                                border: 'none',
-                                                                borderRadius: '6px',
-                                                                cursor: 'pointer',
-                                                                color: opt.color,
-                                                                fontSize: '0.8rem',
-                                                                fontWeight: priorityFilter === opt.value ? 600 : 500,
-                                                                transition: 'background 0.15s',
-                                                                textAlign: 'left'
-                                                            }}
-                                                            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-                                                            onMouseLeave={(e) => e.currentTarget.style.background = priorityFilter === opt.value ? 'var(--accent-light)' : 'transparent'}
+                                                            className={`filter-option-btn ${priorityFilter === opt.value ? 'active' : ''}`}
+                                                            style={{ color: opt.color }}
                                                         >
                                                             <span>{opt.label}</span>
-                                                            {priorityFilter === opt.value && <span style={{ color: 'var(--accent)' }}>✓</span>}
+                                                            {priorityFilter === opt.value && <span className="check-icon">✓</span>}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -446,11 +373,10 @@ export function SubjectPage({
                     </tbody>
                 </table>
                 {isEditing && (
-                    <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+                    <div className="edit-actions-container">
                         <button
                             onClick={() => setIsAddChapterModalOpen(true)}
-                            className="primary-btn"
-                            style={{ width: '100%', maxWidth: '300px', margin: '0 auto' }}
+                            className="primary-btn add-chapter-btn-wrapper"
                         >
                             <Plus size={18} />
                             Add New Chapter

@@ -179,25 +179,12 @@ export function Dashboard({
 
                 <div className="agenda-card">
                     <div className="agenda-header">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <div className="agenda-header-row">
                             <h2>Today's Agenda</h2>
                             {plannerTasks.filter(t => t.date === todayStr).length > 0 && (
                                 <button
                                     onClick={onQuickAdd}
-                                    className="icon-btn"
-                                    style={{
-                                        background: 'var(--bg-tertiary)',
-                                        border: '1px solid var(--border)',
-                                        borderRadius: '50%',
-                                        padding: '0.4rem',
-                                        color: 'var(--text-secondary)',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        transition: 'all 0.2s',
-                                        flexShrink: 0
-                                    }}
+                                    className="add-task-icon-btn"
                                     title="Add task"
                                 >
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
@@ -221,7 +208,7 @@ export function Dashboard({
                                         <span className="agenda-title">{task.title}</span>
                                         <div className="agenda-subtitle">
                                             {task.subject && (
-                                                <span style={{ color: `var(--${task.subject})`, fontWeight: 600 }}>
+                                                <span className={`text-${task.subject} agenda-subtitle-subject`}>
                                                     {task.subject.charAt(0).toUpperCase() + task.subject.slice(1)}
                                                 </span>
                                             )}
@@ -240,7 +227,6 @@ export function Dashboard({
                             <div
                                 className="empty-agenda clickable"
                                 onClick={onQuickAdd}
-                                style={{ cursor: 'pointer' }}
                                 title="Click to add a task"
                             >
                                 <p>No tasks scheduled for today.</p>

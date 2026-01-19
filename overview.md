@@ -1,12 +1,12 @@
-# JEETracker: Technical Project Overview
+# OJEE Tracker: Technical Project Overview
 
-This documentation provides an exhaustive technical analysis of the JEETracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
+This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
 ---
 
 ## 1. Project Essence & Objective
 
-**JEETracker** is a high-performance, offline-first progress tracking application specifically optimized for JEE (Joint Entrance Examination) preparation. It solves the problem of tracking granular completion across multiple subjects (Physics, Chemistry, Maths) and diverse study materials (NCERT, PyQs, Modules, etc.).
+**OJEE Tracker** is a high-performance, offline-first progress tracking application specifically optimized for preparation. It solves the problem of tracking granular completion across multiple subjects (Physics, Chemistry, Maths) and diverse study materials (NCERT, PyQs, Modules, etc.).
 
 ### Key Philosophies:
 - **Visual-First Progress**: Immediate feedback through rings, bars, and confetti.
@@ -21,6 +21,7 @@ This documentation provides an exhaustive technical analysis of the JEETracker p
 
 ### Core Stack:
 - **Framework**: React 18 with TypeScript.
+- **Routing**: React Router (react-router-dom) v7.
 - **Build System**: Vite (optimized for fast HMR and PWA builds).
 - **Styling**: Vanilla CSS with a robust **CSS Variables Design System** and Glassmorphism.
 - **Icons**: Lucide-React.
@@ -30,19 +31,18 @@ This documentation provides an exhaustive technical analysis of the JEETracker p
 ### Project Structure:
 ```text
 /src
-  /components     # Atomic and composite UI components
-    - Dashboard.tsx      # Main overview with rings and agenda
-    - SubjectPage.tsx    # detailed tracking per subject
-    - Planner.tsx        # Weekly/Monthly calendar and task engine
-    - StudyClock.tsx     # Persistent timer and analytics
-    - TaskModal.tsx      # Complex task creation (linked or general)
-    - ColorPickerModal.tsx # Custom hex selection with wheel
-    - SettingsModal.tsx   # Global preferences
-  /hooks          # Custom hooks (useLocalStorage)
-  /types          # TypeScript interfaces/types
-  /utils          # Helper functions (CSV, Date, Confetti)
-  App.tsx         # Root component, global state hub
-  App.css         # Design system & global styles
+  /core           # Application setup (routing, global styles)
+  /features       # Domain-driven features
+    /dashboard    # Main overview with rings and agenda
+    /subjects     # detailed tracking per subject
+    /planner      # Weekly/Monthly calendar and task engine
+    /study-clock  # Persistent timer and analytics
+  /shared         # Reusable code
+    /components   # UI components (Modals, Headers, Progress Bars)
+    /hooks        # Custom hooks (useLocalStorage)
+    /types        # TypeScript interfaces/types
+    /utils        # Helper functions (CSV, Date, Confetti)
+  main.tsx        # Entry point
   quotes.json     # Curated database for motivational quotes
 /public
   /data           # Default syllabus CSVs (physics.csv, etc.)

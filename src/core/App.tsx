@@ -42,10 +42,13 @@ function App() {
         else navigate(`/${view}`);
     };
 
-    const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('jee-tracker-theme', 'dark');
+    // Default theme based on device width (Light for mobile < 768px, Dark for desktop)
+    const defaultTheme = typeof window !== 'undefined' && window.innerWidth < 768 ? 'light' : 'dark';
+    
+    const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('jee-tracker-theme', defaultTheme);
     // const [currentView, setCurrentView] = useLocalStorage<View>('jee-tracker-view', 'dashboard'); // Replaced by Router
     const [progress, setProgress] = useLocalStorage<AppProgress>('jee-tracker-progress', initialProgress);
-    const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#6366f1');
+    const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#00F0FF');
     const [examDate, setExamDate] = useLocalStorage<string>('jee-exam-date', '');
     const [plannerTasks, setPlannerTasks] = useLocalStorage<PlannerTask[]>('jee-tracker-planner-tasks', []);
     const [customColumns, setCustomColumns] = useLocalStorage<Record<Subject, string[]>>('jee-tracker-custom-columns', {

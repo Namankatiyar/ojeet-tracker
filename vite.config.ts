@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.png'],
       manifest: {
-        name: 'PCM-Tracker',
-        short_name: 'PCM-Tracker',
+        name: 'OJEE-Tracker',
+        short_name: 'OJEE-Tracker',
         description: 'Track your PCM preparation progress offline',
         theme_color: '#6366f1',
         background_color: '#f8fafc',

@@ -875,8 +875,8 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
                                             <div className="chapter-graph-inline">
                                                 <div className="chapter-graph-bars">
                                                     {topChapters.length === 0 ? (
-                                                        <div className="empty-log" style={{ padding: '0.75rem', textAlign: 'center' }}>
-                                                            <span style={{ fontSize: '0.8rem' }}>No chapter data yet</span>
+                                                        <div className="empty-log empty-log-chapter">
+                                                            <span>No chapter data yet</span>
                                                         </div>
                                                     ) : (
                                                         topChapters.map(chapter => (

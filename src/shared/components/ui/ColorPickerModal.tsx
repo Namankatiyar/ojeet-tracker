@@ -218,7 +218,7 @@ export function ColorPickerModal({ isOpen, currentColor, onConfirm, onClose }: C
                                 value={hexInput}
                                 onChange={handleHexInputChange}
                                 style={{
-                                    background: 'transparent',
+                                    background: 'none',
                                     borderRadius: '6px',
                                     padding: '4px 8px',
                                     border: 'none',

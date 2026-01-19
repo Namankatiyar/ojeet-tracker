@@ -24,9 +24,9 @@ export function TaskLog({ tasks }: TaskLogProps) {
 
     return (
         <div className="task-log-card">
-            <div className="agenda-header" style={{ marginBottom: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <History size={20} style={{ color: 'var(--accent)' }} />
+            <div className="agenda-header agenda-header-task-log">
+                <div className="agenda-header-content">
+                    <History size={20} className="task-log-icon" />
                     <h2>Task Progress Log</h2>
                 </div>
                 <p>History of completed tasks</p>
@@ -35,26 +35,22 @@ export function TaskLog({ tasks }: TaskLogProps) {
             <div className="task-log-list">
                 {completedTasks.length > 0 ? (
                     completedTasks.map(task => (
-                        <div key={task.id} className="agenda-item" style={{ background: 'var(--bg-tertiary)' }}>
-                            <div className="agenda-check checked" style={{ cursor: 'default' }}>
+                        <div key={task.id} className="agenda-item task-log-item">
+                            <div className="agenda-check checked task-log-check">
                                 <CheckCircle2 size={14} />
                             </div>
                             <div className="agenda-info">
-                                <span className="agenda-title" style={{ color: 'var(--text-primary)' }}>{task.title}</span>
+                                <span className="agenda-title task-log-title">{task.title}</span>
                                 <div className="agenda-subtitle">
                                     {task.subject && (
-                                        <span style={{
-                                            color: `var(--${task.subject})`,
-                                            fontWeight: 600,
-                                            marginRight: '4px'
-                                        }}>
+                                        <span className={`task-log-subject text-${task.subject}`}>
                                             {task.subject.charAt(0).toUpperCase() + task.subject.slice(1)} {task.subtitle ? '•' : ''}
                                         </span>
                                     )}
                                     {task.subtitle && <span className="agenda-subtitle-text">{task.subtitle}</span>}
                                 </div>
                             </div>
-                            <div className="agenda-time" style={{ fontSize: '0.7rem' }}>
+                            <div className="agenda-time task-log-date">
                                 {task.completedAt ? formatCompletedDate(task.completedAt) : task.date}
                             </div>
                         </div>

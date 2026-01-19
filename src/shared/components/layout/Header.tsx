@@ -96,7 +96,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
         <header className="header">
             <div className="header-content">
                 <div className="logo">
-                    <span className="logo-text">PCM Tracker</span>
+                    <span className="logo-text">OJEE Tracker</span>
                 </div>
 
                 <nav className="nav">
@@ -122,7 +122,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                                 aria-label="Change accent color"
                                 title="Change accent color"
                             >
-                                <div className="current-color-indicator" style={{ backgroundColor: accentColor }}>
+                                <div className="current-color-indicator" style={{ backgroundColor: 'var(--accent)' }}>
                                     <Palette size={20} color="var(--accent-text)" style={{ opacity: 0.8 }} />
                                 </div>
                             </button>
@@ -145,13 +145,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                                         ))}
                                         <button
                                             className={`color-option custom-color-option ${isCustomColor ? 'selected' : ''}`}
-                                            style={{
-                                                background: isCustomColor ? accentColor : 'var(--bg-tertiary)',
-                                                border: isCustomColor ? '2px solid var(--text-primary)' : '2px dashed var(--text-muted)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
+                                            style={isCustomColor ? { background: accentColor, border: '2px solid var(--text-primary)' } : {}}
                                             onClick={() => {
                                                 setIsCustomColorModalOpen(true);
                                                 setIsColorPickerOpen(false);
@@ -170,9 +164,10 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                             className="theme-toggle"
                             onClick={onThemeToggle}
                             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                            style={{ color: theme === 'dark' ? accentColor : '#000000' }}
                         >
-                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                            <span className="theme-toggle-icon">
+                                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                            </span>
                         </button>
 
                         <button
@@ -180,9 +175,10 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                             onClick={() => setIsSettingsOpen(true)}
                             aria-label="Open settings"
                             title="Settings & Data Backup"
-                            style={{ color: theme === 'dark' ? accentColor : '#000000' }}
                         >
-                            <Settings size={20} />
+                            <span className="theme-toggle-icon">
+                                <Settings size={20} />
+                            </span>
                         </button>
                     </div>
 
@@ -232,13 +228,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                                         ))}
                                         <button
                                             className={`color-option custom-color-option ${isCustomColor ? 'selected' : ''}`}
-                                            style={{
-                                                background: isCustomColor ? accentColor : 'var(--bg-tertiary)',
-                                                border: isCustomColor ? '2px solid var(--text-primary)' : '2px dashed var(--text-muted)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
+                                            style={isCustomColor ? { background: accentColor, border: '2px solid var(--text-primary)' } : {}}
                                             onClick={() => {
                                                 setIsCustomColorModalOpen(true);
                                                 setIsMobileMenuOpen(false);
