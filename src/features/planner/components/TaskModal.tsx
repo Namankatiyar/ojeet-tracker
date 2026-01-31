@@ -11,11 +11,10 @@ interface TaskModalProps {
     taskToEdit?: PlannerTask | null;
 }
 
-type TaskType = 'chapter' | 'custom' | null;
+type TaskType = 'chapter' | 'custom';
 
 export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, taskToEdit }: TaskModalProps) {
-    const [step, setStep] = useState<1 | 2>(1);
-    const [taskType, setTaskType] = useState<TaskType>(null);
+    const [taskType, setTaskType] = useState<TaskType>('chapter');
 
     // Form States
     const [customTitle, setCustomTitle] = useState('');
@@ -39,7 +38,6 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
             setIsTimePickerOpen(false);
             if (taskToEdit) {
                 setTaskType(taskToEdit.type);
-                setStep(2);
                 setTime(taskToEdit.time);
 
                 // Parse time for picker
@@ -58,14 +56,21 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
                 if (taskToEdit.type === 'custom') {
                     setCustomTitle(taskToEdit.title);
                     setCustomSubject(taskToEdit.subject || 'none');
+                    // Reset chapter fields
+                    setSelectedSubject('');
+                    setSelectedChapterSerial('');
+                    setSelectedMaterial([]);
                 } else {
                     setSelectedSubject(taskToEdit.subject || '');
                     setSelectedChapterSerial(taskToEdit.chapterSerial || '');
                     setSelectedMaterial(taskToEdit.material ? [taskToEdit.material] : []);
+                    // Reset custom fields
+                    setCustomTitle('');
+                    setCustomSubject('none');
                 }
             } else {
-                setStep(1);
-                setTaskType(null);
+                // New task - reset everything
+                setTaskType('chapter');
                 setCustomTitle('');
                 setCustomSubject('none');
                 setSelectedSubject('');
@@ -98,17 +103,23 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
 
     // Update time string when picker components change
     useEffect(() => {
-        if (step === 2) {
-            let h = parseInt(selectedHour);
-            if (selectedPeriod === 'PM' && h !== 12) h += 12;
-            if (selectedPeriod === 'AM' && h === 12) h = 0;
-            setTime(`${h.toString().padStart(2, '0')}:${selectedMinute}`);
-        }
-    }, [selectedHour, selectedMinute, selectedPeriod, step]);
+        let h = parseInt(selectedHour);
+        if (selectedPeriod === 'PM' && h !== 12) h += 12;
+        if (selectedPeriod === 'AM' && h === 12) h = 0;
+        setTime(`${h.toString().padStart(2, '0')}:${selectedMinute}`);
+    }, [selectedHour, selectedMinute, selectedPeriod]);
 
-    const handleNext = (type: 'chapter' | 'custom') => {
-        setTaskType(type);
-        setStep(2);
+    const handleTaskTypeChange = (newType: TaskType) => {
+        setTaskType(newType);
+        // Reset type-specific fields when switching
+        if (newType === 'custom') {
+            setSelectedSubject('');
+            setSelectedChapterSerial('');
+            setSelectedMaterial([]);
+        } else {
+            setCustomTitle('');
+            setCustomSubject('none');
+        }
     };
 
     const handleSave = () => {
@@ -119,7 +130,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
             date,
             time,
             completed: taskToEdit ? taskToEdit.completed : false,
-            type: taskType!
+            type: taskType
         };
 
         if (taskType === 'custom') {
@@ -130,25 +141,38 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
                 subject: customSubject === 'none' ? undefined : customSubject
             });
         } else {
-            if (!selectedSubject || selectedChapterSerial === '' || selectedMaterial.length === 0) return;
+            // Chapter task - material is now optional
+            if (!selectedSubject || selectedChapterSerial === '') return;
 
             const subjectInfo = subjectData[selectedSubject as Subject];
             const chapter = subjectInfo?.chapters.find(c => c.serial === selectedChapterSerial);
 
             if (!chapter) return;
 
-            // Create a task for each selected material
-            selectedMaterial.forEach((material, index) => {
+            if (selectedMaterial.length === 0) {
+                // No material selected - create a single general task
                 onSave({
                     ...baseTask,
-                    id: index === 0 ? baseTask.id : crypto.randomUUID(), // Keep original ID for first, new IDs for rest
                     title: chapter.name,
-                    subtitle: material,
+                    subtitle: undefined,
                     subject: selectedSubject,
                     chapterSerial: selectedChapterSerial,
-                    material: material
+                    material: undefined
                 });
-            });
+            } else {
+                // Create a task for each selected material
+                selectedMaterial.forEach((material, index) => {
+                    onSave({
+                        ...baseTask,
+                        id: index === 0 ? baseTask.id : crypto.randomUUID(),
+                        title: chapter.name,
+                        subtitle: material,
+                        subject: selectedSubject,
+                        chapterSerial: selectedChapterSerial,
+                        material: material
+                    });
+                });
+            }
         }
         onClose();
     };
@@ -169,240 +193,245 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
     const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
     const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
 
+    // Validation for save button
+    const isSaveDisabled =
+        (taskType === 'custom' && !customTitle.trim()) ||
+        (taskType === 'chapter' && (!selectedSubject || selectedChapterSerial === ''));
+
     if (!isOpen) return null;
 
     return (
         <div className="modal-overlay" onClick={onClose} style={{ alignItems: 'center' }}>
             <div className="modal-content input-modal" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>{step === 1 ? 'Add New Task' : `Add ${taskType === 'chapter' ? 'Chapter' : 'Task'}`}</h3>
+                    <h3>{taskToEdit ? 'Edit Task' : 'Add New Task'}</h3>
                     <button className="close-btn" onClick={onClose}><X size={20} /></button>
                 </div>
 
                 <div className="modal-body-scrollable">
-                    {step === 1 ? (
-                        <div className="task-type-selection">
-                            <button className="type-btn" onClick={() => handleNext('chapter')}>
-                                <BookOpen size={28} />
-                                <span>Add Chapter</span>
-                            </button>
-                            <button className="type-btn" onClick={() => handleNext('custom')}>
-                                <Type size={28} />
-                                <span>Add Other</span>
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="task-form">
-                            {taskType === 'chapter' ? (
-                                <>
-                                    <div className="form-group">
-                                        <label>Subject</label>
-                                        <div className="subject-selector">
-                                            {(['physics', 'chemistry', 'maths'] as Subject[]).map(subj => (
-                                                <button
-                                                    key={subj}
-                                                    className={`subject-option ${selectedSubject === subj ? 'selected' : ''}`}
-                                                    onClick={() => {
-                                                        setSelectedSubject(subj);
-                                                        setSelectedChapterSerial('');
-                                                        setSelectedMaterial([]);
-                                                        setChapterSearch('');
-                                                    }}
-                                                    style={{ '--subj-color': `var(--${subj})` } as any}
-                                                >
-                                                    {subj.charAt(0).toUpperCase() + subj.slice(1)}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                    {/* Task Type Toggle */}
+                    <div className="task-type-toggle">
+                        <button
+                            className={`type-toggle-btn ${taskType === 'chapter' ? 'active' : ''}`}
+                            onClick={() => handleTaskTypeChange('chapter')}
+                        >
+                            <BookOpen size={18} />
+                            <span>Chapter</span>
+                        </button>
+                        <button
+                            className={`type-toggle-btn ${taskType === 'custom' ? 'active' : ''}`}
+                            onClick={() => handleTaskTypeChange('custom')}
+                        >
+                            <Type size={18} />
+                            <span>Custom</span>
+                        </button>
+                    </div>
 
-                                    {selectedSubject && (
-                                        <div className="form-group">
-                                            <label>Chapter</label>
-                                            {selectedChapterSerial === '' ? (
-                                                <div className="chapter-picker">
-                                                    <div className="chapter-search-box">
-                                                        <Search size={18} className="search-icon" />
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Search chapters..."
-                                                            value={chapterSearch}
-                                                            onChange={e => setChapterSearch(e.target.value)}
-                                                            autoFocus
-                                                            className="search-input"
-                                                        />
-                                                    </div>
-                                                    <div className="chapter-list">
-                                                        {filteredChapters.map((c) => (
-                                                            <button
-                                                                key={c.serial}
-                                                                className="chapter-item"
-                                                                onClick={() => setSelectedChapterSerial(c.serial)}
-                                                            >
-                                                                <span><span className="bullet-icon">•</span> {c.name}</span>
-                                                                <ChevronRight size={16} className="chevron" />
-                                                            </button>
-                                                        ))}
-                                                        {filteredChapters.length === 0 && (
-                                                            <div className="no-chapters">No chapters found</div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="selected-chapter-display">
-                                                    <span>
-                                                        {subjectData[selectedSubject as Subject]?.chapters.find(c => c.serial === selectedChapterSerial)?.name}
-                                                    </span>
-                                                    <button className="change-btn" onClick={() => {
-                                                        setSelectedChapterSerial('');
-                                                        setSelectedMaterial([]);
-                                                    }}>Change</button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {selectedChapterSerial !== '' && (
-                                        <div className="form-group">
-                                            <label>Materials (select multiple)</label>
-                                            <div className="material-pills">
-                                                {availableMaterials.map((m) => (
-                                                    <button
-                                                        key={m}
-                                                        className={`material-pill ${selectedMaterial.includes(m) ? 'selected' : ''}`}
-                                                        onClick={() => setSelectedMaterial(prev =>
-                                                            prev.includes(m)
-                                                                ? prev.filter(mat => mat !== m)
-                                                                : [...prev, m]
-                                                        )}
-                                                    >
-                                                        {m}
-                                                    </button>
-                                                ))}
-                                                {availableMaterials.length === 0 && (
-                                                    <div className="no-materials">No materials available</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <div className="form-group">
-                                        <label>Task Name</label>
-                                        <input
-                                            type="text"
-                                            value={customTitle}
-                                            onChange={e => setCustomTitle(e.target.value)}
-                                            placeholder="Enter task details..."
-                                            autoFocus
-                                            className="large-input"
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Subject (Optional)</label>
-                                        <div className="material-pills">
-                                            {(['physics', 'chemistry', 'maths'] as Subject[]).map((subj) => (
-                                                <button
-                                                    key={subj}
-                                                    className={`material-pill custom-subject-pill ${customSubject === subj ? 'selected' : ''}`}
-                                                    onClick={() => setCustomSubject(subj)}
-                                                    style={{ '--pill-color': `var(--${subj})` } as any}
-                                                >
-                                                    {subj.charAt(0).toUpperCase() + subj.slice(1)}
-                                                </button>
-                                            ))}
+                    <div className="task-form">
+                        {taskType === 'chapter' ? (
+                            <>
+                                <div className="form-group">
+                                    <label>Subject</label>
+                                    <div className="subject-selector">
+                                        {(['physics', 'chemistry', 'maths'] as Subject[]).map(subj => (
                                             <button
-                                                className={`material-pill custom-subject-pill ${customSubject === 'none' ? 'selected' : ''}`}
-                                                onClick={() => setCustomSubject('none')}
-                                                style={{ '--pill-color': 'var(--text-secondary)' } as any}
+                                                key={subj}
+                                                className={`subject-option ${selectedSubject === subj ? 'selected' : ''}`}
+                                                onClick={() => {
+                                                    setSelectedSubject(subj);
+                                                    setSelectedChapterSerial('');
+                                                    setSelectedMaterial([]);
+                                                    setChapterSearch('');
+                                                }}
+                                                style={{ '--subj-color': `var(--${subj})` } as any}
                                             >
-                                                None
+                                                {subj.charAt(0).toUpperCase() + subj.slice(1)}
                                             </button>
-                                        </div>
+                                        ))}
                                     </div>
-                                </>
-                            )}
-
-                            <div className="form-group">
-                                <label>Till when? (Deadline)</label>
-                                <div
-                                    className={`time-display-box ${isTimePickerOpen ? 'active' : ''}`}
-                                    onClick={() => setIsTimePickerOpen(!isTimePickerOpen)}
-                                >
-                                    <span className="time-value">
-                                        {selectedHour}:{selectedMinute} <span className="period">{selectedPeriod}</span>
-                                    </span>
-                                    <Clock size={20} className="time-icon" />
                                 </div>
 
-                                {isTimePickerOpen && (
-                                    <div className="custom-time-picker">
-                                        <div className="time-column">
-                                            <span className="col-label">Hour</span>
-                                            <div className="scroll-container">
-                                                {hours.map(h => (
-                                                    <button
-                                                        key={h}
-                                                        className={`time-btn ${selectedHour === h ? 'selected' : ''}`}
-                                                        onClick={() => setSelectedHour(h)}
-                                                    >
-                                                        {h}
-                                                    </button>
-                                                ))}
+                                {selectedSubject && (
+                                    <div className="form-group">
+                                        <label>Chapter</label>
+                                        {selectedChapterSerial === '' ? (
+                                            <div className="chapter-picker">
+                                                <div className="chapter-search-box">
+                                                    <Search size={18} className="search-icon" />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search chapters..."
+                                                        value={chapterSearch}
+                                                        onChange={e => setChapterSearch(e.target.value)}
+                                                        autoFocus
+                                                        className="search-input"
+                                                    />
+                                                </div>
+                                                <div className="chapter-list">
+                                                    {filteredChapters.map((c) => (
+                                                        <button
+                                                            key={c.serial}
+                                                            className="chapter-item"
+                                                            onClick={() => setSelectedChapterSerial(c.serial)}
+                                                        >
+                                                            <span><span className="bullet-icon">•</span> {c.name}</span>
+                                                            <ChevronRight size={16} className="chevron" />
+                                                        </button>
+                                                    ))}
+                                                    {filteredChapters.length === 0 && (
+                                                        <div className="no-chapters">No chapters found</div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="time-column">
-                                            <span className="col-label">Min</span>
-                                            <div className="scroll-container">
-                                                {minutes.map(m => (
-                                                    <button
-                                                        key={m}
-                                                        className={`time-btn ${selectedMinute === m ? 'selected' : ''}`}
-                                                        onClick={() => setSelectedMinute(m)}
-                                                    >
-                                                        {m}
-                                                    </button>
-                                                ))}
+                                        ) : (
+                                            <div className="selected-chapter-display">
+                                                <span>
+                                                    {subjectData[selectedSubject as Subject]?.chapters.find(c => c.serial === selectedChapterSerial)?.name}
+                                                </span>
+                                                <button className="change-btn" onClick={() => {
+                                                    setSelectedChapterSerial('');
+                                                    setSelectedMaterial([]);
+                                                }}>Change</button>
                                             </div>
-                                        </div>
-                                        <div className="time-column period-col">
-                                            <button
-                                                className={`period-btn ${selectedPeriod === 'AM' ? 'selected' : ''}`}
-                                                onClick={() => setSelectedPeriod('AM')}
-                                            >
-                                                AM
-                                            </button>
-                                            <button
-                                                className={`period-btn ${selectedPeriod === 'PM' ? 'selected' : ''}`}
-                                                onClick={() => setSelectedPeriod('PM')}
-                                            >
-                                                PM
-                                            </button>
-                                        </div>
+                                        )}
                                     </div>
                                 )}
+
+                                {selectedChapterSerial !== '' && (
+                                    <div className="form-group">
+                                        <label>Materials <span className="optional-label">(optional)</span></label>
+                                        <div className="material-pills">
+                                            {availableMaterials.map((m) => (
+                                                <button
+                                                    key={m}
+                                                    className={`material-pill ${selectedMaterial.includes(m) ? 'selected' : ''}`}
+                                                    onClick={() => setSelectedMaterial(prev =>
+                                                        prev.includes(m)
+                                                            ? prev.filter(mat => mat !== m)
+                                                            : [...prev, m]
+                                                    )}
+                                                >
+                                                    {m}
+                                                </button>
+                                            ))}
+                                            {availableMaterials.length === 0 && (
+                                                <div className="no-materials">No materials available</div>
+                                            )}
+                                        </div>
+                                        {selectedMaterial.length === 0 && availableMaterials.length > 0 && (
+                                            <div className="material-hint">Leave empty for general chapter task</div>
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <div className="form-group">
+                                    <label>Task Name</label>
+                                    <input
+                                        type="text"
+                                        value={customTitle}
+                                        onChange={e => setCustomTitle(e.target.value)}
+                                        placeholder="Enter task details..."
+                                        autoFocus
+                                        className="large-input"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Subject <span className="optional-label">(optional)</span></label>
+                                    <div className="material-pills">
+                                        {(['physics', 'chemistry', 'maths'] as Subject[]).map((subj) => (
+                                            <button
+                                                key={subj}
+                                                className={`material-pill custom-subject-pill ${customSubject === subj ? 'selected' : ''}`}
+                                                onClick={() => setCustomSubject(subj)}
+                                                style={{ '--pill-color': `var(--${subj})` } as any}
+                                            >
+                                                {subj.charAt(0).toUpperCase() + subj.slice(1)}
+                                            </button>
+                                        ))}
+                                        <button
+                                            className={`material-pill custom-subject-pill ${customSubject === 'none' ? 'selected' : ''}`}
+                                            onClick={() => setCustomSubject('none')}
+                                            style={{ '--pill-color': 'var(--text-secondary)' } as any}
+                                        >
+                                            None
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        <div className="form-group">
+                            <label>Till when? (Deadline)</label>
+                            <div
+                                className={`time-display-box ${isTimePickerOpen ? 'active' : ''}`}
+                                onClick={() => setIsTimePickerOpen(!isTimePickerOpen)}
+                            >
+                                <span className="time-value">
+                                    {selectedHour}:{selectedMinute} <span className="period">{selectedPeriod}</span>
+                                </span>
+                                <Clock size={20} className="time-icon" />
                             </div>
+
+                            {isTimePickerOpen && (
+                                <div className="custom-time-picker">
+                                    <div className="time-column">
+                                        <span className="col-label">Hour</span>
+                                        <div className="scroll-container">
+                                            {hours.map(h => (
+                                                <button
+                                                    key={h}
+                                                    className={`time-btn ${selectedHour === h ? 'selected' : ''}`}
+                                                    onClick={() => setSelectedHour(h)}
+                                                >
+                                                    {h}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="time-column">
+                                        <span className="col-label">Min</span>
+                                        <div className="scroll-container">
+                                            {minutes.map(m => (
+                                                <button
+                                                    key={m}
+                                                    className={`time-btn ${selectedMinute === m ? 'selected' : ''}`}
+                                                    onClick={() => setSelectedMinute(m)}
+                                                >
+                                                    {m}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="time-column period-col">
+                                        <button
+                                            className={`period-btn ${selectedPeriod === 'AM' ? 'selected' : ''}`}
+                                            onClick={() => setSelectedPeriod('AM')}
+                                        >
+                                            AM
+                                        </button>
+                                        <button
+                                            className={`period-btn ${selectedPeriod === 'PM' ? 'selected' : ''}`}
+                                            onClick={() => setSelectedPeriod('PM')}
+                                        >
+                                            PM
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 <div className="modal-footer">
-                    {step === 2 && (
-                        <>
-                            <button className="secondary-btn" onClick={() => setStep(1)}>Back</button>
-                            <button
-                                className="primary-btn"
-                                onClick={handleSave}
-                                disabled={
-                                    (taskType === 'custom' && !customTitle) ||
-                                    (taskType === 'chapter' && (!selectedSubject || !selectedChapterSerial || selectedMaterial.length === 0))
-                                }
-                            >
-                                {taskToEdit ? 'Save Changes' : 'Add Task'}
-                            </button>
-                        </>
-                    )}
+                    <button
+                        className="primary-btn"
+                        onClick={handleSave}
+                        disabled={isSaveDisabled}
+                    >
+                        {taskToEdit ? 'Save Changes' : 'Add Task'}
+                    </button>
                 </div>
             </div>
         </div >

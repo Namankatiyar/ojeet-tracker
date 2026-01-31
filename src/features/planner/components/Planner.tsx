@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Check, Trash2, Calendar as CalendarIcon, Clock, Pencil, ClockAlert, Hourglass } from 'lucide-react';
 import { PlannerTask, Subject, SubjectData, StudySession } from '../../../shared/types';
 import { TaskModal } from './TaskModal';
@@ -158,6 +158,21 @@ export function Planner({ tasks, onAddTask, onEditTask, onToggleTask, onDeleteTa
         const task = tasks.find(t => t.id === taskId);
         if (task && task.date !== newDateStr) {
             onEditTask({ ...task, date: newDateStr });
+        }
+    };
+
+    const handleDuplicateTask = (taskId: string, newDateStr: string) => {
+        const task = tasks.find(t => t.id === taskId);
+        if (task) {
+            const duplicatedTask: PlannerTask = {
+                ...task,
+                id: crypto.randomUUID(),
+                date: newDateStr,
+                completed: false,
+                completedAt: undefined,
+                wasShifted: false
+            };
+            onAddTask(duplicatedTask);
         }
     };
 
@@ -343,6 +358,7 @@ export function Planner({ tasks, onAddTask, onEditTask, onToggleTask, onDeleteTa
                                 onToggleTask={onToggleTask}
                                 onDeleteTask={onDeleteTask}
                                 onMoveTask={handleMoveTask}
+                                onDuplicateTask={handleDuplicateTask}
                                 isExamDay={formatDateLocal(day) === examDate}
                                 isPastDay={day.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)}
                             />
@@ -363,7 +379,7 @@ export function Planner({ tasks, onAddTask, onEditTask, onToggleTask, onDeleteTa
     );
 }
 
-function DayColumn({ date, tasks, onAddTask, onEditTask, onToggleTask, onDeleteTask, isExamDay, onMoveTask, isPastDay }: {
+function DayColumn({ date, tasks, onAddTask, onEditTask, onToggleTask, onDeleteTask, isExamDay, onMoveTask, onDuplicateTask, isPastDay }: {
     date: Date,
     tasks: PlannerTask[],
     onAddTask: () => void,
@@ -371,10 +387,12 @@ function DayColumn({ date, tasks, onAddTask, onEditTask, onToggleTask, onDeleteT
     onToggleTask: (id: string) => void,
     onDeleteTask: (id: string) => void,
     onMoveTask: (taskId: string, newDate: string) => void,
+    onDuplicateTask: (taskId: string, newDate: string) => void,
     isExamDay: boolean,
     isPastDay: boolean
 }) {
     const [isDragOver, setIsDragOver] = useState(false);
+    const [isShiftHeld, setIsShiftHeld] = useState(false);
     const isToday = new Date().toDateString() === date.toDateString();
 
     const isOverdue = (task: PlannerTask) => {
@@ -394,49 +412,55 @@ function DayColumn({ date, tasks, onAddTask, onEditTask, onToggleTask, onDeleteT
 
     const handleDragStart = (e: React.DragEvent, taskId: string) => {
         e.dataTransfer.setData('text/plain', taskId);
-        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.effectAllowed = 'copyMove';
     };
-
-    const dragCounter = useRef(0);
 
     const handleDragEnter = (e: React.DragEvent) => {
         if (isPastDay) return;
         e.preventDefault();
-        dragCounter.current++;
-        if (dragCounter.current === 1) {
-            setIsDragOver(true);
-        }
+        setIsDragOver(true);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
         if (isPastDay) return;
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
+        // Update visual feedback based on shift key
+        const isDuplicating = e.shiftKey;
+        setIsShiftHeld(isDuplicating);
+        e.dataTransfer.dropEffect = isDuplicating ? 'copy' : 'move';
     };
 
-    const handleDragLeave = () => {
+    const handleDragLeave = (e: React.DragEvent) => {
         if (isPastDay) return;
-        dragCounter.current--;
-        if (dragCounter.current === 0) {
-            setIsDragOver(false);
+        // Check if we are actually leaving the container
+        if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget as Node)) {
+            return;
         }
+        setIsDragOver(false);
+        setIsShiftHeld(false);
     };
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
-        dragCounter.current = 0;
         setIsDragOver(false);
+        setIsShiftHeld(false);
         if (isPastDay) return;
 
         const taskId = e.dataTransfer.getData('text/plain');
         if (taskId) {
-            onMoveTask(taskId, formatDateLocal(date));
+            if (e.shiftKey) {
+                // Shift held - duplicate task
+                onDuplicateTask(taskId, formatDateLocal(date));
+            } else {
+                // Normal drag - move task
+                onMoveTask(taskId, formatDateLocal(date));
+            }
         }
     };
 
     return (
         <div
-            className={`day-column ${isToday ? 'today' : ''} ${isExamDay ? 'exam-day-col' : ''} ${isDragOver ? 'drag-over' : ''} ${isPastDay ? 'past-day' : ''}`}
+            className={`day-column ${isToday ? 'today' : ''} ${isExamDay ? 'exam-day-col' : ''} ${isDragOver ? 'drag-over' : ''} ${isShiftHeld ? 'shift-copy' : ''} ${isPastDay ? 'past-day' : ''}`}
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}

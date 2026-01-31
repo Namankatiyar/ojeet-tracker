@@ -805,11 +805,81 @@
 /* ===== Task Modal Content (Planner-specific) ===== */
 /* Base modal styles are in components/modals.css */
 
-.task-type-selection {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  padding: 2rem 0;
+/* Task Type Toggle - Unified Chapter/Custom Selector */
+.task-type-toggle {
+  display: flex;
+  gap: 0.5rem;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.type-toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.type-toggle-btn:hover:not(.active) {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.type-toggle-btn.active {
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Optional Label */
+.optional-label {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+/* Material Hint */
+.material-hint {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Shift-Drag Copy Indicator */
+.day-column.drag-over.shift-copy {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 90%);
+}
+
+.day-column.drag-over.shift-copy::after {
+  content: 'Copy';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--accent);
+  color: var(--accent-text);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 10;
+  pointer-events: none;
 }
 
 
