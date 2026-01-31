@@ -5,6 +5,7 @@ interface Option {
     value: string | number;
     label: string;
     color?: string; // Optional color for the text/icon
+    priority?: 'high' | 'medium' | 'low'; // Optional priority level for highlighting
 }
 
 interface CustomSelectProps {
@@ -74,7 +75,7 @@ export function CustomSelect({
                     {options.map((option) => (
                         <div
                             key={option.value}
-                            className={`custom-select-option ${option.value === value ? 'selected' : ''}`}
+                            className={`custom-select-option ${option.value === value ? 'selected' : ''} ${option.priority ? `priority-${option.priority}` : ''}`}
                             onClick={() => handleSelect(option.value)}
                         >
                             <span style={{ color: option.color }}>{option.label}</span>
@@ -203,6 +204,20 @@ export function CustomSelect({
 
                 .check-icon {
                     color: var(--accent);
+                }
+
+                /* Priority highlighting */
+                .custom-select-option.priority-high {
+                    background: var(--priority-high-bg);
+                    border-left: 3px solid var(--priority-high);
+                }
+                .custom-select-option.priority-medium {
+                    background: var(--priority-medium-bg);
+                    border-left: 3px solid var(--priority-medium);
+                }
+                .custom-select-option.priority-low {
+                    background: var(--priority-low-bg);
+                    border-left: 3px solid var(--priority-low);
                 }
 
                 /* Scrollbar for options */

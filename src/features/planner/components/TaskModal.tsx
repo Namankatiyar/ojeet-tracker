@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { X, BookOpen, Type, Clock, Search, ChevronRight } from 'lucide-react';
-import { Subject, SubjectData, PlannerTask } from '../../../shared/types';
+import { Subject, SubjectData, PlannerTask, AppProgress } from '../../../shared/types';
 
 interface TaskModalProps {
     isOpen: boolean;
@@ -9,11 +9,12 @@ interface TaskModalProps {
     initialDate: string;
     subjectData: Record<Subject, SubjectData | null>;
     taskToEdit?: PlannerTask | null;
+    progress: AppProgress;
 }
 
 type TaskType = 'chapter' | 'custom';
 
-export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, taskToEdit }: TaskModalProps) {
+export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, taskToEdit, progress }: TaskModalProps) {
     const [taskType, setTaskType] = useState<TaskType>('chapter');
 
     // Form States
@@ -268,16 +269,20 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
                                                     />
                                                 </div>
                                                 <div className="chapter-list">
-                                                    {filteredChapters.map((c) => (
-                                                        <button
-                                                            key={c.serial}
-                                                            className="chapter-item"
-                                                            onClick={() => setSelectedChapterSerial(c.serial)}
-                                                        >
-                                                            <span><span className="bullet-icon">•</span> {c.name}</span>
-                                                            <ChevronRight size={16} className="chevron" />
-                                                        </button>
-                                                    ))}
+                                                    {filteredChapters.map((c) => {
+                                                        const chapterPriority = selectedSubject ? progress[selectedSubject as Subject]?.[c.serial]?.priority : 'none';
+                                                        const priorityClass = chapterPriority && chapterPriority !== 'none' ? `priority-${chapterPriority}` : '';
+                                                        return (
+                                                            <button
+                                                                key={c.serial}
+                                                                className={`chapter-item ${priorityClass}`}
+                                                                onClick={() => setSelectedChapterSerial(c.serial)}
+                                                            >
+                                                                <span><span className="bullet-icon">•</span> {c.name}</span>
+                                                                <ChevronRight size={16} className="chevron" />
+                                                            </button>
+                                                        );
+                                                    })}
                                                     {filteredChapters.length === 0 && (
                                                         <div className="no-chapters">No chapters found</div>
                                                     )}

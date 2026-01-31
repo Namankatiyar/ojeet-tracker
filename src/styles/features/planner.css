@@ -1019,6 +1019,22 @@
   transform: translateX(4px);
 }
 
+/* Priority highlighting for chapters */
+.chapter-item.priority-high {
+  background: var(--priority-high-bg);
+  border-left: 3px solid var(--priority-high);
+}
+
+.chapter-item.priority-medium {
+  background: var(--priority-medium-bg);
+  border-left: 3px solid var(--priority-medium);
+}
+
+.chapter-item.priority-low {
+  background: var(--priority-low-bg);
+  border-left: 3px solid var(--priority-low);
+}
+
 .bullet-icon {
   color: var(--accent);
   margin-right: 6px;

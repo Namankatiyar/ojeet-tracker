@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, Square, Trash2, Clock, X, Pencil } from 'lucide-react';
-import { Subject, SubjectData, StudySession, PlannerTask } from '../../../shared/types';
+import { Subject, SubjectData, StudySession, PlannerTask, AppProgress } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 
 interface StudyClockProps {
@@ -10,6 +10,7 @@ interface StudyClockProps {
     onDeleteSession: (sessionId: string) => void;
     onEditSession: (session: StudySession) => void;
     plannerTasks: PlannerTask[];
+    progress: AppProgress;
 }
 
 type TimerState = 'idle' | 'running' | 'paused';
@@ -41,7 +42,7 @@ interface RunningTimerState {
 const PAUSED_TIMER_STORAGE_KEY = 'jee-tracker-paused-timer';
 const RUNNING_TIMER_STORAGE_KEY = 'jee-tracker-running-timer';
 
-export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSession, onEditSession, plannerTasks }: StudyClockProps) {
+export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSession, onEditSession, plannerTasks, progress }: StudyClockProps) {
     // Timer state
     const [timerState, setTimerState] = useState<TimerState>('idle');
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -265,14 +266,43 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
         }
 
         if (finalElapsed > 0) {
+            // Determine session metadata based on task type
+            let sessionSubject: typeof selectedSubject | undefined = undefined;
+            let sessionChapterSerial: number | undefined = undefined;
+            let sessionChapterName: string | undefined = undefined;
+            let sessionMaterial: string | undefined = undefined;
+            let sessionType: 'chapter' | 'custom' | 'task' = taskType;
+
+            if (taskType === 'chapter' && selectedSubject) {
+                // Direct chapter selection
+                sessionSubject = selectedSubject;
+                sessionChapterSerial = selectedChapter as number || undefined;
+                sessionChapterName = getChapterName();
+                sessionMaterial = selectedMaterial || undefined;
+            } else if (taskType === 'task' && selectedTaskId) {
+                // Planner task selected - inherit metadata from the task
+                const task = plannerTasks.find(t => t.id === selectedTaskId);
+                if (task?.type === 'chapter' && task.subject) {
+                    // Task is a chapter task - log under its subject
+                    sessionSubject = task.subject;
+                    sessionChapterSerial = task.chapterSerial;
+                    sessionChapterName = subjectData[task.subject]?.chapters.find(c => c.serial === task.chapterSerial)?.name;
+                    sessionMaterial = task.material;
+                    sessionType = 'chapter'; // Log as chapter, not task
+                } else {
+                    // Custom task - log as custom
+                    sessionType = 'custom';
+                }
+            }
+
             const session: StudySession = {
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 title: getTaskTitle(),
-                subject: taskType === 'chapter' && selectedSubject ? selectedSubject : undefined,
-                chapterSerial: taskType === 'chapter' && selectedChapter ? selectedChapter as number : undefined,
-                chapterName: taskType === 'chapter' ? getChapterName() : undefined,
-                material: taskType === 'chapter' && selectedMaterial ? selectedMaterial : undefined,
-                type: taskType,
+                subject: sessionSubject,
+                chapterSerial: sessionChapterSerial,
+                chapterName: sessionChapterName,
+                material: sessionMaterial,
+                type: sessionType,
                 startTime: startTime?.toISOString() || new Date().toISOString(),
                 endTime: new Date().toISOString(),
                 duration: finalElapsed
@@ -563,7 +593,14 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
                                             <CustomSelect
                                                 value={selectedChapter}
                                                 onChange={(val) => setSelectedChapter(val ? Number(val) : '')}
-                                                options={availableChapters.map(ch => ({ value: ch.serial, label: ch.name }))}
+                                                options={availableChapters.map(ch => {
+                                                    const chapterPriority = selectedSubject ? progress[selectedSubject]?.[ch.serial]?.priority : undefined;
+                                                    return {
+                                                        value: ch.serial,
+                                                        label: ch.name,
+                                                        priority: chapterPriority !== 'none' ? chapterPriority : undefined
+                                                    };
+                                                })}
                                                 placeholder="Select Chapter"
                                                 disabled={timerState !== 'idle' || !selectedSubject}
                                             />

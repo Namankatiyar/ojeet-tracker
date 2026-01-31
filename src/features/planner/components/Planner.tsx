@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Check, Trash2, Calendar as CalendarIcon, Clock, Pencil, ClockAlert, Hourglass } from 'lucide-react';
-import { PlannerTask, Subject, SubjectData, StudySession } from '../../../shared/types';
+import { PlannerTask, Subject, SubjectData, StudySession, AppProgress } from '../../../shared/types';
 import { TaskModal } from './TaskModal';
 import { formatDateLocal, formatTime12Hour } from '../../../shared/utils/date';
 
@@ -15,11 +15,12 @@ interface PlannerProps {
     initialOpenDate?: string | null;
     onConsumeInitialDate?: () => void;
     sessions?: StudySession[];
+    progress: AppProgress;
 }
 
 type ViewMode = 'weekly' | 'monthly';
 
-export function Planner({ tasks, onAddTask, onEditTask, onToggleTask, onDeleteTask, subjectData, examDate, initialOpenDate, onConsumeInitialDate, sessions = [] }: PlannerProps) {
+export function Planner({ tasks, onAddTask, onEditTask, onToggleTask, onDeleteTask, subjectData, examDate, initialOpenDate, onConsumeInitialDate, sessions = [], progress }: PlannerProps) {
     const [viewMode, setViewMode] = useState<ViewMode>('weekly');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -374,6 +375,7 @@ export function Planner({ tasks, onAddTask, onEditTask, onToggleTask, onDeleteTa
                 initialDate={selectedDateForTask}
                 subjectData={subjectData}
                 taskToEdit={taskToEdit}
+                progress={progress}
             />
         </div>
     );

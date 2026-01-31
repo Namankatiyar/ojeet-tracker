@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. See [commit
 
 **Last Updated:** 2026-01-31
 
+## 0.0.10 (2026-01-31)
+
+### Added
+- **Priority Chapter Highlighting**: Chapters with priority (high, medium, low) are now visually highlighted in all chapter dropdowns across the Study Clock and Planner modals.
+- **Smart Session Logging**: Selecting a Planner Task in the Study Clock now logs the session under the task's associated subject (Physics/Chemistry/Maths) instead of as a generic "custom" session.
+
+### Fixed
+- **Session categorization**: Fixed bug where sessions linked to Planner Tasks were incorrectly counted as "Custom" time instead of their respective subject.
+
 ## 0.0.9 (2026-01-31)
 
 ### Added

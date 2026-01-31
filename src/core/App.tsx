@@ -524,6 +524,7 @@ function App() {
                                 initialOpenDate={plannerDateToOpen}
                                 onConsumeInitialDate={() => setPlannerDateToOpen(null)}
                                 sessions={studySessions}
+                                progress={progress}
                             />
                         } />
 
@@ -535,6 +536,7 @@ function App() {
                                 onDeleteSession={handleDeleteStudySession}
                                 onEditSession={handleEditStudySession}
                                 plannerTasks={plannerTasks}
+                                progress={progress}
                             />
                         } />
 
