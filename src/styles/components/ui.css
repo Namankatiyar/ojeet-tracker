@@ -144,12 +144,13 @@
 }
 
 [data-theme="dark"] .color-picker-popup {
-  background: rgba(18, 18, 26, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-inner-glow), var(--glass-shadow);
 }
+
 
 @keyframes fadeIn {
   from {
@@ -210,150 +211,24 @@
   transform: scale(1.05);
 }
 
-/* ===== Modals ===== */
-.modal-backdrop, .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease;
-}
-
-.modal-container {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: var(--shadow-lg);
-  animation: slideUp 0.2s ease;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header h3, .modal-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.modal-body p {
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.modal-btn {
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  border: 1px solid transparent;
-}
-
-.modal-btn.cancel {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border-color: var(--border);
-}
-
-.modal-btn.cancel:hover {
-  background: var(--border);
-  color: var(--text-primary);
-}
-
-.modal-btn.confirm {
-  background: var(--priority-high);
-  color: white;
-}
-
-.modal-btn.confirm:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.modal-input {
-  width: 100%;
-  padding: 0.75rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 0.9375rem;
-  transition: all var(--transition-fast);
-  margin-top: 0.5rem;
-}
-
-.modal-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-light);
-}
-
-/* Glass effect for modals */
-[data-theme="dark"] .modal-overlay,
-[data-theme="dark"] .modal-backdrop {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
-}
-
-[data-theme="dark"] .modal-container,
-[data-theme="dark"] .settings-modal,
-[data-theme="dark"] .distribution-modal {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border) !important;
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow) !important;
-}
-
-/* Glass input fields */
+/* ===== Glass Input Fields (Global) ===== */
+/* Applied to all dark mode inputs/textareas/selects */
 [data-theme="dark"] input,
 [data-theme="dark"] textarea,
 [data-theme="dark"] select {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border-color: var(--glass-border) !important;
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--glass-border);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 [data-theme="dark"] input:focus,
 [data-theme="dark"] textarea:focus,
 [data-theme="dark"] select:focus {
-  border-color: var(--glass-border-light) !important;
+  border-color: var(--glass-border-light);
   box-shadow: var(--glass-inner-glow), 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
 }
 
-/* Input Modal Overrides */
-.input-modal {
-  max-width: 500px;
-  width: 95%;
-}
 
 /* ===== Checkboxes ===== */
 .checkbox-container {

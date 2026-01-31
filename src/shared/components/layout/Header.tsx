@@ -15,12 +15,12 @@ interface HeaderProps {
 }
 
 const ACCENT_COLORS = [
+    { name: 'Amber', value: '#f59e0b' },
     { name: 'Cyan', value: '#00F0FF' },
     { name: 'Emerald', value: '#10b981' },
-    { name: 'Amber', value: '#f59e0b' },
     { name: 'Rose', value: '#e11d48' },
     { name: 'Violet', value: '#8b5cf6' },
-    { name: 'Cyan', value: '#06b6d4' },
+    { name: 'Cyan (Deep)', value: '#06b6d4' },
     { name: 'Orange', value: '#f97316' },
     { name: 'Teal', value: '#14b8a6' },
     { name: 'Pink', value: '#ec4899' },

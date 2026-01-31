@@ -1,0 +1,126 @@
+/* ===== OJEE Tracker - Main Stylesheet ===== */
+/* CSS Layers Architecture for explicit cascade control */
+
+/* 
+ * Layer Order (lowest to highest priority):
+ * 1. reset    - CSS reset
+ * 2. tokens   - Design system tokens (CSS variables)
+ * 3. base     - Global element styles
+ * 4. layout   - App structure, header, navigation
+ * 5. components - Reusable UI components
+ * 6. features - Feature-specific styles
+ * 7. utilities - High-priority utility classes
+ */
+
+@layer reset, tokens, base, layout, components, features, utilities;
+
+/* ======================== */
+/* === Layer: Reset === */
+/* ======================== */
+@import './layers/_reset.css' layer(reset);
+
+/* ======================== */
+/* === Layer: Tokens === */
+/* ======================== */
+@import './layers/_tokens.css' layer(tokens);
+
+/* ======================== */
+/* === Layer: Base === */
+/* ======================== */
+@import './base.css' layer(base);
+
+/* ======================== */
+/* === Layer: Layout === */
+/* ======================== */
+@import './layout.css' layer(layout);
+
+/* ======================== */
+/* === Layer: Components === */
+/* ======================== */
+@import './components/ui.css' layer(components);
+@import './components/modals.css' layer(components);
+@import './components/misc.css' layer(components);
+
+
+/* ======================== */
+/* === Layer: Features === */
+/* ======================== */
+@import './features/dashboard.css' layer(features);
+@import './features/subjects.css' layer(features);
+@import './features/planner.css' layer(features);
+@import './features/study-clock.css' layer(features);
+
+/* ======================== */
+/* === Layer: Utilities === */
+/* ======================== */
+/* Utility layer for high-priority overrides */
+@layer utilities {
+
+    /* Screen reader only */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* Flex utilities */
+    .flex {
+        display: flex;
+    }
+
+    .flex-col {
+        flex-direction: column;
+    }
+
+    .items-center {
+        align-items: center;
+    }
+
+    .justify-center {
+        justify-content: center;
+    }
+
+    .justify-between {
+        justify-content: space-between;
+    }
+
+    .gap-sm {
+        gap: var(--space-sm);
+    }
+
+    .gap-md {
+        gap: var(--space-md);
+    }
+
+    .gap-lg {
+        gap: var(--space-lg);
+    }
+
+    /* Text utilities */
+    .text-center {
+        text-align: center;
+    }
+
+    .text-muted {
+        color: var(--text-muted);
+    }
+
+    .font-bold {
+        font-weight: 700;
+    }
+
+    /* Visibility */
+    .hidden {
+        display: none;
+    }
+
+    .invisible {
+        visibility: hidden;
+    }
+}

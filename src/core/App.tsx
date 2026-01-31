@@ -27,14 +27,14 @@ const initialProgress: AppProgress = {
 function App() {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Determine current view from path
     const getCurrentView = (): View => {
         const path = location.pathname.substring(1);
         if (!path) return 'dashboard';
         return path as View;
     };
-    
+
     const currentView = getCurrentView();
 
     const handleNavigate = (view: View) => {
@@ -44,11 +44,11 @@ function App() {
 
     // Default theme based on device width (Light for mobile < 768px, Dark for desktop)
     const defaultTheme = typeof window !== 'undefined' && window.innerWidth < 768 ? 'light' : 'dark';
-    
+
     const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('jee-tracker-theme', defaultTheme);
     // const [currentView, setCurrentView] = useLocalStorage<View>('jee-tracker-view', 'dashboard'); // Replaced by Router
     const [progress, setProgress] = useLocalStorage<AppProgress>('jee-tracker-progress', initialProgress);
-    const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#00F0FF');
+    const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#f59e0b');
     const [examDate, setExamDate] = useLocalStorage<string>('jee-exam-date', '');
     const [plannerTasks, setPlannerTasks] = useLocalStorage<PlannerTask[]>('jee-tracker-planner-tasks', []);
     const [customColumns, setCustomColumns] = useLocalStorage<Record<Subject, string[]>>('jee-tracker-custom-columns', {
@@ -511,7 +511,7 @@ function App() {
                                 onDeleteMockScore={handleDeleteMockScore}
                             />
                         } />
-                        
+
                         <Route path="/planner" element={
                             <Planner
                                 tasks={plannerTasks}

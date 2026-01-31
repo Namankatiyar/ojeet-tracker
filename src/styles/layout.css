@@ -61,7 +61,7 @@
 }
 
 .logo-text {
-  background: linear-gradient(135deg, var(--accent), #a855f7);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent), white 40%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

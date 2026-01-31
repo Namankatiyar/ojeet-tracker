@@ -1,21 +1,5 @@
-/* ===== Reset & Base ===== */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: inherit;
-}
-
-html {
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent) transparent;
-  background-color: var(--bg-base);
-}
+/* ===== Base Styles ===== */
+/* Global element styles (reset is in layers/_reset.css) */
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -25,6 +9,13 @@ body {
   min-height: 100vh;
   transition: background-color var(--transition-normal), color var(--transition-normal);
 }
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+  background-color: var(--bg-base);
+}
+
 
 /* Background Gradients */
 [data-theme="dark"] body {
@@ -50,7 +41,8 @@ body {
 
 @media (max-width: 768px) {
   [data-theme="dark"] body {
-    background-attachment: scroll; /* Performance fix for mobile scrolling */
+    background-attachment: scroll;
+    /* Performance fix for mobile scrolling */
   }
 }
 
@@ -111,4 +103,56 @@ body {
   background: color-mix(in srgb, var(--accent), rgba(255, 255, 255, 0.2) 20%);
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 50%);
   background-clip: padding-box;
+}
+
+/* ===== Dark Mode Glassmorphism Effects ===== */
+/* Apply glass effect to all major cards and panels - DESKTOP ONLY */
+@media (min-width: 768px) {
+
+  [data-theme="dark"] .overall-progress-card,
+  [data-theme="dark"] .exam-countdown-card,
+  [data-theme="dark"] .agenda-card,
+  [data-theme="dark"] .task-log-card,
+  [data-theme="dark"] .subject-card,
+  [data-theme="dark"] .chapter-card,
+  [data-theme="dark"] .study-clock-container,
+  [data-theme="dark"] .timer-card,
+  [data-theme="dark"] .stats-panel,
+  [data-theme="dark"] .session-log-panel,
+  [data-theme="dark"] .day-column,
+  [data-theme="dark"] .monthly-calendar,
+  [data-theme="dark"] .settings-panel,
+  [data-theme="dark"] .view-toggles,
+  [data-theme="dark"] .analytics-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  }
+}
+
+/* Fallback for Mobile - Solid Colors for Performance */
+@media (max-width: 767px) {
+
+  [data-theme="dark"] .overall-progress-card,
+  [data-theme="dark"] .exam-countdown-card,
+  [data-theme="dark"] .agenda-card,
+  [data-theme="dark"] .task-log-card,
+  [data-theme="dark"] .subject-card,
+  [data-theme="dark"] .chapter-card,
+  [data-theme="dark"] .study-clock-container,
+  [data-theme="dark"] .timer-card,
+  [data-theme="dark"] .stats-panel,
+  [data-theme="dark"] .session-log-panel,
+  [data-theme="dark"] .day-column,
+  [data-theme="dark"] .monthly-calendar,
+  [data-theme="dark"] .settings-panel,
+  [data-theme="dark"] .view-toggles,
+  [data-theme="dark"] .analytics-panel {
+    background: #1e1e24;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 }

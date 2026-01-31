@@ -1,0 +1,202 @@
+/* ===== Design Tokens Layer ===== */
+/* All CSS custom properties organized by category */
+
+:root {
+    /* ======================== */
+    /* === Color Palette === */
+    /* ======================== */
+
+    /* Background Colors - Light Theme */
+    --color-bg-base: #f8fafc;
+    --color-bg-secondary: #ffffff;
+    --color-bg-tertiary: #f1f5f9;
+
+    /* Text Colors - Light Theme */
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #94a3b8;
+
+    /* Border Colors - Light Theme */
+    --color-border: #e2e8f0;
+    --color-border-hover: #cbd5e1;
+
+    /* ======================== */
+    /* === Accent (Dynamic) === */
+    /* ======================== */
+    --accent: #06b6d4;
+    /* Default cyan */
+    --accent-hover: #0891b2;
+    --accent-light: rgba(6, 182, 212, 0.1);
+    --accent-text: #ffffff;
+    --accent-border: transparent;
+
+    /* Computed background with accent tint */
+    --color-bg-primary: color-mix(in srgb, var(--accent), var(--color-bg-base) 96%);
+
+    /* ======================== */
+    /* === Semantic Colors === */
+    /* ======================== */
+
+    /* Priority/Status Colors */
+    --color-priority-high: #ef4444;
+    --color-priority-high-bg: rgba(239, 68, 68, 0.08);
+    --color-priority-medium: #f59e0b;
+    --color-priority-medium-bg: rgba(245, 158, 11, 0.08);
+    --color-priority-low: #22c55e;
+    --color-priority-low-bg: rgba(34, 197, 94, 0.08);
+    --color-completed-bg: rgba(99, 102, 241, 0.08);
+
+    /* Subject Colors */
+    --color-physics: #6366f1;
+    --color-chemistry: #10b981;
+    --color-maths: #f59e0b;
+
+    /* Legacy aliases (for backward compatibility) */
+    --bg-base: var(--color-bg-base);
+    --bg-primary: var(--color-bg-primary);
+    --bg-secondary: var(--color-bg-secondary);
+    --bg-tertiary: var(--color-bg-tertiary);
+    --text-primary: var(--color-text-primary);
+    --text-secondary: var(--color-text-secondary);
+    --text-muted: var(--color-text-muted);
+    --border: var(--color-border);
+    --border-hover: var(--color-border-hover);
+    --priority-high: var(--color-priority-high);
+    --priority-high-bg: var(--color-priority-high-bg);
+    --priority-medium: var(--color-priority-medium);
+    --priority-medium-bg: var(--color-priority-medium-bg);
+    --priority-low: var(--color-priority-low);
+    --priority-low-bg: var(--color-priority-low-bg);
+    --completed-bg: var(--color-completed-bg);
+    --physics: var(--color-physics);
+    --chemistry: var(--color-chemistry);
+    --maths: var(--color-maths);
+
+    /* ======================== */
+    /* === Layout === */
+    /* ======================== */
+    --header-height: 72px;
+    --content-max-width: 1200px;
+
+    /* ======================== */
+    /* === Spacing === */
+    /* ======================== */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 2.5rem;
+
+    /* ======================== */
+    /* === Border Radius === */
+    /* ======================== */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+
+    /* Legacy aliases */
+    --border-radius: var(--radius-md);
+    --border-radius-sm: var(--radius-sm);
+
+    /* ======================== */
+    /* === Shadows === */
+    /* ======================== */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    --shadow-glow: 0 0 30px color-mix(in srgb, var(--accent), transparent 85%);
+
+    /* ======================== */
+    /* === Transitions === */
+    /* ======================== */
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 400ms ease;
+
+    /* ======================== */
+    /* === Glass Effect === */
+    /* ======================== */
+    /* Light mode - minimal glass effect */
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-bg-hover: rgba(255, 255, 255, 0.8);
+    --glass-blur: 0px;
+    --glass-border: var(--color-border);
+    --glass-border-light: var(--color-border);
+    --glass-inner-glow: none;
+    --glass-shadow: var(--shadow-lg);
+
+    /* ======================== */
+    /* === Card Backgrounds === */
+    /* ======================== */
+    --bg-card: var(--color-bg-secondary);
+    --bg-card-item: var(--color-bg-tertiary);
+    --bg-modal: rgba(255, 255, 255, 0.6);
+}
+
+/* ===== Dark Mode Tokens ===== */
+[data-theme="dark"] {
+    /* Background Colors */
+    --color-bg-base: #0a0a0f;
+    --color-bg-primary: color-mix(in srgb, var(--accent), var(--color-bg-base) 95%);
+    --color-bg-secondary: rgba(18, 18, 26, 0.35);
+    --color-bg-tertiary: rgba(26, 26, 40, 0.5);
+
+    /* Text Colors */
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+
+    /* Border Colors */
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-hover: rgba(255, 255, 255, 0.15);
+
+    /* Accent adjustments */
+    --accent-light: rgba(6, 182, 212, 0.15);
+
+    /* Priority backgrounds (darker) */
+    --color-priority-high-bg: rgba(239, 68, 68, 0.12);
+    --color-priority-medium-bg: rgba(245, 158, 11, 0.12);
+    --color-priority-low-bg: rgba(34, 197, 94, 0.12);
+    --color-completed-bg: rgba(99, 102, 241, 0.12);
+
+    /* Shadows (stronger) */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 25px color-mix(in srgb, var(--accent), transparent 80%);
+
+    /* Glass Effect (full effect in dark mode) */
+    --glass-bg: rgba(18, 18, 26, 0.35);
+    --glass-bg-hover: rgba(26, 26, 40, 0.45);
+    --glass-blur: 4px;
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-light: rgba(255, 255, 255, 0.15);
+    --glass-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    /* Card Backgrounds */
+    --bg-card: rgba(18, 18, 26, 0.6);
+    --bg-card-item: rgba(30, 30, 45, 0.6);
+    --bg-modal: rgba(24, 24, 35, 0.45);
+
+    /* Gradient Background tokens */
+    --gradient-start: color-mix(in srgb, var(--accent), #0a0a0f 85%);
+    --gradient-end: #0a0a0f;
+}
+
+/* ===== Utility Classes for Subject Colors ===== */
+.text-physics {
+    color: var(--color-physics);
+}
+
+.text-chemistry {
+    color: var(--color-chemistry);
+}
+
+.text-maths {
+    color: var(--color-maths);
+}
