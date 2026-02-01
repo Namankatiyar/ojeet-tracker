@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-**Last Updated:** 2026-01-31
+**Last Updated:** 2026-02-01
+
+## 0.0.11 (2026-02-01)
+
+### Added
+- **Mark Complete Action**: Integrated a "Mark Complete" button in the Study Clock when a Planner Task is selected. This allows users to save their session and mark the task as finished in one click, triggering completion confetti.
+- **Manual Study Log Entry**: Added a dedicated system to manually log offline or past study sessions. Users can enter session titles, durations (hours/minutes), and link them to specific subjects and materials.
+- **Unified Custom Calendar**: Replaced native browser date inputs in the manual entry flow with the themed `DatePickerModal` for a consistent, premium experience.
+
+### Fixed
+- **Modal Layering (Z-Index)**: Adjusted z-index hierarchy for overlaid modals to ensure the Calendar picker correctly appears on top of other modal windows.
 
 ## 0.0.10 (2026-01-31)
 

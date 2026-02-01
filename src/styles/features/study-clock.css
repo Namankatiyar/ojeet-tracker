@@ -114,6 +114,10 @@
   cursor: pointer;
   font-size: 15px;
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .type-btn:hover:not(:disabled) {
@@ -398,6 +402,18 @@
   background: var(--priority-high-bg);
 }
 
+.timer-btn.mark-complete {
+  background: var(--priority-low);
+  color: var(--priority-low-text, #fff);
+  border-color: var(--priority-low);
+  opacity: 1;
+}
+
+.timer-btn.mark-complete:hover {
+  background: color-mix(in srgb, var(--priority-low), black 15%);
+  transform: translateY(-1px);
+}
+
 /* Stats and Log Row */
 .stats-and-log-row {
   display: flex;
@@ -431,8 +447,78 @@
 .session-log-card h3 {
   font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin: 0;
   color: var(--text-primary);
+}
+
+.session-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.add-entry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-entry-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Duration input group for manual entry */
+.duration-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.duration-input {
+  width: 60px;
+  text-align: center;
+}
+
+.duration-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Date picker button for manual entry */
+.date-picker-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.date-picker-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.date-picker-btn .calendar-icon {
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .session-log-list {
@@ -525,7 +611,8 @@
   white-space: nowrap;
 }
 
-.session-delete-btn, .session-edit-btn {
+.session-delete-btn,
+.session-edit-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);

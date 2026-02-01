@@ -2,7 +2,7 @@
 
 This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
-**Last Updated:** 2026-01-31
+**Last Updated:** 2026-02-01
 
 ---
 
@@ -15,6 +15,8 @@ This documentation provides an exhaustive technical analysis of the OJEE Tracker
 - **Extreme Flexibility**: Users can modify the syllabus, add/remove resource columns, and reorder content.
 - **Deep Persistence**: Leveraging `localStorage` for a zero-server, instant-load experience.
 - **Integrated Toolset**: Combines syllabus tracking with a daily/monthly planner (featuring Shift+Drag duplication) and a dedicated study clock.
+- **Hybrid Time Tracking**: Supports both real-time stopwatch tracking and manual log entry for offline study sessions.
+- **Unified Actions**: Deep integration between the Study Clock and Planner, allowing users to "Mark Complete" a task directly from the timer interface.
 - **Layered Styling Architecture**: Uses modern CSS Layers for strict cascade control.
 
 ---

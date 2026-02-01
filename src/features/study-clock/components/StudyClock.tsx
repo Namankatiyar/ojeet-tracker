@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Pause, Square, Trash2, Clock, X, Pencil } from 'lucide-react';
+import { Play, Pause, Square, Trash2, Clock, X, Pencil, CheckCircle2, Plus, Calendar } from 'lucide-react';
 import { Subject, SubjectData, StudySession, PlannerTask, AppProgress } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
+import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
 
 interface StudyClockProps {
     subjectData: Record<Subject, SubjectData | null>;
@@ -11,6 +12,7 @@ interface StudyClockProps {
     onEditSession: (session: StudySession) => void;
     plannerTasks: PlannerTask[];
     progress: AppProgress;
+    onToggleTask?: (taskId: string) => void;
 }
 
 type TimerState = 'idle' | 'running' | 'paused';
@@ -42,7 +44,7 @@ interface RunningTimerState {
 const PAUSED_TIMER_STORAGE_KEY = 'jee-tracker-paused-timer';
 const RUNNING_TIMER_STORAGE_KEY = 'jee-tracker-running-timer';
 
-export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSession, onEditSession, plannerTasks, progress }: StudyClockProps) {
+export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSession, onEditSession, plannerTasks, progress, onToggleTask }: StudyClockProps) {
     // Timer state
     const [timerState, setTimerState] = useState<TimerState>('idle');
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -116,6 +118,16 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
     const [editMinutes, setEditMinutes] = useState(0);
     const [editSubject, setEditSubject] = useState<Subject | ''>('');
     const [editMaterial, setEditMaterial] = useState('');
+
+    // Manual entry modal state
+    const [showManualEntry, setShowManualEntry] = useState(false);
+    const [manualTitle, setManualTitle] = useState('');
+    const [manualHours, setManualHours] = useState(0);
+    const [manualMinutes, setManualMinutes] = useState(0);
+    const [manualDate, setManualDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [manualSubject, setManualSubject] = useState<Subject | ''>('');
+    const [manualMaterial, setManualMaterial] = useState('');
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     // Track which subject chapter graphs are open (can have multiple)
     const [openChapterGraphs, setOpenChapterGraphs] = useState<Subject[]>([]);
@@ -345,6 +357,20 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
         setSelectedTaskId('');
     };
 
+    // Mark Complete: Save session AND mark the planner task as complete
+    const handleMarkComplete = () => {
+        if (taskType === 'task' && selectedTaskId && onToggleTask) {
+            // First save the session
+            handleEnd();
+            // Then mark the task as complete
+            onToggleTask(selectedTaskId);
+        }
+    };
+
+    // Check if current task is a planner task that can be marked complete
+    const canMarkComplete = taskType === 'task' && selectedTaskId && onToggleTask &&
+        !plannerTasks.find(t => t.id === selectedTaskId)?.completed;
+
     const handleFullscreenClick = () => {
         if (isFullscreen) {
             handlePause();
@@ -477,6 +503,43 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
         };
         onEditSession(updatedSession);
         closeEditModal();
+    };
+
+    // Manual entry helper functions
+    const openManualEntryModal = () => {
+        setManualTitle('');
+        setManualHours(0);
+        setManualMinutes(30);
+        setManualDate(new Date().toISOString().split('T')[0]);
+        setManualSubject('');
+        setManualMaterial('');
+        setShowManualEntry(true);
+    };
+
+    const closeManualEntryModal = () => {
+        setShowManualEntry(false);
+    };
+
+    const handleAddManualEntry = () => {
+        const duration = manualHours * 3600 + manualMinutes * 60;
+        if (duration <= 0 || !manualTitle.trim()) return;
+
+        const entryDate = new Date(manualDate);
+        entryDate.setHours(12, 0, 0, 0); // Set to noon of that day
+
+        const session: StudySession = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            title: manualTitle.trim(),
+            subject: manualSubject || undefined,
+            material: manualMaterial || undefined,
+            type: manualSubject ? 'chapter' : 'custom',
+            startTime: entryDate.toISOString(),
+            endTime: new Date(entryDate.getTime() + duration * 1000).toISOString(),
+            duration
+        };
+
+        onAddSession(session);
+        closeManualEntryModal();
     };
 
     // Get top 5 chapters by study time for a subject
@@ -718,9 +781,15 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
                                     <button className="timer-btn resume" onClick={handleResume} title="Resume (Space)">
                                         <Play size={18} />
                                     </button>
-                                    <button className="timer-btn end" onClick={handleEnd} title="Save & End Session">
-                                        <Square size={18} />
-                                    </button>
+                                    {canMarkComplete ? (
+                                        <button className="timer-btn mark-complete" onClick={handleMarkComplete} title="Save Session & Mark Task Complete">
+                                            <CheckCircle2 size={18} />
+                                        </button>
+                                    ) : (
+                                        <button className="timer-btn end" onClick={handleEnd} title="Save & End Session">
+                                            <Square size={18} />
+                                        </button>
+                                    )}
                                     <button className="timer-btn discard" onClick={handleDiscard} title="Discard Session">
                                         <Trash2 size={18} />
                                     </button>
@@ -811,7 +880,12 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
 
                     {/* Session Log */}
                     <div className="session-log-card">
-                        <h3>Session Log</h3>
+                        <div className="session-log-header">
+                            <h3>Session Log</h3>
+                            <button className="add-entry-btn" onClick={openManualEntryModal} title="Add Manual Entry">
+                                <Plus size={16} />
+                            </button>
+                        </div>
                         <div className="session-log-list">
                             {sessions.length === 0 ? (
                                 <div className="empty-log">
@@ -999,6 +1073,117 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
                     </div>
                 </div>
             )}
+
+            {/* Manual Entry Modal */}
+            {showManualEntry && (
+                <div className="distribution-modal-overlay" onClick={closeManualEntryModal}>
+                    <div className="distribution-modal" onClick={e => e.stopPropagation()}>
+                        <div className="distribution-modal-header">
+                            <h3>Add Manual Entry</h3>
+                            <button className="distribution-modal-close" onClick={closeManualEntryModal}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="edit-session-form">
+                            <div className="edit-form-group">
+                                <label>Title *</label>
+                                <input
+                                    type="text"
+                                    value={manualTitle}
+                                    onChange={(e) => setManualTitle(e.target.value)}
+                                    placeholder="What did you study?"
+                                    className="edit-input"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="edit-form-group">
+                                <label>Duration *</label>
+                                <div className="duration-input-group">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="23"
+                                        value={manualHours}
+                                        onChange={(e) => setManualHours(Math.max(0, parseInt(e.target.value) || 0))}
+                                        className="edit-input duration-input"
+                                    />
+                                    <span className="duration-label">hours</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="59"
+                                        value={manualMinutes}
+                                        onChange={(e) => setManualMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                                        className="edit-input duration-input"
+                                    />
+                                    <span className="duration-label">minutes</span>
+                                </div>
+                            </div>
+
+                            <div className="edit-form-group">
+                                <label>Date</label>
+                                <button
+                                    type="button"
+                                    className="date-picker-btn"
+                                    onClick={() => setIsDatePickerOpen(true)}
+                                >
+                                    <span>{new Date(manualDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                    <Calendar size={18} className="calendar-icon" />
+                                </button>
+                            </div>
+
+                            <div className="edit-form-group">
+                                <label>Subject (optional)</label>
+                                <CustomSelect
+                                    value={manualSubject}
+                                    onChange={(val) => setManualSubject(val as Subject | '')}
+                                    options={[
+                                        { value: '', label: 'None' },
+                                        { value: 'physics', label: 'Physics' },
+                                        { value: 'chemistry', label: 'Chemistry' },
+                                        { value: 'maths', label: 'Maths' }
+                                    ]}
+                                    placeholder="Select Subject"
+                                />
+                            </div>
+
+                            <div className="edit-form-group">
+                                <label>Material (optional)</label>
+                                <input
+                                    type="text"
+                                    value={manualMaterial}
+                                    onChange={(e) => setManualMaterial(e.target.value)}
+                                    placeholder="Material name..."
+                                    className="edit-input"
+                                />
+                            </div>
+
+                            <div className="edit-form-actions">
+                                <button className="edit-cancel-btn" onClick={closeManualEntryModal}>Cancel</button>
+                                <button
+                                    className="edit-save-btn"
+                                    onClick={handleAddManualEntry}
+                                    disabled={!manualTitle.trim() || (manualHours === 0 && manualMinutes === 0)}
+                                >
+                                    Add Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <DatePickerModal
+                isOpen={isDatePickerOpen}
+                selectedDate={manualDate}
+                onSelect={(date) => {
+                    setManualDate(date);
+                    setIsDatePickerOpen(false);
+                }}
+                onClose={() => setIsDatePickerOpen(false)}
+            />
         </div>
     );
 }

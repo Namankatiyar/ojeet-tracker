@@ -537,6 +537,7 @@ function App() {
                                 onEditSession={handleEditStudySession}
                                 plannerTasks={plannerTasks}
                                 progress={progress}
+                                onToggleTask={handleTogglePlannerTask}
                             />
                         } />
 
