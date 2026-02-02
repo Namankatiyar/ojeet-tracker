@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
 import { Subject, SubjectData, PlannerTask, StudySession, MockScore } from '../../../shared/types';
 import { TaskLog } from '../../planner/components/TaskLog';
@@ -45,6 +45,20 @@ export function Dashboard({
     onDeleteMockScore = () => { }
 }: DashboardProps) {
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+    // Reset exam date if it has passed
+    useEffect(() => {
+        if (examDate) {
+            const target = new Date(examDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            target.setHours(0, 0, 0, 0);
+
+            if (target < today) {
+                onExamDateChange('');
+            }
+        }
+    }, [examDate, onExamDateChange]);
 
     const subjects: { key: Subject; label: string; icon: React.ReactNode; progress: number; color: string }[] = [
         { key: 'physics', label: 'Physics', icon: <Atom size={24} />, progress: physicsProgress, color: 'var(--accent)' },
@@ -326,6 +340,7 @@ export function Dashboard({
                 selectedDate={examDate}
                 onSelect={onExamDateChange}
                 onClose={() => setIsDatePickerOpen(false)}
+                disablePastDates={true}
             />
         </div>
     );

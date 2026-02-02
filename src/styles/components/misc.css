@@ -81,6 +81,12 @@
   pointer-events: none;
 }
 
+.calendar-day.disabled {
+  opacity: 0.3;
+  cursor: not-allowed !important;
+  color: var(--text-muted);
+}
+
 .date-display-btn {
   display: flex;
   align-items: center;

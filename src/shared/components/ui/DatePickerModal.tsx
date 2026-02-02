@@ -7,9 +7,10 @@ interface DatePickerModalProps {
     selectedDate: string;
     onSelect: (date: string) => void;
     onClose: () => void;
+    disablePastDates?: boolean;
 }
 
-export function DatePickerModal({ isOpen, selectedDate, onSelect, onClose }: DatePickerModalProps) {
+export function DatePickerModal({ isOpen, selectedDate, onSelect, onClose, disablePastDates = false }: DatePickerModalProps) {
     const [viewDate, setViewDate] = useState(new Date());
 
     useEffect(() => {
@@ -66,12 +67,19 @@ export function DatePickerModal({ isOpen, selectedDate, onSelect, onClose }: Dat
             const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
             const isToday = isSameDate(date, today);
             const isSelected = selected && isSameDate(date, selected);
-            
+
+            // Allow today's date, but disable any date strictly before today (at 00:00:00)
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const isPast = date < todayStart;
+            const isDisabled = disablePastDates && isPast;
+
             days.push(
                 <button
                     key={day}
-                    className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
-                    onClick={() => handleDateClick(day)}
+                    className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                    onClick={() => !isDisabled && handleDateClick(day)}
+                    disabled={isDisabled}
                 >
                     {day}
                 </button>
@@ -84,7 +92,7 @@ export function DatePickerModal({ isOpen, selectedDate, onSelect, onClose }: Dat
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-container" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>Select Exam Date</h3>
+                    <h3>Select Date</h3>
                 </div>
                 <div className="modal-body">
                     <div className="date-picker-header">

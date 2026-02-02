@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
 
+## 0.0.13 (2026-02-02)
+
+### Added
+- **Intelligent Accent Extraction**: Integrated `node-vibrant` to automatically extract the most vibrant color from custom wallpapers and set it as the primary application accent.
+- **Enhanced Exam Countdown**: Implemented validation to prevent selection of past dates for the exam target and added an automatic panel reset feature if the exam date has passed.
+- **Unified Mock Score UI**: Replaced the native date input in the Mock Test modal with the custom themed `DatePickerModal` for a consistent design language.
+- **Context-Aware Date Selection**: Configured the `DatePicker` to allow historical logging for Mock Tests while maintaining strict future-only selection for the Exam Countdown.
+
+### Fixed
+- **Button Label Readability**: Dynamically applied `var(--accent-text)` to buttons on bright accent backgrounds across the Analytics and Mock Score panels to ensure high contrast.
+- **Mock Score Panel Resizing**: Fixed a layout bug where the mock score panel would resize inconsistently or overflow during window resizing by adjusting flex-shrink behavior.
+- **Calendar Interaction**: Refined the `DatePickerModal` with better styling for disabled dates, including opacity feedback and a prohibited cursor icon.
+
 ## 0.0.12 (2026-02-02)
 
 ### Added

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Download, Upload, X, AlertTriangle, Check, Image, Trash2 } from 'lucide-react';
+import { Vibrant } from 'node-vibrant/browser';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -16,6 +17,8 @@ interface SettingsModalProps {
     // Glassmorphism
     glassIntensity: number;
     onGlassIntensityChange: (intensity: number) => void;
+    // Accent
+    onAccentChange: (color: string) => void;
 }
 
 const STORAGE_KEYS = {
@@ -44,7 +47,8 @@ export function SettingsModal({
     dimLevel,
     onDimLevelChange,
     glassIntensity,
-    onGlassIntensityChange
+    onGlassIntensityChange,
+    onAccentChange
 }: SettingsModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const bgFileInputRef = useRef<HTMLInputElement>(null);
@@ -168,6 +172,23 @@ export function SettingsModal({
                     ctx.drawImage(img, 0, 0, width, height);
                     const compressedUrl = canvas.toDataURL('image/jpeg', 0.7);
                     onBackgroundUrlChange(compressedUrl);
+
+                    // Extract accent color using Vibrant
+                    Vibrant.from(img).getPalette()
+                        .then((palette: any) => {
+                            // Try to get the most vibrant color
+                            const vibrantColor = palette.Vibrant?.hex ||
+                                palette.LightVibrant?.hex ||
+                                palette.DarkVibrant?.hex ||
+                                palette.Muted?.hex;
+
+                            if (vibrantColor) {
+                                onAccentChange(vibrantColor);
+                            }
+                        })
+                        .catch((err: any) => {
+                            console.error('Failed to extract colors from image', err);
+                        });
                 }
             };
 

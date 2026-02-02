@@ -15,7 +15,8 @@ import {
 import { Bar, Line } from 'react-chartjs-2';
 import { StudySession, MockScore } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
-import { Plus, TrendingUp, Clock, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, Clock, ChevronLeft, ChevronRight, Trash2, Calendar } from 'lucide-react';
+import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
 
 // Register Chart.js components
 ChartJS.register(
@@ -50,6 +51,7 @@ export function AnalyticsPanels({
     const [weekOffset, setWeekOffset] = useState(0);
     const [monthOffset, setMonthOffset] = useState(0);
     const [isAddingMock, setIsAddingMock] = useState(false);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const [newMock, setNewMock] = useState({
         name: '',
         date: formatDateLocal(new Date()),
@@ -58,6 +60,12 @@ export function AnalyticsPanels({
         mathsMarks: 0,
         maxMarks: 300
     });
+
+    const formatDateDisplay = (dateString: string) => {
+        if (!dateString) return 'Select Date';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
 
     // Subject colors matching site-wide theme
     const subjectColors = {
@@ -574,11 +582,15 @@ export function AnalyticsPanels({
 
                         <div className="form-group">
                             <label>Date</label>
-                            <input
-                                type="date"
-                                value={newMock.date}
-                                onChange={e => setNewMock(m => ({ ...m, date: e.target.value }))}
-                            />
+                            {/* Replaced native date input with custom DatePickerModal trigger */}
+                            <button
+                                className="date-display-btn"
+                                onClick={() => setIsDatePickerOpen(true)}
+                                type="button"
+                            >
+                                <span>{formatDateDisplay(newMock.date)}</span>
+                                <Calendar size={18} className="calendar-icon" />
+                            </button>
                         </div>
 
                         <div className="marks-grid">
@@ -627,6 +639,17 @@ export function AnalyticsPanels({
                     </div>
                 </div>
             )}
+
+            {/* Render DatePickerModal outside the modal-overlay to ensure proper layering (or within if it uses Portal) */}
+            <DatePickerModal
+                isOpen={isDatePickerOpen}
+                selectedDate={newMock.date}
+                onSelect={(date) => {
+                    setNewMock(m => ({ ...m, date }));
+                    setIsDatePickerOpen(false);
+                }}
+                onClose={() => setIsDatePickerOpen(false)}
+            />
         </div>
     );
 }

@@ -265,6 +265,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                 onDimLevelChange={onDimLevelChange}
                 glassIntensity={glassIntensity}
                 onGlassIntensityChange={onGlassIntensityChange}
+                onAccentChange={onAccentChange}
             />
             <ColorPickerModal
                 isOpen={isCustomColorModalOpen}

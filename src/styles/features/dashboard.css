@@ -678,7 +678,7 @@
 
 .view-toggle-small button.active {
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
 }
 
 .date-navigator {
@@ -720,6 +720,8 @@
   flex: 1;
   min-height: 220px;
   position: relative;
+  min-width: 0;
+  /* Fixes chart resizing issue in flex container */
 }
 
 .chart-container.scrollable {
@@ -742,7 +744,8 @@
   gap: 4px;
   padding: 6px 12px;
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
+  /* Use contrasting text color */
   border: none;
   border-radius: 6px;
   font-size: 0.8rem;
@@ -774,7 +777,7 @@
 .empty-mock-state button {
   padding: 10px 20px;
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -958,7 +961,7 @@
 .save-btn {
   background: var(--accent);
   border: none;
-  color: white;
+  color: var(--accent-text);
 }
 
 .save-btn:hover:not(:disabled) {
