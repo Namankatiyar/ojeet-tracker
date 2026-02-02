@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-**Last Updated:** 2026-02-02
+## [0.0.8](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.8) (2026-02-02)
+
+
+### Features
+
+* added custom backgrounds and opacity adjustment ([cdb094e](https://github.com/Namankatiyar/pcm-tracker/commit/cdb094e157159564a48dafd278d6bef69b7a8c9c))
+* custom time addition option in study clock ([0f63146](https://github.com/Namankatiyar/pcm-tracker/commit/0f6314614ff1d123eb026d35fdc6ebf6d6ffe64d))
+* removing the monolithic css, this now uses distributed css styling for better management ([9560fe9](https://github.com/Namankatiyar/pcm-tracker/commit/9560fe9b1d46aeb8a753e94a3732263265369f7e))
+
+
+### Bug Fixes
+
+* added visual highlighting for priority in dropdowns ([f4943d4](https://github.com/Namankatiyar/pcm-tracker/commit/f4943d49e7b57dac960a4828ab676f741619ba54))
+* unified custom and subject wise task creation process ([26e549c](https://github.com/Namankatiyar/pcm-tracker/commit/26e549c2023ab2d1b85171b8c79b2da4997d6e11))
 
 ## 0.0.12 (2026-02-02)
 
