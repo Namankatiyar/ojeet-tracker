@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02)
+
+
+### Bug Fixes
+
+* user can now change refractive index for glassmorphism effect. ([1db5334](https://github.com/Namankatiyar/pcm-tracker/commit/1db5334f463d037432d0efda544f5938b5bc59ef))
+
 ## [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02)
 
 
