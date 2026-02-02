@@ -436,8 +436,8 @@
 /* Session Log Card */
 .session-log-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius);
   padding: 1.5rem;
@@ -643,8 +643,8 @@
 /* Statistics Card */
 .statistics-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius);
   padding: 1.5rem;
@@ -767,8 +767,8 @@
 
 .distribution-modal {
   background: var(--bg-modal, var(--bg-secondary));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px) var(--glass-refraction);
+  -webkit-backdrop-filter: blur(10px) var(--glass-refraction);
   border: 1px solid var(--border);
   border-radius: var(--border-radius);
   padding: 2rem;

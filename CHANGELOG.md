@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file. See [commit
 
 ### Added
 - **Intelligent Accent Extraction**: Integrated `node-vibrant` to automatically extract the most vibrant color from custom wallpapers and set it as the primary application accent.
+- **Glassmorphism Refractive Index Slider**: Introduced a secondary glass control to adjust light bending, saturation, and brightness effects on all glass panels globally.
 - **Enhanced Exam Countdown**: Implemented validation to prevent selection of past dates for the exam target and added an automatic panel reset feature if the exam date has passed.
 - **Unified Mock Score UI**: Replaced the native date input in the Mock Test modal with the custom themed `DatePickerModal` for a consistent design language.
 - **Context-Aware Date Selection**: Configured the `DatePicker` to allow historical logging for Mock Tests while maintaining strict future-only selection for the Exam Countdown.

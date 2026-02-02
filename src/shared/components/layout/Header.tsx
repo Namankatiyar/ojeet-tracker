@@ -21,6 +21,8 @@ interface HeaderProps {
     onDimLevelChange: (level: number) => void;
     glassIntensity: number;
     onGlassIntensityChange: (intensity: number) => void;
+    glassRefraction: number;
+    onGlassRefractionChange: (refraction: number) => void;
 }
 
 const ACCENT_COLORS = [
@@ -37,7 +39,7 @@ const ACCENT_COLORS = [
     { name: 'Fuchsia', value: '#d946ef' },
 ];
 
-export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange, disableAutoShift, onDisableAutoShiftChange, backgroundUrl, onBackgroundUrlChange, dimLevel, onDimLevelChange, glassIntensity, onGlassIntensityChange }: HeaderProps) {
+export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange, disableAutoShift, onDisableAutoShiftChange, backgroundUrl, onBackgroundUrlChange, dimLevel, onDimLevelChange, glassIntensity, onGlassIntensityChange, glassRefraction, onGlassRefractionChange }: HeaderProps) {
     const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomColorModalOpen, setIsCustomColorModalOpen] = useState(false);
@@ -265,6 +267,8 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                 onDimLevelChange={onDimLevelChange}
                 glassIntensity={glassIntensity}
                 onGlassIntensityChange={onGlassIntensityChange}
+                glassRefraction={glassRefraction}
+                onGlassRefractionChange={onGlassRefractionChange}
                 onAccentChange={onAccentChange}
             />
             <ColorPickerModal

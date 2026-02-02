@@ -124,6 +124,7 @@
     --glass-bg: rgba(255, 255, 255, 0.6);
     --glass-bg-hover: rgba(255, 255, 255, 0.8);
     --glass-blur: 0px;
+    --glass-refraction: saturate(100%) brightness(100%);
     --glass-border: var(--color-border);
     --glass-border-light: var(--color-border);
     --glass-inner-glow: none;
@@ -173,6 +174,7 @@
     --glass-bg: rgba(18, 18, 26, 0.35);
     --glass-bg-hover: rgba(26, 26, 40, 0.45);
     --glass-blur: 4px;
+    --glass-refraction: saturate(150%) brightness(100%);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-border-light: rgba(255, 255, 255, 0.15);
     --glass-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.1);

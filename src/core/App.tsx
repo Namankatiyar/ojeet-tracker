@@ -74,6 +74,7 @@ function App() {
     const [backgroundUrl, setBackgroundUrl] = useLocalStorage<string>('jee-tracker-background-url', '');
     const [dimLevel, setDimLevel] = useLocalStorage<number>('jee-tracker-dim-level', 0);
     const [glassIntensity, setGlassIntensity] = useLocalStorage<number>('jee-tracker-glass-intensity', 50);
+    const [glassRefraction, setGlassRefraction] = useLocalStorage<number>('jee-tracker-glass-refraction', 50);
 
     const [plannerDateToOpen, setPlannerDateToOpen] = useState<string | null>(null);
 
@@ -241,12 +242,18 @@ function App() {
         const bgOpacity = 0.2 + intensity * 0.4; // 0.2-0.6 opacity
         const borderOpacity = 0.05 + intensity * 0.1; // 0.05-0.15 opacity
 
+        // Glassmorphism refraction: 0-100 maps to saturation and brightness boost
+        const refraction = glassRefraction / 100;
+        const saturation = 100 + (refraction * 150); // 100% - 250%
+        const brightness = 100 + (refraction * 20); // 100% - 120%
+
         document.documentElement.style.setProperty('--glass-blur', `${blurValue}px`);
         document.documentElement.style.setProperty('--glass-bg', `rgba(18, 18, 26, ${bgOpacity})`);
         document.documentElement.style.setProperty('--glass-bg-hover', `rgba(26, 26, 40, ${bgOpacity + 0.1})`);
         document.documentElement.style.setProperty('--glass-border', `rgba(255, 255, 255, ${borderOpacity})`);
         document.documentElement.style.setProperty('--glass-border-light', `rgba(255, 255, 255, ${borderOpacity + 0.05})`);
-    }, [backgroundUrl, dimLevel, glassIntensity]);
+        document.documentElement.style.setProperty('--glass-refraction', `saturate(${saturation}%) brightness(${brightness}%)`);
+    }, [backgroundUrl, dimLevel, glassIntensity, glassRefraction]);
 
     // Merge CSV data with custom columns and filter excluded ones
     const mergedSubjectData = useMemo(() => {
@@ -561,6 +568,8 @@ function App() {
                 onDimLevelChange={setDimLevel}
                 glassIntensity={glassIntensity}
                 onGlassIntensityChange={setGlassIntensity}
+                glassRefraction={glassRefraction}
+                onGlassRefractionChange={setGlassRefraction}
             />
             <main className="main-content">
                 <Suspense fallback={<PageLoader />}>

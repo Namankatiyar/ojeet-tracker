@@ -17,6 +17,8 @@ interface SettingsModalProps {
     // Glassmorphism
     glassIntensity: number;
     onGlassIntensityChange: (intensity: number) => void;
+    glassRefraction: number;
+    onGlassRefractionChange: (refraction: number) => void;
     // Accent
     onAccentChange: (color: string) => void;
 }
@@ -35,6 +37,7 @@ const STORAGE_KEYS = {
     backgroundUrl: 'jee-tracker-background-url',
     dimLevel: 'jee-tracker-dim-level',
     glassIntensity: 'jee-tracker-glass-intensity',
+    glassRefraction: 'jee-tracker-glass-refraction',
 };
 
 export function SettingsModal({
@@ -48,6 +51,8 @@ export function SettingsModal({
     onDimLevelChange,
     glassIntensity,
     onGlassIntensityChange,
+    glassRefraction,
+    onGlassRefractionChange,
     onAccentChange
 }: SettingsModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -311,6 +316,24 @@ export function SettingsModal({
                                     value={glassIntensity}
                                     onChange={(e) => onGlassIntensityChange(parseInt(e.target.value, 10))}
                                     className="glass-slider"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Glassmorphism Refraction */}
+                        <div className="settings-row vertical">
+                            <div className="setting-info">
+                                <span className="setting-label">Refractive Index</span>
+                                <span className="setting-description">Adjust light bending and color saturation effects ({glassRefraction}%)</span>
+                            </div>
+                            <div className="slider-container">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={glassRefraction}
+                                    onChange={(e) => onGlassRefractionChange(parseInt(e.target.value, 10))}
+                                    className="glass-slider refraction-slider"
                                 />
                             </div>
                         </div>

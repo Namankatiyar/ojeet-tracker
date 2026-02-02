@@ -17,7 +17,7 @@ This documentation provides an exhaustive technical analysis of the OJEE Tracker
 - **Integrated Toolset**: Combines syllabus tracking with a daily/monthly planner (featuring Shift+Drag duplication) and a dedicated study clock.
 - **Hybrid Time Tracking**: Supports both real-time stopwatch tracking and manual log entry for offline study sessions.
 - **Unified Actions**: Deep integration between the Study Clock and Planner, allowing users to "Mark Complete" a task directly from the timer interface.
-- **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, and real-time glassmorphism intensity control.
+- **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, glassmorphism intensity, and refractive index controls.
 - **Intelligent Theming**: Automatic accent color extraction from custom wallpapers using `node-vibrant` for a cohesive look.
 - **Context-Aware UI**: Sophisticated interaction logic, such as preventing past-date targets for exams while allowing historical entry for mock test scores.
 - **Layered Styling Architecture**: Uses modern CSS Layers for strict cascade control.
@@ -78,7 +78,7 @@ Styles are organized into a strict hierarchy (lowest to highest priority):
 ### 3.3 Theme Logic:
 - **Dark Mode**: Uses layered radial gradients to create depth.
 - **Dynamic Glass**: Background tints are synchronized across all cards and panels.
-- **Adjustable Intensity**: Users can manually control the level of background blur and transparency (Glassmorphism Intensity) via the Settings modal.
+- **Adjustable Intensity**: Users can manually control the level of background blur and transparency (Glassmorphism Intensity) and light bending effects (Refractive Index) via the Settings modal.
 - **Custom Backgrounds**: Supports user-uploaded background images with adjustable dimming overlays to ensure content legibility.
 - **Performance**: Glass effects are desktop-only; mobile fallback uses solid colors.
 

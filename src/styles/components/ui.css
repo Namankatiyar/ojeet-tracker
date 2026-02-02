@@ -73,7 +73,7 @@
 [data-theme="dark"] .primary-action-btn,
 [data-theme="dark"] .primary-btn {
   background: color-mix(in srgb, var(--accent), transparent 20%);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px) var(--glass-refraction);
   border: 1px solid color-mix(in srgb, var(--accent), white 20%);
   box-shadow: var(--glass-inner-glow);
 }
@@ -81,7 +81,7 @@
 [data-theme="dark"] .btn-secondary,
 [data-theme="dark"] .secondary-btn {
   background: var(--glass-bg);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px) var(--glass-refraction);
   border: 1px solid var(--glass-border);
 }
 
@@ -145,8 +145,8 @@
 
 [data-theme="dark"] .color-picker-popup {
   background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-inner-glow), var(--glass-shadow);
 }
@@ -218,8 +218,8 @@
 [data-theme="dark"] select {
   background: rgba(0, 0, 0, 0.3);
   border-color: var(--glass-border);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px) var(--glass-refraction);
+  -webkit-backdrop-filter: blur(6px) var(--glass-refraction);
 }
 
 [data-theme="dark"] input:focus,
@@ -278,8 +278,8 @@
 
 /* ===== Filter Dropdown Styling ===== */
 .filter-dropdown {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px) var(--glass-refraction);
+  -webkit-backdrop-filter: blur(16px) var(--glass-refraction);
 }
 
 [data-theme="dark"] .filter-dropdown {

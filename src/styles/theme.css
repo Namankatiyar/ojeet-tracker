@@ -90,6 +90,7 @@
   --glass-bg: rgba(18, 18, 26, 0.4);
   --glass-bg-hover: rgba(26, 26, 40, 0.5);
   --glass-blur: 10px;
+  --glass-refraction: saturate(150%) brightness(100%);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-border-light: rgba(255, 255, 255, 0.15);
   --glass-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -121,8 +122,8 @@
   html[data-theme="dark"] .view-toggles,
   html[data-theme="dark"] .analytics-panel {
     background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-inner-glow), var(--glass-shadow);
   }
