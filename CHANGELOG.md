@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02)
+
+
+### Bug Fixes
+
+* automatically detects colours from custom background now, fixed some ui inconsistencies ([14c65e4](https://github.com/Namankatiyar/pcm-tracker/commit/14c65e4e1a07f1df724ff348f9790dc808b17a84))
 
 ## 0.0.13 (2026-02-02)
 
