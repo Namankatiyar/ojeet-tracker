@@ -28,7 +28,7 @@
   transition: all var(--transition-normal);
 }
 
-[data-theme="dark"] .header {
+html[data-theme="dark"] .header {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -106,8 +106,8 @@
 }
 
 /* Glass effect for nav items in dark mode */
-[data-theme="dark"] .nav-item:hover,
-[data-theme="dark"] .nav-item.active {
+html[data-theme="dark"] .nav-item:hover,
+html[data-theme="dark"] .nav-item.active {
   background: var(--glass-bg-hover);
   backdrop-filter: blur(8px);
 }
@@ -280,6 +280,6 @@
   justify-content: center;
 }
 
-[data-theme="dark"] .theme-toggle-icon {
+html[data-theme="dark"] .theme-toggle-icon {
   color: var(--accent);
 }

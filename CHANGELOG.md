@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-**Last Updated:** 2026-02-01
+**Last Updated:** 2026-02-02
+
+## 0.0.12 (2026-02-02)
+
+### Added
+- **Custom Wallpaper Support**: Introduced the ability to upload custom background images via the Settings modal, creating a personalized workspace experience.
+- **Glassmorphism Intensity Slider**: Added a global slider to manually adjust the blur and transparency levels of all UI panels in real-time.
+- **Background Dimming Control**: Added a precision slider to control the opacity of the dimming overlay on custom wallpapers for better readability.
+- **Analogous Accent Colors**: Implemented Hue-shift derivation to calculate a secondary accent color, resulting in more dynamic and vibrant background gradients.
+
+### Fixed
+- **Dark Mode Background Logic**: Fixed CSS selector hierarchy (`html[data-theme]`) to ensure custom backgrounds and gradients apply correctly to the root element.
+- **Settings Modal Alignment**: Standardized the Appearance section layout by fixing alignment inconsistencies where items were centrally aligned instead of left-aligned.
+- **Excess Header Padding**: Removed double-padding from the Settings modal header to provide a more compact and professional look.
 
 ## 0.0.11 (2026-02-01)
 

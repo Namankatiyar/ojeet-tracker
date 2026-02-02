@@ -1,10 +1,21 @@
 import { useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Download, Upload, X, AlertTriangle, Check } from 'lucide-react';
+import { Download, Upload, X, AlertTriangle, Check, Image, Trash2 } from 'lucide-react';
 
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
+    // Auto-shift
+    disableAutoShift: boolean;
+    onDisableAutoShiftChange: (value: boolean) => void;
+    // Background
+    backgroundUrl: string;
+    onBackgroundUrlChange: (url: string) => void;
+    dimLevel: number;
+    onDimLevelChange: (level: number) => void;
+    // Glassmorphism
+    glassIntensity: number;
+    onGlassIntensityChange: (intensity: number) => void;
 }
 
 const STORAGE_KEYS = {
@@ -15,11 +26,28 @@ const STORAGE_KEYS = {
     customColumns: 'jee-tracker-custom-columns',
     excludedColumns: 'jee-tracker-excluded-columns',
     examDate: 'jee-exam-date',
-    plannerTasks: 'jee-tracker-planner-tasks' // Added for backup
+    plannerTasks: 'jee-tracker-planner-tasks',
+    // New settings
+    disableAutoShift: 'jee-tracker-disable-auto-shift',
+    backgroundUrl: 'jee-tracker-background-url',
+    dimLevel: 'jee-tracker-dim-level',
+    glassIntensity: 'jee-tracker-glass-intensity',
 };
 
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export function SettingsModal({
+    isOpen,
+    onClose,
+    disableAutoShift,
+    onDisableAutoShiftChange,
+    backgroundUrl,
+    onBackgroundUrlChange,
+    dimLevel,
+    onDimLevelChange,
+    glassIntensity,
+    onGlassIntensityChange
+}: SettingsModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const bgFileInputRef = useRef<HTMLInputElement>(null);
     const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [statusMessage, setStatusMessage] = useState('');
 
@@ -40,7 +68,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     }
                 }
             }
-            
+
             const backupData = {
                 version: 1,
                 timestamp: new Date().toISOString(),
@@ -71,7 +99,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         reader.onload = (e) => {
             try {
                 const json = JSON.parse(e.target?.result as string);
-                
+
                 if (!json.export || !json.version) {
                     throw new Error('Invalid backup file format');
                 }
@@ -85,7 +113,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                 setImportStatus('success');
                 setStatusMessage('Data imported successfully! Reloading...');
-                
+
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
@@ -99,45 +127,206 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         reader.readAsText(file);
     };
 
+    const handleBackgroundUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validate file is an image
+        if (!file.type.startsWith('image/')) {
+            setImportStatus('error');
+            setStatusMessage('Please select an image file.');
+            return;
+        }
+
+        // Compress large images to prevent localStorage issues
+        const img = new window.Image();
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            img.onload = () => {
+                // Resize if image is too large (max 1920px)
+                const maxDim = 1920;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = (height / width) * maxDim;
+                        width = maxDim;
+                    } else {
+                        width = (width / height) * maxDim;
+                        height = maxDim;
+                    }
+                }
+
+                // Compress using canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    onBackgroundUrlChange(compressedUrl);
+                }
+            };
+
+            img.onerror = () => {
+                setImportStatus('error');
+                setStatusMessage('Failed to load image.');
+            };
+
+            img.src = e.target?.result as string;
+        };
+
+        reader.onerror = () => {
+            setImportStatus('error');
+            setStatusMessage('Failed to read file.');
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    const handleClearBackground = () => {
+        onBackgroundUrlChange('');
+    };
+
     const modalContent = (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content settings-modal" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>Data Management</h2>
+                    <h2>Settings</h2>
                     <button className="close-btn" onClick={onClose}>
                         <X size={20} />
                     </button>
                 </div>
 
                 <div className="modal-body">
+                    {/* Behavior Settings */}
                     <div className="settings-section">
-                        <div className="section-info">
-                            <h3>Export Data</h3>
-                            <p>Download a backup of your progress, settings, and custom columns. Keep this file safe!</p>
+                        <h3 className="section-title">Behavior</h3>
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Disable Auto-Shift</span>
+                                <span className="setting-description">Prevent incomplete tasks from automatically moving to today</span>
+                            </div>
+                            <label className="toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    checked={disableAutoShift}
+                                    onChange={(e) => onDisableAutoShiftChange(e.target.checked)}
+                                />
+                                <span className="toggle-slider"></span>
+                            </label>
                         </div>
-                        <button className="action-btn primary" onClick={handleExport}>
-                            <Download size={18} />
-                            Export Backup
-                        </button>
                     </div>
 
+                    {/* Appearance Settings */}
                     <div className="settings-section">
-                        <div className="section-info">
-                            <h3>Import Data</h3>
-                            <p>Restore your progress from a backup file. <br/><strong>Warning: This will overwrite your current data.</strong></p>
+                        <h3 className="section-title">Appearance</h3>
+
+                        {/* Background Image */}
+                        <div className="settings-row vertical">
+                            <div className="setting-info">
+                                <span className="setting-label">Background Wallpaper</span>
+                                <span className="setting-description">Set a custom background image</span>
+                            </div>
+                            <div className="background-actions">
+                                <input
+                                    type="file"
+                                    ref={bgFileInputRef}
+                                    onChange={handleBackgroundUpload}
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                />
+                                <button
+                                    className="action-btn outline small"
+                                    onClick={() => bgFileInputRef.current?.click()}
+                                >
+                                    <Image size={16} />
+                                    {backgroundUrl ? 'Change' : 'Upload'}
+                                </button>
+                                {backgroundUrl && (
+                                    <button
+                                        className="action-btn outline small danger"
+                                        onClick={handleClearBackground}
+                                    >
+                                        <Trash2 size={16} />
+                                        Clear
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                        <div className="import-actions">
-                            <input 
-                                type="file" 
-                                ref={fileInputRef}
-                                onChange={handleImport}
-                                accept=".json"
-                                style={{ display: 'none' }}
-                            />
-                            <button className="action-btn outline" onClick={() => fileInputRef.current?.click()}>
-                                <Upload size={18} />
-                                Import Backup
+
+                        {/* Dimming Slider */}
+                        <div className="settings-row vertical">
+                            <div className="setting-info">
+                                <span className="setting-label">Background Dimming</span>
+                                <span className="setting-description">Adjust overlay opacity for readability ({dimLevel}%)</span>
+                            </div>
+                            <div className="slider-container">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={dimLevel}
+                                    onChange={(e) => onDimLevelChange(parseInt(e.target.value, 10))}
+                                    className="dim-slider"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Glassmorphism Intensity */}
+                        <div className="settings-row vertical">
+                            <div className="setting-info">
+                                <span className="setting-label">Glassmorphism Intensity</span>
+                                <span className="setting-description">Adjust blur and transparency of UI panels ({glassIntensity}%)</span>
+                            </div>
+                            <div className="slider-container">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={glassIntensity}
+                                    onChange={(e) => onGlassIntensityChange(parseInt(e.target.value, 10))}
+                                    className="glass-slider"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Data Management */}
+                    <div className="settings-section">
+                        <h3 className="section-title">Data Management</h3>
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Export Data</span>
+                                <span className="setting-description">Download a backup of your progress and settings</span>
+                            </div>
+                            <button className="action-btn primary small" onClick={handleExport}>
+                                <Download size={16} />
+                                Export
                             </button>
+                        </div>
+
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Import Data</span>
+                                <span className="setting-description">Restore from a backup (overwrites current data)</span>
+                            </div>
+                            <div className="import-actions">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleImport}
+                                    accept=".json"
+                                    style={{ display: 'none' }}
+                                />
+                                <button className="action-btn outline small" onClick={() => fileInputRef.current?.click()}>
+                                    <Upload size={16} />
+                                    Import
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -151,6 +340,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
         </div>
     );
-    
+
     return ReactDOM.createPortal(modalContent, modalRoot);
 }

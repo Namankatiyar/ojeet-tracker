@@ -162,7 +162,7 @@
 .days-value {
   font-size: 3.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent), #a855f7);
+  background: linear-gradient(135deg, var(--accent), var(--secondary-accent, #a855f7));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -218,7 +218,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  background: linear-gradient(135deg, var(--accent-light), rgba(168, 85, 247, 0.1));
+  background: linear-gradient(135deg, var(--accent-light), color-mix(in srgb, var(--secondary-accent, #a855f7), transparent 90%));
   border: 1px solid var(--border);
   border-radius: var(--border-radius);
   padding: 1.5rem 2rem;
@@ -367,7 +367,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #a855f7);
+  background: linear-gradient(90deg, var(--accent), var(--secondary-accent, #a855f7));
   border-radius: 100px;
 }
 
@@ -1094,7 +1094,7 @@
   .subject-cards {
     grid-template-columns: 1fr;
   }
-  
+
   .days-value {
     font-size: 2.5rem;
   }

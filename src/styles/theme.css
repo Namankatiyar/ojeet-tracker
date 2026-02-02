@@ -5,9 +5,9 @@
   --accent: #6366f1;
   /* Default accent */
   --bg-primary: color-mix(in srgb, var(--accent), var(--bg-base) 96%);
-  /* Slight tint */       
+  /* Slight tint */
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9; 
+  --bg-tertiary: #f1f5f9;
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
@@ -86,10 +86,10 @@
   --bg-modal: rgba(24, 24, 35, 0.45);
   /* Modal/dialog backgrounds - translucent */
 
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(18, 18, 26, 0.35);
-  --glass-bg-hover: rgba(26, 26, 40, 0.45);
-  --glass-blur: 4px;
+  /* Glassmorphism Variables - dynamically set via JS */
+  --glass-bg: rgba(18, 18, 26, 0.4);
+  --glass-bg-hover: rgba(26, 26, 40, 0.5);
+  --glass-blur: 10px;
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-border-light: rgba(255, 255, 255, 0.15);
   --glass-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -103,56 +103,67 @@
 /* ===== Dark Mode Glassmorphism Effects ===== */
 /* Apply glass effect to all major cards and panels - DESKTOP ONLY */
 @media (min-width: 768px) {
-  [data-theme="dark"] .overall-progress-card,
-  [data-theme="dark"] .exam-countdown-card,
-  [data-theme="dark"] .agenda-card,
-  [data-theme="dark"] .task-log-card,
-  [data-theme="dark"] .subject-card,
-  [data-theme="dark"] .chapter-card,
-  [data-theme="dark"] .study-clock-container,
-  [data-theme="dark"] .timer-card,
-  [data-theme="dark"] .stats-panel,
-  [data-theme="dark"] .session-log-panel,
-  [data-theme="dark"] .day-column,
-  [data-theme="dark"] .monthly-calendar,
-  [data-theme="dark"] .settings-panel,
-  [data-theme="dark"] .modal-content,
-  [data-theme="dark"] .view-toggles,
-  [data-theme="dark"] .analytics-panel {
-    background: var(--glass-bg) !important;
+
+  html[data-theme="dark"] .overall-progress-card,
+  html[data-theme="dark"] .exam-countdown-card,
+  html[data-theme="dark"] .agenda-card,
+  html[data-theme="dark"] .task-log-card,
+  html[data-theme="dark"] .subject-card,
+  html[data-theme="dark"] .chapter-card,
+  html[data-theme="dark"] .study-clock-container,
+  html[data-theme="dark"] .timer-card,
+  html[data-theme="dark"] .stats-panel,
+  html[data-theme="dark"] .session-log-panel,
+  html[data-theme="dark"] .day-column,
+  html[data-theme="dark"] .monthly-calendar,
+  html[data-theme="dark"] .settings-panel,
+  html[data-theme="dark"] .modal-content,
+  html[data-theme="dark"] .view-toggles,
+  html[data-theme="dark"] .analytics-panel {
+    background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border) !important;
-    box-shadow: var(--glass-inner-glow), var(--glass-shadow) !important;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
   }
 }
 
 /* Fallback for Mobile - Solid Colors for Performance */
 @media (max-width: 767px) {
-  [data-theme="dark"] .overall-progress-card,
-  [data-theme="dark"] .exam-countdown-card,
-  [data-theme="dark"] .agenda-card,
-  [data-theme="dark"] .task-log-card,
-  [data-theme="dark"] .subject-card,
-  [data-theme="dark"] .chapter-card,
-  [data-theme="dark"] .study-clock-container,
-  [data-theme="dark"] .timer-card,
-  [data-theme="dark"] .stats-panel,
-  [data-theme="dark"] .session-log-panel,
-  [data-theme="dark"] .day-column,
-  [data-theme="dark"] .monthly-calendar,
-  [data-theme="dark"] .settings-panel,
-  [data-theme="dark"] .modal-content,
-  [data-theme="dark"] .view-toggles,
-  [data-theme="dark"] .analytics-panel {
-    background: #1e1e24 !important; /* Solid dark background */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+  html[data-theme="dark"] .overall-progress-card,
+  html[data-theme="dark"] .exam-countdown-card,
+  html[data-theme="dark"] .agenda-card,
+  html[data-theme="dark"] .task-log-card,
+  html[data-theme="dark"] .subject-card,
+  html[data-theme="dark"] .chapter-card,
+  html[data-theme="dark"] .study-clock-container,
+  html[data-theme="dark"] .timer-card,
+  html[data-theme="dark"] .stats-panel,
+  html[data-theme="dark"] .session-log-panel,
+  html[data-theme="dark"] .day-column,
+  html[data-theme="dark"] .monthly-calendar,
+  html[data-theme="dark"] .settings-panel,
+  html[data-theme="dark"] .modal-content,
+  html[data-theme="dark"] .view-toggles,
+  html[data-theme="dark"] .analytics-panel {
+    background: #1e1e24;
+    /* Solid dark background */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
 /* Utilities */
-.text-physics { color: var(--physics); }
-.text-chemistry { color: var(--chemistry); }
-.text-maths { color: var(--maths); }
+.text-physics {
+  color: var(--physics);
+}
+
+.text-chemistry {
+  color: var(--chemistry);
+}
+
+.text-maths {
+  color: var(--maths);
+}

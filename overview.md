@@ -2,7 +2,7 @@
 
 This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
-**Last Updated:** 2026-02-01
+**Last Updated:** 2026-02-02
 
 ---
 
@@ -17,6 +17,7 @@ This documentation provides an exhaustive technical analysis of the OJEE Tracker
 - **Integrated Toolset**: Combines syllabus tracking with a daily/monthly planner (featuring Shift+Drag duplication) and a dedicated study clock.
 - **Hybrid Time Tracking**: Supports both real-time stopwatch tracking and manual log entry for offline study sessions.
 - **Unified Actions**: Deep integration between the Study Clock and Planner, allowing users to "Mark Complete" a task directly from the timer interface.
+- **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, and real-time glassmorphism intensity control.
 - **Layered Styling Architecture**: Uses modern CSS Layers for strict cascade control.
 
 ---
@@ -74,7 +75,9 @@ Styles are organized into a strict hierarchy (lowest to highest priority):
 
 ### 3.3 Theme Logic:
 - **Dark Mode**: Uses layered radial gradients to create depth.
-- **Dynamic Glass**: Background tints are synchronized across all cards and panels (default 0.35 opacity in dark mode) for a cohesive vision.
+- **Dynamic Glass**: Background tints are synchronized across all cards and panels.
+- **Adjustable Intensity**: Users can manually control the level of background blur and transparency (Glassmorphism Intensity) via the Settings modal.
+- **Custom Backgrounds**: Supports user-uploaded background images with adjustable dimming overlays to ensure content legibility.
 - **Performance**: Glass effects are desktop-only; mobile fallback uses solid colors.
 
 

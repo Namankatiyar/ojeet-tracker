@@ -12,6 +12,15 @@ interface HeaderProps {
     onThemeToggle: () => void;
     accentColor: string;
     onAccentChange: (color: string) => void;
+    // New Settings Props
+    disableAutoShift: boolean;
+    onDisableAutoShiftChange: (value: boolean) => void;
+    backgroundUrl: string;
+    onBackgroundUrlChange: (url: string) => void;
+    dimLevel: number;
+    onDimLevelChange: (level: number) => void;
+    glassIntensity: number;
+    onGlassIntensityChange: (intensity: number) => void;
 }
 
 const ACCENT_COLORS = [
@@ -28,7 +37,7 @@ const ACCENT_COLORS = [
     { name: 'Fuchsia', value: '#d946ef' },
 ];
 
-export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange }: HeaderProps) {
+export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange, disableAutoShift, onDisableAutoShiftChange, backgroundUrl, onBackgroundUrlChange, dimLevel, onDimLevelChange, glassIntensity, onGlassIntensityChange }: HeaderProps) {
     const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomColorModalOpen, setIsCustomColorModalOpen] = useState(false);
@@ -245,7 +254,18 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                 </div>
             </div>
 
-            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+            <SettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                disableAutoShift={disableAutoShift}
+                onDisableAutoShiftChange={onDisableAutoShiftChange}
+                backgroundUrl={backgroundUrl}
+                onBackgroundUrlChange={onBackgroundUrlChange}
+                dimLevel={dimLevel}
+                onDimLevelChange={onDimLevelChange}
+                glassIntensity={glassIntensity}
+                onGlassIntensityChange={onGlassIntensityChange}
+            />
             <ColorPickerModal
                 isOpen={isCustomColorModalOpen}
                 currentColor={accentColor}

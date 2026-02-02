@@ -69,6 +69,12 @@ function App() {
     const [studySessions, setStudySessions] = useLocalStorage<StudySession[]>('jee-tracker-study-sessions', []);
     const [mockScores, setMockScores] = useLocalStorage<MockScore[]>('jee-tracker-mock-scores', []);
 
+    // New Settings
+    const [disableAutoShift, setDisableAutoShift] = useLocalStorage<boolean>('jee-tracker-disable-auto-shift', false);
+    const [backgroundUrl, setBackgroundUrl] = useLocalStorage<string>('jee-tracker-background-url', '');
+    const [dimLevel, setDimLevel] = useLocalStorage<number>('jee-tracker-dim-level', 0);
+    const [glassIntensity, setGlassIntensity] = useLocalStorage<number>('jee-tracker-glass-intensity', 50);
+
     const [plannerDateToOpen, setPlannerDateToOpen] = useState<string | null>(null);
 
     const [subjectData, setSubjectData] = useLocalStorage<Record<Subject, SubjectData | null>>('jee-tracker-subject-data', {
@@ -117,8 +123,10 @@ function App() {
         localStorage.setItem('jee-tracker-quote-index', nextIndex.toString());
     }, []);
 
-    // Auto-shift incomplete tasks from past days to today
+    // Auto-shift incomplete tasks from past days to today (if enabled)
     useEffect(() => {
+        if (disableAutoShift) return; // Skip if auto-shift is disabled
+
         const todayStr = formatDateLocal(new Date());
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -137,7 +145,7 @@ function App() {
             });
             return shifted ? updatedTasks : currentTasks;
         });
-    }, []); // Run once on mount
+    }, [disableAutoShift]); // Re-run if setting changes
 
     // Alt+N keyboard shortcut to add new task
     useEffect(() => {
@@ -158,7 +166,7 @@ function App() {
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
-    // Apply accent color
+    // Apply accent color and derive secondary accent
     useEffect(() => {
         document.documentElement.style.setProperty('--accent', accentColor);
         document.documentElement.style.setProperty('--accent-light', `color-mix(in srgb, ${accentColor}, transparent 90%)`);
@@ -175,12 +183,70 @@ function App() {
         document.documentElement.style.setProperty('--accent-text', textColor);
         document.documentElement.style.setProperty('--accent-border', borderColor);
 
+        // Derive secondary accent color (shift hue by ~60 degrees for complementary feel)
+        // Convert RGB to HSL, shift hue, convert back
+        const rNorm = r / 255, gNorm = g / 255, bNorm = b / 255;
+        const max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm);
+        let h = 0, s = 0;
+        const l = (max + min) / 2;
+        if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case rNorm: h = ((gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0)) / 6; break;
+                case gNorm: h = ((bNorm - rNorm) / d + 2) / 6; break;
+                case bNorm: h = ((rNorm - gNorm) / d + 4) / 6; break;
+            }
+        }
+        // Shift hue by 60 degrees (1/6 of color wheel) for analogous secondary
+        const newH = (h + 1 / 6) % 1;
+        // Convert back to hex
+        const hue2rgb = (p: number, q: number, t: number) => {
+            if (t < 0) t += 1; if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        const r2 = Math.round(hue2rgb(p, q, newH + 1 / 3) * 255);
+        const g2 = Math.round(hue2rgb(p, q, newH) * 255);
+        const b2 = Math.round(hue2rgb(p, q, newH - 1 / 3) * 255);
+        const secondaryAccent = `#${r2.toString(16).padStart(2, '0')}${g2.toString(16).padStart(2, '0')}${b2.toString(16).padStart(2, '0')}`;
+        document.documentElement.style.setProperty('--secondary-accent', secondaryAccent);
+
         // Update PWA theme color
         const metaThemeColor = document.querySelector("meta[name=theme-color]");
         if (metaThemeColor) {
             metaThemeColor.setAttribute("content", accentColor);
         }
     }, [accentColor]);
+
+    // Apply custom background, dimming, and glassmorphism intensity
+    useEffect(() => {
+        if (backgroundUrl) {
+            // Use quotes around URL for data: URLs with special characters
+            document.documentElement.style.setProperty('--custom-bg-url', `url("${backgroundUrl}")`);
+            document.body.classList.add('has-custom-bg');
+        } else {
+            document.documentElement.style.setProperty('--custom-bg-url', 'none');
+            document.body.classList.remove('has-custom-bg');
+        }
+        document.documentElement.style.setProperty('--dim-level', (dimLevel / 100).toString());
+
+        // Glassmorphism intensity: 0-100 maps to various glass effects
+        const intensity = glassIntensity / 100;
+        const blurValue = intensity * 20; // 0-20px blur
+        const bgOpacity = 0.2 + intensity * 0.4; // 0.2-0.6 opacity
+        const borderOpacity = 0.05 + intensity * 0.1; // 0.05-0.15 opacity
+
+        document.documentElement.style.setProperty('--glass-blur', `${blurValue}px`);
+        document.documentElement.style.setProperty('--glass-bg', `rgba(18, 18, 26, ${bgOpacity})`);
+        document.documentElement.style.setProperty('--glass-bg-hover', `rgba(26, 26, 40, ${bgOpacity + 0.1})`);
+        document.documentElement.style.setProperty('--glass-border', `rgba(255, 255, 255, ${borderOpacity})`);
+        document.documentElement.style.setProperty('--glass-border-light', `rgba(255, 255, 255, ${borderOpacity + 0.05})`);
+    }, [backgroundUrl, dimLevel, glassIntensity]);
 
     // Merge CSV data with custom columns and filter excluded ones
     const mergedSubjectData = useMemo(() => {
@@ -487,6 +553,14 @@ function App() {
                 onThemeToggle={handleThemeToggle}
                 accentColor={accentColor}
                 onAccentChange={setAccentColor}
+                disableAutoShift={disableAutoShift}
+                onDisableAutoShiftChange={setDisableAutoShift}
+                backgroundUrl={backgroundUrl}
+                onBackgroundUrlChange={setBackgroundUrl}
+                dimLevel={dimLevel}
+                onDimLevelChange={setDimLevel}
+                glassIntensity={glassIntensity}
+                onGlassIntensityChange={setGlassIntensity}
             />
             <main className="main-content">
                 <Suspense fallback={<PageLoader />}>

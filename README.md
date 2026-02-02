@@ -24,7 +24,10 @@
 *   **Celebrations:** Experience a burst of confetti (themed to your selected accent color) whenever you mark a chapter as completed.
 
 ### 🎨 Personalization
-*   **Dynamic Theming:** Choose from a modern palette of accent colors. Your choice influences shadows, background tints, and progress indicators throughout the app.
+*   **Custom Wallpapers:** Upload your own background images to create a personalized study environment.
+*   **Adjustable Glassmorphism:** Real-time slider to control the blur intensity and transparency of all UI panels.
+*   **Background Dimming:** Precision control over the dimming overlay to ensure text readability on any background.
+*   **Dynamic Theming:** Choose from a modern palette of accent colors. Your choice influences shadows, background tints, analogous gradients, and progress indicators throughout the app.
 *   **Dark/Light Mode:** Fully supported themes to reduce eye strain during late-night study sessions.
 
 ### 💾 Persistence
@@ -47,7 +50,7 @@ OJEE-Tracker is built as a single-page application (SPA) focused on performance 
 *   **Frontend Framework:** [React 18](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/) for robust type safety.
 *   **Routing:** [React Router](https://reactrouter.com/) (v7) for seamless navigation.
 *   **Build Tool:** [Vite](https://vitejs.dev/) for lightning-fast development server and optimized production builds.
-*   **Styling:** Custom CSS with CSS Variables and Glassmorphism design principles. `lucide-react` is used for modern iconography.
+*   **Styling:** Modern **CSS Layers (@layer)** architecture for strict cascade control. Features a advanced glassmorphism design system, dynamic background customization, and `lucide-react` for modern iconography.
 *   **Data Persistence:** A custom `useLocalStorage` hook abstracts the browser's `localStorage` API, ensuring state persists across sessions without a backend database.
 
 ## 📂 Project Structure

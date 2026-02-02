@@ -8,30 +8,56 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   transition: background-color var(--transition-normal), color var(--transition-normal);
+  position: relative;
 }
 
+/* When custom background is set, make body transparent to show the image layer */
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) transparent;
   background-color: var(--bg-base);
+  min-height: 100vh;
 }
 
+/* Custom Background Image Layer - DARK MODE ONLY */
+html[data-theme="dark"]::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: var(--custom-bg-url, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -3;
+  pointer-events: none;
+}
 
-/* Background Gradients */
-[data-theme="dark"] body {
+/* Dimming Overlay - DARK MODE ONLY */
+html[data-theme="dark"]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--dim-level, 0));
+  z-index: -2;
+  pointer-events: none;
+  transition: background var(--transition-normal);
+}
+
+/* Background Gradients - on body, but transparent when custom bg is used */
+html[data-theme="dark"] body {
   background:
     /* Primary accent blob - top left */
     radial-gradient(ellipse 80% 60% at 10% 10%, color-mix(in srgb, var(--accent), transparent 70%) 0%, transparent 50%),
     /* Secondary accent blob - top right */
-    radial-gradient(ellipse 60% 50% at 90% 15%, color-mix(in srgb, var(--accent), #a855f7 50%) 0%, transparent 40%),
+    radial-gradient(ellipse 60% 50% at 90% 15%, color-mix(in srgb, var(--accent), var(--secondary-accent, #a855f7) 50%) 0%, transparent 40%),
     /* Warm accent - bottom left */
     radial-gradient(ellipse 70% 60% at 5% 85%, color-mix(in srgb, #f59e0b, transparent 80%) 0%, transparent 45%),
     /* Cool accent - bottom right */
     radial-gradient(ellipse 80% 70% at 95% 90%, color-mix(in srgb, var(--accent), #06b6d4 40%) 0%, transparent 50%),
     /* Center glow */
     radial-gradient(ellipse 100% 80% at 50% 50%, color-mix(in srgb, var(--accent), transparent 92%) 0%, transparent 60%),
-    /* Subtle purple tint - mid left */
-    radial-gradient(circle at 20% 50%, color-mix(in srgb, #8b5cf6, transparent 88%) 0%, transparent 35%),
+    /* Subtle secondary tint - mid left */
+    radial-gradient(circle at 20% 50%, color-mix(in srgb, var(--secondary-accent, #8b5cf6), transparent 88%) 0%, transparent 35%),
     /* Subtle teal - mid right */
     radial-gradient(circle at 80% 40%, color-mix(in srgb, #14b8a6, transparent 90%) 0%, transparent 30%),
     /* Base dark gradient */
@@ -40,10 +66,24 @@ html {
 }
 
 @media (max-width: 768px) {
-  [data-theme="dark"] body {
+  html[data-theme="dark"] body {
     background-attachment: scroll;
     /* Performance fix for mobile scrolling */
   }
+}
+
+/* When custom background is set, make body's gradient semi-transparent to show image */
+body.has-custom-bg {
+  background: transparent !important;
+}
+
+html[data-theme="dark"] body.has-custom-bg {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Remove accent glow when custom background is active (looks better with image backgrounds) */
+body.has-custom-bg {
+  --shadow-glow: none;
 }
 
 /* ===== Master Scrollbar Styling ===== */
@@ -109,21 +149,22 @@ html {
 /* Apply glass effect to all major cards and panels - DESKTOP ONLY */
 @media (min-width: 768px) {
 
-  [data-theme="dark"] .overall-progress-card,
-  [data-theme="dark"] .exam-countdown-card,
-  [data-theme="dark"] .agenda-card,
-  [data-theme="dark"] .task-log-card,
-  [data-theme="dark"] .subject-card,
-  [data-theme="dark"] .chapter-card,
-  [data-theme="dark"] .study-clock-container,
-  [data-theme="dark"] .timer-card,
-  [data-theme="dark"] .stats-panel,
-  [data-theme="dark"] .session-log-panel,
-  [data-theme="dark"] .day-column,
-  [data-theme="dark"] .monthly-calendar,
-  [data-theme="dark"] .settings-panel,
-  [data-theme="dark"] .view-toggles,
-  [data-theme="dark"] .analytics-panel {
+  html[data-theme="dark"] .overall-progress-card,
+  html[data-theme="dark"] .exam-countdown-card,
+  html[data-theme="dark"] .agenda-card,
+  html[data-theme="dark"] .task-log-card,
+  html[data-theme="dark"] .subject-card,
+  html[data-theme="dark"] .chapter-card,
+  html[data-theme="dark"] .study-clock-container,
+  html[data-theme="dark"] .timer-card,
+  html[data-theme="dark"] .stats-panel,
+  html[data-theme="dark"] .session-log-panel,
+  html[data-theme="dark"] .day-column,
+  html[data-theme="dark"] .monthly-calendar,
+  html[data-theme="dark"] .settings-panel,
+  html[data-theme="dark"] .modal-content,
+  html[data-theme="dark"] .view-toggles,
+  html[data-theme="dark"] .analytics-panel {
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -135,21 +176,22 @@ html {
 /* Fallback for Mobile - Solid Colors for Performance */
 @media (max-width: 767px) {
 
-  [data-theme="dark"] .overall-progress-card,
-  [data-theme="dark"] .exam-countdown-card,
-  [data-theme="dark"] .agenda-card,
-  [data-theme="dark"] .task-log-card,
-  [data-theme="dark"] .subject-card,
-  [data-theme="dark"] .chapter-card,
-  [data-theme="dark"] .study-clock-container,
-  [data-theme="dark"] .timer-card,
-  [data-theme="dark"] .stats-panel,
-  [data-theme="dark"] .session-log-panel,
-  [data-theme="dark"] .day-column,
-  [data-theme="dark"] .monthly-calendar,
-  [data-theme="dark"] .settings-panel,
-  [data-theme="dark"] .view-toggles,
-  [data-theme="dark"] .analytics-panel {
+  html[data-theme="dark"] .overall-progress-card,
+  html[data-theme="dark"] .exam-countdown-card,
+  html[data-theme="dark"] .agenda-card,
+  html[data-theme="dark"] .task-log-card,
+  html[data-theme="dark"] .subject-card,
+  html[data-theme="dark"] .chapter-card,
+  html[data-theme="dark"] .study-clock-container,
+  html[data-theme="dark"] .timer-card,
+  html[data-theme="dark"] .stats-panel,
+  html[data-theme="dark"] .session-log-panel,
+  html[data-theme="dark"] .day-column,
+  html[data-theme="dark"] .monthly-calendar,
+  html[data-theme="dark"] .settings-panel,
+  html[data-theme="dark"] .modal-content,
+  html[data-theme="dark"] .view-toggles,
+  html[data-theme="dark"] .analytics-panel {
     background: #1e1e24;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
