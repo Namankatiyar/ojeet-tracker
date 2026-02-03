@@ -67,6 +67,27 @@ html[data-theme="dark"] .header {
   background-clip: text;
 }
 
+/* Header Avatar */
+.header-avatar {
+  margin-left: 0.75rem;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header-avatar .user-avatar {
+  border-radius: 50%;
+  overflow: hidden;
+}
+
 .nav {
   display: flex;
   gap: 0.5rem;

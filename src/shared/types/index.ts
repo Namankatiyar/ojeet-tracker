@@ -66,3 +66,21 @@ export interface MockScore {
     totalMarks: number;     // Sum of all three
     maxMarks?: number;      // Optional, defaults to 300
 }
+
+export interface ProgressCardSettings {
+    userName: string;
+    customAvatarUrl: string;
+    visibleStats: {
+        totalStudyTime: boolean;
+        highestMockScore: boolean;
+        highestDailyHours: boolean;
+        highestWeekAverage: boolean;
+        physicsTime: boolean;
+        chemistryTime: boolean;
+        mathsTime: boolean;
+        physicsProgress: boolean;
+        chemistryProgress: boolean;
+        mathsProgress: boolean;
+        examCountdown: boolean;
+    };
+}

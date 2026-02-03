@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Subject } from '../../types';
+import { Subject, StudySession, MockScore, ProgressCardSettings } from '../../types';
 import { LayoutDashboard, Atom, FlaskConical, Calculator, Sun, Moon, Palette, Settings, Calendar, Clock, Menu } from 'lucide-react';
 import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
+import { UserAvatar } from '../ui/Avatar';
+import { ProgressCardModal } from '../ui/ProgressCardModal';
 
 interface HeaderProps {
     currentView: 'dashboard' | 'planner' | 'studyclock' | Subject;
@@ -23,6 +25,15 @@ interface HeaderProps {
     onGlassIntensityChange: (intensity: number) => void;
     glassRefraction: number;
     onGlassRefractionChange: (refraction: number) => void;
+    // Progress Card Props
+    studySessions: StudySession[];
+    mockScores: MockScore[];
+    physicsProgress: number;
+    chemistryProgress: number;
+    mathsProgress: number;
+    examDate: string;
+    progressCardSettings: ProgressCardSettings;
+    onProgressCardSettingsChange: (settings: ProgressCardSettings) => void;
 }
 
 const ACCENT_COLORS = [
@@ -39,11 +50,12 @@ const ACCENT_COLORS = [
     { name: 'Fuchsia', value: '#d946ef' },
 ];
 
-export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange, disableAutoShift, onDisableAutoShiftChange, backgroundUrl, onBackgroundUrlChange, dimLevel, onDimLevelChange, glassIntensity, onGlassIntensityChange, glassRefraction, onGlassRefractionChange }: HeaderProps) {
+export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange, disableAutoShift, onDisableAutoShiftChange, backgroundUrl, onBackgroundUrlChange, dimLevel, onDimLevelChange, glassIntensity, onGlassIntensityChange, glassRefraction, onGlassRefractionChange, studySessions, mockScores, physicsProgress, chemistryProgress, mathsProgress, examDate, progressCardSettings, onProgressCardSettingsChange }: HeaderProps) {
     const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomColorModalOpen, setIsCustomColorModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isProgressCardOpen, setIsProgressCardOpen] = useState(false);
     const colorPickerRef = useRef<HTMLDivElement>(null);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -108,6 +120,15 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
             <div className="header-content">
                 <div className="logo">
                     <span className="logo-text">OJEE Tracker</span>
+                    <div className="header-avatar">
+                        <UserAvatar
+                            name={progressCardSettings.userName || 'Student'}
+                            size={32}
+                            customImageUrl={progressCardSettings.customAvatarUrl}
+                            accentColor={accentColor}
+                            onClick={() => setIsProgressCardOpen(true)}
+                        />
+                    </div>
                 </div>
 
                 <nav className="nav">
@@ -276,6 +297,19 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                 currentColor={accentColor}
                 onConfirm={handleCustomColorConfirm}
                 onClose={() => setIsCustomColorModalOpen(false)}
+            />
+            <ProgressCardModal
+                isOpen={isProgressCardOpen}
+                onClose={() => setIsProgressCardOpen(false)}
+                accentColor={accentColor}
+                settings={progressCardSettings}
+                onSettingsChange={onProgressCardSettingsChange}
+                studySessions={studySessions}
+                mockScores={mockScores}
+                physicsProgress={physicsProgress}
+                chemistryProgress={chemistryProgress}
+                mathsProgress={mathsProgress}
+                examDate={examDate}
             />
         </header>
     );

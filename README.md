@@ -25,9 +25,10 @@
 
 ### 🎨 Personalization
 *   **Custom Wallpapers:** Upload your own background images to create a personalized study environment.
-*   **Adjustable Glassmorphism:** Real-time slider to control the blur intensity and transparency of all UI panels.
+*   **Shareable Progress Card:** Generate a beautiful, customizable progress card with study stats. Features dynamic avatars (integrated with `boring-avatars`), custom avatar upload, and high-resolution PNG export.
+*   **Adjustable Glassmorphism:** Real-time sliders to control blur intensity and the **Refractive Index** (controlling saturation, brightness, and prismatic hue-rotation) of all UI panels.
 *   **Background Dimming:** Precision control over the dimming overlay to ensure text readability on any background.
-*   **Dynamic Theming:** Choose from a modern palette of accent colors. Your choice influences shadows, background tints, analogous gradients, and progress indicators throughout the app.
+*   **Dynamic Theming:** Choose from a modern palette of accent colors. Your choice influences shadows, background tints, analogous gradients, avatars, and progress indicators throughout the app.
 *   **Dark/Light Mode:** Fully supported themes to reduce eye strain during late-night study sessions.
 
 ### 💾 Persistence

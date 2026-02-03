@@ -2,7 +2,7 @@
 
 This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
-**Last Updated:** 2026-02-02
+**Last Updated:** 2026-02-03
 
 ---
 
@@ -14,10 +14,12 @@ This documentation provides an exhaustive technical analysis of the OJEE Tracker
 - **Visual-First Progress**: Immediate feedback through rings, bars, and confetti.
 - **Extreme Flexibility**: Users can modify the syllabus, add/remove resource columns, and reorder content.
 - **Deep Persistence**: Leveraging `localStorage` for a zero-server, instant-load experience.
+- **Shareable Achievement**: The **Personalized Progress Card** feature allows users to generate and download (PNG) a card summarizing their achievements, featuring dynamic avatars (via `boring-avatars`) and customizable stats.
 - **Integrated Toolset**: Combines syllabus tracking with a daily/monthly planner (featuring Shift+Drag duplication) and a dedicated study clock.
 - **Hybrid Time Tracking**: Supports both real-time stopwatch tracking and manual log entry for offline study sessions.
 - **Unified Actions**: Deep integration between the Study Clock and Planner, allowing users to "Mark Complete" a task directly from the timer interface.
-- **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, glassmorphism intensity, and refractive index controls.
+- **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, and advanced glassmorphism controls.
+- **Advanced Glassmorphism**: Implementation of a **Refractive Index** control that dynamically adjusts saturation, brightness, and prismatic hue-rotation for a high-fidelity "refracted glass" look.
 - **Intelligent Theming**: Automatic accent color extraction from custom wallpapers using `node-vibrant` for a cohesive look.
 - **Context-Aware UI**: Sophisticated interaction logic, such as preventing past-date targets for exams while allowing historical entry for mock test scores.
 - **Layered Styling Architecture**: Uses modern CSS Layers for strict cascade control.

@@ -2,12 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-## [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02)
+## [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)
 
+### Features
+
+* **Personalized Progress Card**: 
+    * Integrated `boring-avatars` for dynamic, accent-color-themed user avatars.
+    * Added support for custom avatar uploads.
+    * Implemented a shareable progress card displaying comprehensive study stats (Total Time, Mock Scores, Subject Progress, and Averages).
+    * Added "Download as PNG" functionality using `html2canvas` with high-resolution export.
+    * Customizable stat visibility toggles.
+* **Enhanced Glassmorphism**: 
+    * Upgraded the Refractive Index slider with significantly more dramatic saturation (up to 300%) and brightness (up to 130%) ranges.
+    * Introduced subtle hue-rotation logic to simulate prismatic light dispersion in glass elements.
 
 ### Bug Fixes
 
-* user can now change refractive index for glassmorphism effect. ([1db5334](https://github.com/Namankatiyar/pcm-tracker/commit/1db5334f463d037432d0efda544f5938b5bc59ef))
+* Resolved text clipping for character descenders in progress card labels.
+* Fixed aspect ratio squeezing of custom avatars during PNG export.
+* Corrected asymmetrical padding in progress card modal wrapper.
+* Added `document.fonts.ready` check and style computation delay to ensure high-fidelity PNG captures.
+
+## [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02)
 
 ## [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02)
 

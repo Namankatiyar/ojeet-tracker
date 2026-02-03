@@ -23,9 +23,11 @@
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
+    "boring-avatars": "^2.0.4",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.5.1",
     "express": "^4.22.1",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.562.0",
     "node-vibrant": "^4.0.4",
     "papaparse": "^5.4.1",
