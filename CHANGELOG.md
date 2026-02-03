@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)
 
+
+### Features
+
+* avatar and a progress show off card feature fix: refractive index slider ([dda23ec](https://github.com/Namankatiyar/pcm-tracker/commit/dda23ec90e5ce45ddcf93629e6b948f5c92e7c49))
+
+## [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)
+
 ### Features
 
 * **Personalized Progress Card**: 
