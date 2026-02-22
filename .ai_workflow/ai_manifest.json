@@ -1,0 +1,524 @@
+{
+  "src\\core\\App.tsx": {
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useCallback",
+      "useMemo",
+      "useNavigate",
+      "useLocation",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useProgress",
+      "useProgress",
+      "useNavigate",
+      "useLocation",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useState",
+      "useLocalStorage",
+      "useState",
+      "useEffect",
+      "useEffect",
+      "useEffect",
+      "useEffect",
+      "useEffect",
+      "useEffect",
+      "useEffect",
+      "useMemo",
+      "useProgress",
+      "useCallback",
+      "useCallback",
+      "useCallback",
+      "useCallback",
+      "useCallback",
+      "useCallback",
+      "useCallback",
+      "useCallback",
+      "useCallback"
+    ],
+    "props": "Implicit",
+    "exports": [],
+    "dependencies": [
+      "react",
+      "react-router-dom",
+      "../shared/components/layout/Header",
+      "../shared/hooks/useLocalStorage",
+      "../shared/hooks/useProgress",
+      "../shared/utils/csvParser",
+      "../shared/utils/date",
+      "../shared/utils/confetti",
+      "../shared/types",
+      "../shared/components/ui/PageLoader",
+      "../quotes.json"
+    ]
+  },
+  "src\\features\\dashboard\\components\\AnalyticsPanels.tsx": {
+    "hooks": [
+      "useState",
+      "useMemo",
+      "useEffect",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useEffect",
+      "useMemo",
+      "useMemo",
+      "useMemo",
+      "useSerialNumbers",
+      "useSerialNumbers",
+      "useMemo",
+      "usePointStyle",
+      "useMemo",
+      "usePointStyle",
+      "useMemo",
+      "usePointStyle"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "AnalyticsPanels"
+    ],
+    "dependencies": [
+      "react",
+      "react-chartjs-2",
+      "../../../shared/types",
+      "../../../shared/utils/date",
+      "lucide-react",
+      "../../../shared/components/ui/DatePickerModal"
+    ]
+  },
+  "src\\features\\dashboard\\components\\Dashboard.tsx": {
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useState",
+      "useEffect"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "Dashboard"
+    ],
+    "dependencies": [
+      "react",
+      "../../../shared/components/ui/ProgressBar",
+      "../../../shared/types",
+      "../../planner/components/TaskLog",
+      "../../../shared/components/ui/DatePickerModal",
+      "./AnalyticsPanels",
+      "lucide-react",
+      "../../../shared/utils/date"
+    ]
+  },
+  "src\\features\\planner\\components\\Planner.tsx": {
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useEffect",
+      "useState",
+      "useState"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "Planner"
+    ],
+    "dependencies": [
+      "react",
+      "lucide-react",
+      "../../../shared/types",
+      "./TaskModal",
+      "../../../shared/utils/date"
+    ]
+  },
+  "src\\features\\planner\\components\\TaskLog.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [
+      "TaskLog"
+    ],
+    "dependencies": [
+      "../../../shared/types",
+      "lucide-react"
+    ]
+  },
+  "src\\features\\planner\\components\\TaskModal.tsx": {
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useMemo",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useEffect",
+      "useEffect",
+      "useMemo",
+      "useMemo"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "TaskModal"
+    ],
+    "dependencies": [
+      "react",
+      "lucide-react",
+      "../../../shared/types"
+    ]
+  },
+  "src\\features\\study-clock\\components\\StudyClock.tsx": {
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useRef",
+      "useCallback",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useEffect",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useRef",
+      "useEffect",
+      "useEffect",
+      "useCallback",
+      "useCallback"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "StudyClock"
+    ],
+    "dependencies": [
+      "react",
+      "lucide-react",
+      "../../../shared/types",
+      "../../../shared/components/ui/CustomSelect",
+      "../../../shared/components/ui/DatePickerModal"
+    ]
+  },
+  "src\\features\\subjects\\components\\ChapterRow.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [
+      "ChapterRow"
+    ],
+    "dependencies": [
+      "../../../shared/types",
+      "../../../shared/components/ui/PrioritySelector",
+      "lucide-react"
+    ]
+  },
+  "src\\features\\subjects\\components\\SubjectPage.tsx": {
+    "hooks": [
+      "useState",
+      "useRef",
+      "useEffect",
+      "useLocalStorage",
+      "useLocalStorage",
+      "useState",
+      "useLocalStorage",
+      "useState",
+      "useRef",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useRef",
+      "useRef",
+      "useRef",
+      "useRef",
+      "useEffect",
+      "useEvent"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "SubjectPage"
+    ],
+    "dependencies": [
+      "react",
+      "../../../shared/types",
+      "./ChapterRow",
+      "../../../shared/components/ui/ProgressBar",
+      "../../../shared/components/ui/ConfirmationModal",
+      "../../../shared/components/ui/InputModal",
+      "../../../shared/utils/confetti",
+      "lucide-react",
+      "../../../shared/hooks/useLocalStorage"
+    ]
+  },
+  "src\\main.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [],
+    "dependencies": [
+      "react",
+      "react-dom/client",
+      "react-router-dom",
+      "./core/App.tsx"
+    ]
+  },
+  "src\\shared\\components\\layout\\Header.tsx": {
+    "hooks": [
+      "useState",
+      "useRef",
+      "useEffect",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useRef",
+      "useRef",
+      "useEffect",
+      "useEvent",
+      "useEffect",
+      "useEvent"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "Header"
+    ],
+    "dependencies": [
+      "react",
+      "react-dom",
+      "../../types",
+      "lucide-react",
+      "../ui/SettingsModal",
+      "../ui/ColorPickerModal",
+      "../ui/Avatar",
+      "../ui/ProgressCardModal"
+    ]
+  },
+  "src\\shared\\components\\ui\\Avatar.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [
+      "UserAvatar"
+    ],
+    "dependencies": [
+      "boring-avatars"
+    ]
+  },
+  "src\\shared\\components\\ui\\ColorPickerModal.tsx": {
+    "hooks": [
+      "useState",
+      "useRef",
+      "useEffect",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useState",
+      "useRef",
+      "useRef",
+      "useEffect",
+      "useEffect",
+      "useEffect",
+      "useEvent",
+      "useEvent",
+      "useDown",
+      "useMove",
+      "useDown",
+      "useMove"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "ColorPickerModal"
+    ],
+    "dependencies": [
+      "react",
+      "react-dom",
+      "lucide-react"
+    ]
+  },
+  "src\\shared\\components\\ui\\ConfirmationModal.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [
+      "ConfirmationModal"
+    ],
+    "dependencies": []
+  },
+  "src\\shared\\components\\ui\\CustomSelect.tsx": {
+    "hooks": [
+      "useState",
+      "useRef",
+      "useEffect",
+      "useState",
+      "useRef",
+      "useEffect",
+      "useEvent"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "CustomSelect"
+    ],
+    "dependencies": [
+      "react",
+      "lucide-react"
+    ]
+  },
+  "src\\shared\\components\\ui\\DatePickerModal.tsx": {
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useState",
+      "useEffect"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "DatePickerModal"
+    ],
+    "dependencies": [
+      "react",
+      "lucide-react",
+      "../../utils/date.ts"
+    ]
+  },
+  "src\\shared\\components\\ui\\InputModal.tsx": {
+    "hooks": [
+      "useState",
+      "useEffect",
+      "useRef",
+      "useState",
+      "useRef",
+      "useEffect"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "InputModal"
+    ],
+    "dependencies": [
+      "react"
+    ]
+  },
+  "src\\shared\\components\\ui\\PageLoader.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [
+      "PageLoader"
+    ],
+    "dependencies": [
+      "lucide-react"
+    ]
+  },
+  "src\\shared\\components\\ui\\PrioritySelector.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [
+      "PrioritySelector"
+    ],
+    "dependencies": [
+      "../../types",
+      "./CustomSelect"
+    ]
+  },
+  "src\\shared\\components\\ui\\ProgressBar.tsx": {
+    "hooks": [],
+    "props": "Implicit",
+    "exports": [
+      "ProgressRing",
+      "ProgressBar"
+    ],
+    "dependencies": []
+  },
+  "src\\shared\\components\\ui\\ProgressCardModal.tsx": {
+    "hooks": [
+      "useRef",
+      "useState",
+      "useRef",
+      "useRef",
+      "useState",
+      "useState",
+      "useCORS"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "ProgressCardModal"
+    ],
+    "dependencies": [
+      "react",
+      "react-dom",
+      "lucide-react",
+      "html2canvas",
+      "./Avatar",
+      "../../types"
+    ]
+  },
+  "src\\shared\\components\\ui\\SettingsModal.tsx": {
+    "hooks": [
+      "useRef",
+      "useState",
+      "useRef",
+      "useRef",
+      "useState",
+      "useState"
+    ],
+    "props": "Implicit",
+    "exports": [
+      "SettingsModal"
+    ],
+    "dependencies": [
+      "react",
+      "react-dom",
+      "lucide-react",
+      "node-vibrant/browser"
+    ]
+  }
+}
