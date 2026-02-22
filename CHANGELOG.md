@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22)
+
+
+### Bug Fixes
+
+* deconstructed and debloated the Planner.tsx into several components. ([e5b6132](https://github.com/Namankatiyar/pcm-tracker/commit/e5b6132a00dc1604c7e71ef75f60d867cba24e40))
+
 ## [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22)
 
 
