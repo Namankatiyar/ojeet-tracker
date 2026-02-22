@@ -1,53 +1,31 @@
-# Refactoring Plan for src/core/App.tsx
+# Refactoring Ideas - AnalyticsPanels.tsx
 
-The `App.tsx` file currently acts as a "God Component," managing too many responsibilities: routing, global state persistence, business logic (data merging, auto-shifting tasks), and UI theming side-effects. This makes it hard to maintain and test.
+## 1. Component Decomposition
+**Problem:** `AnalyticsPanels.tsx` is a "God Component" managing too many responsibilities.
+**Solution:** Split into smaller, focused components:
+- `StudyTimePanel`: Logic for weekly/monthly study hours.
+- `MockScoresPanel`: Trend charts and the list of previous scores.
+- `AddMockModal`: Isolated form state and validation for adding new scores.
+- `ChartContainer`: A shared wrapper for Chart.js components to handle responsiveness and common styles.
 
-## 1. Extract State to Context Providers
-Move related state and handlers into React Contexts to eliminate prop drilling and declutter `App.tsx`.
+## 2. Custom Hooks for Data Transformation
+**Problem:** Data processing for charts is mixed with UI logic, making it hard to test and maintain.
+**Solution:** Extract logic into custom hooks:
+- `useStudyAnalytics(sessions, offset, mode)`: Returns processed labels and datasets for the study chart.
+- `useMockAnalytics(scores)`: Handles sorting, serial numbering, and dataset generation for mock trends.
 
-*   **`ThemeContext`**:
-    *   **State**: `theme`, `accentColor`, `backgroundUrl`, `dimLevel`, `glassIntensity`, `glassRefraction`.
-    *   **Logic**: All `useEffect` blocks related to applying CSS variables, hex/HSL color calculations, and dark/light mode toggling.
-    *   **Benefit**: `App.tsx` won't need to know about CSS variable logic.
+## 3. Standardized Chart Configurations
+**Problem:** `barChartOptions`, `lineChartOptions`, and `mockChartOptions` share ~80% of the same code.
+**Solution:** Create a `getBaseChartOptions(theme)` utility that returns a base configuration, then use deep merging or simple spreads for specific overrides (e.g., stacked scales for bars).
 
-*   **`SubjectDataContext`**:
-    *   **State**: `subjectData`, `customColumns`, `excludedColumns`, `materialOrder`.
-    *   **Logic**: CSV loading (`useEffect`), data merging (`useMemo` currently in App), and column/chapter management handlers (`handleAddColumn`, `handleAddChapter`, etc.).
-    *   **Benefit**: Encapsulates the complex CSV+CustomColumn merging logic.
+## 4. Theme Integration
+**Problem:** Use of `MutationObserver` is brittle and bypasses the React context.
+**Solution:** Replace with `useTheme()` from `ThemeContext`. This ensures charts re-render correctly when the theme toggles.
 
-*   **`UserProgressContext`**:
-    *   **State**: `progress`, `plannerTasks`, `studySessions`, `mockScores`.
-    *   **Logic**: `useProgress` integration, task auto-shifting, and sync logic between Planner tasks and Chapter progress.
-    *   **Benefit**: Centralizes the "business logic" of the app.
+## 5. Date & Math Utilities
+**Problem:** Inline date helpers like `getWeekDays` and `getMonthDays` clutter the component.
+**Solution:** Move these to `src/shared/utils/date.ts` or a new `src/features/dashboard/utils/analyticsUtils.ts`.
 
-## 2. Create Custom Hooks for Side Effects
-Extract specific logic into hooks to keep the component body clean.
-
-*   **`useGlobalShortcuts()`**: Move the `Alt+N` keyboard listener here.
-*   **`useDailyQuote()`**: Move the daily quote rotation and persistence logic here.
-*   **`useAutoShiftTasks()`**: Encapsulate the logic that checks and moves overdue tasks.
-
-## 3. Modularize Routing
-*   Create a `AppRoutes.tsx` component that holds the `Routes` and `Route` definitions.
-*   `App.tsx` effectively becomes a wrapper that provides Contexts and renders `Layout` (Header) and `AppRoutes`.
-
-## 4. Implementation Steps
-
-1.  **Phase 1: Theme Extraction**
-    *   Create `src/core/context/ThemeContext.tsx`.
-    *   Move all style-related `useState`, `useLocalStorage`, and `useEffect`s there.
-    *   Wrap `App` content with `ThemeProvider`.
-
-2.  **Phase 2: Data Logic Separation**
-    *   Create `src/core/context/DataContext.tsx`.
-    *   Move `subjectData` loading and merging logic there.
-    *   Move `plannerTasks` and `progress` sync logic there.
-
-3.  **Phase 3: Component Cleanup**
-    *   Replace direct state access in `App.tsx` with `useTheme()`, `useData()`, etc.
-    *   Pass simplified props to children or have children consume Context directly (preferred).
-
-## 5. Outcome
-*   **Lines of Code**: `App.tsx` should drop from ~600+ lines to <100 lines.
-*   **Performance**: Reduced re-renders since `App.tsx` won't update on every minor state change (context consumers will update individually).
-*   **Maintainability**: Business logic will be isolated in specific files rather than mixed with routing and layout code.
+## 6. Performance Optimization
+**Problem:** `mockScores` is sorted multiple times during a single render (once for the chart, once for the list).
+**Solution:** Perform a single sort at the top level or within a hook, and derive both the chart data and the list from that single sorted array.

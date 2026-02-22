@@ -53,6 +53,7 @@ OJEE-Tracker is built as a modular single-page application (SPA) focused on perf
     *   `ThemeContext`: Manages visual settings and dynamic CSS variables.
     *   `SubjectDataContext`: Handles syllabus structure, CSV parsing, and material customization.
     *   `UserProgressContext`: Manages completion progress, planner tasks, study sessions, and mock scores.
+*   **Modular Dashboard**: The analytics engine is decoupled into specialized panels (`StudyTimePanel`, `MockScoresPanel`) using custom hooks for optimized data aggregation and rendering.
 *   **Routing:** [React Router](https://reactrouter.com/) (v7) for seamless navigation, modularized into `AppRoutes`.
 *   **Build Tool:** [Vite](https://vitejs.dev/) for lightning-fast development server and optimized production builds.
 *   **Styling:** Modern **CSS Layers (@layer)** architecture for strict cascade control. Features a advanced glassmorphism design system, dynamic background customization, and `lucide-react` for modern iconography.

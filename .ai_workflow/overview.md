@@ -91,4 +91,13 @@ The project uses **Conventional Commits** and **Semantic Versioning**.
 
 ---
 
+## 6. Refactoring History
+
+### Dashboard De-bloat (v0.0.17)
+- **Problem**: The analytics dashboard was a monolithic "God Component" causing performance bottlenecks and maintenance issues.
+- **Solution**: Decomposed into `StudyTimePanel`, `MockScoresPanel`, and `AddMockModal`.
+- **Optimization**: Extracted data aggregation logic into memoized custom hooks (`useStudyTimeAnalytics`, `useMockScoresAnalytics`) to isolate re-renders and improve UI responsiveness.
+
+---
+
 *This document serves as the ground truth for agents. When in doubt, defer to the behaviors defined here.*

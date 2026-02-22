@@ -2,26 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.17] (2026-02-22)
+
+### Refactoring
+
+*   **Dashboard De-bloat**:
+    *   Split the monolithic `AnalyticsPanels.tsx` (440+ lines) into modular components: `StudyTimePanel`, `MockScoresPanel`, and `AddMockModal`.
+    *   **Performance**: Isolated chart re-renders. Opening the "Add Mock" modal no longer triggers a re-render of the heavy Study Time charts.
+    *   **Logic Extraction**: Moved complex date aggregation and chart data transformation into custom hooks (`useStudyTimeAnalytics`, `useMockScoresAnalytics`).
+    *   **Utilities**: Centralized Chart.js configurations in `analyticsUtils.ts`, reducing code duplication by ~80%.
+    *   **Theme Integration**: Replaced brittle `MutationObserver` usage with the robust `useTheme` context hook for reliable chart theming.
+
 ## [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22)
 
-
-### Features
-
-* added custom backgrounds and opacity adjustment ([cdb094e](https://github.com/Namankatiyar/pcm-tracker/commit/cdb094e157159564a48dafd278d6bef69b7a8c9c))
-* avatar and a progress show off card feature fix: refractive index slider ([dda23ec](https://github.com/Namankatiyar/pcm-tracker/commit/dda23ec90e5ce45ddcf93629e6b948f5c92e7c49))
-* custom time addition option in study clock ([0f63146](https://github.com/Namankatiyar/pcm-tracker/commit/0f6314614ff1d123eb026d35fdc6ebf6d6ffe64d))
-* removed monolithic App.tsx ([652a24c](https://github.com/Namankatiyar/pcm-tracker/commit/652a24cacc7515c4fd66edf6335dfb1caeca9ab5))
-* removing the monolithic css, this now uses distributed css styling for better management ([9560fe9](https://github.com/Namankatiyar/pcm-tracker/commit/9560fe9b1d46aeb8a753e94a3732263265369f7e))
-
-
-### Bug Fixes
-
-* added visual highlighting for priority in dropdowns ([f4943d4](https://github.com/Namankatiyar/pcm-tracker/commit/f4943d49e7b57dac960a4828ab676f741619ba54))
-* automatically detects colours from custom background now, fixed some ui inconsistencies ([14c65e4](https://github.com/Namankatiyar/pcm-tracker/commit/14c65e4e1a07f1df724ff348f9790dc808b17a84))
-* unified custom and subject wise task creation process ([26e549c](https://github.com/Namankatiyar/pcm-tracker/commit/26e549c2023ab2d1b85171b8c79b2da4997d6e11))
-* user can now change refractive index for glassmorphism effect. ([1db5334](https://github.com/Namankatiyar/pcm-tracker/commit/1db5334f463d037432d0efda544f5938b5bc59ef))
-
-## [0.1.0] (2026-02-22)
+## Features 
 
 ### Major Architectural Refactor
 
