@@ -1,31 +1,39 @@
-# Refactoring Ideas - AnalyticsPanels.tsx
+# Refactoring Ideas - Planner.tsx
 
-## 1. Component Decomposition
-**Problem:** `AnalyticsPanels.tsx` is a "God Component" managing too many responsibilities.
-**Solution:** Split into smaller, focused components:
-- `StudyTimePanel`: Logic for weekly/monthly study hours.
-- `MockScoresPanel`: Trend charts and the list of previous scores.
-- `AddMockModal`: Isolated form state and validation for adding new scores.
-- `ChartContainer`: A shared wrapper for Chart.js components to handle responsiveness and common styles.
+## 1. Performance: Inefficient Data Processing
+**Problem:** The component performs expensive filtering and sorting operations on the entire `tasks` and `sessions` arrays on every single render.
+- `getTasksForDate()` is called for every day in the view (~42 times on month view), each time filtering the whole `tasks` array.
+- `getStudyTimeForPeriod()` filters the `sessions` array on every render.
+- The monthly view cell calculates `dayStudyHours` by filtering `sessions` again for each day.
+**This is the biggest issue and will cause significant lag as data grows.**
 
-## 2. Custom Hooks for Data Transformation
-**Problem:** Data processing for charts is mixed with UI logic, making it hard to test and maintain.
-**Solution:** Extract logic into custom hooks:
-- `useStudyAnalytics(sessions, offset, mode)`: Returns processed labels and datasets for the study chart.
-- `useMockAnalytics(scores)`: Handles sorting, serial numbering, and dataset generation for mock trends.
+**Solution:**
+- **Create a `usePlannerData` hook:** This hook will take `tasks` and `sessions` and use `useMemo` to create a `Map` or `Record` where tasks and sessions are pre-grouped by date (`Record<string, PlannerTask[]>`).
+- **O(1) Lookups:** Components will then access data for a specific date using a fast key lookup (e.g., `groupedTasks[dateStr]`) instead of an O(N) filter.
 
-## 3. Standardized Chart Configurations
-**Problem:** `barChartOptions`, `lineChartOptions`, and `mockChartOptions` share ~80% of the same code.
-**Solution:** Create a `getBaseChartOptions(theme)` utility that returns a base configuration, then use deep merging or simple spreads for specific overrides (e.g., stacked scales for bars).
+## 2. Component Decomposition
+**Problem:** `Planner.tsx` is a monolithic component (400+ lines) responsible for rendering the weekly view, the monthly view, managing all state, and even contains another large component (`DayColumn`) within it.
 
-## 4. Theme Integration
-**Problem:** Use of `MutationObserver` is brittle and bypasses the React context.
-**Solution:** Replace with `useTheme()` from `ThemeContext`. This ensures charts re-render correctly when the theme toggles.
+**Solution:**
+- **Extract `DayColumn`**: Move the `DayColumn` component into its own file: `src/features/planner/components/DayColumn.tsx`.
+- **Create View Components**: Create separate components for the two distinct views to isolate their complex logic.
+    - `WeeklyView.tsx`: Manages the layout and drag-and-drop logic for the 7-day view.
+    - `MonthlyView.tsx`: Manages the grid generation for the monthly calendar.
+- **Create `MonthCell`**: Create a `MonthCell.tsx` component to encapsulate the complex rendering logic for a single day in the monthly calendar, which is currently a massive block inside a `.map()` call.
 
-## 5. Date & Math Utilities
-**Problem:** Inline date helpers like `getWeekDays` and `getMonthDays` clutter the component.
-**Solution:** Move these to `src/shared/utils/date.ts` or a new `src/features/dashboard/utils/analyticsUtils.ts`.
+## 3. Code Bloat & Readability
+**Problem:**
+- The render method contains complex JSX with inline data transformations, such as the IIFE `(() => { ... })()` to reorder days in the weekly view.
+- The sorting logic inside `getTasksForDate` is complex and undocumented.
+- Date calculations for the calendar grid (`getMonthDays`, `getMonday`) are recalculated on every render.
 
-## 6. Performance Optimization
-**Problem:** `mockScores` is sorted multiple times during a single render (once for the chart, once for the list).
-**Solution:** Perform a single sort at the top level or within a hook, and derive both the chart data and the list from that single sorted array.
+**Solution:**
+- **Memoize Calculations**: Use `useMemo` to calculate the `weekDays`, `reorderedWeekDays`, and `monthDays` arrays so they are not re-computed on every render.
+- **Isolate Logic**: Move the day-reordering logic out of the JSX and into a `useMemo` hook.
+- **Simplify State**: Extract date navigation logic (`handlePrevWeek`, `handleNextMonth`, etc.) into a dedicated `useDateNavigator` custom hook to clean up the main component.
+
+## 4. Fundamentally Flawed Logic
+**Problem:** The "random" cross image for past days in the monthly view uses `(date.getDate() + date.getMonth()) % 5`. This is deterministic and will always show the same cross for the same date, not a truly random one on each view. The styling is also applied inline.
+
+**Solution:**
+- While not a critical bug, this logic adds complexity to the render loop. If the "randomness" is not a key feature, it could be simplified or made truly random with a memoized map of dates to random numbers if needed. The styling should be moved to CSS.
