@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22)
+
+
+### Bug Fixes
+
+* removed the monolithic AnalyticsPanel.tsx causing significant loading time imrpovements. ([78b6e27](https://github.com/Namankatiyar/pcm-tracker/commit/78b6e27a9d22371e8837eb31da49c4401a40f0b5))
+
 ## [0.0.17] (2026-02-22)
 
 ### Refactoring
