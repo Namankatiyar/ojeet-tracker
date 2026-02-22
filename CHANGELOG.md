@@ -2,7 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-## [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)
+## [0.1.0] (2026-02-22)
+
+### Major Architectural Refactor
+
+*   **Decomposition of `App.tsx`**: Successfully refactored the monolithic "God Component" into a modular, maintainable architecture using React Context API and Custom Hooks.
+*   **Context Providers**:
+    *   **`ThemeContext`**: Centralized all UI customization (Theme, Accent, Glassmorphism, Backgrounds) and dynamic CSS variable updates.
+    *   **`SubjectDataContext`**: Isolated CSV ingestion, syllabus structure management, and custom column logic.
+    *   **`UserProgressContext`**: Dedicated provider for tracking completion, planner tasks, study sessions, and mock scores.
+*   **Custom Hooks Extraction**:
+    *   `useGlobalShortcuts`: Handles system-wide keyboard interactions (`Alt+N`).
+    *   `useDailyQuote`: Manages daily motivational quote selection and persistence.
+    *   `useAutoShiftTasks`: Encapsulates the business logic for rescheduling overdue tasks.
+*   **Modular Routing**: Extracted route definitions into a dedicated `AppRoutes.tsx` component.
+*   **Type Safety**: Performed a full codebase type check and eliminated unused parameters and dead logic in the core layer.
+
+## [0.0.15] (2026-02-03)
 
 
 ### Features

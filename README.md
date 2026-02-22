@@ -46,19 +46,26 @@
 
 ## 🏗️ Architecture
 
-OJEE-Tracker is built as a single-page application (SPA) focused on performance and user experience.
+OJEE-Tracker is built as a modular single-page application (SPA) focused on performance and user experience.
 
 *   **Frontend Framework:** [React 18](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/) for robust type safety.
-*   **Routing:** [React Router](https://reactrouter.com/) (v7) for seamless navigation.
+*   **State Management:** **React Context API** for global application state, modularized into three key providers:
+    *   `ThemeContext`: Manages visual settings and dynamic CSS variables.
+    *   `SubjectDataContext`: Handles syllabus structure, CSV parsing, and material customization.
+    *   `UserProgressContext`: Manages completion progress, planner tasks, study sessions, and mock scores.
+*   **Routing:** [React Router](https://reactrouter.com/) (v7) for seamless navigation, modularized into `AppRoutes`.
 *   **Build Tool:** [Vite](https://vitejs.dev/) for lightning-fast development server and optimized production builds.
 *   **Styling:** Modern **CSS Layers (@layer)** architecture for strict cascade control. Features a advanced glassmorphism design system, dynamic background customization, and `lucide-react` for modern iconography.
-*   **Data Persistence:** A custom `useLocalStorage` hook abstracts the browser's `localStorage` API, ensuring state persists across sessions without a backend database.
+*   **Persistence:** A custom `useLocalStorage` hook abstracts the browser's `localStorage` API, ensuring state persists across sessions without a backend database.
 
 ## 📂 Project Structure
 
 ```
 src/
-├── core/               # Application setup (routing, global styles)
+├── core/               # Application setup (Context Providers, Custom Hooks, Routing)
+│   ├── context/        # Global state providers (Theme, Data, Progress)
+│   ├── hooks/          # Core business logic hooks (Shortcuts, Auto-shift, Quotes)
+│   └── AppRoutes.tsx   # Centralized Route definitions
 ├── features/           # Domain-driven features (Dashboard, Planner, etc.)
 ├── shared/             # Reusable UI components, hooks, and utils
 └── main.tsx            # Entry point

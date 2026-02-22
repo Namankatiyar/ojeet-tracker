@@ -2,7 +2,7 @@
 
 This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-22
 
 ---
 
@@ -30,6 +30,7 @@ This documentation provides an exhaustive technical analysis of the OJEE Tracker
 
 ### Core Stack:
 - **Framework**: React 18 with TypeScript.
+- **State Management**: **React Context API** (Modular architecture).
 - **Routing**: React Router (react-router-dom) v7.
 - **Build System**: Vite (optimized for fast HMR and PWA builds).
 - **Package Manager**: pnpm (for efficient dependency management).
@@ -39,97 +40,54 @@ This documentation provides an exhaustive technical analysis of the OJEE Tracker
 ### Project Structure:
 ```text
 /src
-  /core           # Application setup (App.tsx, Routing)
-  /features       # Domain-driven features
-  /shared         # Reusable code
-  /styles         # Centralized Design System
+  /core           # Application setup (Providers, Hooks, Routing)
+    /context      # React Context Providers for global state
+    /hooks        # Business logic hooks (shortcuts, auto-shift, quotes)
+    App.new.tsx   # Modular application entry point
+    AppRoutes.tsx # Centralized Route definitions
+  /features       # Domain-driven features (Dashboard, Planner, StudyClock, Subjects)
+  /shared         # Reusable code (UI components, generic hooks, utils, types)
+  /styles         # Centralized Design System using CSS Layers
     index.css     # Entry point with @layer declarations
     base.css      # Layer: base (Global elements)
     layout.css    # Layer: layout (App structure)
-    /layers       # Core Layer definitions
-      _reset.css  # Layer: reset
-      _tokens.css # Layer: tokens (CSS Variables)
-    /components   # Layer: components
-      ui.css      # Basic components
-      modals.css  # Consolidated modal system
+    /layers       # Core Layer definitions (_reset.css, _tokens.css)
+    /components   # Layer: components (ui.css, modals.css)
     /features     # Layer: features (Domain specific)
   main.tsx        # Entry point
 ```
 
 ---
 
-## 3. Styling Strategy
+## 3. State Management (Context API)
 
-The project utilizes a **CSS Layered Architecture** to solve specificity battles and styling overrides.
+The application uses a **Layered Provider Pattern** to handle global state and side effects, ensuring separation of concerns and optimized re-rendering.
 
-### 3.1 CSS Layers:
-Styles are organized into a strict hierarchy (lowest to highest priority):
-1.  **reset**: Standardizes baseline browser behavior.
-2.  **tokens**: Centralized source of truth for all design tokens.
-3.  **base**: Fundamental element styling.
-4.  **layout**: High-level application shell and navigation.
-5.  **components**: Reusable UI primitives (buttons, inputs, modals).
-6.  **features**: View-specific layouts and logic.
-7.  **utilities**: Single-purpose utility classes for quick overrides.
+### 3.1 ThemeContext
+- **Responsibilities**: Manages `theme`, `accentColor`, `backgroundUrl`, `dimLevel`, and glassmorphism settings.
+- **Logic**: Automatically updates `document.documentElement` CSS variables and PWA meta tags when visual settings change.
 
-### 3.2 Design System:
-- **Tokens**: Defined in `/layers/_tokens.css`.
-- **Accent**: Dynamic `--accent` variable allows real-time UI rebranding, with automatic contrast text calculation.
-- **Glassmorphism**: Standardized via `--glass-*` variables.
+### 3.2 SubjectDataContext
+- **Responsibilities**: Manages the syllabus structure for Physics, Chemistry, and Maths.
+- **Logic**: Handles initial CSV parsing, custom column management, material exclusion, and material/chapter ordering logic.
 
-### 3.3 Theme Logic:
-- **Dark Mode**: Uses layered radial gradients to create depth.
-- **Dynamic Glass**: Background tints are synchronized across all cards and panels.
-- **Adjustable Intensity**: Users can manually control the level of background blur and transparency (Glassmorphism Intensity) and light bending effects (Refractive Index) via the Settings modal.
-- **Custom Backgrounds**: Supports user-uploaded background images with adjustable dimming overlays to ensure content legibility.
-- **Performance**: Glass effects are desktop-only; mobile fallback uses solid colors.
-
+### 3.3 UserProgressContext
+- **Responsibilities**: Manages completion progress, planner tasks, study sessions, and mock scores.
+- **Logic**: Coordinates complex interactions, such as syncing "Mark Complete" actions between the Planner and Subject syllabus.
 
 ---
 
-## 4. Release Management
+## 4. Styling Strategy
+
+The project utilizes a **CSS Layered Architecture** to solve specificity battles and styling overrides. Styles are organized into a strict hierarchy: `reset`, `tokens`, `base`, `layout`, `components`, `features`, `utilities`.
+
+---
+
+## 5. Release Management
 
 The project uses **Conventional Commits** and **Semantic Versioning**.
 - **Command**: `pnpm release`
 - **Output**: Bumps `package.json`, updates `CHANGELOG.md`, and creates Git tags.
-
----
-
-## 5. Key Data Models
-
-### `PlannerTask`
-```typescript
-{
-    id: string;
-    title: string;
-    subtitle?: string;
-    date: string; // YYYY-MM-DD
-    time: string; // HH:mm
-    completed: boolean;
-    completedAt?: string; // ISO
-    type: 'chapter' | 'custom';
-    subject?: Subject;
-    chapterSerial?: number;
-    material?: string;
-    wasShifted?: boolean;
-}
-```
-
-### `StudySession`
-```typescript
-{
-    id: string;
-    duration: number; // seconds
-    startTime: string; // ISO
-    endTime: string; // ISO
-    type: 'chapter' | 'custom' | 'task';
-    title: string;
-    subject?: Subject;
-    chapterSerial?: number;
-    chapterName?: string;
-    material?: string;
-}
-```
 
 ---
 
