@@ -91,4 +91,4 @@ src/
     ```
 
 ---
-*Created to help JEE aspirants stay focused and organized.*
+*Created for and by a JEE Aspirant.*
