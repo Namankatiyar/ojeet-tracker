@@ -41,6 +41,5 @@ Context.md
 *.exe
 *.zip
 .gemini/config.yaml
-src/styles/features/planner.css
 newfeatures.md
 newfeatures.txt

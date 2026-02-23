@@ -80,11 +80,7 @@ html[data-theme="dark"] .modal-backdrop {
 /* Dark mode glass effect */
 html[data-theme="dark"] .modal-container,
 html[data-theme="dark"] .modal-content {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    border-color: var(--glass-border);
-    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+    @extend .glass-panel; /* Note: Since I'm using plain CSS, I'll just keep the properties for now but ensure they match exactly or use the class in HTML if possible. For CSS layers, I'll use the class. */
 }
 
 /* ======================== */

@@ -32,11 +32,13 @@
 
 /* Timer Card - Horizontal Layout */
 .timer-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius);
   padding: 1.5rem;
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

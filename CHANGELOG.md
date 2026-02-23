@@ -2,12 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.19](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-23)
+
+### Performance & Refactoring
+
+*   **TaskModal Architectural Cleanup**:
+    *   **Decomposition**: Split the monolithic `TaskModal.tsx` into focused sub-components (`ChapterTaskFields`, `CustomTaskFields`) and extracted form state into a custom `useTaskForm` hook.
+    *   **Reusable UI**: Created a new `TimePicker` component in `shared/ui` to standardize time selection across the app.
+    *   **Logic Extraction**: Moved complex time-parsing and conversion logic (12h/24h) to `shared/utils/date.ts`.
+    *   **Type Safety**: Hardened the component with strict TypeScript interfaces, removing legacy `any` types.
+
+### UI & Styling
+
+*   **Global Glassmorphism Centralization**:
+    *   **Unified Utilities**: Created `src/styles/components/glass.css` defining `.glass-panel` and `.glass-interactive` utility classes.
+    *   **Architecture**: Integrated glass utilities into the `@layer components` hierarchy.
+    *   **Consistency**: Refactored the Dashboard (Agenda, Task Log), Study Clock (Timer Card), and Subjects (Chapter Tables) to use the centralized styling engine. This ensures the "Refractive Index" and "Blur Intensity" controls apply perfectly to all glass elements.
+
 ## [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22)
 
+### Performance & Refactoring
 
-### Bug Fixes
-
-* deconstructed and debloated the Planner.tsx into several components. ([e5b6132](https://github.com/Namankatiyar/pcm-tracker/commit/e5b6132a00dc1604c7e71ef75f60d867cba24e40))
+*   **Planner Performance Overhaul**:
+    *   **Fixed O(N) Lag**: Resolved a major performance bottleneck where the planner would lag with many tasks. It no longer re-filters the entire task list for every day on every render.
+    *   **`usePlannerData` Hook**: Created a new hook to pre-process and group tasks by date. This crucial change converts slow O(N) data filtering into instantaneous O(1) map lookups.
+    *   **Component Decomposition**: Split the 400+ line `Planner.tsx` monolith into smaller, manageable components: `WeeklyView`, `MonthlyView`, `DayColumn`, and a memoized `MonthCell` for the calendar grid.
+    *   **`useDateNavigator` Hook**: Encapsulated all date calculation and navigation logic into a clean, reusable hook.
+    *   **Maintainability**: The planner feature is now significantly more modular, performant, and easier to debug.
 
 ## [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22)
 

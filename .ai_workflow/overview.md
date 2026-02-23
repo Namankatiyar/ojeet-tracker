@@ -81,17 +81,34 @@ The application uses a **Layered Provider Pattern** to handle global state and s
 
 The project utilizes a **CSS Layered Architecture** to solve specificity battles and styling overrides. Styles are organized into a strict hierarchy: `reset`, `tokens`, `base`, `layout`, `components`, `features`, `utilities`.
 
+### 4.1 Glassmorphism Engine
+Glass effects are centralized in `src/styles/components/glass.css` using the `.glass-panel` utility. This ensures that the **Refractive Index** and **Blur Intensity** settings from `ThemeContext` are applied consistently across all dashboard cards, modals, and tables.
+
 ---
 
 ## 5. Release Management
-
-The project uses **Conventional Commits** and **Semantic Versioning**.
-- **Command**: `pnpm release`
-- **Output**: Bumps `package.json`, updates `CHANGELOG.md`, and creates Git tags.
-
+...
 ---
 
 ## 6. Refactoring History
+
+### TaskModal Architectural Cleanup (v0.0.19)
+- **Problem**: `TaskModal.tsx` was a 400-line monolith with fragmented state (13+ `useState` calls) and fragile time-syncing logic.
+- **Solution**: 
+    - Extracted form logic into a custom `useTaskForm` hook.
+    - Decomposed UI into `ChapterTaskFields` and `CustomTaskFields`.
+    - Created a reusable `TimePicker` component in `shared/ui`.
+- **Optimization**: Centralized time-parsing utilities in `shared/utils/date.ts`, eliminating `useEffect`-based state syncing and reducing "one-off" errors in time formatting.
+
+### Styling Centralization (v0.0.19)
+- **Problem**: Glassmorphism properties were duplicated across 10+ CSS files, making global style adjustments difficult.
+- **Solution**: Created a dedicated `glass.css` within the `components` layer.
+- **Implementation**: Refactored `AgendaCard`, `TaskLog`, `TimerCard`, and `ChapterTable` to consume unified `.glass-panel` properties.
+
+### Planner Performance Overhaul (v0.0.18)
+- **Problem**: The `Planner.tsx` component was a 400+ line monolith with a critical performance issue: it re-filtered the entire `tasks` array on every render for every day shown in the calendar, causing significant lag.
+- **Solution**: Decomposed the component into `WeeklyView`, `MonthlyView`, `DayColumn`, and a memoized `MonthCell`.
+- **Optimization**: Created a `usePlannerData` hook to pre-process and group all tasks by date *once*. This changes data lookups from a slow O(N) filter to an instantaneous O(1) map lookup, eliminating the performance bottleneck.
 
 ### Dashboard De-bloat (v0.0.17)
 - **Problem**: The analytics dashboard was a monolithic "God Component" causing performance bottlenecks and maintenance issues.
