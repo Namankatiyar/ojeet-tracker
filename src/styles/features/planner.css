@@ -625,6 +625,35 @@
   margin-right: 6px;
 }
 
+/* Clickable task title link → opens task in Study Clock */
+.task-title-link {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.task-title-link:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.task-link-icon {
+  opacity: 0;
+  transform: translateY(1px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.task-title-link:hover .task-link-icon {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .task-subtitle {
   font-size: 0.8rem;
   color: var(--text-secondary);

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Chapter, ChapterProgress, Priority } from '../../../shared/types';
 import { PrioritySelector } from '../../../shared/components/ui/PrioritySelector';
 import { Trash2, GripVertical } from 'lucide-react';
@@ -19,7 +20,7 @@ interface ChapterRowProps {
     onDragEnd?: (e: React.DragEvent<HTMLTableRowElement>) => void;
 }
 
-export function ChapterRow({
+function ChapterRowComponent({
     chapter,
     materialNames,
     progress,
@@ -57,7 +58,7 @@ export function ChapterRow({
         >
             <td className="serial-cell">
                 {isEditing ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', cursor: 'grab', color: 'var(--text-secondary)' }}>
+                    <div className="grip-icon-wrapper">
                         <GripVertical size={20} />
                     </div>
                 ) : (
@@ -70,8 +71,7 @@ export function ChapterRow({
                         type="text"
                         value={chapter.name}
                         onChange={(e) => onRename?.(e.target.value)}
-                        className="modal-input"
-                        style={{ padding: '0.4rem', fontSize: '0.85rem' }}
+                        className="modal-input chapter-edit-input"
                     />
                 ) : (
                     <>
@@ -98,20 +98,7 @@ export function ChapterRow({
                 {isEditing ? (
                     <button
                         onClick={onDelete}
-                        style={{
-                            background: 'var(--priority-high-bg)',
-                            color: 'var(--priority-high)',
-                            border: '1px solid var(--priority-high)',
-                            borderRadius: '4px',
-                            padding: '0.3rem 0.6rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            margin: '0 auto'
-                        }}
+                        className="chapter-delete-btn"
                     >
                         <Trash2 size={14} />
                         Delete
@@ -126,3 +113,5 @@ export function ChapterRow({
         </tr>
     );
 }
+
+export const ChapterRow = React.memo(ChapterRowComponent);

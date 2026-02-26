@@ -459,6 +459,40 @@ td.material-cell {
   background: var(--accent);
 }
 
+/* ChapterRow utility classes (replaced inline styles) */
+.grip-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  color: var(--text-secondary);
+}
+
+.chapter-edit-input {
+  padding: var(--space-1);
+  font-size: 0.85rem;
+}
+
+.chapter-delete-btn {
+  background: var(--priority-high-bg);
+  color: var(--priority-high);
+  border: 1px solid var(--priority-high);
+  border-radius: var(--radius-xs);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  margin: 0 auto;
+  transition: all var(--transition-fast);
+}
+
+.chapter-delete-btn:hover {
+  background: var(--priority-high);
+  color: white;
+}
+
 /* Editing Footer */
 .edit-actions-container {
   padding: 1rem;

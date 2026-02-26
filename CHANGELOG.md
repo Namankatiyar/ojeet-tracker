@@ -2,13 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-## [0.0.19](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-26)
 
 
 ### Bug Fixes
 
 * buggy css for two panels on dashboard. ([c3106d9](https://github.com/Namankatiyar/pcm-tracker/commit/c3106d9d547881bd0827c88a6768d63db14c549c))
 * fixed some css issues ([a4eac8f](https://github.com/Namankatiyar/pcm-tracker/commit/a4eac8f3d569bf5e6daf48adcfb9172a08b8e5d2))
+
+## [0.0.22] - 2026-02-27 00:30
+
+### AI Maintenance Run
+
+### Feature-Level Changes
+- **Planner-to-Clock Selection**: Incomplete task titles in the Planner are now clickable, navigating directly to the Study Clock with the task pre-selected.
+- **Planner Task Visual Affordance**: Added hover effects and an external link icon to task titles to indicate interactivity.
+- **SubjectPage Memoization**: Wrapped chapter rows in `React.memo` and stabilized callbacks, preventing mass re-renders of the chapter list.
+
+### Architectural Changes
+- **Module Decomposition**: Refactored the monolithic `SubjectPage.tsx` into focused sub-components (`SubjectHeader`, `PriorityFilterDropdown`) and logic hooks (`useChapterSort`, `useReorderDrag`).
+- **Generic Feature Hooks**: Introduced a reusable `useReorderDrag` hook to centralize row and column reordering logic.
+
+### State Changes
+- Added: `searchParams` consumption in `StudyClock.tsx`.
+- Modified: `SubjectPage` internal state decomposed into hooks.
+- Removed: None.
+
+### Dependency Graph Changes
+- `SubjectPage` now depends on `useChapterSort`, `useReorderDrag`, `SubjectHeader`, and `PriorityFilterDropdown`.
+
+### Suggested ADR Entries
+- ADR-009: Feature Component Decomposition and Logic Extraction
+
+### Risk Notes
+- None.
 
 ## [0.0.21] - 2026-02-27 00:15
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Play, Pause, Square, Trash2, Clock, X, Pencil, CheckCircle2, Plus, Calendar } from 'lucide-react';
 import { Subject, SubjectData, StudySession, PlannerTask, AppProgress } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
@@ -104,6 +105,35 @@ export function StudyClock({ subjectData, sessions, onAddSession, onDeleteSessio
             localStorage.removeItem(RUNNING_TIMER_STORAGE_KEY);
         }
     }, []);
+
+    // Auto-select task from URL query parameter (coming from Planner link)
+    const [searchParams, setSearchParams] = useSearchParams();
+    useEffect(() => {
+        const taskId = searchParams.get('taskId');
+        if (!taskId || timerState !== 'idle') return;
+
+        const task = plannerTasks.find(t => t.id === taskId);
+        if (!task || task.completed) return;
+
+        // Set task type to 'task' and auto-fill all fields
+        setTaskType('task');
+        setSelectedTaskId(taskId);
+
+        if (task.type === 'chapter' && task.subject) {
+            setSelectedSubject(task.subject);
+            setSelectedChapter(task.chapterSerial || '');
+            setSelectedMaterial(task.material || '');
+            setCustomTitle('');
+        } else {
+            setSelectedSubject('');
+            setSelectedChapter('');
+            setSelectedMaterial('');
+            setCustomTitle(task.title);
+        }
+
+        // Consume the query parameter so it doesn't re-trigger
+        setSearchParams({}, { replace: true });
+    }, [searchParams, plannerTasks, timerState]);
 
     // Stats filter state
     const [statsSubject, setStatsSubject] = useState<Subject | 'all'>('all');

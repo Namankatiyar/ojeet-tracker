@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Check, Trash2, Pencil, Clock, ClockAlert, Hourglass, Calendar as CalendarIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Check, Trash2, Pencil, Clock, ClockAlert, Hourglass, Calendar as CalendarIcon, ExternalLink } from 'lucide-react';
 import { PlannerTask } from '../../../shared/types';
 import { formatDateLocal, formatTime12Hour } from '../../../shared/utils/date';
 
@@ -17,6 +18,7 @@ interface DayColumnProps {
 }
 
 export function DayColumn({ date, tasks = [], isExamDay, isPastDay, onAddTask, onEditTask, onToggleTask, onDeleteTask, onMoveTask, onDuplicateTask }: DayColumnProps) {
+    const navigate = useNavigate();
     const [isDragOver, setIsDragOver] = useState(false);
     const [isShiftHeld, setIsShiftHeld] = useState(false);
     const isToday = new Date().toDateString() === date.toDateString();
@@ -123,7 +125,23 @@ export function DayColumn({ date, tasks = [], isExamDay, isPastDay, onAddTask, o
                             >
                                 <div className="task-left">
                                     <div className="task-title">
-                                        {task.title && <span className="task-title-text">{task.title}</span>}
+                                        {task.title && (
+                                            !task.completed ? (
+                                                <span
+                                                    className="task-title-text task-title-link"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/studyclock?taskId=${task.id}`);
+                                                    }}
+                                                    title="Open in Study Clock"
+                                                >
+                                                    {task.title}
+                                                    <ExternalLink size={11} className="task-link-icon" />
+                                                </span>
+                                            ) : (
+                                                <span className="task-title-text">{task.title}</span>
+                                            )
+                                        )}
                                         {isOverdue(task) && !task.wasShifted && <span className="pending-tag"><ClockAlert size={13} /> Pending</span>}
                                         {task.wasShifted && !task.completed && <span className="delayed-tag"><Hourglass size={13} /> Delayed</span>}
                                     </div>

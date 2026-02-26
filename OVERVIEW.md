@@ -138,6 +138,22 @@ Glass effects are centralized in `src/styles/components/glass.css` using the `.g
 - **Solution**: Decomposed into `StudyTimePanel`, `MockScoresPanel`, and `AddMockModal`.
 - **Optimization**: Extracted data aggregation logic into memoized custom hooks (`useStudyTimeAnalytics`, `useMockScoresAnalytics`) to isolate re-renders and improve UI responsiveness.
 
+### SubjectPage Performance & Component Decomposition (v0.0.22)
+- **Problem**: `SubjectPage.tsx` was a 448-line monolith. Lack of memoization caused all ~30+ chapter rows to re-render on every interaction (checkbox click, filter change), leading to noticeable UI lag.
+- **Solution**: 
+    - Extracted generic list reordering logic into `useReorderDrag` hook.
+    - Extracted memoized sorting/filtering into `useChapterSort` hook.
+    - Decomposed UI into `SubjectHeader` and `PriorityFilterDropdown`.
+    - Wrapped `ChapterRow` in `React.memo` and stabilized callbacks with `useCallback`.
+- **Optimization**: Component size reduced from 448 to ~260 lines. UI interactions are now instantaneous due to prevented re-render cascades.
+
+### Planner-to-Clock Direct Linking (v0.0.22)
+- **Problem**: Users had to manually select tasks in the Study Clock even if they were already looking at them in the Planner.
+- **Solution**: 
+    - Made Planner task titles clickable (for non-completed tasks).
+    - Implemented URL-based task selection in `StudyClock` using `useSearchParams`.
+    - Study Clock now auto-populates all task metadata (Subject, Chapter, Material) on mount if a `taskId` is present.
+
 ---
 
 *This document serves as the ground truth for agents. When in doubt, defer to the behaviors defined here.*
