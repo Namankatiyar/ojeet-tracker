@@ -2,11 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.22](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.22) (2026-02-26)
 
 
 ### Bug Fixes
 
 * buggy css for two panels on dashboard. ([c3106d9](https://github.com/Namankatiyar/pcm-tracker/commit/c3106d9d547881bd0827c88a6768d63db14c549c))
+* fixed monolithic subjectpage.tsx and added study clock feature for tasks ([35eabd2](https://github.com/Namankatiyar/pcm-tracker/commit/35eabd25232c85572c9fda0f2292c9b095394a9d))
 * fixed some css issues ([a4eac8f](https://github.com/Namankatiyar/pcm-tracker/commit/a4eac8f3d569bf5e6daf48adcfb9172a08b8e5d2))
 
 ## [0.0.22] - 2026-02-27 00:30
