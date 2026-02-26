@@ -24,8 +24,6 @@
 
 .overall-progress-card,
 .exam-countdown-card {
-  @extend .glass-panel;
-  /* Using standard classes in HTML is preferred, but for now I will apply the properties via refactor */
   border-radius: var(--border-radius);
   padding: 1.5rem;
   display: flex;

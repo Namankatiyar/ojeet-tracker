@@ -156,7 +156,7 @@ export function Dashboard({
             </div>
 
             <div className="dashboard-stats-row">
-                <div className="overall-progress-card">
+                <div className="glass-panel overall-progress-card">
                     <div className="overall-header">
                         <h2>Overall Progress</h2>
                         <p>Combined progress across all subjects</p>
@@ -191,7 +191,7 @@ export function Dashboard({
                     </div>
                 </div>
 
-                <div className="agenda-card">
+                <div className="glass-panel agenda-card">
                     <div className="agenda-header">
                         <div className="agenda-header-row">
                             <h2>Today's Agenda</h2>
@@ -250,7 +250,7 @@ export function Dashboard({
                     </div>
                 </div>
 
-                <div className="exam-countdown-card">
+                <div className="glass-panel exam-countdown-card">
                     <div className="countdown-header">
                         <h2>Exam Countdown</h2>
                         <p>Keep your eyes on the target</p>

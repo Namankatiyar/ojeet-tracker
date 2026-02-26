@@ -20,7 +20,7 @@ html {
 }
 
 /* Custom Background Image Layer - DARK MODE ONLY */
-html[data-theme="dark"]::before {
+html[data-theme="dark"] body.has-custom-bg::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -33,7 +33,7 @@ html[data-theme="dark"]::before {
 }
 
 /* Dimming Overlay - DARK MODE ONLY */
-html[data-theme="dark"]::after {
+html[data-theme="dark"] body.has-custom-bg::after {
   content: '';
   position: fixed;
   inset: 0;

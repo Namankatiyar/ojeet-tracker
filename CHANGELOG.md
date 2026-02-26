@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.21] - 2026-02-27 00:15
+
+### AI Maintenance Run
+
+### Feature-Level Changes
+- **Dashboard Consistency**: Fixed the "Overall Progress" and "Exam Countdown" panels losing their backgrounds due to an invalid `@extend` sass directive in `dashboard.css`. Explicitly applied the `.glass-panel` utility class in `Dashboard.tsx`.
+- **Planner Task Theming**: Fixed the `planner-task` background color to match the `skeleton-task` background (`var(--bg-tertiary)`) for better visual cohesiveness.
+- **Custom Background Visibility**: Resolved an issue where custom wallpaper images uploaded by the user were hidden behind the root canvas. Updated pseudo-element selectors in `base.css` to reliably mount above the root element while remaining behind the UI.
+
+### Architectural Changes
+- None.
+
+### State Changes
+- Added: None.
+- Modified: None.
+- Removed: None.
+
+### Dependency Graph Changes
+- None.
+
+### Suggested ADR Entries
+- None.
+
+### Risk Notes
+- None.
+
 ## [0.0.20] - 2026-02-26 20:30
 
 ### AI Maintenance Run

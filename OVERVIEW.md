@@ -101,6 +101,20 @@ Glass effects are centralized in `src/styles/components/glass.css` using the `.g
 
 ## 6. Refactoring History
 
+### UI Consistency & Custom Background Fix (v0.0.21)
+- **Problem**: Custom loaded backgrounds were invisible due to `html` base stacking contexts eclipsing the z-axis. Unmatched panel styling broke `planner-task` and dashboard cohesiveness using `@extend` which is strictly invalid.
+- **Solution**:
+    - Extracted pseudo image/dim overlays from `html::before` to `body.has-custom-bg::before` in `base.css`.
+    - Sanitized standard CSS away from invalid `@extend` mixins (`dashboard.css`).
+    - Standardized `planner-task` background token references.
+
+### Strict Token-Based Glassmorphism & Light Mode Fix (v0.0.20)
+- **Problem**: Glassmorphism leaked into Light Mode due to global `backdrop-filter` declarations and escalating `!important` tags scaling across multiple modules.
+- **Solution**: 
+    - Isolated all glass properties (`--glass-*`) exclusively within `[data-theme="dark"]`.
+    - Implemented `var(--panel-blur)` as the definitive depth mapping token, which evaluates to `none` in Light Mode and `blur()` in Dark Mode.
+    - Stripped hardcoded `style={{...}}` layout objects from `InputModal.tsx` and `PageLoader.tsx`, cleanly moving them to `@layer components`.
+
 ### TaskModal Architectural Cleanup (v0.0.19)
 - **Problem**: `TaskModal.tsx` was a 400-line monolith with fragmented state (13+ `useState` calls) and fragile time-syncing logic.
 - **Solution**: 
