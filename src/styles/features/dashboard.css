@@ -24,7 +24,8 @@
 
 .overall-progress-card,
 .exam-countdown-card {
-  @extend .glass-panel; /* Using standard classes in HTML is preferred, but for now I will apply the properties via refactor */
+  @extend .glass-panel;
+  /* Using standard classes in HTML is preferred, but for now I will apply the properties via refactor */
   border-radius: var(--border-radius);
   padding: 1.5rem;
   display: flex;
@@ -253,10 +254,10 @@
 }
 
 .subject-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  border: 1px solid var(--glass-border);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
   padding: 1.5rem;
   cursor: pointer;
@@ -265,13 +266,13 @@
   flex-direction: column;
   align-items: center;
   gap: 1.25rem;
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
 .subject-card:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-light);
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow-hover);
+  background: var(--panel-bg-hover);
+  border-color: var(--panel-border-light);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow-hover);
 }
 
 .subject-card:focus {
@@ -375,13 +376,13 @@
 
 /* ===== Agenda Card (Moved from Planner) ===== */
 .agenda-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  border: 1px solid var(--glass-border);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
   padding: 1.5rem;
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
   display: flex;
   flex-direction: column;
   height: 320px;
@@ -630,13 +631,13 @@
 }
 
 .analytics-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  border: 1px solid var(--glass-border);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
   padding: 1.25rem;
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
   display: flex;
   flex-direction: column;
   min-height: 380px;
@@ -981,13 +982,13 @@
 
 /* ===== Task Log Card (Moved from Planner) ===== */
 .task-log-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  border: 1px solid var(--glass-border);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
   padding: 1.5rem;
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
   display: flex;
   flex-direction: column;
   gap: 1rem;

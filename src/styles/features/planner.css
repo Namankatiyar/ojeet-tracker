@@ -206,17 +206,17 @@
 }
 
 .day-column.drag-over {
-  border-color: var(--accent) !important;
-  background: color-mix(in srgb, var(--accent), transparent 80%) !important;
-  box-shadow: 0 0 0 4px var(--accent), var(--shadow-glow) !important;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 80%);
+  box-shadow: 0 0 0 4px var(--accent), var(--shadow-glow);
   transform: translateY(-4px);
   z-index: 10;
 }
 
 .day-column.drag-over.past-day {
-  border-color: var(--border) !important;
-  background: var(--bg-tertiary) !important;
-  box-shadow: none !important;
+  border-color: var(--border);
+  background: var(--bg-tertiary);
+  box-shadow: none;
   transform: none;
 }
 
@@ -900,7 +900,7 @@
   transition: all 0.2s;
   font-size: 1.1rem;
   font-weight: 600;
-  backdrop-filter: blur(5px);
+  backdrop-filter: var(--panel-blur);
 }
 
 .modal-content .type-btn:hover {
@@ -932,7 +932,7 @@
   padding: 1rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
   border-radius: 12px;
   cursor: pointer;
   font-weight: 700;
@@ -948,18 +948,18 @@
 
 .subject-option.selected {
   background: color-mix(in srgb, var(--subj-color), transparent 85%);
-  backdrop-filter: blur(12px);
+  backdrop-filter: var(--panel-blur);
   border-color: var(--subj-color);
   color: var(--subj-color);
   box-shadow: 0 0 15px color-mix(in srgb, var(--subj-color), transparent 80%);
 }
 
 .chapter-picker {
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--panel-border);
   border-radius: 16px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
   display: flex;
   flex-direction: column;
   max-height: 280px;
@@ -975,7 +975,7 @@
 }
 
 .search-icon {
-  color: var(--text-muted) !important;
+  color: var(--text-muted);
   margin-right: 0.75rem;
 }
 
@@ -983,8 +983,8 @@
   border: none;
   background: transparent;
   width: 100%;
-  outline: none !important;
-  box-shadow: none !important;
+  outline: none;
+  box-shadow: none;
   color: var(--text-primary);
   font-size: 1rem;
   padding: 0.5rem 0;
@@ -1086,7 +1086,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--panel-blur);
   color: var(--text-primary);
   transition: all 0.2s;
 }
@@ -1111,7 +1111,7 @@
 .material-pill {
   padding: 0.5rem 1rem;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   cursor: pointer;
@@ -1127,7 +1127,7 @@
 
 .material-pill.selected {
   background: color-mix(in srgb, var(--accent), transparent 80%);
-  backdrop-filter: blur(12px);
+  backdrop-filter: var(--panel-blur);
   color: var(--accent);
   border-color: var(--accent);
   box-shadow: 0 0 10px color-mix(in srgb, var(--accent), transparent 80%);
@@ -1157,7 +1157,7 @@
   justify-content: space-between;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   cursor: pointer;
@@ -1192,7 +1192,7 @@
   margin-top: 1rem;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
+  backdrop-filter: var(--panel-blur);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: slideDown 0.2s ease;
@@ -1257,7 +1257,7 @@
 
 .time-btn.selected {
   background: color-mix(in srgb, var(--accent), transparent 80%);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
   color: var(--accent);
   font-weight: 700;
   border-color: var(--accent);
@@ -1272,7 +1272,7 @@
   padding: 0.75rem 1rem;
   width: 100%;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   cursor: pointer;
@@ -1283,7 +1283,7 @@
 
 .period-btn.selected {
   background: color-mix(in srgb, var(--accent), transparent 80%);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
   color: var(--accent);
   border-color: var(--accent);
 }

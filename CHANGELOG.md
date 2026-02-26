@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.20] - 2026-02-26 20:30
+
+### AI Maintenance Run
+
+### Architectural Changes
+- **Strict Token-Based Glassmorphism**: Remapped all hardcoded `backdrop-filter` properties to a dynamic `var(--panel-blur)` token. Enforced complete opacity in Light Mode by isolating glass tokens (`--glass-*`) exclusively inside the `[data-theme="dark"]` scope.
+- **Specificity Escalation Cleanup**: Stripped widespread `!important` declarations from CSS overlays (e.g., `planner.css`, Modals).
+
+### Feature-Level Changes
+- **Sanitized React Inline Styles**: Removed layout bypassing inline objects from `InputModal.tsx` and `PageLoader.tsx`, mapping them definitively to `@layer components`.
+- **Global Blur Standardization**: Synchronized modal and dropdown depths to match the core system variable index `var(--glass-blur)`.
+
+### Suggested ADR Entries
+- ADR-008: Strict Token-Based Glassmorphism and Semantic Theming
+
 ## [0.0.19](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-23)
 
 ### Performance & Refactoring

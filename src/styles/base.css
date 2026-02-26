@@ -145,33 +145,7 @@ body.has-custom-bg {
   background-clip: padding-box;
 }
 
-/* ===== Dark Mode Glassmorphism Effects ===== */
-/* Apply glass effect to all major cards and panels - DESKTOP ONLY */
-@media (min-width: 768px) {
-
-  html[data-theme="dark"] .overall-progress-card,
-  html[data-theme="dark"] .exam-countdown-card,
-  html[data-theme="dark"] .agenda-card,
-  html[data-theme="dark"] .task-log-card,
-  html[data-theme="dark"] .subject-card,
-  html[data-theme="dark"] .chapter-card,
-  html[data-theme="dark"] .study-clock-container,
-  html[data-theme="dark"] .timer-card,
-  html[data-theme="dark"] .stats-panel,
-  html[data-theme="dark"] .session-log-panel,
-  html[data-theme="dark"] .day-column,
-  html[data-theme="dark"] .monthly-calendar,
-  html[data-theme="dark"] .settings-panel,
-  html[data-theme="dark"] .modal-content,
-  html[data-theme="dark"] .view-toggles,
-  html[data-theme="dark"] .analytics-panel {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
-  }
-}
+/* Dark Mode glass tokens handled in theme.css */
 
 /* Fallback for Mobile - Solid Colors for Performance */
 @media (max-width: 767px) {

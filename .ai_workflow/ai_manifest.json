@@ -2,55 +2,13 @@
   "src\\core\\App.tsx": {
     "hooks": [
       "useState",
-      "useEffect",
       "useCallback",
-      "useMemo",
       "useNavigate",
       "useLocation",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useProgress",
-      "useProgress",
-      "useNavigate",
-      "useLocation",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useState",
-      "useLocalStorage",
-      "useState",
-      "useEffect",
-      "useEffect",
-      "useEffect",
-      "useEffect",
-      "useEffect",
-      "useEffect",
-      "useEffect",
-      "useMemo",
-      "useProgress",
-      "useCallback",
-      "useCallback",
-      "useCallback",
-      "useCallback",
-      "useCallback",
-      "useCallback",
-      "useCallback",
-      "useCallback",
-      "useCallback"
+      "useTheme",
+      "useUserProgress",
+      "useGlobalShortcuts",
+      "useAutoShiftTasks"
     ],
     "props": "Implicit",
     "exports": [],
@@ -58,40 +16,21 @@
       "react",
       "react-router-dom",
       "../shared/components/layout/Header",
-      "../shared/hooks/useLocalStorage",
-      "../shared/hooks/useProgress",
-      "../shared/utils/csvParser",
       "../shared/utils/date",
-      "../shared/utils/confetti",
       "../shared/types",
-      "../shared/components/ui/PageLoader",
-      "../quotes.json"
+      "./context/ThemeContext",
+      "./context/SubjectDataContext",
+      "./context/UserProgressContext",
+      "./hooks/useGlobalShortcuts",
+      "./hooks/useAutoShiftTasks",
+      "./AppRoutes"
     ]
   },
   "src\\features\\dashboard\\components\\AnalyticsPanels.tsx": {
     "hooks": [
       "useState",
-      "useMemo",
       "useEffect",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useEffect",
-      "useMemo",
-      "useMemo",
-      "useMemo",
-      "useSerialNumbers",
-      "useSerialNumbers",
-      "useMemo",
-      "usePointStyle",
-      "useMemo",
-      "usePointStyle",
-      "useMemo",
-      "usePointStyle"
+      "useMemo"
     ],
     "props": "Implicit",
     "exports": [
@@ -108,8 +47,6 @@
   },
   "src\\features\\dashboard\\components\\Dashboard.tsx": {
     "hooks": [
-      "useState",
-      "useEffect",
       "useState",
       "useEffect"
     ],
@@ -132,14 +69,9 @@
     "hooks": [
       "useState",
       "useEffect",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useEffect",
-      "useState",
-      "useState"
+      "useMemo",
+      "usePlannerData",
+      "useDateNavigator"
     ],
     "props": "Implicit",
     "exports": [
@@ -150,7 +82,10 @@
       "lucide-react",
       "../../../shared/types",
       "./TaskModal",
-      "../../../shared/utils/date"
+      "./WeeklyView",
+      "./MonthlyView",
+      "../hooks/usePlannerData",
+      "../hooks/useDateNavigator"
     ]
   },
   "src\\features\\planner\\components\\TaskLog.tsx": {
@@ -166,26 +101,7 @@
   },
   "src\\features\\planner\\components\\TaskModal.tsx": {
     "hooks": [
-      "useState",
-      "useEffect",
-      "useMemo",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useEffect",
-      "useEffect",
-      "useMemo",
-      "useMemo"
+      "useTaskForm"
     ],
     "props": "Implicit",
     "exports": [
@@ -194,7 +110,9 @@
     "dependencies": [
       "react",
       "lucide-react",
-      "../../../shared/types"
+      "../../../shared/types",
+      "../hooks/useTaskForm",
+      "../../../shared/components/ui/TimePicker"
     ]
   },
   "src\\features\\study-clock\\components\\StudyClock.tsx": {
@@ -202,42 +120,6 @@
       "useState",
       "useEffect",
       "useRef",
-      "useCallback",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useEffect",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useRef",
-      "useEffect",
-      "useEffect",
-      "useCallback",
       "useCallback"
     ],
     "props": "Implicit",
@@ -269,22 +151,7 @@
       "useState",
       "useRef",
       "useEffect",
-      "useLocalStorage",
-      "useLocalStorage",
-      "useState",
-      "useLocalStorage",
-      "useState",
-      "useRef",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useRef",
-      "useRef",
-      "useRef",
-      "useRef",
-      "useEffect",
-      "useEvent"
+      "useLocalStorage"
     ],
     "props": "Implicit",
     "exports": [
@@ -317,18 +184,7 @@
     "hooks": [
       "useState",
       "useRef",
-      "useEffect",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useRef",
-      "useRef",
-      "useEffect",
-      "useEvent",
-      "useEffect",
-      "useEvent"
+      "useEffect"
     ],
     "props": "Implicit",
     "exports": [
@@ -359,23 +215,7 @@
     "hooks": [
       "useState",
       "useRef",
-      "useEffect",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useState",
-      "useRef",
-      "useRef",
-      "useEffect",
-      "useEffect",
-      "useEffect",
-      "useEvent",
-      "useEvent",
-      "useDown",
-      "useMove",
-      "useDown",
-      "useMove"
+      "useEffect"
     ],
     "props": "Implicit",
     "exports": [
@@ -399,11 +239,7 @@
     "hooks": [
       "useState",
       "useRef",
-      "useEffect",
-      "useState",
-      "useRef",
-      "useEffect",
-      "useEvent"
+      "useEffect"
     ],
     "props": "Implicit",
     "exports": [
@@ -416,8 +252,6 @@
   },
   "src\\shared\\components\\ui\\DatePickerModal.tsx": {
     "hooks": [
-      "useState",
-      "useEffect",
       "useState",
       "useEffect"
     ],
@@ -435,10 +269,7 @@
     "hooks": [
       "useState",
       "useEffect",
-      "useRef",
-      "useState",
-      "useRef",
-      "useEffect"
+      "useRef"
     ],
     "props": "Implicit",
     "exports": [
@@ -481,12 +312,7 @@
   "src\\shared\\components\\ui\\ProgressCardModal.tsx": {
     "hooks": [
       "useRef",
-      "useState",
-      "useRef",
-      "useRef",
-      "useState",
-      "useState",
-      "useCORS"
+      "useState"
     ],
     "props": "Implicit",
     "exports": [
@@ -504,10 +330,6 @@
   "src\\shared\\components\\ui\\SettingsModal.tsx": {
     "hooks": [
       "useRef",
-      "useState",
-      "useRef",
-      "useRef",
-      "useState",
       "useState"
     ],
     "props": "Implicit",

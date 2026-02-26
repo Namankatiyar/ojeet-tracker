@@ -43,3 +43,5 @@ Context.md
 .gemini/config.yaml
 newfeatures.md
 newfeatures.txt
+.ai_workflow/
+agent.skills/

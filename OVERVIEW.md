@@ -2,6 +2,15 @@
 
 This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
+To get entire essence of this codebase you have following files at your disposal:
+1. OVERVIEW.md
+2. CHANGELOG.md
+3. .ai_workflow/state-map.md
+4. .ai_workflow/dependency-map.md
+5. .ai_workflow/architecture-decisions.md
+6. .ai_workflow/DESIGN_SYSTEM.md
+7. .ai_workflow/src/ (this is virtual directory created by running the prompt guideForSummaries.md)
+
 **Last Updated:** 2026-02-22
 
 ---
@@ -43,7 +52,7 @@ This documentation provides an exhaustive technical analysis of the OJEE Tracker
   /core           # Application setup (Providers, Hooks, Routing)
     /context      # React Context Providers for global state
     /hooks        # Business logic hooks (shortcuts, auto-shift, quotes)
-    App.new.tsx   # Modular application entry point
+    App.tsx       # Modular application entry point
     AppRoutes.tsx # Centralized Route definitions
   /features       # Domain-driven features (Dashboard, Planner, StudyClock, Subjects)
   /shared         # Reusable code (UI components, generic hooks, utils, types)

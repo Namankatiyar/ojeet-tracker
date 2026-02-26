@@ -23,17 +23,16 @@
   height: var(--header-height);
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
   z-index: 100;
   transition: all var(--transition-normal);
 }
 
 html[data-theme="dark"] .header {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  border-bottom: 1px solid var(--glass-border);
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border-bottom: 1px solid var(--panel-border);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
 .header-content {
@@ -130,7 +129,7 @@ html[data-theme="dark"] .header {
 html[data-theme="dark"] .nav-item:hover,
 html[data-theme="dark"] .nav-item.active {
   background: var(--glass-bg-hover);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--panel-blur);
 }
 
 .header-actions {
@@ -208,8 +207,11 @@ html[data-theme="dark"] .nav-item.active {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(4px);
   z-index: 2000;
+}
+
+html[data-theme="dark"] .mobile-menu-overlay {
+  backdrop-filter: var(--panel-blur);
 }
 
 .mobile-menu-dropdown {
@@ -227,7 +229,10 @@ html[data-theme="dark"] .nav-item.active {
   flex-direction: column;
   gap: 0.25rem;
   animation: slideDown 0.2s ease;
-  backdrop-filter: blur(10px);
+}
+
+html[data-theme="dark"] .mobile-menu-dropdown {
+  backdrop-filter: var(--panel-blur);
 }
 
 .mobile-menu-item {

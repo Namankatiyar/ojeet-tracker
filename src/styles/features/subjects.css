@@ -108,13 +108,13 @@
 
 /* ===== Chapter Table ===== */
 .chapter-table-container {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  border: 1px solid var(--glass-border);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
   overflow-x: auto;
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
 .add-material-btn {
@@ -295,8 +295,8 @@ td.material-cell {
   top: calc(100% + 4px);
   right: 0;
   background: var(--bg-secondary);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);

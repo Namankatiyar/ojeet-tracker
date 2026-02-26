@@ -73,16 +73,16 @@
 [data-theme="dark"] .primary-action-btn,
 [data-theme="dark"] .primary-btn {
   background: color-mix(in srgb, var(--accent), transparent 20%);
-  backdrop-filter: blur(8px) var(--glass-refraction);
+  backdrop-filter: var(--panel-blur);
   border: 1px solid color-mix(in srgb, var(--accent), white 20%);
-  box-shadow: var(--glass-inner-glow);
+  box-shadow: var(--panel-inner-glow);
 }
 
 [data-theme="dark"] .btn-secondary,
 [data-theme="dark"] .secondary-btn {
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px) var(--glass-refraction);
-  border: 1px solid var(--glass-border);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
 }
 
 /* ===== Color Picker ===== */
@@ -144,11 +144,11 @@
 }
 
 [data-theme="dark"] .color-picker-popup {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
 
@@ -217,16 +217,16 @@
 [data-theme="dark"] textarea,
 [data-theme="dark"] select {
   background: rgba(0, 0, 0, 0.3);
-  border-color: var(--glass-border);
-  backdrop-filter: blur(6px) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(6px) var(--glass-refraction);
+  border-color: var(--panel-border);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 [data-theme="dark"] input:focus,
 [data-theme="dark"] textarea:focus,
 [data-theme="dark"] select:focus {
   border-color: var(--glass-border-light);
-  box-shadow: var(--glass-inner-glow), 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
+  box-shadow: var(--panel-inner-glow), 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
 }
 
 
@@ -278,21 +278,21 @@
 
 /* ===== Filter Dropdown Styling ===== */
 .filter-dropdown {
-  backdrop-filter: blur(16px) var(--glass-refraction);
-  -webkit-backdrop-filter: blur(16px) var(--glass-refraction);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 [data-theme="dark"] .filter-dropdown {
-  background: rgba(18, 18, 26, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow), var(--panel-inner-glow);
 }
 
 :root:not([data-theme="dark"]) .filter-dropdown,
 [data-theme="light"] .filter-dropdown {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow-lg) !important;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ===== Tags ===== */
@@ -315,3 +315,20 @@
   background: var(--priority-medium-bg);
   color: var(--priority-medium);
 }
+/* ===== Page Loader ===== */
+.page-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 50vh;
+  gap: 1rem;
+  color: var(--text-secondary);
+}
+
+.page-loader-container .spin-icon {
+  color: var(--accent);
+  animation: spin 2s linear infinite;
+}
+

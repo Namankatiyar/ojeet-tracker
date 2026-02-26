@@ -11,15 +11,15 @@ interface InputModalProps {
     onCancel: () => void;
 }
 
-export function InputModal({ 
-    isOpen, 
-    title, 
-    message, 
-    placeholder = '', 
-    initialValue = '', 
+export function InputModal({
+    isOpen,
+    title,
+    message,
+    placeholder = '',
+    initialValue = '',
     confirmLabel = 'Add',
-    onConfirm, 
-    onCancel 
+    onConfirm,
+    onCancel
 }: InputModalProps) {
     const [value, setValue] = useState(initialValue);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -66,11 +66,10 @@ export function InputModal({
                     <button className="modal-btn cancel" onClick={onCancel}>
                         Cancel
                     </button>
-                    <button 
-                        className="modal-btn confirm" 
+                    <button
+                        className="modal-btn primary"
                         onClick={() => handleSubmit()}
                         disabled={!value.trim()}
-                        style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)', border: '1px solid var(--accent-border)' }} // Use accent color for positive action
                     >
                         {confirmLabel}
                     </button>

@@ -50,16 +50,14 @@
     align-items: center;
     justify-content: center;
     z-index: 1100;
-    backdrop-filter: blur(4px) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(4px) var(--glass-refraction);
     animation: modal-fade-in 0.2s ease;
 }
 
 html[data-theme="dark"] .modal-overlay,
 html[data-theme="dark"] .modal-backdrop {
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(6px) var(--glass-refraction);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
 }
 
 /* ======================== */
@@ -80,7 +78,8 @@ html[data-theme="dark"] .modal-backdrop {
 /* Dark mode glass effect */
 html[data-theme="dark"] .modal-container,
 html[data-theme="dark"] .modal-content {
-    @extend .glass-panel; /* Note: Since I'm using plain CSS, I'll just keep the properties for now but ensure they match exactly or use the class in HTML if possible. For CSS layers, I'll use the class. */
+    @extend .glass-panel;
+    /* Note: Since I'm using plain CSS, I'll just keep the properties for now but ensure they match exactly or use the class in HTML if possible. For CSS layers, I'll use the class. */
 }
 
 /* ======================== */
@@ -218,14 +217,14 @@ html[data-theme="dark"] .modal-content {
 /* Dark mode glass input */
 html[data-theme="dark"] .modal-input {
     background: rgba(0, 0, 0, 0.3);
-    border-color: var(--glass-border);
-    backdrop-filter: blur(6px) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(6px) var(--glass-refraction);
+    border-color: var(--panel-border);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
 }
 
 html[data-theme="dark"] .modal-input:focus {
     border-color: var(--glass-border-light);
-    box-shadow: var(--glass-inner-glow), 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
+    box-shadow: var(--panel-inner-glow), 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
 }
 
 /* ======================== */
@@ -269,9 +268,7 @@ html[data-theme="dark"] .modal-input:focus {
 .modal-content.input-modal .modal-footer {
     padding: 1rem 1.5rem;
     margin: 0;
-    background: rgba(27, 27, 27, 0.08);
-    backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
+    background: var(--color-bg-tertiary);
     border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     flex-shrink: 0;
 }
@@ -285,7 +282,14 @@ html[data-theme="dark"] .modal-input:focus {
 
 :root:not([data-theme="dark"]) .modal-content.input-modal .modal-footer,
 [data-theme="light"] .modal-content.input-modal .modal-footer {
-    background: rgba(240, 240, 240, 0.5);
+    background: var(--color-bg-tertiary);
+}
+
+/* Dark mode input modal */
+html[data-theme="dark"] .modal-content.input-modal .modal-footer {
+    background: rgba(27, 27, 27, 0.08);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
 }
 
 /* Settings Modal */
@@ -319,11 +323,11 @@ html[data-theme="dark"] .modal-input:focus {
 
 /* Dark mode settings modal */
 html[data-theme="dark"] .settings-modal {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    border-color: var(--glass-border);
-    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+    background: var(--panel-bg);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+    border-color: var(--panel-border);
+    box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
 /* Distribution Modal */
@@ -331,8 +335,6 @@ html[data-theme="dark"] .settings-modal {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(6px) var(--glass-refraction);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -340,10 +342,13 @@ html[data-theme="dark"] .settings-modal {
     animation: modal-fade-in 0.2s ease;
 }
 
+html[data-theme="dark"] .distribution-modal-overlay {
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+}
+
 .distribution-modal {
     background: var(--bg-modal, var(--bg-secondary));
-    backdrop-filter: blur(8px) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(8px) var(--glass-refraction);
     border: 1px solid var(--border);
     border-radius: var(--border-radius);
     padding: 2rem;
@@ -407,11 +412,11 @@ html[data-theme="dark"] .settings-modal {
 
 /* Dark mode distribution modal */
 html[data-theme="dark"] .distribution-modal {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    border-color: var(--glass-border);
-    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+    background: var(--panel-bg);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+    border-color: var(--panel-border);
+    box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
 /* ======================== */
@@ -749,11 +754,11 @@ html[data-theme="dark"] .distribution-modal {
 }
 
 html[data-theme="dark"] .progress-card-modal {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-refraction);
-    border-color: var(--glass-border);
-    box-shadow: var(--glass-inner-glow), var(--glass-shadow);
+    background: var(--panel-bg);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+    border-color: var(--panel-border);
+    box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
 .progress-card-modal .modal-header {

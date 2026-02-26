@@ -118,24 +118,24 @@
     --transition-slow: 400ms ease;
 
     /* ======================== */
-    /* === Glass Effect === */
+    /* === Panel Surfaces === */
     /* ======================== */
-    /* Light mode - minimal glass effect */
-    --glass-bg: rgba(255, 255, 255, 0.6);
-    --glass-bg-hover: rgba(255, 255, 255, 0.8);
-    --glass-blur: 0px;
-    --glass-refraction: saturate(100%) brightness(100%);
-    --glass-border: var(--color-border);
-    --glass-border-light: var(--color-border);
-    --glass-inner-glow: none;
-    --glass-shadow: var(--shadow-lg);
+    /* Light mode - solid opaque surfaces */
+    --panel-bg: var(--color-bg-secondary);
+    --panel-bg-hover: var(--color-bg-base);
+    --panel-border: var(--color-border);
+    --panel-border-light: var(--color-border-hover);
+    --panel-blur: none;
+    --panel-shadow: var(--shadow-md);
+    --panel-shadow-hover: var(--shadow-lg);
+    --panel-inner-glow: none;
 
     /* ======================== */
     /* === Card Backgrounds === */
     /* ======================== */
     --bg-card: var(--color-bg-secondary);
     --bg-card-item: var(--color-bg-tertiary);
-    --bg-modal: rgba(255, 255, 255, 0.6);
+    --bg-modal: var(--color-bg-secondary);
 }
 
 /* ===== Dark Mode Tokens ===== */
@@ -171,14 +171,24 @@
     --shadow-glow: 0 0 25px color-mix(in srgb, var(--accent), transparent 80%);
 
     /* Glass Effect (full effect in dark mode) */
-    --glass-bg: rgba(18, 18, 26, 0.35);
-    --glass-bg-hover: rgba(26, 26, 40, 0.45);
-    --glass-blur: 4px;
+    --glass-bg: rgba(18, 18, 26, 0.4);
+    --glass-bg-hover: rgba(26, 26, 40, 0.5);
+    --glass-blur: 10px;
     --glass-refraction: saturate(150%) brightness(100%);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-border-light: rgba(255, 255, 255, 0.15);
     --glass-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    /* Map Panel Surfaces to Glass */
+    --panel-bg: var(--glass-bg);
+    --panel-bg-hover: var(--glass-bg-hover);
+    --panel-border: var(--glass-border);
+    --panel-border-light: var(--glass-border-light);
+    --panel-blur: blur(var(--glass-blur)) var(--glass-refraction);
+    --panel-shadow: var(--glass-shadow);
+    --panel-shadow-hover: var(--glass-shadow);
+    --panel-inner-glow: var(--glass-inner-glow);
 
     /* Card Backgrounds */
     --bg-card: rgba(18, 18, 26, 0.6);
