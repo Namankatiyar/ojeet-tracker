@@ -11,7 +11,7 @@ interface UseTaskFormProps {
 
 export type TaskType = 'chapter' | 'custom';
 
-export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData, progress }: UseTaskFormProps) {
+export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: UseTaskFormProps) {
     const [taskType, setTaskType] = useState<TaskType>('chapter');
     const [date, setDate] = useState(initialDate);
     const [time, setTime] = useState('');

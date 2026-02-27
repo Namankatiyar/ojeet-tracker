@@ -1,5 +1,4 @@
 import { StudySession } from '../../../shared/types';
-import { formatDateLocal } from '../../../shared/utils/date';
 
 /**
  * Get week days for the selected week offset
