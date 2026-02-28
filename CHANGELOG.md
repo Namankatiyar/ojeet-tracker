@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+
+## [0.0.24] - 2026-02-28 15:30
+
+### AI Maintenance Run
+
+### Feature-Level Changes
+- **Study Clock UI Overhaul**: Reverted the radial SVG timer to a large, high-readability horizontal textual display.
+- **Precision Timer Engine**: Extracted core logic into a headless `useTimerEngine` hook using timestamp-based math for millisecond-perfect tracking, even across tab reloads.
+- **Multimodal Support**: Seamlessly integrated Stopwatch, Countdown, Pomodoro, and Custom Interval modes within the new engine architecture.
+- **"Click for Fullscreen" Feature**: Added a dedicated fullscreen mode with specialized UI, accessible via clicking the timer or pressing `F`.
+- **Session Completion Polish**:
+    - **Green Completion Icons**: Swapped red stop icons for green `CheckCircle2` icons across all modes.
+    - **Confetti & Audio**: Integrated `triggerConfetti()` and a custom synthesized audio bell on session completion.
+- **UI Optimization**: 
+    - Removed "Save Preset" functionality for Stopwatch mode.
+    - Implemented a collapsible task selector to maximize vertical screen real estate during active sessions.
+    - Added comprehensive keyboard shortcuts: `Space` (Start/Pause/Resume), `F` (Toggle Fullscreen), `Escape` (Exit Fullscreen).
+
+### Architectural Changes
+- **Logic/UI Separation**: Moved all timing, phase-transition, and storage-recovery logic out of `StudyClock.tsx` into `useTimerEngine.ts`.
+- **Timestamp Math**: Shifted from second-increment logic to absolute timestamp delta calculations (`Date.now() - startTimestamp`) to prevent drift.
+
+### State Changes
+- **Added**: `useTimerEngine` internal state (timestamps, phases, intervals, presets).
+- **Modified**: `StudyClock.tsx` internal state (reduced to UI-only toggles and task selection).
+- **Removed**: Legacy radial SVG state and second-based counter logic.
+
+### Dependency Graph Changes
+- `StudyClock.tsx` now acts as an orchestrator for `useTimerEngine`, `TimerControls`, and `ModeSelector`.
+- `useTimerEngine` handles its own high-frequency `localStorage` synchronization for session recovery.
+
+### Suggested ADR Entries
+- ADR-011: Headless Lifecycle-Decoupled Timer Engine
+
+### Risk Notes
+- High risk of interval-related memory leaks if not properly cleaned up (mitigated by `useTimerEngine` cleanup refs).
+
 ## [0.0.23](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.22...v0.0.23) (2026-02-28)
 
 

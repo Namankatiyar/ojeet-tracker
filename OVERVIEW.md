@@ -24,8 +24,9 @@ To get entire essence of this codebase you have following files at your disposal
 - **Extreme Flexibility**: Users can modify the syllabus, add/remove resource columns, and reorder content.
 - **Deep Persistence**: Leveraging `localStorage` for a zero-server, instant-load experience.
 - **Shareable Achievement**: The **Personalized Progress Card** feature allows users to generate and download (PNG) a card summarizing their achievements, featuring dynamic avatars (via `boring-avatars`) and customizable stats.
-- **Integrated Toolset**: Combines syllabus tracking with a daily/monthly planner (featuring Shift+Drag duplication) and a dedicated study clock.
-- **Hybrid Time Tracking**: Supports both real-time stopwatch tracking and manual log entry for offline study sessions.
+- **Integrated Toolset**: Combines syllabus tracking with a daily/monthly planner (featuring Shift+Drag duplication) and a high-precision Study Clock.
+- **Multimodal Study Clock**: Supports Stopwatch, Countdown, Pomodoro, and Custom Interval modes with persistent recovery.
+- **Hybrid Time Tracking**: Supports both real-time timestamp-based tracking and manual log entry for offline study sessions.
 - **Unified Actions**: Deep integration between the Study Clock and Planner, allowing users to "Mark Complete" a task directly from the timer interface.
 - **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, and advanced glassmorphism controls.
 - **Advanced Glassmorphism**: Implementation of a **Refractive Index** control that dynamically adjusts saturation, brightness, and prismatic hue-rotation for a high-fidelity "refracted glass" look.
@@ -154,6 +155,16 @@ Glass effects are centralized in `src/styles/components/glass.css` using the `.g
     - Decomposed UI into `SubjectHeader` and `PriorityFilterDropdown`.
     - Wrapped `ChapterRow` in `React.memo` and stabilized callbacks with `useCallback`.
 - **Optimization**: Component size reduced from 448 to ~260 lines. UI interactions are now instantaneous due to prevented re-render cascades.
+
+### Study Clock Overhaul & Timer Engine Extraction (v0.0.24)
+- **Problem**: The Study Clock was using a fragile `setInterval` state-syncing approach, leading to desync issues. The UI was cluttered with a radial SVG that didn't scale well, and preset management was inconsistent.
+- **Solution**: 
+    - Extracted core timing logic into a headless `useTimerEngine.ts` hook using high-precision timestamp math.
+    - Reverted UI to a large, clean horizontal textual display for better readability and scaling.
+    - Implemented a "Click for Fullscreen" feature with specialized keyboard shortcuts (F/Space/Escape).
+    - Standardized "Finish" button icons to green `CheckCircle2` across all modes for positive reinforcement.
+    - Integrated `triggerConfetti()` and a synthesized audio bell on session completion.
+    - Optimized internal state: removed "Save Preset" for Stopwatch mode and added a collapsible task selector to reclaim vertical estate during active sessions.
 
 ### Planner-to-Clock Direct Linking (v0.0.22)
 - **Problem**: Users had to manually select tasks in the Study Clock even if they were already looking at them in the Planner.

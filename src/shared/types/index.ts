@@ -54,6 +54,8 @@ export interface StudySession {
     startTime: string;      // ISO timestamp
     endTime: string;        // ISO timestamp
     duration: number;       // in seconds
+    timerMode?: 'stopwatch' | 'countdown' | 'pomodoro' | 'custom';
+    profileId?: string;
 }
 
 export interface MockScore {
