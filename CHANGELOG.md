@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.23](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.22...v0.0.23) (2026-02-28)
+
+
+### Features
+
+* multiple exam countdown possible now ([6fddede](https://github.com/Namankatiyar/pcm-tracker/commit/6fddede74e18cc02c25a014381d42f6be50847dc))
+
 ## [0.0.22](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.22) (2026-02-26)
 
 
