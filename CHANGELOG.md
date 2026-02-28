@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.24](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.23...v0.0.24) (2026-02-28)
+
+
+### Features
+
+* updated study clock, now has 4 timer modes. ([82ee33a](https://github.com/Namankatiyar/pcm-tracker/commit/82ee33aafd73d7cbf082c09f4526d3d828351522))
 
 ## [0.0.24] - 2026-02-28 15:30
 
