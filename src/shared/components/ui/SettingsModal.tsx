@@ -30,7 +30,7 @@ const STORAGE_KEYS = {
     accent: 'jee-tracker-accent',
     customColumns: 'jee-tracker-custom-columns',
     excludedColumns: 'jee-tracker-excluded-columns',
-    examDate: 'jee-exam-date',
+    examDates: 'jee-exam-dates',
     plannerTasks: 'jee-tracker-planner-tasks',
     // New settings
     disableAutoShift: 'jee-tracker-disable-auto-shift',

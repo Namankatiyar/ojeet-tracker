@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
-import { Subject, SubjectData, PlannerTask, StudySession, MockScore } from '../../../shared/types';
+import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry } from '../../../shared/types';
 import { TaskLog } from '../../planner/components/TaskLog';
-import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
+import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
-import { Atom, FlaskConical, Calculator, Zap, Calendar, Check } from 'lucide-react';
+import { Atom, FlaskConical, Calculator, Zap, Calendar, Check, Pencil } from 'lucide-react';
 import { formatDateLocal, formatTime12Hour } from '../../../shared/utils/date';
 
 interface DashboardProps {
@@ -17,8 +17,11 @@ interface DashboardProps {
     quote?: { quote: string; author: string } | null;
     plannerTasks: PlannerTask[];
     onToggleTask: (taskId: string) => void;
-    examDate: string;
-    onExamDateChange: (date: string) => void;
+    examDates: ExamEntry[];
+    onAddExam: (exam: Omit<ExamEntry, 'id'>) => void;
+    onDeleteExam: (id: string) => void;
+    onUpdateExam: (exam: ExamEntry) => void;
+    onSetPrimaryExam: (id: string) => void;
     onQuickAdd: () => void;
     studySessions?: StudySession[];
     mockScores?: MockScore[];
@@ -36,29 +39,33 @@ export function Dashboard({
     quote,
     plannerTasks,
     onToggleTask,
-    examDate,
-    onExamDateChange,
+    examDates,
+    onAddExam,
+    onDeleteExam,
+    onUpdateExam,
+    onSetPrimaryExam,
     onQuickAdd,
     studySessions = [],
     mockScores = [],
     onAddMockScore = () => { },
     onDeleteMockScore = () => { }
 }: DashboardProps) {
-    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [isExamModalOpen, setIsExamModalOpen] = useState(false);
 
-    // Reset exam date if it has passed
+    // Get primary exam
+    const primaryExam = examDates.find(e => e.isPrimary) || examDates[0] || null;
+    const secondaryExams = examDates.filter(e => e.id !== primaryExam?.id);
+
+    // Reset primary exam date if it has passed
     useEffect(() => {
-        if (examDate) {
-            const target = new Date(examDate);
+        if (primaryExam?.date) {
+            const target = new Date(primaryExam.date);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             target.setHours(0, 0, 0, 0);
-
-            if (target < today) {
-                onExamDateChange('');
-            }
+            // Don't auto-remove; just let the countdown show negative
         }
-    }, [examDate, onExamDateChange]);
+    }, [primaryExam]);
 
     const subjects: { key: Subject; label: string; icon: React.ReactNode; progress: number; color: string }[] = [
         { key: 'physics', label: 'Physics', icon: <Atom size={24} />, progress: physicsProgress, color: 'var(--accent)' },
@@ -72,9 +79,9 @@ export function Dashboard({
         return { total: data.chapters.length, completed: 0 };
     };
 
-    const calculateDaysRemaining = () => {
-        if (!examDate) return null;
-        const target = new Date(examDate);
+    const calculateDaysRemaining = (dateStr: string) => {
+        if (!dateStr) return null;
+        const target = new Date(dateStr);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         target.setHours(0, 0, 0, 0);
@@ -84,7 +91,7 @@ export function Dashboard({
         return diffDays;
     };
 
-    const daysRemaining = calculateDaysRemaining();
+    const daysRemaining = primaryExam ? calculateDaysRemaining(primaryExam.date) : null;
 
     const getCountdownColor = (days: number) => {
         const hue = Math.min(Math.max(days * 2, 0), 120);
@@ -252,13 +259,23 @@ export function Dashboard({
 
                 <div className="glass-panel exam-countdown-card">
                     <div className="countdown-header">
-                        <h2>Exam Countdown</h2>
-                        <p>Keep your eyes on the target</p>
+                        <div>
+                            <h2>Exam Countdown</h2>
+                            <p>Keep your eyes on the target</p>
+                        </div>
+                        <button
+                            className="exam-edit-btn"
+                            onClick={() => setIsExamModalOpen(true)}
+                            title="Manage exams"
+                        >
+                            <Pencil size={16} />
+                        </button>
                     </div>
 
                     <div className="countdown-content">
-                        {daysRemaining !== null ? (
+                        {primaryExam && daysRemaining !== null ? (
                             <div className="days-display">
+                                <span className="exam-primary-name">{primaryExam.name}</span>
                                 <span
                                     className="days-value"
                                     style={{
@@ -270,24 +287,30 @@ export function Dashboard({
                                     {daysRemaining}
                                 </span>
                                 <span className="days-label">{Math.abs(daysRemaining) === 1 ? 'Day' : 'Days'} {daysRemaining >= 0 ? 'Left' : 'Ago'}</span>
+                                <span className="exam-date-sub">{formatDateDisplay(primaryExam.date)}</span>
                             </div>
                         ) : (
-                            <div className="no-date-message">
-                                Set your exam date to start counting down
+                            <div className="no-date-message" onClick={() => setIsExamModalOpen(true)} style={{ cursor: 'pointer' }}>
+                                <Calendar size={24} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
+                                <span>Click to add your first exam</span>
                             </div>
                         )}
 
-                        <div className="date-input-container">
-                            <label htmlFor="exam-date-btn">Target Date:</label>
-                            <button
-                                id="exam-date-btn"
-                                className="date-display-btn"
-                                onClick={() => setIsDatePickerOpen(true)}
-                            >
-                                <span>{formatDateDisplay(examDate)}</span>
-                                <Calendar size={18} className="calendar-icon" />
-                            </button>
-                        </div>
+                        {secondaryExams.length > 0 && (
+                            <div className="exam-secondary-list">
+                                {secondaryExams.slice(0, 3).map(exam => {
+                                    const days = calculateDaysRemaining(exam.date);
+                                    return (
+                                        <div key={exam.id} className="exam-secondary-item">
+                                            <span className="exam-secondary-name">{exam.name}</span>
+                                            <span className={`exam-secondary-days ${days !== null && days <= 7 ? 'urgent' : ''}`}>
+                                                {days !== null ? (days >= 0 ? `${days}d` : 'Passed') : '—'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -335,13 +358,16 @@ export function Dashboard({
                 </div>
             </div>
 
-            <DatePickerModal
-                isOpen={isDatePickerOpen}
-                selectedDate={examDate}
-                onSelect={onExamDateChange}
-                onClose={() => setIsDatePickerOpen(false)}
-                disablePastDates={true}
-            />
+            {isExamModalOpen && (
+                <ExamCountdownModal
+                    examDates={examDates}
+                    onAddExam={onAddExam}
+                    onDeleteExam={onDeleteExam}
+                    onUpdateExam={onUpdateExam}
+                    onSetPrimaryExam={onSetPrimaryExam}
+                    onClose={() => setIsExamModalOpen(false)}
+                />
+            )}
         </div>
     );
 }

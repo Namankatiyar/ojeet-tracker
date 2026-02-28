@@ -67,6 +67,13 @@ export interface MockScore {
     maxMarks?: number;      // Optional, defaults to 300
 }
 
+export interface ExamEntry {
+    id: string;
+    name: string;       // e.g. "JEE Mains", "JEE Advanced"
+    date: string;       // YYYY-MM-DD
+    isPrimary: boolean;  // The one shown in the main countdown display
+}
+
 export interface ProgressCardSettings {
     userName: string;
     customAvatarUrl: string;

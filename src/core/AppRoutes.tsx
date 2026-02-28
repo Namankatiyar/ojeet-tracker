@@ -26,14 +26,15 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     onQuickAddTask
 }) => {
     const { mergedSubjectData, handleAddColumn, handleRemoveColumn, handleAddChapter, handleRemoveChapter, handleRenameChapter, handleReorderChapters, handleReorderMaterials } = useSubjectData();
-    const { 
-        progress, plannerTasks, studySessions, mockScores, examDate, setExamDate,
+    const {
+        progress, plannerTasks, studySessions, mockScores, examDates, primaryExamDate,
         physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress,
         handleToggleMaterial, handleSetPriority, handleAddPlannerTask, handleTogglePlannerTask,
         handleDeletePlannerTask, handleEditPlannerTask, handleAddStudySession, handleDeleteStudySession,
-        handleEditStudySession, handleAddMockScore, handleDeleteMockScore
+        handleEditStudySession, handleAddMockScore, handleDeleteMockScore,
+        handleAddExam, handleDeleteExam, handleUpdateExam, handleSetPrimaryExam
     } = useUserProgress();
-    
+
     const dailyQuote = useDailyQuote();
 
     return (
@@ -50,8 +51,11 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                         quote={dailyQuote}
                         plannerTasks={plannerTasks}
                         onToggleTask={handleTogglePlannerTask}
-                        examDate={examDate}
-                        onExamDateChange={setExamDate}
+                        examDates={examDates}
+                        onAddExam={handleAddExam}
+                        onDeleteExam={handleDeleteExam}
+                        onUpdateExam={handleUpdateExam}
+                        onSetPrimaryExam={handleSetPrimaryExam}
                         onQuickAdd={onQuickAddTask}
                         studySessions={studySessions}
                         mockScores={mockScores}
@@ -68,7 +72,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                         onToggleTask={handleTogglePlannerTask}
                         onDeleteTask={handleDeletePlannerTask}
                         subjectData={mergedSubjectData}
-                        examDate={examDate}
+                        examDate={primaryExamDate}
                         initialOpenDate={plannerDateToOpen}
                         onConsumeInitialDate={onConsumeInitialDate}
                         sessions={studySessions}

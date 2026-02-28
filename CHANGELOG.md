@@ -11,6 +11,37 @@ All notable changes to this project will be documented in this file. See [commit
 * fixed monolithic subjectpage.tsx and added study clock feature for tasks ([35eabd2](https://github.com/Namankatiyar/pcm-tracker/commit/35eabd25232c85572c9fda0f2292c9b095394a9d))
 * fixed some css issues ([a4eac8f](https://github.com/Namankatiyar/pcm-tracker/commit/a4eac8f3d569bf5e6daf48adcfb9172a08b8e5d2))
 
+## [0.0.23] - 2026-02-28 13:40
+
+### AI Maintenance Run
+
+### Feature-Level Changes
+- **Multi-Exam Countdown Panel**: Replaced the single-date exam countdown with a comprehensive management system. Users can now track multiple exams with independent names and dates.
+- **Improved Countdown UI**: Redesigned the Dashboard card to display a "Primary" exam prominently, with a secondary mini-list for other upcoming dates.
+- **Exam Management Modal**: Added a new modal for CRUD operations on exams, including inline editing and primary exam selection (star rating).
+- **Design Alignment**: Standardized button styling in the exam forms to match the project's glassmorphism and rounded design language.
+
+### Architectural Changes
+- **Collection-Based State**: Migrated the exam tracking logic from a legacy string scalar to an array of objects (`ExamEntry[]`) in `UserProgressContext.tsx`.
+- **Data Migration Logic**: Implemented a forward-compatible migration hook that automatically converts existing `jee-exam-date` values in storage to the new collection format.
+
+### State Changes
+- Added: `examDates` array and CRUD handlers in `UserProgressContext.tsx`.
+- Derived: `primaryExamDate` computed property for backward compatibility with Header and Planner.
+- Modified: `Dashboard` internal visibility states.
+- Removed: Legacy `examDate` scalar string.
+
+### Dependency Graph Changes
+- `Dashboard` now depends on `ExamCountdownModal`. `ExamCountdownModal` reuses `DatePickerModal`.
+
+### Suggested ADR Entries
+- ADR-010: Multi-Exam Management System and Collection-Based Tracking
+
+### Risk Notes
+- Migration risk is low due to explicit string-to-array conversion guards.
+
+---
+
 ## [0.0.22] - 2026-02-27 00:30
 
 ### AI Maintenance Run

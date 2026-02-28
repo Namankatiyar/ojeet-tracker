@@ -16,14 +16,14 @@ type View = 'dashboard' | 'planner' | 'studyclock' | Subject;
 function AppContent() {
     const navigate = useNavigate();
     const location = useLocation();
-    
-    const { 
+
+    const {
         theme, toggleTheme, accentColor, setAccentColor, backgroundUrl, setBackgroundUrl,
         dimLevel, setDimLevel, glassIntensity, setGlassIntensity, glassRefraction, setGlassRefraction
     } = useTheme();
 
     const {
-        setPlannerTasks, studySessions, mockScores, examDate, disableAutoShift, setDisableAutoShift,
+        setPlannerTasks, studySessions, mockScores, primaryExamDate, disableAutoShift, setDisableAutoShift,
         physicsProgress, chemistryProgress, mathsProgress, progressCardSettings, setProgressCardSettings
     } = useUserProgress();
 
@@ -80,12 +80,12 @@ function AppContent() {
                 physicsProgress={physicsProgress}
                 chemistryProgress={chemistryProgress}
                 mathsProgress={mathsProgress}
-                examDate={examDate}
+                examDate={primaryExamDate}
                 progressCardSettings={progressCardSettings}
                 onProgressCardSettingsChange={setProgressCardSettings}
             />
             <main className="main-content">
-                <AppRoutes 
+                <AppRoutes
                     onNavigate={handleNavigate}
                     plannerDateToOpen={plannerDateToOpen}
                     onConsumeInitialDate={() => setPlannerDateToOpen(null)}

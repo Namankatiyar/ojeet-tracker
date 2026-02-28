@@ -11,7 +11,7 @@ To get entire essence of this codebase you have following files at your disposal
 6. .ai_workflow/DESIGN_SYSTEM.md
 7. .ai_workflow/src/ (this is virtual directory created by running the prompt guideForSummaries.md)
 
-**Last Updated:** 2026-02-22
+**Last Updated:** 2026-02-28
 
 ---
 
@@ -30,7 +30,7 @@ To get entire essence of this codebase you have following files at your disposal
 - **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, and advanced glassmorphism controls.
 - **Advanced Glassmorphism**: Implementation of a **Refractive Index** control that dynamically adjusts saturation, brightness, and prismatic hue-rotation for a high-fidelity "refracted glass" look.
 - **Intelligent Theming**: Automatic accent color extraction from custom wallpapers using `node-vibrant` for a cohesive look.
-- **Context-Aware UI**: Sophisticated interaction logic, such as preventing past-date targets for exams while allowing historical entry for mock test scores.
+- **Multi-Exam Countdown**: Supports tracking multiple competitive exam dates simultaneously with a primary focus and secondary mini-list.
 - **Layered Styling Architecture**: Uses modern CSS Layers for strict cascade control.
 
 ---
@@ -137,6 +137,14 @@ Glass effects are centralized in `src/styles/components/glass.css` using the `.g
 - **Problem**: The analytics dashboard was a monolithic "God Component" causing performance bottlenecks and maintenance issues.
 - **Solution**: Decomposed into `StudyTimePanel`, `MockScoresPanel`, and `AddMockModal`.
 - **Optimization**: Extracted data aggregation logic into memoized custom hooks (`useStudyTimeAnalytics`, `useMockScoresAnalytics`) to isolate re-renders and improve UI responsiveness.
+
+### Multi-Exam Countdown Panel (v0.0.23)
+- **Problem**: Users preparring for competitive exams needed to track multiple related dates concurrently (e.g. Session 1, Session 2, Advanced) rather than a single target date.
+- **Solution**: 
+-     - Migrated `UserProgressContext` from `examDate: string` to `examDates: ExamEntry[]`.
+-     - Implemented an auto-migration hook to preserve legacy single-date data.
+-     - Created the specialized `ExamCountdownModal` for interactive exam management.
+-     - Redesigned the Dashboard countdown card to show a primary focus and a secondary list of upcoming exams.
 
 ### SubjectPage Performance & Component Decomposition (v0.0.22)
 - **Problem**: `SubjectPage.tsx` was a 448-line monolith. Lack of memoization caused all ~30+ chapter rows to re-render on every interaction (checkbox click, filter change), leading to noticeable UI lag.
