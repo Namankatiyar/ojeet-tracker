@@ -37,7 +37,7 @@ yarn-error.log*
 .env*.local
 Context.md
 
-
+.jules/
 *.exe
 *.zip
 .gemini/config.yaml
@@ -45,3 +45,4 @@ newfeatures.md
 newfeatures.txt
 .ai_workflow/
 agent.skills/
+
