@@ -9,9 +9,9 @@ interface TimerControlsProps {
     onStart: () => void;
     onPause: () => void;
     onResume: () => void;
-    onEnd: () => void;
+    onEnd: (e?: React.MouseEvent) => void;
     onDiscard: () => void;
-    onMarkComplete: () => void;
+    onMarkComplete: (e?: React.MouseEvent) => void;
     onSkipBreak: () => void;
     onResetCycle: () => void;
 }
@@ -52,7 +52,7 @@ export function TimerControls({
                             <SkipForward size={18} />
                         </button>
                     )}
-                    <button className="timer-btn end" onClick={onEnd} title="End Session">
+                    <button className="timer-btn end" onClick={(e) => onEnd(e)} title="End Session">
                         <CheckCircle2 size={18} />
                     </button>
                 </>
@@ -64,11 +64,11 @@ export function TimerControls({
                         <Play size={18} />
                     </button>
                     {canMarkComplete ? (
-                        <button className="timer-btn mark-complete" onClick={onMarkComplete} title="Save Session & Mark Task Complete">
+                        <button className="timer-btn mark-complete" onClick={(e) => onMarkComplete(e)} title="Save Session & Mark Task Complete">
                             <CheckCircle2 size={18} />
                         </button>
                     ) : (
-                        <button className="timer-btn end" onClick={onEnd} title="Save & End Session">
+                        <button className="timer-btn end" onClick={(e) => onEnd(e)} title="Save & End Session">
                             <CheckCircle2 size={18} />
                         </button>
                     )}

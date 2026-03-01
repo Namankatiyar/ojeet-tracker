@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
 import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry } from '../../../shared/types';
 import { TaskLog } from '../../planner/components/TaskLog';
@@ -54,7 +55,17 @@ export function Dashboard({
 
     // Get primary exam
     const primaryExam = examDates.find(e => e.isPrimary) || examDates[0] || null;
-    const secondaryExams = examDates.filter(e => e.id !== primaryExam?.id);
+    const secondaryExams = useMemo(() => {
+        return examDates
+            .filter(e => e.id !== primaryExam?.id)
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [examDates, primaryExam]);
+
+    // Track active secondary exam for the cyclical button
+    const [secondaryExamIndex, setSecondaryExamIndex] = useLocalStorage('jee-secondary-exam-index', 0);
+    const activeSecondaryExam = secondaryExams.length > 0
+        ? secondaryExams[secondaryExamIndex % secondaryExams.length]
+        : null;
 
     // Reset primary exam date if it has passed
     useEffect(() => {
@@ -288,19 +299,24 @@ export function Dashboard({
                             </div>
                         )}
 
-                        {secondaryExams.length > 0 && (
-                            <div className="exam-secondary-list">
-                                {secondaryExams.slice(0, 3).map(exam => {
-                                    const days = calculateDaysRemaining(exam.date);
-                                    return (
-                                        <div key={exam.id} className="exam-secondary-item">
-                                            <span className="exam-secondary-name">{exam.name}</span>
+                        {activeSecondaryExam && (
+                            <div className="exam-secondary-container">
+                                <div
+                                    className="exam-secondary-cycler"
+                                    onClick={() => setSecondaryExamIndex(prev => prev + 1)}
+                                    title="Click to view next exam"
+                                    role="button"
+                                >
+                                    <span className="exam-secondary-name">{activeSecondaryExam.name}</span>
+                                    {(() => {
+                                        const days = calculateDaysRemaining(activeSecondaryExam.date);
+                                        return (
                                             <span className={`exam-secondary-days ${days !== null && days <= 7 ? 'urgent' : ''}`}>
                                                 {days !== null ? (days >= 0 ? `${days}d` : 'Passed') : '—'}
                                             </span>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })()}
+                                </div>
                             </div>
                         )}
                     </div>

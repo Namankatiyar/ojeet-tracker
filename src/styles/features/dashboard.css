@@ -235,24 +235,35 @@
 }
 
 /* Secondary Exam Mini-List */
-.exam-secondary-list {
+.exam-secondary-container {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
   border-top: 1px solid var(--border);
   padding-top: 0.75rem;
   margin-top: auto;
 }
 
-.exam-secondary-item {
+.exam-secondary-cycler {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.3rem 0.5rem;
+  padding: 0.5rem 0.75rem;
   background: var(--bg-tertiary);
   border-radius: 6px;
   font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2sease;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.exam-secondary-cycler:hover {
+  background: var(--bg-tertiary-hover, rgba(255, 255, 255, 0.05));
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+
+.exam-secondary-cycler:active {
+  transform: translateY(0);
 }
 
 .exam-secondary-name {

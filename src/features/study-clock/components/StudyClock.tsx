@@ -3,14 +3,16 @@ import { useSearchParams } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import { Subject, SubjectData, StudySession, PlannerTask, AppProgress } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
-import { triggerConfetti } from '../../../shared/utils/confetti';
-import { playCompletionBell } from '../utils/timerAudio';
-import { useTimerEngine } from '../hooks/useTimerEngine';
+import { triggerSmallConfetti } from '../../../shared/utils/confetti';
+import { playCompletionBell, playStartBell, playPauseSound, playSaveAndEndSound } from '../utils/timerAudio';
+import { useTimerEngine, TimerPhase } from '../hooks/useTimerEngine';
 import { TimerControls } from './RadialTimer/TimerControls';
 import { ModeSelector } from './RadialTimer/ModeSelector';
 import { PresetManager } from './Presets/PresetManager';
 import { SessionHistory } from './SessionHistory';
 import { SessionStatistics } from './SessionStatistics';
+import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
+import { requestNotificationPermission, dispatchNotification } from '../../../shared/utils/notifications';
 
 interface StudyClockProps {
     subjectData: Record<Subject, SubjectData | null>;
@@ -27,14 +29,19 @@ export function StudyClock({
     subjectData, sessions, onAddSession, onDeleteSession, onEditSession,
     plannerTasks, progress, onToggleTask,
 }: StudyClockProps) {
-    // ── Task selection state ──
-    const [taskType, setTaskType] = useState<'chapter' | 'custom' | 'task'>('chapter');
-    const [selectedSubject, setSelectedSubject] = useState<Subject | ''>('');
-    const [selectedChapter, setSelectedChapter] = useState<number | ''>('');
-    const [selectedMaterial, setSelectedMaterial] = useState('');
-    const [customTitle, setCustomTitle] = useState('');
-    const [selectedTaskId, setSelectedTaskId] = useState('');
+    // ── Task selection state (Persisted for Pomodoro cycle transitions) ──
+    const [taskType, setTaskType] = useLocalStorage<'chapter' | 'custom' | 'task'>('studyClock_taskType', 'chapter');
+    const [selectedSubject, setSelectedSubject] = useLocalStorage<Subject | ''>('studyClock_selectedSubject', '');
+    const [selectedChapter, setSelectedChapter] = useLocalStorage<number | ''>('studyClock_selectedChapter', '');
+    const [selectedMaterial, setSelectedMaterial] = useLocalStorage<string>('studyClock_selectedMaterial', '');
+    const [customTitle, setCustomTitle] = useLocalStorage<string>('studyClock_customTitle', '');
+    const [selectedTaskId, setSelectedTaskId] = useLocalStorage<string>('studyClock_selectedTaskId', '');
     const [isFullscreen, setIsFullscreen] = useState(false);
+
+    // Request notification permission on mount
+    useEffect(() => {
+        requestNotificationPermission();
+    }, []);
 
     // ── Task title helper ──
     const getTaskTitle = useCallback((): string => {
@@ -62,6 +69,15 @@ export function StudyClock({
 
     // ── Timer engine ──
     const engine = useTimerEngine({
+        onPhaseChange: useCallback((newPhase: TimerPhase) => {
+            if (newPhase === 'shortBreak' || newPhase === 'longBreak') {
+                playCompletionBell();
+                dispatchNotification('Break Time!', { body: 'Time to take a short rest.' });
+            } else if (newPhase === 'work') {
+                playStartBell();
+                dispatchNotification('Back to Work!', { body: 'Your break is over. Let\'s get back to it!' });
+            }
+        }, []),
         onWorkComplete: (durationMs) => {
             const durationSec = Math.floor(durationMs / 1000);
             if (durationSec <= 0) return;
@@ -107,13 +123,16 @@ export function StudyClock({
             onAddSession(session);
 
             // Completion effects
-            triggerConfetti();
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() ||
+                getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#6366f1';
+            triggerSmallConfetti(accentColor);
             playCompletionBell();
+            dispatchNotification('Session Complete!', { body: `Great job focusing on ${session.title}` });
         },
     });
 
     // ── Manual end (stopwatch) — creates session from elapsed time ──
-    const handleEnd = useCallback(() => {
+    const handleEnd = useCallback((e?: React.MouseEvent) => {
         const elapsedSec = Math.floor(engine.elapsedMs / 1000);
         if (elapsedSec > 0) {
             let sessionSubject: Subject | undefined = undefined;
@@ -154,7 +173,18 @@ export function StudyClock({
                 timerMode: engine.mode,
             };
             onAddSession(session);
-            triggerConfetti();
+
+            let x: number | undefined;
+            let y: number | undefined;
+            if (e) {
+                x = e.clientX / window.innerWidth;
+                y = e.clientY / window.innerHeight;
+            }
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() ||
+                getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#6366f1';
+
+            triggerSmallConfetti(accentColor, x, y);
+            playSaveAndEndSound();
         }
         engine.reset();
         setIsFullscreen(false);
@@ -171,9 +201,9 @@ export function StudyClock({
         setSelectedTaskId('');
     }, [engine]);
 
-    const handleMarkComplete = useCallback(() => {
+    const handleMarkComplete = useCallback((e?: React.MouseEvent) => {
         if (taskType === 'task' && selectedTaskId && onToggleTask) {
-            handleEnd();
+            handleEnd(e);
             onToggleTask(selectedTaskId);
         }
     }, [taskType, selectedTaskId, onToggleTask, handleEnd]);
@@ -210,9 +240,14 @@ export function StudyClock({
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
             if (e.code === 'Space') {
                 e.preventDefault();
-                if (engine.engineState === 'idle') engine.start();
-                else if (engine.engineState === 'running') engine.pause();
-                else if (engine.engineState === 'paused') engine.resume();
+                if (engine.engineState === 'idle') {
+                    engine.start();
+                } else if (engine.engineState === 'running') {
+                    playPauseSound();
+                    engine.pause();
+                } else if (engine.engineState === 'paused') {
+                    engine.resume();
+                }
             } else if (e.code === 'KeyF') {
                 e.preventDefault();
                 setIsFullscreen(prev => !prev);
@@ -472,8 +507,15 @@ export function StudyClock({
                             phase={engine.phase}
                             mode={engine.mode}
                             canMarkComplete={!!canMarkComplete}
-                            onStart={engine.start}
-                            onPause={engine.pause}
+                            onStart={() => {
+                                playStartBell();
+                                dispatchNotification('Timer Started', { body: 'Focus session has begun!' });
+                                engine.start();
+                            }}
+                            onPause={() => {
+                                playPauseSound();
+                                engine.pause();
+                            }}
                             onResume={engine.resume}
                             onEnd={handleEnd}
                             onDiscard={handleDiscard}

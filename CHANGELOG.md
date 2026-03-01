@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.25] - 2026-03-01 22:50
+
+### AI Maintenance Run
+
+### Feature-Level Changes
+- **Persistent Task Context**: Migrated Study Clock task selection state (`taskType`, `selectedSubject`, etc.) to `useLocalStorage`. Your active study context is now preserved across Pomodoro phase changes and page refreshes.
+- **Multimodal Feedback System**:
+    - **Audio Cues**: Added synthesized audio cues for Pause (`playPauseSound`), Timer Start (`playStartBell`), Phase Completion (`playCompletionBell`), and manual Session Save (`playSaveAndEndSound`).
+    - **Browser Notifications**: Integrated native browser notifications for timer transitions (Start, Break Start, Break End, Cycle Finish). Notifications are intelligently suppressed for manual saves and pauses to minimize distraction.
+- **Targeted Confetti FX**: 
+    - Replaced large full-screen confetti with cursor-localized bursts on manual save/mark-complete using exact mouse coordinates.
+    - Confetti now dynamically adapts to the current theme's accent color (`--primary` / `--primary-color`).
+- **Enhanced Keyboard Interactions**: Spacebar now triggers the `playPauseSound` when pausing the running timer.
+
+### Architectural Changes
+- **Shared Utility Expansion**: Created `src/shared/utils/notifications.ts` to centralize permission handling and notification dispatching.
+- **Improved Audio Palette**: Expanded `timerAudio.ts` with distinct synthesized sound signatures for different user intents (Pause vs. Completion).
+
+### State Changes
+- **Added**: Persistent task selection state in `StudyClock.tsx` via `useLocalStorage`.
+- **Modified**: Confetti utility now supports coordinate-based bursts and dynamic color injection.
+
+### Dependency Graph Changes
+- `StudyClock.tsx` now depends on `shared/hooks/useLocalStorage.ts` and `shared/utils/notifications.ts`.
+- `TimerControls.tsx` now passes `React.MouseEvent` upstream to support targeted effects.
+
+### Suggested ADR Entries
+- ADR-012: Multimodal Feedback System and Persistent UI State Recovery
+
+### Risk Notes
+- None (Low impact, purely enhancements).
+
+---
+
 ## [0.0.24](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.23...v0.0.24) (2026-02-28)
 
 
@@ -25,6 +59,7 @@ All notable changes to this project will be documented in this file. See [commit
     - Removed "Save Preset" functionality for Stopwatch mode.
     - Implemented a collapsible task selector to maximize vertical screen real estate during active sessions.
     - Added comprehensive keyboard shortcuts: `Space` (Start/Pause/Resume), `F` (Toggle Fullscreen), `Escape` (Exit Fullscreen).
+    - **Exam Countdown Panel**: Transformed the secondary exam list into a single, cyclical interactive button. Clicks seamlessly rotate through active exams chronologically, persisting the selected index instantly via `localStorage` to maximize space efficiency without scrollbars.
 
 ### Architectural Changes
 - **Logic/UI Separation**: Moved all timing, phase-transition, and storage-recovery logic out of `StudyClock.tsx` into `useTimerEngine.ts`.
@@ -363,4 +398,4 @@ All notable changes to this project will be documented in this file. See [commit
 
 ### Removed
 - **Monolithic CSS**: Deleted `src/core/App.css` in favor of modular styles.
-- **Legacy Configs**: Cleaned up `package-lock.json` and redundant dev-server settings.
+- **Legacy Configs**: Cleaned up `package-lock.json` and redundant dev-server settings.    - **Exam Countdown Panel**: Fixed an overflow bug by wrapping the secondary exam list in a scrollable .exam-secondary-container. Added a custom minimalistic webkit scrollbar to maintain the glassmorphism aesthetic while strictly limiting the container's height to one item (max-height: 2.15rem).

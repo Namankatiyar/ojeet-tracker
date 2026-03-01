@@ -11,7 +11,7 @@ To get entire essence of this codebase you have following files at your disposal
 6. .ai_workflow/DESIGN_SYSTEM.md
 7. .ai_workflow/src/ (this is virtual directory created by running the prompt guideForSummaries.md)
 
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-03-01
 
 ---
 
@@ -31,7 +31,7 @@ To get entire essence of this codebase you have following files at your disposal
 - **Personalized Appearance**: High degree of UI customization, including custom background wallpapers, adjustable background dimming, and advanced glassmorphism controls.
 - **Advanced Glassmorphism**: Implementation of a **Refractive Index** control that dynamically adjusts saturation, brightness, and prismatic hue-rotation for a high-fidelity "refracted glass" look.
 - **Intelligent Theming**: Automatic accent color extraction from custom wallpapers using `node-vibrant` for a cohesive look.
-- **Multi-Exam Countdown**: Supports tracking multiple competitive exam dates simultaneously with a primary focus and secondary mini-list.
+- **Multi-Exam Countdown**: Supports tracking multiple competitive exam dates simultaneously with a primary focus and a persistent, space-efficient cyclical secondary counter.
 - **Layered Styling Architecture**: Uses modern CSS Layers for strict cascade control.
 
 ---
@@ -155,6 +155,19 @@ Glass effects are centralized in `src/styles/components/glass.css` using the `.g
     - Decomposed UI into `SubjectHeader` and `PriorityFilterDropdown`.
     - Wrapped `ChapterRow` in `React.memo` and stabilized callbacks with `useCallback`.
 - **Optimization**: Component size reduced from 448 to ~260 lines. UI interactions are now instantaneous due to prevented re-render cascades.
++
++### Cyclical Secondary Exam Interface (v0.0.25)
++- **Problem**: Displaying multiple secondary exams in a list consumed too much vertical space on the Dashboard and introduced cluttered scrollbars.
++- **Solution**: Replaced the list with a single cyclical button that loops through exams chronologically on click. State is persisted via `useLocalStorage` to ensure the selection survives reloads.
++
+### Study Clock Multimodal Feedback & Persistence (v0.0.25)
+- **Problem**: Context loss during phase changes or refreshes. Lack of differentiated auditory feedback for specific user actions (Pause/Save). Large confetti bursts obscured the UI.
+- **Solution**:
+    - **Persistence**: Task selection state is now saved to `localStorage`, ensuring continuity across the entire Pomodoro lifecycle.
+    - **Multimodal Cues**: 
+        - **Audio**: Introduced distinct synthesized signatures for Start, Pause, and Completion.
+        - **Notifications**: Integrated system-level alerts for background phase transitions.
+    - **Visual Polish**: implemented targeted, accent-colored confetti bursts that spawn from the cursor coordinates on manual study task completion.
 
 ### Study Clock Overhaul & Timer Engine Extraction (v0.0.24)
 - **Problem**: The Study Clock was using a fragile `setInterval` state-syncing approach, leading to desync issues. The UI was cluttered with a radial SVG that didn't scale well, and preset management was inconsistent.

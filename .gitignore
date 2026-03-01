@@ -33,6 +33,10 @@ yarn-error.log*
 # Vite
 .vite/
 
+.test.tsx
+.test.ts
+.test.js
+.test.jsx
 .vercel
 .env*.local
 Context.md
