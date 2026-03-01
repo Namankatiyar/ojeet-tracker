@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.25](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.24...v0.0.25) (2026-03-01)
+
+
+### Features
+
+* fixed study clock andexam countdown panel glitches. ([7e4023e](https://github.com/Namankatiyar/pcm-tracker/commit/7e4023e463b0ba8e672673e3ac000618019be3a6))
+
+
+### Bug Fixes
+
+* validate backup data before importing to localStorage ([5113b7f](https://github.com/Namankatiyar/pcm-tracker/commit/5113b7f663261ea973f8aa8cf679e68788b5cddd))
+
 ## [0.0.25] - 2026-03-01 22:50
 
 ### AI Maintenance Run
