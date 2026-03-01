@@ -2,7 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-## [0.0.25](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.24...v0.0.25) (2026-03-01)
+## [0.0.26] – 2026-03-02 02:45
+
+### AI Maintenance Run
+
+### Feature-Level Changes
+- **Apple Calendar Monthly Redesign**: Transformed the Monthly Planner into a table-like grid with tall rectangular cells and week-based row separators.
+- **Task Pillar Visualization**: Tasks are now rendered as color-coded horizontal "pill" bars with titles for immediate subject/task identification.
+- **Enhanced Exam Day Integration**: 
+    - Full exam name display (e.g., "JEE Main") directly in the date cell header.
+    - Stronger visual highlighting with amber left-border accents on exam days.
+- **UI/UX Polished Components**:
+    - Replaced native checkboxes in `DayModal` with `lucide-react` icons (`Square`/`CheckSquare`).
+    - Increased typography sizes: Date numbers (+20%), Daily study time (+50%), Exam labels (+200%).
+    - Added high-precision hover preview panel for quick day agenda inspection.
+
+### Architectural Changes
+- **Component Decomposition**: Split MonthlyView into `CalendarGrid`, `DayTile`, and `DayModal`.
+- **Logic Extraction**: Created `useMonthlyData` hook to handle efficient task/session aggregation and date-mapping.
+- **Data Flow Extension**: Extended `Planner` prop signature to receive the full `examDates` collection from `AppRoutes` for high-fidelity name lookups.
+
+### State Changes
+- **Added**: `examDateMap` (derived), `selectedDateStr` (MonthlyView local), `showPreview` (DayTile local).
+- **Modified**: `PlannerProps` and `MonthlyViewProps` now include `examDates: ExamEntry[]`.
+
+### Dependency Graph Changes
+- `MonthlyView` now depends on `CalendarGrid`, `DayModal`, and `useMonthlyData`.
+- `CalendarGrid` depends on `DayTile`.
+
+### Suggested ADR Entries
+- ADR-014: Table-Like Hybrid Monthly Planner and Task Pillar Visualization
+
+### Risk Notes
+- Performance: Increased memory footprint from propagating full exam collections down the tree (Low impact).
+
+---
+
 
 
 ### Features

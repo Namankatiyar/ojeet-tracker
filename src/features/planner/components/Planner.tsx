@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
-import { PlannerTask, Subject, SubjectData, StudySession, AppProgress } from '../../../shared/types';
+import { PlannerTask, Subject, SubjectData, StudySession, AppProgress, ExamEntry } from '../../../shared/types';
 import { TaskModal } from './TaskModal';
 import { WeeklyView } from './WeeklyView';
 import { MonthlyView } from './MonthlyView';
@@ -13,6 +13,7 @@ interface PlannerProps {
     progress: AppProgress;
     subjectData: Record<Subject, SubjectData | null>;
     examDate: string;
+    examDates?: ExamEntry[];
     initialOpenDate?: string | null;
     onAddTask: (task: PlannerTask) => void;
     onEditTask: (task: PlannerTask) => void;
@@ -29,6 +30,7 @@ export function Planner({
     progress,
     subjectData,
     examDate,
+    examDates = [],
     initialOpenDate,
     onAddTask,
     onEditTask,
@@ -149,7 +151,13 @@ export function Planner({
                     groupedTasks={groupedTasks}
                     groupedSessions={groupedSessions}
                     examDate={examDate}
+                    examDates={examDates}
+                    tasks={tasks}
+                    sessions={sessions}
+                    year={dateNavigator.currentDate.getFullYear()}
+                    month={dateNavigator.currentDate.getMonth()}
                     onAddTask={handleAddTaskClick}
+                    onToggleTask={onToggleTask}
                 />
             )}
 

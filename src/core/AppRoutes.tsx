@@ -73,6 +73,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                         onDeleteTask={handleDeletePlannerTask}
                         subjectData={mergedSubjectData}
                         examDate={primaryExamDate}
+                        examDates={examDates}
                         initialOpenDate={plannerDateToOpen}
                         onConsumeInitialDate={onConsumeInitialDate}
                         sessions={studySessions}

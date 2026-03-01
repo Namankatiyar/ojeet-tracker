@@ -24,7 +24,7 @@ To get entire essence of this codebase you have following files at your disposal
 - **Extreme Flexibility**: Users can modify the syllabus, add/remove resource columns, and reorder content.
 - **Deep Persistence**: Leveraging `localStorage` for a zero-server, instant-load experience.
 - **Shareable Achievement**: The **Personalized Progress Card** feature allows users to generate and download (PNG) a card summarizing their achievements, featuring dynamic avatars (via `boring-avatars`) and customizable stats.
-- **Integrated Toolset**: Combines syllabus tracking with a daily/monthly planner (featuring Shift+Drag duplication) and a high-precision Study Clock.
+- **Integrated Toolset**: Combines syllabus tracking with a daily/weekly planner (featuring Shift+Drag duplication) and a high-performance **Apple Calendar-style Monthly Planner** with color-coded task pill bars.
 - **Multimodal Study Clock**: Supports Stopwatch, Countdown, Pomodoro, and Custom Interval modes with persistent recovery.
 - **Hybrid Time Tracking**: Supports both real-time timestamp-based tracking and manual log entry for offline study sessions.
 - **Unified Actions**: Deep integration between the Study Clock and Planner, allowing users to "Mark Complete" a task directly from the timer interface.
