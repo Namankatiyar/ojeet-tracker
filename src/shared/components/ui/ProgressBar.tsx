@@ -11,9 +11,12 @@ export function ProgressRing({
     strokeWidth = 8,
     color = 'var(--accent)'
 }: ProgressRingProps) {
+    // Ensure progress is between 0 and 100
+    const clampedProgress = Math.min(Math.max(progress, 0), 100);
+
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
-    const offset = circumference - (progress / 100) * circumference;
+    const offset = circumference - (clampedProgress / 100) * circumference;
 
     return (
         <div className="progress-ring-container" style={{ width: size, height: size }}>
@@ -46,7 +49,7 @@ export function ProgressRing({
                 />
             </svg>
             <div className="progress-ring-text">
-                <span className="progress-value">{progress}</span>
+                <span className="progress-value">{clampedProgress}</span>
                 <span className="progress-symbol">%</span>
             </div>
         </div>
@@ -60,14 +63,17 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ progress, height = 8, showLabel = true }: ProgressBarProps) {
+    // Ensure progress is between 0 and 100
+    const clampedProgress = Math.min(Math.max(progress, 0), 100);
+
     return (
         <div className="progress-bar-container">
-            {showLabel && <span className="progress-bar-label">{progress}% Complete</span>}
+            {showLabel && <span className="progress-bar-label">{clampedProgress}% Complete</span>}
             <div className="progress-bar" style={{ height }}>
                 <div
                     className="progress-bar-fill"
                     style={{
-                        width: `${progress}%`,
+                        width: `${clampedProgress}%`,
                         transition: 'width 0.5s ease'
                     }}
                 />
