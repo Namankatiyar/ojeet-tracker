@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
 import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry } from '../../../shared/types';
 import { TaskLog } from '../../planner/components/TaskLog';
 import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
 import { Atom, FlaskConical, Calculator, Zap, Calendar, Check, Pencil } from 'lucide-react';
-import { formatDateLocal, formatTime12Hour } from '../../../shared/utils/date';
+import { formatDateLocal, formatTime12Hour, calculateDaysRemaining } from '../../../shared/utils/date';
 
 interface DashboardProps {
     physicsProgress: number;
@@ -79,18 +79,6 @@ export function Dashboard({
         return { total: data.chapters.length, completed: 0 };
     };
 
-    const calculateDaysRemaining = (dateStr: string) => {
-        if (!dateStr) return null;
-        const target = new Date(dateStr);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        target.setHours(0, 0, 0, 0);
-
-        const diffTime = target.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
-    };
-
     const daysRemaining = primaryExam ? calculateDaysRemaining(primaryExam.date) : null;
 
     const getCountdownColor = (days: number) => {
@@ -105,32 +93,34 @@ export function Dashboard({
     };
 
     const todayStr = formatDateLocal(new Date());
-    const todaysTasks = plannerTasks
-        .filter(t => t.date === todayStr)
-        .sort((a, b) => {
-            // Priority: 1. New tasks (not completed, not shifted), 2. Shifted/delayed, 3. Completed
-            const aIsCompleted = a.completed;
-            const bIsCompleted = b.completed;
-            const aIsShifted = a.wasShifted && !a.completed;
-            const bIsShifted = b.wasShifted && !b.completed;
-            const aIsNew = !a.completed && !a.wasShifted;
-            const bIsNew = !b.completed && !b.wasShifted;
+    const todaysTasks = useMemo(() => {
+        return plannerTasks
+            .filter(t => t.date === todayStr)
+            .sort((a, b) => {
+                // Priority: 1. New tasks (not completed, not shifted), 2. Shifted/delayed, 3. Completed
+                const aIsCompleted = a.completed;
+                const bIsCompleted = b.completed;
+                const aIsShifted = a.wasShifted && !a.completed;
+                const bIsShifted = b.wasShifted && !b.completed;
+                const aIsNew = !a.completed && !a.wasShifted;
+                const bIsNew = !b.completed && !b.wasShifted;
 
-            // New tasks come first
-            if (aIsNew && !bIsNew) return -1;
-            if (!aIsNew && bIsNew) return 1;
+                // New tasks come first
+                if (aIsNew && !bIsNew) return -1;
+                if (!aIsNew && bIsNew) return 1;
 
-            // Then shifted/delayed tasks
-            if (aIsShifted && !bIsShifted && !bIsNew) return -1;
-            if (!aIsShifted && !aIsNew && bIsShifted) return 1;
+                // Then shifted/delayed tasks
+                if (aIsShifted && !bIsShifted && !bIsNew) return -1;
+                if (!aIsShifted && !aIsNew && bIsShifted) return 1;
 
-            // Completed tasks come last
-            if (aIsCompleted && !bIsCompleted) return 1;
-            if (!aIsCompleted && bIsCompleted) return -1;
+                // Completed tasks come last
+                if (aIsCompleted && !bIsCompleted) return 1;
+                if (!aIsCompleted && bIsCompleted) return -1;
 
-            // Within same category, sort by time
-            return a.time.localeCompare(b.time);
-        });
+                // Within same category, sort by time
+                return a.time.localeCompare(b.time);
+            });
+    }, [plannerTasks, todayStr]);
 
     const isTaskOverdue = (task: PlannerTask) => {
         if (task.completed) return false;
@@ -148,6 +138,13 @@ export function Dashboard({
         }
         return formatTime12Hour(task.time);
     };
+
+    const totalStudyTimeStr = useMemo(() => {
+        const totalSeconds = studySessions.reduce((acc, s) => acc + s.duration, 0);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        return hours > 0 ? `${hours}h ${minutes}m` : minutes > 0 ? `${minutes}m` : '0m';
+    }, [studySessions]);
 
     return (
         <div className="dashboard">
@@ -173,12 +170,7 @@ export function Dashboard({
                         <div className="total-study-time">
                             <span className="study-time-label">Total Studied</span>
                             <span className="study-time-value">
-                                {(() => {
-                                    const totalSeconds = studySessions.reduce((acc, s) => acc + s.duration, 0);
-                                    const hours = Math.floor(totalSeconds / 3600);
-                                    const minutes = Math.floor((totalSeconds % 3600) / 60);
-                                    return hours > 0 ? `${hours}h ${minutes}m` : minutes > 0 ? `${minutes}m` : '0m';
-                                })()}
+                                {totalStudyTimeStr}
                             </span>
                         </div>
                     </div>

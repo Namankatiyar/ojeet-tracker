@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Calendar, Star, Trash2, Plus, X, Pencil } from 'lucide-react';
 import { ExamEntry } from '../../../shared/types';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
+import { calculateDaysRemaining } from '../../../shared/utils/date';
 
 interface ExamCountdownModalProps {
     examDates: ExamEntry[];
@@ -32,16 +33,6 @@ export function ExamCountdownModal({
         if (!dateString) return 'Select Date';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    };
-
-    const calculateDays = (dateString: string) => {
-        if (!dateString) return null;
-        const target = new Date(dateString);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        target.setHours(0, 0, 0, 0);
-        const diffTime = target.getTime() - today.getTime();
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     };
 
     const handleAdd = () => {
@@ -82,11 +73,13 @@ export function ExamCountdownModal({
     };
 
     // Sort: primary first, then by date ascending
-    const sortedExams = [...examDates].sort((a, b) => {
-        if (a.isPrimary && !b.isPrimary) return -1;
-        if (!a.isPrimary && b.isPrimary) return 1;
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+    const sortedExams = useMemo(() => {
+        return [...examDates].sort((a, b) => {
+            if (a.isPrimary && !b.isPrimary) return -1;
+            if (!a.isPrimary && b.isPrimary) return 1;
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+        });
+    }, [examDates]);
 
     return (
         <>
@@ -110,7 +103,7 @@ export function ExamCountdownModal({
 
                         <div className="exam-list">
                             {sortedExams.map(exam => {
-                                const days = calculateDays(exam.date);
+                                const days = calculateDaysRemaining(exam.date);
                                 const isEditing = editingId === exam.id;
 
                                 return (

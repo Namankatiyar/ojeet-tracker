@@ -31,3 +31,14 @@ export const format12hTo24h = (hour12: string | number, minutes: string | number
 
     return `${h.toString().padStart(2, '0')}:${m}`;
 };
+
+export const calculateDaysRemaining = (dateString: string): number | null => {
+    if (!dateString) return null;
+    const target = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};

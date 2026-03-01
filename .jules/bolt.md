@@ -1,0 +1,3 @@
+## 2024-03-01 - React Hooks rule violation in JSX
+**Learning:** Using `useMemo` inline within a JSX structure (e.g., `<span className="study-time-value">{useMemo(() => { ... }, [deps])}</span>`) is a critical violation of the React Rules of Hooks, specifically the rule that hooks must only be called at the top level of a React function component. While it might sometimes evaluate correctly if rendering isn't conditionally wrapped, it creates fragile, bug-prone components that will break easily upon refactoring.
+**Action:** Always extract `useMemo`, `useCallback`, and other hooks to the top level of the component body, assign their return value to a variable, and then inject that variable into the JSX.
