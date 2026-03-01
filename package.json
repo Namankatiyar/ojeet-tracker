@@ -17,10 +17,8 @@
     "test": "vitest",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "vitest",
     "preview": "vite preview",
     "package": "pkg .",
-    "test": "vitest",
     "release": "commit-and-tag-version",
     "release:dry": "commit-and-tag-version --dry-run"
   },
@@ -49,7 +47,6 @@
     "@types/papaparse": "^5.3.14",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
-    "@types/testing-library__jest-dom": "^6.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "commit-and-tag-version": "^12.6.1",
     "eslint": "^9.17.0",
