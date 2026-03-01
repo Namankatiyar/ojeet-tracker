@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.26](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.25...v0.0.26) (2026-03-01)
+
+
+### Features
+
+* new completely overhauled monthly planner ([14746e2](https://github.com/Namankatiyar/pcm-tracker/commit/14746e22d7cb233b224600a19b3b241abb3c2623))
+
 ## [0.0.26] – 2026-03-02 02:45
 
 ### AI Maintenance Run
