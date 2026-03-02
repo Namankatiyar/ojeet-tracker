@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Clock } from 'lucide-react';
+import { useTheme } from '../../../core/context/ThemeContext';
 import { Subject, SubjectData, StudySession, PlannerTask, AppProgress } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { triggerSmallConfetti } from '../../../shared/utils/confetti';
@@ -29,6 +30,8 @@ export function StudyClock({
     subjectData, sessions, onAddSession, onDeleteSession, onEditSession,
     plannerTasks, progress, onToggleTask,
 }: StudyClockProps) {
+    const { accentColor } = useTheme();
+
     // ── Task selection state (Persisted for Pomodoro cycle transitions) ──
     const [taskType, setTaskType] = useLocalStorage<'chapter' | 'custom' | 'task'>('studyClock_taskType', 'chapter');
     const [selectedSubject, setSelectedSubject] = useLocalStorage<Subject | ''>('studyClock_selectedSubject', '');
@@ -123,8 +126,6 @@ export function StudyClock({
             onAddSession(session);
 
             // Completion effects
-            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() ||
-                getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#6366f1';
             triggerSmallConfetti(accentColor);
             playCompletionBell();
             dispatchNotification('Session Complete!', { body: `Great job focusing on ${session.title}` });
@@ -180,15 +181,13 @@ export function StudyClock({
                 x = e.clientX / window.innerWidth;
                 y = e.clientY / window.innerHeight;
             }
-            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() ||
-                getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#6366f1';
 
             triggerSmallConfetti(accentColor, x, y);
             playSaveAndEndSound();
         }
         engine.reset();
         setIsFullscreen(false);
-    }, [engine, taskType, selectedSubject, selectedChapter, selectedMaterial, selectedTaskId, plannerTasks, subjectData, getTaskTitle, getChapterName, onAddSession]);
+    }, [engine, taskType, selectedSubject, selectedChapter, selectedMaterial, selectedTaskId, plannerTasks, subjectData, getTaskTitle, getChapterName, onAddSession, accentColor]);
 
     const handleDiscard = useCallback(() => {
         engine.reset();

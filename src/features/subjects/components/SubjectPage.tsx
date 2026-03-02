@@ -10,6 +10,7 @@ import { Plus, X as XIcon } from 'lucide-react';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { useChapterSort } from '../hooks/useChapterSort';
 import { useReorderDrag } from '../hooks/useReorderDrag';
+import { useTheme } from '../../../core/context/ThemeContext';
 
 interface SubjectPageProps {
     subject: Subject;
@@ -42,6 +43,7 @@ export function SubjectPage({
     onReorderChapters,
     onReorderMaterials
 }: SubjectPageProps) {
+    const { accentColor } = useTheme();
     const [isEditing, setIsEditing] = useState(false);
 
     // Priority Filter State - Persistent per subject
@@ -100,7 +102,6 @@ export function SubjectPage({
             const willBeComplete = completedCount + 1 === data.materialNames.length;
 
             if (willBeComplete) {
-                const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#6366f1';
                 setTimeout(() => triggerConfetti(accentColor), 50);
             }
         }

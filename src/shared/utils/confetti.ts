@@ -5,7 +5,7 @@ export function triggerConfetti(accentColor: string = '#6366f1') {
     const end = Date.now() + duration;
 
     // Use the accent color along with some festive defaults
-    const colors = [accentColor, '#ffffff', '#FFD700'];
+    const colors = [accentColor, '#ffffff'];
 
     (function frame() {
         // Reduced particle count from 3 to 2 per side
@@ -32,7 +32,7 @@ export function triggerConfetti(accentColor: string = '#6366f1') {
 
 // Smaller confetti for task completion, optional targeted origin
 export function triggerSmallConfetti(accentColor: string = '#6366f1', x?: number, y?: number) {
-    const colors = [accentColor, '#ffffff', '#FFD700'];
+    const colors = [accentColor, '#ffffff',];
     const origin = (x !== undefined && y !== undefined) ? { x, y } : { y: 0.6 };
 
     confetti({

@@ -6,6 +6,7 @@ import { WeeklyView } from './WeeklyView';
 import { MonthlyView } from './MonthlyView';
 import { usePlannerData } from '../hooks/usePlannerData';
 import { useDateNavigator } from '../hooks/useDateNavigator';
+import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 
 interface PlannerProps {
     tasks: PlannerTask[];
@@ -38,7 +39,7 @@ export function Planner({
     onDeleteTask,
     onConsumeInitialDate,
 }: PlannerProps) {
-    const [viewMode, setViewMode] = useState<ViewMode>('weekly');
+    const [viewMode, setViewMode] = useLocalStorage<ViewMode>('ojeet-planner-view', 'weekly');
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [selectedDateForTask, setSelectedDateForTask] = useState('');
     const [taskToEdit, setTaskToEdit] = useState<PlannerTask | null>(null);

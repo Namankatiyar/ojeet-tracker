@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.27] – 2026-03-02 15:57
+
+### AI Maintenance Run
+
+### Feature-Level Changes
+- **Cursor-Anchored Hover Panel**: Hovering over a day tile with tasks shows a panel next to the cursor listing all tasks as full pills. The panel uses `createPortal` to render directly on `document.body`, bypassing ancestor CSS transforms/`backdrop-filter` stacking contexts that broke `position: fixed` coordinates.
+- **Past Day Interactions Locked**: Past dates cannot be clicked (no modal opens). `cursor: not-allowed` applied. Padding cells from adjacent months that are also past are rendered at `opacity: 0.35`. Hover preview remains for reviewing historical tasks.
+- **Planner View Mode Persistence**: Selected view (Weekly/Monthly) persisted to `localStorage` key `ojeet-planner-view` via `useLocalStorage`.
+- **Toggle Buttons Resized**: Weekly/Monthly buttons reduced 25% (padding `12/24px → 9/18px`, font `1.1rem → 0.825rem`).
+- **Typography Fixes**: Study time counter `+25%` (`0.68rem → 0.85rem`). Exam label aligned vertically with date badge via `align-items: center` + `line-height: 1` + `svg { display: block }`.
+
+### Architectural Changes
+- **Portal Pattern**: `HoverPanel` moved from in-tree sibling to `document.body` portal via `createPortal`.
+
+### State Changes
+- **Modified**: `viewMode` in `Planner.tsx` now sourced from `useLocalStorage` instead of `useState`.
+- **Added**: `ojeet-planner-view` localStorage key.
+
+### Suggested ADR Entries
+- ADR-015: Portal Pattern for Cursor-Anchored Tooltips
+
+---
+
 ## [0.0.26](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.25...v0.0.26) (2026-03-01)
 
 
@@ -9,12 +32,6 @@ All notable changes to this project will be documented in this file. See [commit
 
 * new completely overhauled monthly planner ([14746e2](https://github.com/Namankatiyar/pcm-tracker/commit/14746e22d7cb233b224600a19b3b241abb3c2623))
 
-## [0.0.26] – 2026-03-02 02:45
-
-### AI Maintenance Run
-
-### Feature-Level Changes
-- **Apple Calendar Monthly Redesign**: Transformed the Monthly Planner into a table-like grid with tall rectangular cells and week-based row separators.
 - **Task Pillar Visualization**: Tasks are now rendered as color-coded horizontal "pill" bars with titles for immediate subject/task identification.
 - **Enhanced Exam Day Integration**: 
     - Full exam name display (e.g., "JEE Main") directly in the date cell header.

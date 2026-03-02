@@ -4,6 +4,7 @@ import { useProgress } from '../../shared/hooks/useProgress';
 import { triggerSmallConfetti } from '../../shared/utils/confetti';
 import { AppProgress, Subject, Priority, PlannerTask, StudySession, MockScore, ExamEntry, ProgressCardSettings } from '../../shared/types';
 import { useSubjectData } from './SubjectDataContext';
+import { useTheme } from './ThemeContext';
 
 interface UserProgressContextType {
     progress: AppProgress;
@@ -57,6 +58,7 @@ const initialProgress: AppProgress = {
 
 export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { mergedSubjectData } = useSubjectData();
+    const { accentColor } = useTheme();
 
     const [progress, setProgress] = useLocalStorage<AppProgress>('jee-tracker-progress', initialProgress);
     const [plannerTasks, setPlannerTasks] = useLocalStorage<PlannerTask[]>('jee-tracker-planner-tasks', []);
@@ -159,7 +161,6 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             if (t.id === taskId) {
                 const newStatus = !t.completed;
                 if (newStatus) {
-                    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#6366f1';
                     triggerSmallConfetti(accentColor);
                 }
 
