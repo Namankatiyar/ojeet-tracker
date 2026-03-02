@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.27](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.26...v0.0.27) (2026-03-02)
+
+
+### Bug Fixes
+
+* fixed calendar ui ([f1da651](https://github.com/Namankatiyar/pcm-tracker/commit/f1da6513f527dd22f47be81ed5fd9e3e72009783))
+
 ## [0.0.27] – 2026-03-02 15:57
 
 ### AI Maintenance Run
