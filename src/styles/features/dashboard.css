@@ -583,31 +583,32 @@
   box-shadow: 0 0 0 2px var(--accent-light);
 }
 
-/* Motivation Card */
-.motivation-card {
+/* Credits Panel */
+.credits-panel {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  background: linear-gradient(135deg, var(--accent-light), color-mix(in srgb, var(--secondary-accent, #a855f7), transparent 90%));
-  border: 1px solid var(--border);
   border-radius: var(--border-radius);
-  padding: 1.5rem 2rem;
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  justify-content: center;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-6, 1.5rem);
 }
 
-.motivation-icon {
-  font-size: 2.5rem;
-}
-
-.motivation-text h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.motivation-text p {
+.credits-text {
+  font-size: var(--text-base, 1rem);
   color: var(--text-secondary);
-  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.credits-github-link {
+  display: flex;
+  align-items: center;
+  color: var(--text-primary);
+  transition: transform var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
+}
+
+.credits-github-link:hover {
+  transform: translateY(-2px) scale(1.05);
+  color: var(--accent);
 }
 
 .quote-author {

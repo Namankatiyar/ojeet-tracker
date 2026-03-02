@@ -5,7 +5,7 @@ import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry }
 import { TaskLog } from '../../planner/components/TaskLog';
 import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
-import { Atom, FlaskConical, Calculator, Zap, Calendar, Check, Pencil } from 'lucide-react';
+import { Atom, FlaskConical, Calculator, Calendar, Check, Pencil, Github } from 'lucide-react';
 import { formatDateLocal, formatTime12Hour, calculateDaysRemaining } from '../../../shared/utils/date';
 
 interface DashboardProps {
@@ -358,12 +358,19 @@ export function Dashboard({
 
             <TaskLog tasks={plannerTasks} />
 
-            <div className="motivation-card">
-                <div className="motivation-icon"><Zap size={32} /></div>
-                <div className="motivation-text">
-                    <h3>Keep Going!</h3>
-                    <p>Consistency is the key to cracking JEE. Complete at least one chapter today!</p>
-                </div>
+            <div className="glass-panel credits-panel">
+                <span className="credits-text">
+                    Made for and by a JEE Aspirant with ❤
+                </span>
+                <a
+                    href="https://github.com/Namankatiyar/ojeet-tracker"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="credits-github-link"
+                    title="View project on GitHub"
+                >
+                    <Github size={20} />
+                </a>
             </div>
 
             {isExamModalOpen && (
