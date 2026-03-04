@@ -50,6 +50,7 @@
 @import './features/subjects.css' layer(features);
 @import './features/planner.css' layer(features);
 @import './features/study-clock.css' layer(features);
+@import './features/sync.css' layer(features);
 
 /* ======================== */
 /* === Layer: Utilities === */

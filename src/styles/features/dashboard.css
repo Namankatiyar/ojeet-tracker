@@ -1291,6 +1291,65 @@
   border-color: var(--accent);
 }
 
+.form-group input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.form-group input[type="number"]::-webkit-outer-spin-button,
+.form-group input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.number-input-container input {
+  padding-right: 2.5rem;
+}
+
+.number-input-controls {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  bottom: 1px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 1px solid var(--border);
+  width: 2rem;
+  background: var(--bg-tertiary);
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  overflow: hidden;
+}
+
+.number-input-controls button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.number-input-controls button:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.number-input-controls button:first-child {
+  border-bottom: 1px solid var(--border);
+}
+
 .marks-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

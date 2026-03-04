@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('../features/dashboard/components/Dashboard'
 const SubjectPage = lazy(() => import('../features/subjects/components/SubjectPage').then(module => ({ default: module.SubjectPage })));
 const Planner = lazy(() => import('../features/planner/components/Planner').then(module => ({ default: module.Planner })));
 const StudyClock = lazy(() => import('../features/study-clock/components/StudyClock').then(module => ({ default: module.StudyClock })));
+const ImportSyncPage = lazy(() => import('../features/sync/ImportSyncPage').then(module => ({ default: module.ImportSyncPage })));
 
 interface AppRoutesProps {
     onNavigate: (view: any) => void;
@@ -114,6 +115,10 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                         />
                     } />
                 ))}
+
+                <Route path="/import" element={
+                    <ImportSyncPage onAddSession={handleAddStudySession} />
+                } />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

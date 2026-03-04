@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import { MockScore } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
@@ -8,6 +8,29 @@ interface AddMockModalProps {
     onAdd: (score: Omit<MockScore, 'id'>) => void;
     onClose: () => void;
 }
+
+const NumberInput = ({ value, onChange, min, max }: { value: number, onChange: (v: number) => void, min: number, max: number }) => {
+    return (
+        <div className="number-input-container">
+            <input
+                type="number"
+                min={min}
+                max={max}
+                value={value}
+                onChange={e => {
+                    let val = Number(e.target.value);
+                    if (val < min) val = min;
+                    if (val > max) val = max;
+                    onChange(val);
+                }}
+            />
+            <div className="number-input-controls">
+                <button type="button" onClick={() => onChange(Math.min(max, value + 1))}><ChevronUp size={14} /></button>
+                <button type="button" onClick={() => onChange(Math.max(min, value - 1))}><ChevronDown size={14} /></button>
+            </div>
+        </div>
+    );
+};
 
 export function AddMockModal({ onAdd, onClose }: AddMockModalProps) {
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -73,32 +96,29 @@ export function AddMockModal({ onAdd, onClose }: AddMockModalProps) {
                     <div className="marks-grid">
                         <div className="form-group">
                             <label className="text-physics">Physics</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
+                            <NumberInput
+                                min={0}
+                                max={100}
                                 value={newMock.physicsMarks}
-                                onChange={e => setNewMock(m => ({ ...m, physicsMarks: Number(e.target.value) }))}
+                                onChange={val => setNewMock(m => ({ ...m, physicsMarks: val }))}
                             />
                         </div>
                         <div className="form-group">
                             <label className="text-chemistry">Chemistry</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
+                            <NumberInput
+                                min={0}
+                                max={100}
                                 value={newMock.chemistryMarks}
-                                onChange={e => setNewMock(m => ({ ...m, chemistryMarks: Number(e.target.value) }))}
+                                onChange={val => setNewMock(m => ({ ...m, chemistryMarks: val }))}
                             />
                         </div>
                         <div className="form-group">
                             <label className="text-maths">Maths</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
+                            <NumberInput
+                                min={0}
+                                max={100}
                                 value={newMock.mathsMarks}
-                                onChange={e => setNewMock(m => ({ ...m, mathsMarks: Number(e.target.value) }))}
+                                onChange={val => setNewMock(m => ({ ...m, mathsMarks: val }))}
                             />
                         </div>
                     </div>
