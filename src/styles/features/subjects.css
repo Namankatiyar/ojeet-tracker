@@ -468,7 +468,8 @@ td.material-cell {
 }
 
 .chapter-edit-input {
-  padding: var(--space-1);
+  padding: 3px;
+  padding-left : 10px ;
   font-size: 0.85rem;
 }
 
@@ -477,7 +478,7 @@ td.material-cell {
   color: var(--priority-high);
   border: 1px solid var(--priority-high);
   border-radius: var(--radius-xs);
-  padding: var(--space-1) var(--space-2);
+  padding: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
