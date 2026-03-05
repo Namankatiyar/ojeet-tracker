@@ -72,6 +72,7 @@ export function SessionHistory({
             duration: newDuration > 0 ? newDuration : editingSession.duration,
             subject: editSubject || undefined,
             material: editMaterial || undefined,
+            type: editSubject ? 'chapter' : 'custom',
         };
         onEditSession(updatedSession);
         closeEditModal();

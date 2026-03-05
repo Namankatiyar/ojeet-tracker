@@ -37,10 +37,10 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
     const getSubjectDistribution = useCallback(() => {
         const distribution = { physics: 0, chemistry: 0, maths: 0, custom: 0 };
         sessions.forEach(s => {
-            if (s.type === 'custom' || !s.subject) {
-                distribution.custom += s.duration;
-            } else {
+            if (s.subject && s.subject in distribution) {
                 distribution[s.subject] += s.duration;
+            } else {
+                distribution.custom += s.duration;
             }
         });
         return distribution;

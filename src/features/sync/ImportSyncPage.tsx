@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { StudySession } from '../../shared/types';
+import { StudySession, Subject } from '../../shared/types';
 
 interface OjeetSyncPayload {
     source: 'ojeet-study';
@@ -10,6 +10,7 @@ interface OjeetSyncPayload {
         title: string;
         durationSeconds: number;
         date: string;
+        subject?: string; // e.g. "physics", "chemistry", "maths", or absent
     }>;
 }
 
@@ -18,6 +19,16 @@ interface ImportSyncPageProps {
 }
 
 const IMPORT_HISTORY_KEY = 'ojeet-import-history';
+
+const VALID_SUBJECTS: readonly string[] = ['physics', 'chemistry', 'maths'];
+
+/** Map an incoming subject string to the native Subject type, or undefined if unrecognized. */
+function resolveSubject(raw?: string): Subject | undefined {
+    if (!raw) return undefined;
+    const normalized = raw.trim().toLowerCase();
+    if (VALID_SUBJECTS.includes(normalized)) return normalized as Subject;
+    return undefined;
+}
 
 export function ImportSyncPage({ onAddSession }: ImportSyncPageProps) {
     const [searchParams] = useSearchParams();
@@ -69,14 +80,17 @@ export function ImportSyncPage({ onAddSession }: ImportSyncPageProps) {
                     new Date(startTime).getTime() + session.durationSeconds * 1000
                 ).toISOString();
 
+                const resolvedSubject = resolveSubject(session.subject);
+
                 const studySession: StudySession = {
                     id: `ojeet-study-${data.timestamp}-${Math.random().toString(36).substr(2, 9)}`,
-                    title: `[OJEET-STUDY] ${session.title}`,
-                    type: 'custom',
+                    title: `${session.title}`,
+                    type: resolvedSubject ? 'chapter' : 'custom',
+                    subject: resolvedSubject,
                     startTime,
                     endTime,
                     duration: session.durationSeconds,
-                    timerMode: 'custom',
+                    timerMode: 'video',
                 };
 
                 onAddSession(studySession);

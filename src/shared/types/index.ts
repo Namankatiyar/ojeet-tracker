@@ -54,7 +54,7 @@ export interface StudySession {
     startTime: string;      // ISO timestamp
     endTime: string;        // ISO timestamp
     duration: number;       // in seconds
-    timerMode?: 'stopwatch' | 'countdown' | 'pomodoro' | 'custom';
+    timerMode?: 'stopwatch' | 'countdown' | 'pomodoro' | 'custom' | 'video';
     profileId?: string;
 }
 
