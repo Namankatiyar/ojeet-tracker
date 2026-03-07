@@ -16,6 +16,7 @@ import { StudySession, MockScore } from '../../../shared/types';
 import { StudyTimePanel } from './StudyTimePanel';
 import { MockScoresPanel } from './MockScoresPanel';
 import { AddMockModal } from './AddMockModal';
+import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 
 // Register Chart.js components
 ChartJS.register(
@@ -45,11 +46,15 @@ export function AnalyticsPanels({
     onDeleteMockScore
 }: AnalyticsPanelsProps) {
     const [isAddingMock, setIsAddingMock] = useState(false);
+    const { remoteStudyAggregate } = useRemoteSync();
 
     return (
         <div className="analytics-panels-row">
             {/* Study Time Panel */}
-            <StudyTimePanel studySessions={studySessions} />
+            <StudyTimePanel
+                studySessions={studySessions}
+                remoteDailyBuckets={remoteStudyAggregate?.buckets_daily_json}
+            />
 
             {/* Mock Scores Panel */}
             <MockScoresPanel 

@@ -8,11 +8,12 @@ import { getChartOptions, getWeekDays} from '../utils/analyticsUtils';
 
 interface StudyTimePanelProps {
     studySessions: StudySession[];
+    remoteDailyBuckets?: Record<string, { overall?: number; physics?: number; chemistry?: number; maths?: number }>;
 }
 
 type StudyViewMode = 'weekly' | 'monthly';
 
-export function StudyTimePanel({ studySessions }: StudyTimePanelProps) {
+export function StudyTimePanel({ studySessions, remoteDailyBuckets }: StudyTimePanelProps) {
     const { theme } = useTheme();
     const [studyViewMode, setStudyViewMode] = useState<StudyViewMode>('weekly');
     const [weekOffset, setWeekOffset] = useState(0);
@@ -21,7 +22,8 @@ export function StudyTimePanel({ studySessions }: StudyTimePanelProps) {
     const chartData = useStudyTimeAnalytics(
         studySessions,
         studyViewMode === 'weekly' ? weekOffset : monthOffset,
-        studyViewMode
+        studyViewMode,
+        remoteDailyBuckets
     );
 
     const chartOptions = useMemo(() => 

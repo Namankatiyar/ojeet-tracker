@@ -141,7 +141,7 @@ export function SessionHistory({
                                             hour: '2-digit', minute: '2-digit',
                                         })}
                                         {session.timerMode && session.timerMode !== 'stopwatch' && (
-                                            <span className="session-mode-badge">{session.timerMode}</span>
+                                            <span className="session-mode-badge">{session.timerMode === 'video' ? 'VIDEO' : session.timerMode}</span>
                                         )}
                                     </div>
                                 </div>
