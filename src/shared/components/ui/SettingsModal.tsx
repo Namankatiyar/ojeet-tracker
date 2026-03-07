@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Download, Upload, X, AlertTriangle, Check, Image, Trash2 } from 'lucide-react';
+import { Download, Upload, X, AlertTriangle, Check, Image, Trash2, Cloud, LogOut } from 'lucide-react';
 import { Vibrant } from 'node-vibrant/browser';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -59,6 +61,10 @@ export function SettingsModal({
     const bgFileInputRef = useRef<HTMLInputElement>(null);
     const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [statusMessage, setStatusMessage] = useState('');
+    const [authStatus, setAuthStatus] = useState<string>('');
+    const [isAuthBusy, setIsAuthBusy] = useState(false);
+    const { user, isConfigured, signInWithGoogle, signOut, resetPrompt } = useRemoteAuth();
+    const { status: syncStatus, lastSyncedAt, lastError: syncError, remoteStudyAggregate, syncNow } = useRemoteSync();
 
     const modalRoot = document.getElementById('modal-root');
 
@@ -217,6 +223,30 @@ export function SettingsModal({
         onBackgroundUrlChange('');
     };
 
+    const handleGoogleSignIn = async () => {
+        setIsAuthBusy(true);
+        setAuthStatus('');
+        const { error } = await signInWithGoogle();
+        if (error) {
+            setAuthStatus(error);
+            setIsAuthBusy(false);
+        }
+    };
+
+    const handleSignOut = async () => {
+        setIsAuthBusy(true);
+        setAuthStatus('');
+        const { error } = await signOut();
+        if (error) {
+            setAuthStatus(error);
+            setIsAuthBusy(false);
+            return;
+        }
+        resetPrompt();
+        setAuthStatus('Signed out. Cloud sync metadata was cleared on this device.');
+        setIsAuthBusy(false);
+    };
+
     const modalContent = (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content settings-modal" onClick={e => e.stopPropagation()}>
@@ -372,6 +402,71 @@ export function SettingsModal({
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="settings-section">
+                        <h3 className="section-title">Cloud Sync (Optional)</h3>
+                        {!isConfigured ? (
+                            <div className="settings-row vertical">
+                                <div className="setting-info">
+                                    <span className="setting-label">Cloud sync is unavailable</span>
+                                    <span className="setting-description">Missing Supabase environment configuration for this build.</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="settings-row">
+                                    <div className="setting-info">
+                                        <span className="setting-label">Account</span>
+                                        <span className="setting-description">
+                                            {user ? `Signed in as ${user.email ?? 'Unknown email'}` : 'Not signed in. Local mode continues to work.'}
+                                        </span>
+                                    </div>
+                                    {user ? (
+                                        <button className="action-btn outline small" onClick={handleSignOut} disabled={isAuthBusy}>
+                                            <LogOut size={16} />
+                                            {isAuthBusy ? 'Signing out...' : 'Sign Out'}
+                                        </button>
+                                    ) : (
+                                        <button className="action-btn primary small" onClick={handleGoogleSignIn} disabled={isAuthBusy}>
+                                            <Cloud size={16} />
+                                            {isAuthBusy ? 'Redirecting...' : 'Sign in with Google'}
+                                        </button>
+                                    )}
+                                </div>
+                                {user && (
+                                    <div className="settings-row">
+                                        <div className="setting-info">
+                                            <span className="setting-label">Sync Status</span>
+                                            <span className="setting-description">
+                                                {syncStatus === 'syncing' && 'Syncing...'}
+                                                {syncStatus === 'synced' && `Last synced: ${lastSyncedAt ? new Date(lastSyncedAt).toLocaleString() : 'just now'}`}
+                                                {syncStatus === 'error' && (syncError || 'Sync failed')}
+                                            {syncStatus === 'idle' && 'Idle'}
+                                            </span>
+                                            <span className="setting-description">
+                                                Video logs synced from cloud app: {remoteStudyAggregate?.video_watch_45d_json?.length ?? 0}
+                                            </span>
+                                        </div>
+                                        <button
+                                            className="action-btn outline small"
+                                            onClick={() => syncNow()}
+                                            disabled={isAuthBusy || syncStatus === 'syncing'}
+                                        >
+                                            <Cloud size={16} />
+                                            {syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
+                                        </button>
+                                    </div>
+                                )}
+                                {authStatus && (
+                                    <div className="settings-row vertical">
+                                        <div className="setting-info">
+                                            <span className="setting-description">{authStatus}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </div>
 
                     {importStatus !== 'idle' && (

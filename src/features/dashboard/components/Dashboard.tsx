@@ -7,6 +7,9 @@ import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
 import { Atom, FlaskConical, Calculator, Calendar, Check, Pencil, Github } from 'lucide-react';
 import { formatDateLocal, formatTime12Hour, calculateDaysRemaining } from '../../../shared/utils/date';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
+import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 
 interface DashboardProps {
     physicsProgress: number;
@@ -52,6 +55,11 @@ export function Dashboard({
     onDeleteMockScore = () => { }
 }: DashboardProps) {
     const [isExamModalOpen, setIsExamModalOpen] = useState(false);
+    const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
+    const [isAuthBusy, setIsAuthBusy] = useState(false);
+    const [authError, setAuthError] = useState<string | null>(null);
+    const { user, isConfigured, isPromptDismissed, dismissPrompt, signInWithGoogle } = useRemoteAuth();
+    const { remoteStudyAggregate } = useRemoteSync();
 
     // Get primary exam
     const primaryExam = examDates.find(e => e.isPrimary) || examDates[0] || null;
@@ -77,6 +85,21 @@ export function Dashboard({
             // Don't auto-remove; just let the countdown show negative
         }
     }, [primaryExam]);
+
+    useEffect(() => {
+        if (!isConfigured || user || isPromptDismissed) {
+            setIsSyncPromptOpen(false);
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            setIsSyncPromptOpen(true);
+        }, 1000);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [isConfigured, isPromptDismissed, user]);
 
     const subjects: { key: Subject; label: string; icon: React.ReactNode; progress: number; color: string }[] = [
         { key: 'physics', label: 'Physics', icon: <Atom size={24} />, progress: physicsProgress, color: 'var(--accent)' },
@@ -151,11 +174,27 @@ export function Dashboard({
     };
 
     const totalStudyTimeStr = useMemo(() => {
-        const totalSeconds = studySessions.reduce((acc, s) => acc + s.duration, 0);
+        const localSeconds = studySessions.reduce((acc, s) => acc + s.duration, 0);
+        const totalSeconds = remoteStudyAggregate?.total_seconds_overall ?? localSeconds;
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         return hours > 0 ? `${hours}h ${minutes}m` : minutes > 0 ? `${minutes}m` : '0m';
-    }, [studySessions]);
+    }, [remoteStudyAggregate?.total_seconds_overall, studySessions]);
+
+    const handleSyncPromptClose = () => {
+        dismissPrompt();
+        setIsSyncPromptOpen(false);
+    };
+
+    const handleGoogleSignIn = async () => {
+        setIsAuthBusy(true);
+        setAuthError(null);
+        const { error } = await signInWithGoogle();
+        if (error) {
+            setAuthError(error);
+            setIsAuthBusy(false);
+        }
+    };
 
     return (
         <div className="dashboard">
@@ -168,6 +207,7 @@ export function Dashboard({
                 ) : (
                     <h1>Your Progress</h1>
                 )}
+                {authError && <p className="cloud-sync-inline-error">{authError}</p>}
             </div>
 
             <div className="dashboard-stats-row">
@@ -383,6 +423,12 @@ export function Dashboard({
                     onClose={() => setIsExamModalOpen(false)}
                 />
             )}
+            <CloudSyncPromptModal
+                isOpen={isSyncPromptOpen}
+                onClose={handleSyncPromptClose}
+                onSignIn={handleGoogleSignIn}
+                isBusy={isAuthBusy}
+            />
         </div>
     );
 }

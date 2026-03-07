@@ -3,10 +3,18 @@ import { StudySession } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
 import { getWeekDays, getMonthDays, getStudyTimeBySubject, subjectColors } from '../utils/analyticsUtils';
 
+interface RemoteAggregateBucketEntry {
+    overall?: number;
+    physics?: number;
+    chemistry?: number;
+    maths?: number;
+}
+
 export function useStudyTimeAnalytics(
     studySessions: StudySession[],
     offset: number,
-    mode: 'weekly' | 'monthly'
+    mode: 'weekly' | 'monthly',
+    remoteDailyBuckets?: Record<string, RemoteAggregateBucketEntry>
 ) {
     const analyticsData = useMemo(() => {
         if (mode === 'weekly') {
@@ -21,9 +29,10 @@ export function useStudyTimeAnalytics(
             weekDays.forEach(day => {
                 const dateStr = formatDateLocal(day);
                 const times = getStudyTimeBySubject(studySessions, dateStr);
-                physicsData.push(Number(times.physics.toFixed(2)));
-                chemistryData.push(Number(times.chemistry.toFixed(2)));
-                mathsData.push(Number(times.maths.toFixed(2)));
+                const remote = remoteDailyBuckets?.[dateStr];
+                physicsData.push(Number(Math.max(times.physics, (remote?.physics ?? 0) / 3600).toFixed(2)));
+                chemistryData.push(Number(Math.max(times.chemistry, (remote?.chemistry ?? 0) / 3600).toFixed(2)));
+                mathsData.push(Number(Math.max(times.maths, (remote?.maths ?? 0) / 3600).toFixed(2)));
                 customData.push(Number(times.other.toFixed(2)));
             });
 
@@ -70,7 +79,9 @@ export function useStudyTimeAnalytics(
                 const dateStr = formatDateLocal(day);
                 const times = getStudyTimeBySubject(studySessions, dateStr);
                 const total = times.physics + times.chemistry + times.maths + times.other;
-                totalData.push(Number(total.toFixed(2)));
+                const remote = remoteDailyBuckets?.[dateStr];
+                const remoteTotal = (remote?.overall ?? 0) / 3600;
+                totalData.push(Number(Math.max(total, remoteTotal).toFixed(2)));
             });
 
             return {
@@ -91,7 +102,7 @@ export function useStudyTimeAnalytics(
                 ]
             };
         }
-    }, [studySessions, offset, mode]);
+    }, [studySessions, offset, mode, remoteDailyBuckets]);
 
     return analyticsData;
 }

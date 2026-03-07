@@ -7,6 +7,8 @@ import { formatDateLocal } from '../shared/utils/date';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { SubjectDataProvider } from './context/SubjectDataContext';
 import { UserProgressProvider, useUserProgress } from './context/UserProgressContext';
+import { RemoteAuthProvider } from './context/RemoteAuthContext';
+import { RemoteSyncProvider } from './context/RemoteSyncContext';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 import { AppRoutes } from './AppRoutes';
@@ -99,11 +101,15 @@ function AppContent() {
 function App() {
     return (
         <ThemeProvider>
-            <SubjectDataProvider>
-                <UserProgressProvider>
-                    <AppContent />
-                </UserProgressProvider>
-            </SubjectDataProvider>
+            <RemoteAuthProvider>
+                <SubjectDataProvider>
+                    <UserProgressProvider>
+                        <RemoteSyncProvider>
+                            <AppContent />
+                        </RemoteSyncProvider>
+                    </UserProgressProvider>
+                </SubjectDataProvider>
+            </RemoteAuthProvider>
         </ThemeProvider>
     );
 }

@@ -82,3 +82,40 @@
         transform: rotate(360deg);
     }
 }
+
+/* ===== Cloud Auth Prompt ===== */
+
+.cloud-sync-modal {
+    width: min(92vw, 480px);
+}
+
+.cloud-sync-modal-subtitle {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--text-primary);
+    font-size: 0.96rem;
+    line-height: 1.6;
+}
+
+.cloud-sync-modal-note {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.cloud-sync-modal-actions {
+    justify-content: flex-end;
+    gap: var(--space-sm);
+}
+
+.cloud-sync-google-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.cloud-sync-inline-error {
+    margin: var(--space-sm) 0 0 0;
+    color: var(--priority-high);
+    font-size: 0.85rem;
+}

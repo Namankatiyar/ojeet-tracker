@@ -2,6 +2,26 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SettingsModal } from './SettingsModal'
 
+vi.mock('../../../core/context/RemoteAuthContext', () => ({
+    useRemoteAuth: () => ({
+        user: null,
+        isConfigured: true,
+        signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
+        signOut: vi.fn().mockResolvedValue({ error: null }),
+        resetPrompt: vi.fn(),
+    }),
+}))
+
+vi.mock('../../../core/context/RemoteSyncContext', () => ({
+    useRemoteSync: () => ({
+        status: 'idle',
+        lastSyncedAt: null,
+        lastError: null,
+        remoteStudyAggregate: null,
+        syncNow: vi.fn().mockResolvedValue(undefined),
+    }),
+}))
+
 describe('SettingsModal', () => {
     let mockConsoleError: any
 
