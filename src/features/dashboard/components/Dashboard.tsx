@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
 import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry } from '../../../shared/types';
@@ -402,6 +403,13 @@ export function Dashboard({
                 <span className="credits-text">
                     Made for and by a JEE Aspirant with ❤
                 </span>
+                <Link
+                    to="/privacy-policy"
+                    className="credits-legal-link"
+                    title="Read Privacy Policy"
+                >
+                    Privacy Policy
+                </Link>
                 <a
                     href="https://github.com/Namankatiyar/ojeet-tracker"
                     target="_blank"

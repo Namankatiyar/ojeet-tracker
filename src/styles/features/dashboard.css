@@ -587,6 +587,7 @@
 .credits-panel {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   border-radius: var(--border-radius);
   justify-content: center;
   gap: var(--space-3, 0.75rem);
@@ -608,6 +609,18 @@
 
 .credits-github-link:hover {
   transform: translateY(-2px) scale(1.05);
+  color: var(--accent);
+}
+
+.credits-legal-link {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast, 150ms ease);
+}
+
+.credits-legal-link:hover {
   color: var(--accent);
 }
 
