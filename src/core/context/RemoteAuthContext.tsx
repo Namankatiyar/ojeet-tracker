@@ -16,6 +16,7 @@ interface RemoteAuthContextType {
 
 const SYNC_PROMPT_DISMISSED_KEY = 'ojeet-sync-prompt-dismissed';
 const REMOTE_SYNC_META_PREFIX = 'ojeet-remote-sync-';
+const PROD_OAUTH_REDIRECT_URL = 'https://pcm-tracker.vercel.app';
 
 const readPromptDismissed = () => {
     if (typeof window === 'undefined') return false;
@@ -91,10 +92,14 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             return { error: 'Cloud sync is not configured yet.' };
         }
 
+        const redirectTo = window.location.hostname === 'localhost'
+            ? window.location.origin
+            : PROD_OAUTH_REDIRECT_URL;
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin,
+                redirectTo,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
