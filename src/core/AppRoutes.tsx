@@ -12,6 +12,8 @@ const SubjectPage = lazy(() => import('../features/subjects/components/SubjectPa
 const Planner = lazy(() => import('../features/planner/components/Planner').then(module => ({ default: module.Planner })));
 const StudyClock = lazy(() => import('../features/study-clock/components/StudyClock').then(module => ({ default: module.StudyClock })));
 const ImportSyncPage = lazy(() => import('../features/sync/ImportSyncPage').then(module => ({ default: module.ImportSyncPage })));
+const PrivacyPolicyPage = lazy(() => import('../features/legal/components/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
+const TermsOfServicePage = lazy(() => import('../features/legal/components/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
 
 interface AppRoutesProps {
     onNavigate: (view: any) => void;
@@ -119,6 +121,9 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                 <Route path="/import" element={
                     <ImportSyncPage onAddSession={handleAddStudySession} />
                 } />
+
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { Download, Upload, X, AlertTriangle, Check, Image, Trash2, Cloud, LogOut } from 'lucide-react';
 import { Vibrant } from 'node-vibrant/browser';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
@@ -58,6 +59,7 @@ export function SettingsModal({
     onGlassRefractionChange,
     onAccentChange
 }: SettingsModalProps) {
+    const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const bgFileInputRef = useRef<HTMLInputElement>(null);
     const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -246,6 +248,16 @@ export function SettingsModal({
         resetPrompt();
         setAuthStatus('Signed out. Cloud sync metadata was cleared on this device.');
         setIsAuthBusy(false);
+    };
+
+    const handleOpenPrivacyPolicy = () => {
+        onClose();
+        navigate('/privacy-policy');
+    };
+
+    const handleOpenTermsOfService = () => {
+        onClose();
+        navigate('/terms-of-service');
     };
 
     const modalContent = (
@@ -465,6 +477,29 @@ export function SettingsModal({
                                 )}
                             </>
                         )}
+                    </div>
+
+                    <div className="settings-section">
+                        <h3 className="section-title">Legal</h3>
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Privacy Policy</span>
+                                <span className="setting-description">Read how app data is stored and handled</span>
+                            </div>
+                            <button className="action-btn outline small" onClick={handleOpenPrivacyPolicy}>
+                                Open
+                            </button>
+                        </div>
+
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Terms of Service</span>
+                                <span className="setting-description">Read usage terms and responsibilities</span>
+                            </div>
+                            <button className="action-btn outline small" onClick={handleOpenTermsOfService}>
+                                Open
+                            </button>
+                        </div>
                     </div>
 
                     {importStatus !== 'idle' && (
