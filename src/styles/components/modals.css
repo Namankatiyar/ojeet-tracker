@@ -495,6 +495,56 @@ html[data-theme="dark"] .distribution-modal {
 }
 
 /* ======================== */
+/* === Google Sign-In Button === */
+/* ======================== */
+.google-signin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    height: 40px;
+    padding: 0 0.875rem;
+    border-radius: 4px;
+    border: 1px solid #747775;
+    background: #ffffff;
+    color: #1f1f1f;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.25px;
+    line-height: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.google-signin-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #5f6368;
+}
+
+.google-signin-btn:active:not(:disabled) {
+    background: #f1f3f4;
+    border-color: #5f6368;
+}
+
+.google-signin-btn:focus-visible {
+    outline: 2px solid #1a73e8;
+    outline-offset: 2px;
+}
+
+.google-signin-btn:disabled {
+    color: #5f6368;
+    border-color: #dadce0;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.google-signin-btn__logo {
+    flex-shrink: 0;
+}
+
+/* ======================== */
 /* === Toggle Switch === */
 /* ======================== */
 .toggle-switch {

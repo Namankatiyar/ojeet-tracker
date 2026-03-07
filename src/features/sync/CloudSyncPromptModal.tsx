@@ -1,4 +1,5 @@
-import { Cloud, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { GoogleSignInButton } from '../../shared/components/ui/GoogleSignInButton';
 
 interface CloudSyncPromptModalProps {
     isOpen: boolean;
@@ -38,10 +39,7 @@ export function CloudSyncPromptModal({
                     <button className="modal-btn cancel" onClick={onClose}>
                         Continue Offline
                     </button>
-                    <button className="modal-btn primary cloud-sync-google-btn" onClick={onSignIn} disabled={isBusy}>
-                        <Cloud size={16} />
-                        {isBusy ? 'Redirecting...' : 'Sign in with Google'}
-                    </button>
+                    <GoogleSignInButton onClick={onSignIn} disabled={isBusy} className="cloud-sync-google-btn" />
                 </div>
             </div>
         </div>

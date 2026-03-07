@@ -4,6 +4,7 @@ import { Download, Upload, X, AlertTriangle, Check, Image, Trash2, Cloud, LogOut
 import { Vibrant } from 'node-vibrant/browser';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -428,10 +429,7 @@ export function SettingsModal({
                                             {isAuthBusy ? 'Signing out...' : 'Sign Out'}
                                         </button>
                                     ) : (
-                                        <button className="action-btn primary small" onClick={handleGoogleSignIn} disabled={isAuthBusy}>
-                                            <Cloud size={16} />
-                                            {isAuthBusy ? 'Redirecting...' : 'Sign in with Google'}
-                                        </button>
+                                        <GoogleSignInButton onClick={handleGoogleSignIn} disabled={isAuthBusy} />
                                     )}
                                 </div>
                                 {user && (

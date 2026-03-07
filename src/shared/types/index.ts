@@ -56,6 +56,7 @@ export interface StudySession {
     duration: number;       // in seconds
     timerMode?: 'stopwatch' | 'countdown' | 'pomodoro' | 'custom' | 'video';
     profileId?: string;
+    sourceVideoId?: string;
 }
 
 export interface MockScore {

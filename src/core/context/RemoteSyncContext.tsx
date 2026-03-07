@@ -41,7 +41,7 @@ type AggregateBucketMap = Record<string, AggregateBucketEntry>;
 interface VideoWatchEntry {
     video_id?: string;
     video_name?: string;
-    subject?: Subject;
+    subject?: Subject | string;
     watched_seconds?: number;
     watched_date?: string;
 }
@@ -187,36 +187,83 @@ function computeLocalStudyAggregate(studySessions: StudySession[]) {
     };
 }
 
-function mergeVideoWatchIntoAggregate(base: ReturnType<typeof computeLocalStudyAggregate>, videoLogs: VideoWatchEntry[]) {
-    const merged = {
-        ...base,
-        buckets_daily_json: { ...base.buckets_daily_json },
-        buckets_weekly_json: { ...base.buckets_weekly_json },
-        buckets_monthly_json: { ...base.buckets_monthly_json },
-    };
+function normalizeSubject(raw: unknown): Subject | undefined {
+    if (raw !== 'physics' && raw !== 'chemistry' && raw !== 'maths') return undefined;
+    return raw;
+}
 
+function toVideoSessionTimestamp(value: string | undefined): string | null {
+    if (!value) return null;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+    if (value.includes('T')) return parsed.toISOString();
+    return new Date(`${value}T09:00:00`).toISOString();
+}
+
+function mergeRemoteVideoLogsIntoSessions(existingSessions: StudySession[], videoLogs: VideoWatchEntry[]) {
+    if (!videoLogs.length) {
+        return { sessions: existingSessions, changed: false };
+    }
+
+    const byVideoId = new Map<string, VideoWatchEntry>();
     videoLogs.forEach((entry) => {
-        if (!entry || !entry.watched_date) return;
-        const seconds = Math.max(0, Math.floor(entry.watched_seconds || 0));
-        if (seconds <= 0) return;
+        const videoId = entry.video_id?.trim();
+        if (!videoId) return;
+        const nextSeconds = Math.max(0, Math.floor(entry.watched_seconds || 0));
+        if (nextSeconds <= 0) return;
 
-        const parsedDate = new Date(entry.watched_date);
-        if (Number.isNaN(parsedDate.getTime())) return;
-
-        const subject = entry.subject;
-        if (subject !== 'physics' && subject !== 'chemistry' && subject !== 'maths') return;
-
-        merged.total_seconds_overall += seconds;
-        if (subject === 'physics') merged.total_seconds_physics += seconds;
-        if (subject === 'chemistry') merged.total_seconds_chemistry += seconds;
-        if (subject === 'maths') merged.total_seconds_maths += seconds;
-
-        addToBucket(merged.buckets_daily_json, entry.watched_date, subject, seconds);
-        addToBucket(merged.buckets_weekly_json, getWeekKey(parsedDate), subject, seconds);
-        addToBucket(merged.buckets_monthly_json, getMonthKey(parsedDate), subject, seconds);
+        const current = byVideoId.get(videoId);
+        const currentSeconds = Math.max(0, Math.floor(current?.watched_seconds || 0));
+        if (!current || nextSeconds >= currentSeconds) {
+            byVideoId.set(videoId, entry);
+        }
     });
 
-    return merged;
+    if (byVideoId.size === 0) {
+        return { sessions: existingSessions, changed: false };
+    }
+
+    const accumulatedByVideoId = new Map<string, number>();
+    existingSessions.forEach((session) => {
+        const videoId = session.sourceVideoId?.trim();
+        if (!videoId) return;
+        const running = accumulatedByVideoId.get(videoId) ?? 0;
+        accumulatedByVideoId.set(videoId, running + Math.max(0, Math.floor(session.duration || 0)));
+    });
+
+    const appendedSessions: StudySession[] = [];
+    byVideoId.forEach((entry, videoId) => {
+        const totalRemoteSeconds = Math.max(0, Math.floor(entry.watched_seconds || 0));
+        const alreadyImportedSeconds = accumulatedByVideoId.get(videoId) ?? 0;
+        const deltaSeconds = totalRemoteSeconds - alreadyImportedSeconds;
+        if (deltaSeconds <= 0) return;
+
+        const startTime = toVideoSessionTimestamp(entry.watched_date);
+        if (!startTime) return;
+
+        const subject = normalizeSubject(entry.subject);
+        const title = (entry.video_name || '').trim() || 'Video Session';
+        const endTime = new Date(new Date(startTime).getTime() + deltaSeconds * 1000).toISOString();
+
+        appendedSessions.push({
+            id: `remote-video-${videoId}-${totalRemoteSeconds}`,
+            title,
+            subject,
+            type: subject ? 'chapter' : 'custom',
+            startTime,
+            endTime,
+            duration: deltaSeconds,
+            timerMode: 'video',
+            sourceVideoId: videoId,
+        });
+    });
+
+    if (appendedSessions.length === 0) {
+        return { sessions: existingSessions, changed: false };
+    }
+
+    const mergedSessions = [...existingSessions, ...appendedSessions];
+    return { sessions: mergedSessions, changed: true };
 }
 
 function createLocalPayload(params: {
@@ -297,7 +344,7 @@ async function fetchRemoteStudyAggregate(userId: string): Promise<UserStudyAggre
 export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, isConfigured } = useRemoteAuth();
     const {
-        progress, setProgress, plannerTasks, setPlannerTasks, studySessions, mockScores, setMockScores,
+        progress, setProgress, plannerTasks, setPlannerTasks, studySessions, setStudySessions, mockScores, setMockScores,
         examDates, setExamDates, disableAutoShift, setDisableAutoShift, progressCardSettings, setProgressCardSettings
     } = useUserProgress();
     const { subjectData, setSubjectData, customColumns, setCustomColumns, excludedColumns, setExcludedColumns, materialOrder, setMaterialOrder } = useSubjectData();
@@ -400,6 +447,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const { payload: remotePayload, row } = await fetchRemotePayload(user.id);
             const remoteAggregate = await fetchRemoteStudyAggregate(user.id);
             setRemoteStudyAggregate(remoteAggregate);
+            const videoLogs = remoteAggregate?.video_watch_45d_json ?? [];
+            const videoMergeResult = mergeRemoteVideoLogsIntoSessions(studySessions, videoLogs);
+            if (videoMergeResult.changed) {
+                setStudySessions(videoMergeResult.sessions);
+            }
+
             const mergedPayload = remotePayload ? mergePayloadDomainsWithPolicy(localPayload, remotePayload, {
                 hasLocalUnsyncedEdit: (domain) => hasLocalUnsyncedEdit(domain),
             }) : localPayload;
@@ -467,19 +520,17 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }
             }
 
-            const localAggregate = computeLocalStudyAggregate(studySessions);
-            const videoLogs = remoteAggregate?.video_watch_45d_json ?? [];
-            const localPlusVideoAggregate = mergeVideoWatchIntoAggregate(localAggregate, videoLogs);
+            const localAggregate = computeLocalStudyAggregate(videoMergeResult.sessions);
 
             const mergedAggregateRow = {
                 user_id: user.id,
-                total_seconds_overall: Math.max(localPlusVideoAggregate.total_seconds_overall, remoteAggregate?.total_seconds_overall ?? 0),
-                total_seconds_physics: Math.max(localPlusVideoAggregate.total_seconds_physics, remoteAggregate?.total_seconds_physics ?? 0),
-                total_seconds_chemistry: Math.max(localPlusVideoAggregate.total_seconds_chemistry, remoteAggregate?.total_seconds_chemistry ?? 0),
-                total_seconds_maths: Math.max(localPlusVideoAggregate.total_seconds_maths, remoteAggregate?.total_seconds_maths ?? 0),
-                buckets_daily_json: mergeBucketMaps(remoteAggregate?.buckets_daily_json ?? {}, localPlusVideoAggregate.buckets_daily_json),
-                buckets_weekly_json: mergeBucketMaps(remoteAggregate?.buckets_weekly_json ?? {}, localPlusVideoAggregate.buckets_weekly_json),
-                buckets_monthly_json: mergeBucketMaps(remoteAggregate?.buckets_monthly_json ?? {}, localPlusVideoAggregate.buckets_monthly_json),
+                total_seconds_overall: Math.max(localAggregate.total_seconds_overall, remoteAggregate?.total_seconds_overall ?? 0),
+                total_seconds_physics: Math.max(localAggregate.total_seconds_physics, remoteAggregate?.total_seconds_physics ?? 0),
+                total_seconds_chemistry: Math.max(localAggregate.total_seconds_chemistry, remoteAggregate?.total_seconds_chemistry ?? 0),
+                total_seconds_maths: Math.max(localAggregate.total_seconds_maths, remoteAggregate?.total_seconds_maths ?? 0),
+                buckets_daily_json: mergeBucketMaps(remoteAggregate?.buckets_daily_json ?? {}, localAggregate.buckets_daily_json),
+                buckets_weekly_json: mergeBucketMaps(remoteAggregate?.buckets_weekly_json ?? {}, localAggregate.buckets_weekly_json),
+                buckets_monthly_json: mergeBucketMaps(remoteAggregate?.buckets_monthly_json ?? {}, localAggregate.buckets_monthly_json),
                 video_watch_45d_json: videoLogs,
             };
 
@@ -520,6 +571,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         plannerTasks,
         progress,
         progressCardSettings,
+        setStudySessions,
         studySessions,
         subjectData,
         user,

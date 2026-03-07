@@ -106,12 +106,21 @@
 .cloud-sync-modal-actions {
     justify-content: flex-end;
     gap: var(--space-sm);
+    align-items: center;
 }
 
 .cloud-sync-google-btn {
+    min-width: 208px;
+}
+
+.cloud-sync-modal-actions .modal-btn.cancel {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    justify-content: center;
+    height: 40px;
+    min-width: 120px;
+    white-space: nowrap;
+    padding: 0 1rem;
 }
 
 .cloud-sync-inline-error {
