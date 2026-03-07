@@ -6,10 +6,10 @@ import { supabase } from '../../shared/lib/supabase';
 import { buildSyncPayload } from '../../features/sync/syncPayload';
 import { SYNC_DEFAULT_PLANNER_HISTORY_DAYS, SyncPayloadV1, SyncStorageMode } from '../../features/sync/syncTypes';
 import { computeChecksum, decompressSyncPayload, encodeSyncPayload, reconstructCompressedPayload } from '../../features/sync/syncCodec';
+import { mergePayloadDomainsWithPolicy, SyncDomain } from '../../features/sync/syncMerge';
 import { formatDateLocal } from '../../shared/utils/date';
 import { Subject, StudySession } from '../../shared/types';
 
-type SyncDomain = 'progress' | 'plannerTasks' | 'mockScores' | 'examDates' | 'settings' | 'subjects';
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
 
 interface RemoteSyncContextType {
@@ -248,29 +248,6 @@ function createLocalPayload(params: {
     });
 }
 
-function mergePayloadDomains(localPayload: SyncPayloadV1, remotePayload: SyncPayloadV1) {
-    const merged: SyncPayloadV1 = {
-        ...remotePayload,
-        domains: {
-            ...remotePayload.domains,
-            settings: {
-                ...remotePayload.domains.settings,
-            },
-        },
-    };
-
-    const useLocalForDomain = (domain: SyncDomain) => hasLocalUnsyncedEdit(domain);
-
-    merged.domains.progress = useLocalForDomain('progress') || !remotePayload.domains.progress ? localPayload.domains.progress : remotePayload.domains.progress;
-    merged.domains.plannerTasks = useLocalForDomain('plannerTasks') || !remotePayload.domains.plannerTasks ? localPayload.domains.plannerTasks : remotePayload.domains.plannerTasks;
-    merged.domains.mockScores = useLocalForDomain('mockScores') || !remotePayload.domains.mockScores ? localPayload.domains.mockScores : remotePayload.domains.mockScores;
-    merged.domains.examDates = useLocalForDomain('examDates') || !remotePayload.domains.examDates ? localPayload.domains.examDates : remotePayload.domains.examDates;
-    merged.domains.settings = useLocalForDomain('settings') || !remotePayload.domains.settings ? localPayload.domains.settings : remotePayload.domains.settings;
-    merged.domains.subjects = useLocalForDomain('subjects') || !remotePayload.domains.subjects ? localPayload.domains.subjects : remotePayload.domains.subjects;
-
-    return merged;
-}
-
 async function fetchRemotePayload(userId: string): Promise<{ payload: SyncPayloadV1 | null; row: UserSyncStateRow | null }> {
     if (!supabase) return { payload: null, row: null };
 
@@ -423,7 +400,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const { payload: remotePayload, row } = await fetchRemotePayload(user.id);
             const remoteAggregate = await fetchRemoteStudyAggregate(user.id);
             setRemoteStudyAggregate(remoteAggregate);
-            const mergedPayload = remotePayload ? mergePayloadDomains(localPayload, remotePayload) : localPayload;
+            const mergedPayload = remotePayload ? mergePayloadDomainsWithPolicy(localPayload, remotePayload, {
+                hasLocalUnsyncedEdit: (domain) => hasLocalUnsyncedEdit(domain),
+            }) : localPayload;
             const localDomainChecksum = await computeChecksum(JSON.stringify(localPayload.domains));
             const mergedDomainChecksum = await computeChecksum(JSON.stringify(mergedPayload.domains));
 
