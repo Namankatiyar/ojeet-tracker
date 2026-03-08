@@ -4,3 +4,5 @@
 interface ImportMetaEnv {
     readonly VITE_RELEASE_CHANNEL?: string;
 }
+
+declare const __APP_VERSION__: string;

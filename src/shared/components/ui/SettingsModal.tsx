@@ -263,6 +263,11 @@ export function SettingsModal({
         navigate('/terms-of-service');
     };
 
+    const handleOpenChangelog = () => {
+        onClose();
+        navigate('/changelog');
+    };
+
     const handleRepairUpdates = async () => {
         setIsRepairingUpdates(true);
         setImportStatus('idle');
@@ -520,6 +525,16 @@ export function SettingsModal({
 
                     <div className="settings-section">
                         <h3 className="section-title">Legal</h3>
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Changelog</span>
+                                <span className="setting-description">Review latest updates before and after each release</span>
+                            </div>
+                            <button className="action-btn outline small" onClick={handleOpenChangelog}>
+                                Open
+                            </button>
+                        </div>
+
                         <div className="settings-row">
                             <div className="setting-info">
                                 <span className="setting-label">Privacy Policy</span>

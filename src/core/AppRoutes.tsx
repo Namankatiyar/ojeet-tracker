@@ -14,6 +14,7 @@ const StudyClock = lazy(() => import('../features/study-clock/components/StudyCl
 const ImportSyncPage = lazy(() => import('../features/sync/ImportSyncPage').then(module => ({ default: module.ImportSyncPage })));
 const PrivacyPolicyPage = lazy(() => import('../features/legal/components/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
 const TermsOfServicePage = lazy(() => import('../features/legal/components/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
+const ChangelogPage = lazy(() => import('../features/legal/components/ChangelogPage').then(module => ({ default: module.ChangelogPage })));
 
 interface AppRoutesProps {
     onNavigate: (view: any) => void;
@@ -124,6 +125,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
 
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                <Route path="/changelog" element={<ChangelogPage />} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
