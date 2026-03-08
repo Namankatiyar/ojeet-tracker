@@ -10,6 +10,7 @@ import { Atom, FlaskConical, Pi, Calendar, Check, Pencil, Github } from 'lucide-
 import { formatDateLocal, formatTime12Hour, calculateDaysRemaining } from '../../../shared/utils/date';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
+import { PwaInstallPromptModal } from '../../sync/PwaInstallPromptModal';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 
 interface DashboardProps {
@@ -55,12 +56,26 @@ export function Dashboard({
     onAddMockScore = () => { },
     onDeleteMockScore = () => { }
 }: DashboardProps) {
+    interface BeforeInstallPromptEvent extends Event {
+        prompt: () => Promise<void>;
+        userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+    }
+
+    const PWA_INSTALL_PROMPT_DISMISSED_KEY = 'ojeet-pwa-install-prompt-dismissed';
     const [isExamModalOpen, setIsExamModalOpen] = useState(false);
     const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
+    const [isPwaPromptOpen, setIsPwaPromptOpen] = useState(false);
+    const [isPwaInstallBusy, setIsPwaInstallBusy] = useState(false);
+    const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const [isWideViewport, setIsWideViewport] = useState(() =>
+        typeof window !== 'undefined' && window.matchMedia('(min-width: 64rem)').matches
+    );
+    const [isPwaPromptDismissed, setIsPwaPromptDismissed] = useLocalStorage<boolean>(PWA_INSTALL_PROMPT_DISMISSED_KEY, false);
     const [isAuthBusy, setIsAuthBusy] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
     const { user, isConfigured, isPromptDismissed, dismissPrompt, signInWithGoogle } = useRemoteAuth();
     const { remoteStudyAggregate } = useRemoteSync();
+    const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
 
     // Get primary exam
     const primaryExam = examDates.find(e => e.isPrimary) || examDates[0] || null;
@@ -88,7 +103,7 @@ export function Dashboard({
     }, [primaryExam]);
 
     useEffect(() => {
-        if (!isConfigured || user || isPromptDismissed) {
+        if (!syncPromptEligible) {
             setIsSyncPromptOpen(false);
             return;
         }
@@ -100,7 +115,59 @@ export function Dashboard({
         return () => {
             window.clearTimeout(timer);
         };
-    }, [isConfigured, isPromptDismissed, user]);
+    }, [syncPromptEligible]);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(min-width: 64rem)');
+        const handleChange = (e: MediaQueryListEvent) => setIsWideViewport(e.matches);
+        setIsWideViewport(mediaQuery.matches);
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
+
+    useEffect(() => {
+        const nav = window.navigator as Navigator & { standalone?: boolean };
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || nav.standalone === true;
+        if (isStandalone) {
+            setIsPwaPromptDismissed(true);
+            return;
+        }
+
+        const handleBeforeInstallPrompt = (event: Event) => {
+            const promptEvent = event as BeforeInstallPromptEvent;
+            promptEvent.preventDefault();
+            setDeferredInstallPrompt(promptEvent);
+        };
+
+        const handleAppInstalled = () => {
+            setDeferredInstallPrompt(null);
+            setIsPwaPromptOpen(false);
+            setIsPwaPromptDismissed(true);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.addEventListener('appinstalled', handleAppInstalled);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('appinstalled', handleAppInstalled);
+        };
+    }, [setIsPwaPromptDismissed]);
+
+    useEffect(() => {
+        if (!isWideViewport || isPwaPromptDismissed || !deferredInstallPrompt || syncPromptEligible || isSyncPromptOpen) {
+            setIsPwaPromptOpen(false);
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            setIsPwaPromptOpen(true);
+        }, 1200);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [deferredInstallPrompt, isPwaPromptDismissed, isSyncPromptOpen, isWideViewport, syncPromptEligible]);
 
     const subjects: { key: Subject; label: string; icon: React.ReactNode; progress: number; color: string }[] = [
         { key: 'physics', label: 'Physics', icon: <Atom size={24} />, progress: physicsProgress, color: 'var(--accent)' },
@@ -194,6 +261,32 @@ export function Dashboard({
         if (error) {
             setAuthError(error);
             setIsAuthBusy(false);
+        }
+    };
+
+    const handlePwaPromptClose = () => {
+        setIsPwaPromptOpen(false);
+        setIsPwaPromptDismissed(true);
+    };
+
+    const handleInstallPwa = async () => {
+        if (!deferredInstallPrompt) return;
+        setIsPwaInstallBusy(true);
+
+        try {
+            await deferredInstallPrompt.prompt();
+            const choiceResult = await deferredInstallPrompt.userChoice;
+
+            if (choiceResult.outcome === 'accepted') {
+                setIsPwaPromptDismissed(true);
+            }
+
+            setIsPwaPromptOpen(false);
+            setDeferredInstallPrompt(null);
+        } catch {
+            // Keep modal state unchanged on prompt failure.
+        } finally {
+            setIsPwaInstallBusy(false);
         }
     };
 
@@ -436,6 +529,12 @@ export function Dashboard({
                 onClose={handleSyncPromptClose}
                 onSignIn={handleGoogleSignIn}
                 isBusy={isAuthBusy}
+            />
+            <PwaInstallPromptModal
+                isOpen={isPwaPromptOpen}
+                onClose={handlePwaPromptClose}
+                onInstall={handleInstallPwa}
+                isBusy={isPwaInstallBusy}
             />
         </div>
     );
