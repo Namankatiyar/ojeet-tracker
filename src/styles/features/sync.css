@@ -123,6 +123,22 @@
     padding: 0 1rem;
 }
 
+@media (max-width: 48rem) {
+    .cloud-sync-modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+
+    .cloud-sync-modal-actions .modal-btn.cancel,
+    .cloud-sync-modal-actions .cloud-sync-google-btn {
+        width: 100%;
+        min-width: 0;
+        flex: 0 0 auto;
+        height: 44px;
+    }
+}
+
 .cloud-sync-inline-error {
     margin: var(--space-sm) 0 0 0;
     color: var(--priority-high);

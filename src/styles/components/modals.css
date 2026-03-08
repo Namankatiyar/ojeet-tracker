@@ -330,7 +330,8 @@ html[data-theme="dark"] .modal-content.input-modal .modal-footer {
 
     .modal-footer .modal-btn,
     .modal-footer .primary-btn,
-    .modal-footer .secondary-btn {
+    .modal-footer .secondary-btn,
+    .modal-footer .google-signin-btn {
         flex: 1 1 10rem;
     }
 }
