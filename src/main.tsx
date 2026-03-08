@@ -4,8 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import './styles/index.css'
 import App from './core/App.tsx'
 import { injectSpeedInsights } from '@vercel/speed-insights';
+import { initPwaBridge } from './shared/utils/pwaBridge';
 
 injectSpeedInsights();
+initPwaBridge();
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../shared/components/layout/Header';
+import { PwaUpdateBanner } from '../shared/components/ui/PwaUpdateBanner';
 import { Subject } from '../shared/types';
 import { formatDateLocal } from '../shared/utils/date';
 
@@ -86,6 +87,7 @@ function AppContent() {
                 progressCardSettings={progressCardSettings}
                 onProgressCardSettingsChange={setProgressCardSettings}
             />
+            <PwaUpdateBanner />
             <main className="main-content">
                 <AppRoutes
                     onNavigate={handleNavigate}
