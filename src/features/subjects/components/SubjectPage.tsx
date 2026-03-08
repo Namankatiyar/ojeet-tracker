@@ -6,11 +6,13 @@ import { PriorityFilterDropdown } from './PriorityFilterDropdown';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
 import { InputModal } from '../../../shared/components/ui/InputModal';
 import { triggerConfetti } from '../../../shared/utils/confetti';
-import { Plus, X as XIcon } from 'lucide-react';
+import { Plus, X as XIcon, Square, CheckSquare } from 'lucide-react';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { useChapterSort } from '../hooks/useChapterSort';
 import { useReorderDrag } from '../hooks/useReorderDrag';
 import { useTheme } from '../../../core/context/ThemeContext';
+import { PrioritySelector } from '../../../shared/components/ui/PrioritySelector';
+import { MobileChapterCard } from './MobileChapterCard';
 
 interface SubjectPageProps {
     subject: Subject;
@@ -63,11 +65,18 @@ export function SubjectPage({
         serial: null,
         name: ''
     });
+    const [selectedChapterSerial, setSelectedChapterSerial] = useState<number | null>(null);
 
     // Hooks
     const sortedChapters = useChapterSort(data?.chapters || [], progress, priorityFilter);
 
     const chapterDrag = useReorderDrag<Chapter, HTMLTableRowElement>(
+        data?.chapters || [],
+        onReorderChapters,
+        isEditing && priorityFilter === 'all'
+    );
+
+    const chapterDragMobile = useReorderDrag<Chapter, HTMLDivElement>(
         data?.chapters || [],
         onReorderChapters,
         isEditing && priorityFilter === 'all'
@@ -137,6 +146,12 @@ export function SubjectPage({
         setChapterToDelete({ isOpen: false, serial: null, name: '' });
     }, [onRemoveChapter, chapterToDelete.serial]);
 
+    const selectedChapter = selectedChapterSerial !== null
+        ? data.chapters.find((ch) => ch.serial === selectedChapterSerial) || null
+        : null;
+
+    const selectedChapterProgress = selectedChapter ? progress[selectedChapter.serial] : undefined;
+
     return (
         <div className="subject-page">
             <SubjectHeader
@@ -150,7 +165,7 @@ export function SubjectPage({
                 onAddMaterial={() => setIsAddMaterialModalOpen(true)}
             />
 
-            <div className="chapter-table-container">
+            <div className="chapter-table-container desktop-chapter-table">
                 <table className="chapter-table">
                     <thead>
                         <tr>
@@ -227,6 +242,64 @@ export function SubjectPage({
                 )}
             </div>
 
+            <div className="mobile-chapter-view">
+                <div className="mobile-chapter-controls">
+                    <div className="mobile-priority-filter">
+                        <span className="mobile-control-label">Filter</span>
+                        <PriorityFilterDropdown
+                            priorityFilter={priorityFilter}
+                            onFilterChange={setPriorityFilter}
+                        />
+                    </div>
+                    {isEditing && (
+                        <button
+                            onClick={() => setIsAddChapterModalOpen(true)}
+                            className="primary-btn mobile-add-chapter-btn"
+                        >
+                            <Plus size={16} />
+                            Add Chapter
+                        </button>
+                    )}
+                </div>
+
+                <div className="mobile-material-strip">
+                    {data.materialNames.map((material) => (
+                        <button
+                            key={material}
+                            className="mobile-material-pill"
+                            onClick={() => {
+                                if (!isEditing && onRemoveMaterial) {
+                                    setDeleteMaterialState({ isOpen: true, material });
+                                }
+                            }}
+                            title={!isEditing && onRemoveMaterial ? 'Tap to remove this material column' : material}
+                            disabled={isEditing || !onRemoveMaterial}
+                        >
+                            <span>{material}</span>
+                            {!isEditing && onRemoveMaterial && <XIcon size={14} />}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="mobile-chapter-list">
+                    {sortedChapters.map((chapter, index) => (
+                        <MobileChapterCard
+                            key={chapter.serial}
+                            chapter={chapter}
+                            index={index}
+                            materialNames={data.materialNames}
+                            progress={progress[chapter.serial]}
+                            isEditing={isEditing}
+                            canReorder={priorityFilter === 'all'}
+                            onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+                            onDragStart={(e) => chapterDragMobile.onDragStart(e, index)}
+                            onDragEnter={(e) => chapterDragMobile.onDragEnter(e, index)}
+                            onDragEnd={chapterDragMobile.onDragEnd}
+                        />
+                    ))}
+                </div>
+            </div>
+
             <div className="legend">
                 <h4>Priority Legend</h4>
                 <div className="legend-items">
@@ -284,6 +357,79 @@ export function SubjectPage({
                 onConfirm={handleAddChapter}
                 onCancel={() => setIsAddChapterModalOpen(false)}
             />
+
+            {selectedChapter && (
+                <div className="modal-overlay" onClick={() => setSelectedChapterSerial(null)}>
+                    <div className="modal-content chapter-detail-sheet" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Chapter #{selectedChapter.serial}</h3>
+                            <button className="close-btn" onClick={() => setSelectedChapterSerial(null)} aria-label="Close chapter details">
+                                <XIcon size={18} />
+                            </button>
+                        </div>
+                        <div className="modal-body chapter-detail-body">
+                            <div className="chapter-detail-section">
+                                <label>Chapter Name</label>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        className="modal-input"
+                                        value={selectedChapter.name}
+                                        onChange={(e) => onRenameChapter?.(selectedChapter.serial, e.target.value)}
+                                    />
+                                ) : (
+                                    <p className="chapter-detail-title">{selectedChapter.name}</p>
+                                )}
+                            </div>
+
+                            <div className="chapter-detail-section">
+                                <label>Priority</label>
+                                <PrioritySelector
+                                    priority={selectedChapterProgress?.priority || 'none'}
+                                    onChange={(p) => onSetPriority(selectedChapter.serial, p)}
+                                />
+                            </div>
+
+                            <div className="chapter-detail-section">
+                                <label>Materials</label>
+                                <div className="chapter-material-list">
+                                    {data.materialNames.map((material) => (
+                                        <div key={material} className="chapter-material-item">
+                                            <span>{material}</span>
+                                            <button
+                                                type="button"
+                                                className="chapter-material-toggle"
+                                                onClick={() => handleToggleMaterialWithConfetti(selectedChapter.serial, material)}
+                                                aria-label={`Toggle ${material} completion`}
+                                                aria-pressed={!!selectedChapterProgress?.completed?.[material]}
+                                            >
+                                                {selectedChapterProgress?.completed?.[material] ? (
+                                                    <CheckSquare size={18} />
+                                                ) : (
+                                                    <Square size={18} />
+                                                )}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        {isEditing && (
+                            <div className="modal-footer">
+                                <button
+                                    className="modal-btn confirm"
+                                    onClick={() => {
+                                        setChapterToDelete({ isOpen: true, serial: selectedChapter.serial, name: selectedChapter.name });
+                                        setSelectedChapterSerial(null);
+                                    }}
+                                >
+                                    Delete Chapter
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -2,7 +2,7 @@
 
 /* ===== Dark Mode Glassmorphism Effects ===== */
 /* Apply glass effect to all major cards and panels - DESKTOP ONLY */
-@media (min-width: 768px) {
+@media (min-width: 48rem) {
 
   html[data-theme="dark"] .overall-progress-card,
   html[data-theme="dark"] .exam-countdown-card,
@@ -29,7 +29,7 @@
 }
 
 /* Fallback for Mobile - Solid Colors for Performance */
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
 
   html[data-theme="dark"] .overall-progress-card,
   html[data-theme="dark"] .exam-countdown-card,
@@ -47,11 +47,10 @@
   html[data-theme="dark"] .modal-content,
   html[data-theme="dark"] .view-toggles,
   html[data-theme="dark"] .analytics-panel {
-    background: #1e1e24;
-    /* Solid dark background */
+    background: var(--bg-secondary);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
   }
 }
 

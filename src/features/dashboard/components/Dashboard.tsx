@@ -6,7 +6,7 @@ import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry }
 import { TaskLog } from '../../planner/components/TaskLog';
 import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
-import { Atom, FlaskConical, Calculator, Calendar, Check, Pencil, Github } from 'lucide-react';
+import { Atom, FlaskConical, Pi, Calendar, Check, Pencil, Github } from 'lucide-react';
 import { formatDateLocal, formatTime12Hour, calculateDaysRemaining } from '../../../shared/utils/date';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
@@ -105,7 +105,7 @@ export function Dashboard({
     const subjects: { key: Subject; label: string; icon: React.ReactNode; progress: number; color: string }[] = [
         { key: 'physics', label: 'Physics', icon: <Atom size={24} />, progress: physicsProgress, color: 'var(--accent)' },
         { key: 'chemistry', label: 'Chemistry', icon: <FlaskConical size={24} />, progress: chemistryProgress, color: 'var(--accent)' },
-        { key: 'maths', label: 'Maths', icon: <Calculator size={24} />, progress: mathsProgress, color: 'var(--accent)' },
+        { key: 'maths', label: 'Maths', icon: <Pi size={24} />, progress: mathsProgress, color: 'var(--accent)' },
     ];
 
     const getChapterStats = (subject: Subject) => {

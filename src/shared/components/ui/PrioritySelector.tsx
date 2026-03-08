@@ -15,7 +15,7 @@ export function PrioritySelector({ priority, onChange }: PrioritySelectorProps) 
     ];
 
     return (
-        <div className="priority-selector" style={{ minWidth: '95px' }}>
+        <div className="priority-selector">
             <CustomSelect
                 value={priority}
                 options={options}

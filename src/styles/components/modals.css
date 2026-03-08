@@ -55,7 +55,7 @@
 
 html[data-theme="dark"] .modal-overlay,
 html[data-theme="dark"] .modal-backdrop {
-    background: rgba(0, 0, 0, 0.6);
+    background: color-mix(in srgb, var(--bg-base), transparent 40%);
     backdrop-filter: var(--panel-blur);
     -webkit-backdrop-filter: var(--panel-blur);
 }
@@ -69,10 +69,12 @@ html[data-theme="dark"] .modal-backdrop {
     border: 1px solid var(--border);
     border-radius: var(--border-radius);
     padding: var(--space-lg);
-    width: 90%;
+    width: min(90%, 26rem);
     max-width: 400px;
+    max-height: min(90vh, 90dvh);
     box-shadow: var(--shadow-lg);
     animation: modal-slide-up 0.2s ease;
+    overflow: auto;
 }
 
 /* Dark mode glass effect */
@@ -287,9 +289,50 @@ html[data-theme="dark"] .modal-input:focus {
 
 /* Dark mode input modal */
 html[data-theme="dark"] .modal-content.input-modal .modal-footer {
-    background: rgba(27, 27, 27, 0.08);
+    background: var(--bg-tertiary);
     backdrop-filter: var(--panel-blur);
     -webkit-backdrop-filter: var(--panel-blur);
+}
+
+@media (max-width: 48rem) {
+    .modal-overlay,
+    .modal-backdrop {
+        padding: var(--space-3);
+        align-items: center;
+    }
+
+    .modal-container,
+    .modal-content,
+    .settings-modal,
+    .date-picker-modal,
+    .progress-card-modal,
+    .exam-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: min(92vh, 92dvh);
+        border-radius: var(--radius-md);
+        margin: 0;
+    }
+
+    .modal-header {
+        padding-bottom: var(--space-3);
+        margin-bottom: var(--space-3);
+    }
+
+    .modal-body {
+        gap: var(--space-4);
+    }
+
+    .modal-footer {
+        flex-wrap: wrap;
+        justify-content: stretch;
+    }
+
+    .modal-footer .modal-btn,
+    .modal-footer .primary-btn,
+    .modal-footer .secondary-btn {
+        flex: 1 1 10rem;
+    }
 }
 
 /* Settings Modal */

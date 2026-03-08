@@ -1,8 +1,8 @@
 /* ===== Study Clock Page ===== */
 .study-clock-page {
-  padding: 2rem;
+  padding: var(--space-8);
   padding-top: 0;
-  max-width: 1400px;
+  max-width: var(--content-max-width-wide);
   margin: 0 auto;
 }
 
@@ -37,11 +37,11 @@
   -webkit-backdrop-filter: var(--panel-blur);
   border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: var(--space-6);
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
   position: relative;
   z-index: 20;
 }
@@ -49,20 +49,20 @@
 .timer-card.horizontal {
   flex-direction: row;
   align-items: stretch;
-  gap: 2rem;
+  gap: var(--space-8);
 }
 
 .timer-card.horizontal .task-selector-section {
   flex: 1;
-  min-width: 280px;
-  max-width: 400px;
+  min-width: 0;
+  max-width: 25rem;
   border-right: 1px solid var(--border);
-  padding-right: 2rem;
+  padding-right: var(--space-8);
 }
 
 .timer-card.horizontal .task-selector-section.collapsed {
   min-width: auto;
-  max-width: 200px;
+  max-width: 12.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,20 +418,22 @@
 
 /* Stats and Log Row */
 .stats-and-log-row {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  align-items: stretch;
 }
 
 .stats-and-log-row .statistics-card,
 .stats-and-log-row .session-log-card {
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 64rem) {
   .stats-and-log-row {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
 }
 
@@ -442,7 +444,7 @@
   -webkit-backdrop-filter: var(--panel-blur);
   border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: var(--space-6);
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
@@ -649,7 +651,7 @@
   -webkit-backdrop-filter: var(--panel-blur);
   border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: var(--space-6);
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
 
@@ -1218,6 +1220,15 @@ html[data-theme="dark"] .distribution-modal {
   font-weight: 600;
 }
 
+.fullscreen-state-label {
+  font-size: 1.2rem;
+  margin-top: var(--space-2);
+  opacity: 0.8;
+  font-weight: 700;
+  letter-spacing: 0.125rem;
+  text-transform: uppercase;
+}
+
 
 .fullscreen-hint {
   font-size: 1rem;
@@ -1693,7 +1704,7 @@ html[data-theme="dark"] .distribution-modal {
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 64rem) {
   .timer-card.horizontal {
     flex-direction: column;
   }
@@ -1703,12 +1714,12 @@ html[data-theme="dark"] .distribution-modal {
     border-right: none;
     border-bottom: 1px solid var(--border);
     padding-right: 0;
-    padding-bottom: 1.5rem;
+    padding-bottom: var(--space-6);
   }
 
   .timer-card.horizontal .task-selector-section.collapsed {
     max-width: none;
-    padding-bottom: 1rem;
+    padding-bottom: var(--space-4);
   }
 
   .fullscreen-time {
@@ -1716,8 +1727,8 @@ html[data-theme="dark"] .distribution-modal {
   }
 
   .radial-svg {
-    width: 200px;
-    height: 200px;
+    width: 12.5rem;
+    height: 12.5rem;
   }
 
   .radial-time {
@@ -1725,10 +1736,20 @@ html[data-theme="dark"] .distribution-modal {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 40rem) {
   .study-clock-page {
-    padding: 1rem;
+    padding: var(--space-4);
     padding-top: 0;
+  }
+
+  .stats-filter-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .stats-filter-group label {
+    min-width: 0;
   }
 
   .timer-time {
@@ -1745,9 +1766,14 @@ html[data-theme="dark"] .distribution-modal {
     font-size: 1rem;
   }
 
+  .fullscreen-state-label {
+    font-size: 1rem;
+    letter-spacing: 0.08rem;
+  }
+
   .radial-svg {
-    width: 180px;
-    height: 180px;
+    width: 11rem;
+    height: 11rem;
   }
 
   .radial-time {

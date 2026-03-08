@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Subject, StudySession, MockScore, ProgressCardSettings } from '../../types';
-import { LayoutDashboard, Atom, FlaskConical, Calculator, Sun, Moon, Palette, Settings, Calendar, Clock, Menu } from 'lucide-react';
+import { LayoutDashboard, Atom, FlaskConical, Pi, Sun, Moon, Palette, Settings, Calendar, Clock, Menu } from 'lucide-react';
 import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
 import { UserAvatar } from '../ui/Avatar';
@@ -102,7 +102,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
         { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
         { key: 'physics', label: 'Physics', icon: <Atom size={20} /> },
         { key: 'chemistry', label: 'Chemistry', icon: <FlaskConical size={20} /> },
-        { key: 'maths', label: 'Maths', icon: <Calculator size={20} /> },
+        { key: 'maths', label: 'Maths', icon: <Pi size={20} /> },
         { key: 'planner', label: 'Planner', icon: <Calendar size={20} /> },
         { key: 'studyclock', label: 'Study Clock', icon: <Clock size={20} /> },
     ];

@@ -1,6 +1,6 @@
 /* ===== Planner Page ===== */
 .planner-page {
-  padding: 2.5rem 2rem 2rem 2rem;
+  padding: var(--space-10) var(--space-8) var(--space-8) var(--space-8);
   width: 100%;
   max-width: var(--content-max-width);
   box-sizing: border-box;
@@ -8,45 +8,45 @@
 }
 
 .planner-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .planner-page {
-    padding: 0 0.5rem 1rem 0.5rem;
+    padding: 0 var(--space-2) var(--space-4) var(--space-2);
   }
 
   .planner-header {
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--space-4);
     align-items: stretch;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-6);
   }
 }
 
 /* View Toggles */
 .view-toggles {
   background: var(--bg-secondary);
-  padding: 4px;
-  border-radius: 8px;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   border: 1px solid var(--border);
 }
 
 .view-btn {
-  padding: 9px 18px;
-  border-radius: 6px;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-xs);
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   font-weight: 700;
   font-size: 0.825rem;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .view-btn.active {
@@ -56,7 +56,7 @@
   box-shadow: var(--shadow-md);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .view-toggles {
     order: 2;
     width: 100%;
@@ -64,8 +64,8 @@
 
   .view-btn {
     flex: 1;
-    padding: 7.5px;
-    font-size: 0.675rem;
+    padding: var(--space-2);
+    font-size: var(--text-xs);
   }
 }
 
@@ -83,7 +83,7 @@
   font-size: 0.95rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .study-time-display {
     order: 1;
     align-self: center;
@@ -103,14 +103,14 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--text-primary);
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .date-controls button:hover {
@@ -118,14 +118,14 @@
   color: var(--accent);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .date-controls {
     order: 3;
     justify-content: space-between;
     width: 100%;
     background: var(--bg-secondary);
-    padding: 0.5rem;
-    border-radius: 8px;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border);
   }
 }
@@ -137,13 +137,13 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .weekly-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--space-4);
   }
 }
 
@@ -934,23 +934,30 @@
 }
 
 /* ===== Monthly View Responsive ===== */
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .apple-cal {
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .apple-cal-header,
+  .apple-cal-week {
+    min-width: 40rem;
   }
 
   .apple-cal-weekday {
-    font-size: 0.6rem;
-    padding: 0.4rem 0;
+    font-size: var(--text-xs);
+    padding: var(--space-2) 0;
   }
 
   .apple-cal-week {
-    min-height: 70px;
+    min-height: 4.375rem;
   }
 
   .cal-cell {
-    padding: 4px 4px;
-    min-height: 70px;
+    padding: var(--space-1);
+    min-height: 4.375rem;
   }
 
   .cal-date-num {
@@ -964,7 +971,7 @@
   }
 
   .cal-event-pill {
-    padding: 0 4px;
+    padding: 0 var(--space-1);
     min-height: 14px;
     border-left-width: 2px;
   }
@@ -989,7 +996,7 @@
   .day-modal-content {
     max-width: 100%;
     max-height: 90vh;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
   }
 }
 
@@ -1721,14 +1728,14 @@
 .period-btn {
   padding: 0.75rem 1rem;
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   backdrop-filter: var(--panel-blur);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
   color: var(--text-secondary);
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .period-btn.selected {
@@ -1738,26 +1745,26 @@
   border-color: var(--accent);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
   .task-type-selection {
     grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 1rem 0;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
   }
 
   .modal-content .type-btn {
-    padding: 1.5rem;
+    padding: var(--space-6);
     flex-direction: row;
   }
 
 
 
   .modal-body-scrollable {
-    padding: 1rem;
+    padding: var(--space-4);
   }
 
   .modal-footer {
-    padding: 1rem;
+    padding: var(--space-4);
   }
 }
 

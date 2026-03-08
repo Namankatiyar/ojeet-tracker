@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Download, Upload, RotateCcw, Eye, EyeOff, Clock, Trophy, Flame, TrendingUp, Atom, FlaskConical, Calculator } from 'lucide-react';
+import { X, Download, Upload, RotateCcw, Eye, EyeOff, Clock, Trophy, Flame, TrendingUp, Atom, FlaskConical, Pi } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { UserAvatar } from './Avatar';
 import { StudySession, MockScore, ProgressCardSettings } from '../../types';
@@ -237,10 +237,10 @@ export function ProgressCardModal({
         { key: 'highestWeekAverage', label: 'Best Week Average', value: `${highestWeekAverage.toFixed(1)}h/day`, icon: <TrendingUp size={16} />, visible: visibleStats.highestWeekAverage },
         { key: 'physicsTime', label: 'Physics Study Time', value: formatTime(physicsTime), icon: <Atom size={16} />, visible: visibleStats.physicsTime },
         { key: 'chemistryTime', label: 'Chemistry Study Time', value: formatTime(chemistryTime), icon: <FlaskConical size={16} />, visible: visibleStats.chemistryTime },
-        { key: 'mathsTime', label: 'Maths Study Time', value: formatTime(mathsTime), icon: <Calculator size={16} />, visible: visibleStats.mathsTime },
+        { key: 'mathsTime', label: 'Maths Study Time', value: formatTime(mathsTime), icon: <Pi size={16} />, visible: visibleStats.mathsTime },
         { key: 'physicsProgress', label: 'Physics Progress', value: `${physicsProgress}%`, icon: <Atom size={16} />, visible: visibleStats.physicsProgress },
         { key: 'chemistryProgress', label: 'Chemistry Progress', value: `${chemistryProgress}%`, icon: <FlaskConical size={16} />, visible: visibleStats.chemistryProgress },
-        { key: 'mathsProgress', label: 'Maths Progress', value: `${mathsProgress}%`, icon: <Calculator size={16} />, visible: visibleStats.mathsProgress },
+        { key: 'mathsProgress', label: 'Maths Progress', value: `${mathsProgress}%`, icon: <Pi size={16} />, visible: visibleStats.mathsProgress },
     ];
 
     const visibleStatsList = stats.filter(s => s.visible);

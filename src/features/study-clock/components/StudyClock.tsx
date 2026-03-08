@@ -283,19 +283,18 @@ export function StudyClock({
     if (isFullscreen) {
         return (
             <div className="fullscreen-timer">
-                <div className="fullscreen-clock" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div className="fullscreen-clock">
                     <div
-                        className={`timer-time ${engine.engineState === 'running' ? 'running' : ''} ${engine.engineState === 'paused' ? 'paused' : ''}`}
+                        className={`fullscreen-time ${engine.engineState === 'running' ? 'running' : ''} ${engine.engineState === 'paused' ? 'paused' : ''}`}
                         onClick={() => {
                             engine.pause();
                             setIsFullscreen(false);
                         }}
-                        style={{ cursor: 'pointer', fontSize: '10rem', lineHeight: 1 }}
                     >
                         {displayTime}
                     </div>
-                    <div className="fullscreen-title" style={{ marginTop: '1rem' }}>{getTaskTitle()}</div>
-                    <div className="timer-state-label" style={{ fontSize: '1.2rem', marginTop: '0.5rem', opacity: 0.8, fontWeight: 700, letterSpacing: '2px' }}>
+                    <div className="fullscreen-title">{getTaskTitle()}</div>
+                    <div className="timer-state-label fullscreen-state-label">
                         {phaseLabel}
                         {engine.mode === 'pomodoro' && ` • CYCLE ${engine.cycleCount + 1}`}
                     </div>

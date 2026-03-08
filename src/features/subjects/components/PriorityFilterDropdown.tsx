@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Priority } from '../../../shared/types';
 import { Filter } from 'lucide-react';
 
@@ -18,11 +19,37 @@ const FILTER_OPTIONS: { value: Priority | 'all'; label: string; color: string }[
 export function PriorityFilterDropdown({ priorityFilter, onFilterChange }: PriorityFilterDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0, minWidth: 120 });
+
+    const updateMenuPosition = () => {
+        const trigger = ref.current?.querySelector('.filter-icon-btn') as HTMLElement | null;
+        if (!trigger) return;
+
+        const rect = trigger.getBoundingClientRect();
+        const viewportPadding = 8;
+        const menuWidth = 132;
+        const estimatedHeight = 220;
+
+        let left = rect.right - menuWidth;
+        left = Math.max(viewportPadding, Math.min(left, window.innerWidth - menuWidth - viewportPadding));
+
+        let top = rect.bottom + 6;
+        if (top + estimatedHeight > window.innerHeight - viewportPadding) {
+            top = Math.max(viewportPadding, rect.top - estimatedHeight - 6);
+        }
+
+        setMenuPosition({ top, left, minWidth: menuWidth });
+    };
 
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (ref.current && !ref.current.contains(event.target as Node)) {
+            const target = event.target as Node;
+            const clickedTrigger = !!ref.current && ref.current.contains(target);
+            const clickedMenu = !!menuRef.current && menuRef.current.contains(target);
+
+            if (!clickedTrigger && !clickedMenu) {
                 setIsOpen(false);
             }
         };
@@ -31,6 +58,21 @@ export function PriorityFilterDropdown({ priorityFilter, onFilterChange }: Prior
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        if (!isOpen) return;
+
+        updateMenuPosition();
+
+        const handleWindowChange = () => updateMenuPosition();
+        window.addEventListener('resize', handleWindowChange);
+        window.addEventListener('scroll', handleWindowChange, true);
+
+        return () => {
+            window.removeEventListener('resize', handleWindowChange);
+            window.removeEventListener('scroll', handleWindowChange, true);
+        };
+    }, [isOpen]);
+
     const filterLabel = priorityFilter === 'all'
         ? 'All'
         : priorityFilter.charAt(0).toUpperCase() + priorityFilter.slice(1);
@@ -38,17 +80,30 @@ export function PriorityFilterDropdown({ priorityFilter, onFilterChange }: Prior
     return (
         <div ref={ref} className="filter-wrapper">
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                    if (!isOpen) updateMenuPosition();
+                    setIsOpen(!isOpen);
+                }}
                 className="filter-icon-btn"
                 title={`Filter: ${filterLabel}`}
+                aria-label={`Filter chapters by priority (current: ${filterLabel})`}
             >
                 <Filter size={16} />
                 {priorityFilter !== 'all' && (
                     <span className="filter-dot" />
                 )}
             </button>
-            {isOpen && (
-                <div className="filter-dropdown-menu">
+            {isOpen && createPortal(
+                <div
+                    ref={menuRef}
+                    className="filter-dropdown-menu"
+                    style={{
+                        position: 'fixed',
+                        top: `${menuPosition.top}px`,
+                        left: `${menuPosition.left}px`,
+                        minWidth: `${menuPosition.minWidth}px`
+                    }}
+                >
                     {FILTER_OPTIONS.map((opt) => (
                         <button
                             key={opt.value}
@@ -63,7 +118,8 @@ export function PriorityFilterDropdown({ priorityFilter, onFilterChange }: Prior
                             {priorityFilter === opt.value && <span className="check-icon">✓</span>}
                         </button>
                     ))}
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

@@ -22,8 +22,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    // Default theme based on device width (Light for mobile < 768px, Dark for desktop)
-    const defaultTheme = typeof window !== 'undefined' && window.innerWidth < 768 ? 'light' : 'dark';
+    // Use system preference for first load; avoid JS viewport breakpoints.
+    const defaultTheme =
+        typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
 
     const [theme, setTheme] = useLocalStorage<Theme>('jee-tracker-theme', defaultTheme);
     const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#f59e0b');

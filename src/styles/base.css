@@ -65,7 +65,7 @@ html[data-theme="dark"] body {
   background-attachment: fixed;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   html[data-theme="dark"] body {
     background-attachment: scroll;
     /* Performance fix for mobile scrolling */
@@ -148,7 +148,7 @@ body.has-custom-bg {
 /* Dark Mode glass tokens handled in theme.css */
 
 /* Fallback for Mobile - Solid Colors for Performance */
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
 
   html[data-theme="dark"] .overall-progress-card,
   html[data-theme="dark"] .exam-countdown-card,
@@ -166,9 +166,9 @@ body.has-custom-bg {
   html[data-theme="dark"] .modal-content,
   html[data-theme="dark"] .view-toggles,
   html[data-theme="dark"] .analytics-panel {
-    background: #1e1e24;
+    background: var(--bg-secondary);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
   }
 }
