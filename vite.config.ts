@@ -16,7 +16,7 @@ export default defineConfig({
     react(),
     VitePWA({
       injectRegister: false,
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.png'],
       workbox: {
         cleanupOutdatedCaches: true,
