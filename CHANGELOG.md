@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.28] – 2026-03-09
+
+### AI Maintenance Run (Orchestration)
+
+### Feature-Level Changes
+- **Cloud Synchronization**: Bidirectional sync with Google OAuth via Supabase. Includes payload compression and chunking (512KB segments) for high-volume study history.
+- **Study Time Aggregation**: Backend-optimized aggregation for per-subject study hours, enabling efficient cross-device analytics.
+- **Cloud Onboarding**: New modals for Cloud Sync invitation and PWA installation prompts.
+- **Import/Recovery Page**: New `/import` route for recovering data from cloud backups or shared profiles.
+
+### Architectural Changes
+- **Supabase Integration**: Added `@supabase/supabase-js` and initialization infrastructure.
+- **Hybrid Storage Model**: `localStorage` as primary cache, Supabase as authoritative remote backup.
+
+### State Changes
+- **Added**: `RemoteAuthContext` for user session management.
+- **Added**: `RemoteSyncContext` for synchronization orchestration and status tracking.
+
+### Suggested ADR Entries
+- ADR-016: Hybrid Cloud Sync with Payload Chunking
+
+---
+
 ## [0.0.27](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.26...v0.0.27) (2026-03-02)
 
 
