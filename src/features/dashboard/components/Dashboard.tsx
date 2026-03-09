@@ -71,7 +71,6 @@ export function Dashboard({
         lastAcknowledgedVersion: string;
     }
 
-    const PWA_INSTALL_PROMPT_DISMISSED_KEY = 'ojeet-pwa-install-prompt-dismissed';
     const DASHBOARD_NOTIFICATION_META_KEY = 'ojeet-dashboard-notification-meta-v1';
     const CHANGELOG_CONTEXT = `changelog:${__APP_VERSION__}`;
     const CLOUD_SYNC_CONTEXT = 'cloud_sync:eligible';
@@ -84,7 +83,6 @@ export function Dashboard({
     const [isPwaInstallBusy, setIsPwaInstallBusy] = useState(false);
     const [isPwaUpdateBusy, setIsPwaUpdateBusy] = useState(false);
     const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-    const [isPwaPromptDismissed, setIsPwaPromptDismissed] = useLocalStorage<boolean>(PWA_INSTALL_PROMPT_DISMISSED_KEY, false);
     const [notificationMeta, setNotificationMeta] = useLocalStorage<DashboardNotificationMeta>(
         DASHBOARD_NOTIFICATION_META_KEY,
         {
@@ -131,7 +129,7 @@ export function Dashboard({
         const nav = window.navigator as Navigator & { standalone?: boolean };
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || nav.standalone === true;
         if (isStandalone) {
-            setIsPwaPromptDismissed(true);
+            setDeferredInstallPrompt(null);
             return;
         }
 
@@ -144,7 +142,7 @@ export function Dashboard({
         const handleAppInstalled = () => {
             setDeferredInstallPrompt(null);
             setIsPwaPromptOpen(false);
-            setIsPwaPromptDismissed(true);
+            dismissNotificationContext(PWA_INSTALL_CONTEXT);
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -154,13 +152,13 @@ export function Dashboard({
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
             window.removeEventListener('appinstalled', handleAppInstalled);
         };
-    }, [setIsPwaPromptDismissed]);
+    }, [dismissNotificationContext]);
 
     useEffect(() => {
-        if (isPwaPromptDismissed || !deferredInstallPrompt) {
+        if (!deferredInstallPrompt) {
             setIsPwaPromptOpen(false);
         }
-    }, [deferredInstallPrompt, isPwaPromptDismissed]);
+    }, [deferredInstallPrompt]);
 
     useEffect(() => {
         if (!syncPromptEligible) {
@@ -299,10 +297,9 @@ export function Dashboard({
             await deferredInstallPrompt.prompt();
             const choiceResult = await deferredInstallPrompt.userChoice;
 
-            if (choiceResult.outcome === 'accepted') {
-                setIsPwaPromptDismissed(true);
-                dismissNotificationContext(PWA_INSTALL_CONTEXT);
-            }
+                if (choiceResult.outcome === 'accepted') {
+                    dismissNotificationContext(PWA_INSTALL_CONTEXT);
+                }
 
             setIsPwaPromptOpen(false);
             setDeferredInstallPrompt(null);
@@ -356,7 +353,7 @@ export function Dashboard({
             });
         }
 
-        if (deferredInstallPrompt && !isPwaPromptDismissed && !notificationMeta.dismissedContexts[PWA_INSTALL_CONTEXT]) {
+        if (deferredInstallPrompt && !notificationMeta.dismissedContexts[PWA_INSTALL_CONTEXT]) {
             items.push({
                 id: PWA_INSTALL_CONTEXT,
                 title: 'Install As App',
@@ -367,7 +364,6 @@ export function Dashboard({
                     onClick: () => setIsPwaPromptOpen(true),
                 },
                 onDismiss: () => {
-                    setIsPwaPromptDismissed(true);
                     dismissNotificationContext(PWA_INSTALL_CONTEXT);
                     setIsPwaPromptOpen(false);
                 },
@@ -416,12 +412,10 @@ export function Dashboard({
         notificationMeta.lastAcknowledgedVersion,
         authError,
         deferredInstallPrompt,
-        isPwaPromptDismissed,
         pwaBridge.needRefresh,
         isPwaUpdateBusy,
         dismissPrompt,
         dismissNotificationContext,
-        setIsPwaPromptDismissed,
         navigate,
     ]);
 
