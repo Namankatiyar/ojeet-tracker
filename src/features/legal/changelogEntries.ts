@@ -7,7 +7,17 @@ export interface ChangelogEntry {
 
 // Update this list before each rollout. Keep newest entry first.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
-     {
+    {
+        version: '1.0.3',
+        date: 'March 9, 2026',
+        title: 'New JEE Advanced Mock Score panel',
+        changes: [
+            '-Added a JEE Advanced Mock Score tracking panel.',
+            '-Fixed bug in a study clock calculating wrong lapsed time when PWA became inactive.',
+            '-Please report any found bug in my Reddit DMs u/Big_Distribution_730.',
+        ],
+    },
+    {
         version: '1.0.2',
         date: 'March 9, 2026',
         title: 'Notification shade for announcements and updates',

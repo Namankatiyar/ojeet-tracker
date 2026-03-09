@@ -12,7 +12,7 @@ import {
     Filler,
     ArcElement
 } from 'chart.js';
-import { StudySession, MockScore } from '../../../shared/types';
+import { StudySession, MockExamType, MockScore } from '../../../shared/types';
 import { StudyTimePanel } from './StudyTimePanel';
 import { MockScoresPanel } from './MockScoresPanel';
 import { AddMockModal } from './AddMockModal';
@@ -46,6 +46,7 @@ export function AnalyticsPanels({
     onDeleteMockScore
 }: AnalyticsPanelsProps) {
     const [isAddingMock, setIsAddingMock] = useState(false);
+    const [draftExamType, setDraftExamType] = useState<MockExamType>('jm');
     const { remoteStudyAggregate } = useRemoteSync();
 
     return (
@@ -59,13 +60,17 @@ export function AnalyticsPanels({
             {/* Mock Scores Panel */}
             <MockScoresPanel 
                 mockScores={mockScores}
-                onAddClick={() => setIsAddingMock(true)}
+                onAddClick={(examType) => {
+                    setDraftExamType(examType);
+                    setIsAddingMock(true);
+                }}
                 onDeleteScore={onDeleteMockScore}
             />
 
             {/* Add Mock Modal */}
             {isAddingMock && (
                 <AddMockModal 
+                    defaultExamType={draftExamType}
                     onAdd={onAddMockScore} 
                     onClose={() => setIsAddingMock(false)} 
                 />

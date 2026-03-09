@@ -1,20 +1,27 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as { version?: string }
 const appVersion = packageJson.version ?? '0.0.0'
+const isTest = !!(process.env.VITEST || process.env.NODE_ENV === 'test' || process.argv.some(arg => arg.includes('vitest')))
 
 // https://vite.dev/config/
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
   },
+  resolve: {
+    alias: isTest ? [
+      { find: './pwaRegister', replacement: path.resolve(__dirname, 'src/shared/utils/pwaRegister.dummy.ts') }
+    ] : []
+  },
   plugins: [
     react(),
-    VitePWA({
+    !isTest && VitePWA({
       injectRegister: false,
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.png'],
@@ -44,7 +51,7 @@ export default defineConfig({
         ]
       }
     })
-  ],
+  ].filter(Boolean) as any,
   test: {
     globals: true,
     environment: 'jsdom',

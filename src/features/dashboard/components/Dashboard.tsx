@@ -555,7 +555,7 @@ export function Dashboard({
                                 >
                                     {daysRemaining}
                                 </span>
-                                <span className="days-label">{Math.abs(daysRemaining) === 1 ? 'Day' : 'Days'} {daysRemaining >= 0 ? 'Left' : 'Ago'}</span>
+                                <span className="days-label">{daysRemaining === 1 ? 'Day' : 'Days'} Left</span>
                                 <span className="exam-date-sub">{formatDateDisplay(primaryExam.date)}</span>
                             </div>
                         ) : (
@@ -578,7 +578,7 @@ export function Dashboard({
                                         const days = calculateDaysRemaining(activeSecondaryExam.date);
                                         return (
                                             <span className={`exam-secondary-days ${days !== null && days <= 7 ? 'urgent' : ''}`}>
-                                                {days !== null ? (days >= 0 ? `${days}d` : 'Passed') : '—'}
+                                                {days !== null ? `${days}d` : '—'}
                                             </span>
                                         );
                                     })()}

@@ -60,7 +60,7 @@ export const subjectColors = {
 /**
  * Get standardized chart options based on theme and type
  */
-export const getChartOptions = (theme: 'light' | 'dark', type: 'bar' | 'line' | 'mock') => {
+export const getChartOptions = (theme: 'light' | 'dark', type: 'bar' | 'line' | 'mock', mockMaxMarks = 300) => {
     const axisColor = theme === 'dark' ? '#ffffff' : '#000000';
     const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
 
@@ -154,7 +154,7 @@ export const getChartOptions = (theme: 'light' | 'dark', type: 'bar' | 'line' | 
                         font: { size: 12, family: 'Inter' }
                     },
                     min: 0,
-                    max: 300
+                    max: mockMaxMarks
                 }
             }
         };

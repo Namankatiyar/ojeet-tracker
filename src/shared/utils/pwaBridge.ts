@@ -1,4 +1,4 @@
-import { registerSW } from 'virtual:pwa-register';
+import { registerSW } from './pwaRegister';
 
 type PwaBridgeState = {
     needRefresh: boolean;
@@ -59,7 +59,7 @@ export function initPwaBridge() {
         onOfflineReady() {
             publish({ offlineReady: true });
         },
-        onRegisterError(error) {
+        onRegisterError(error: any) {
             publish({ lastError: error?.message ?? 'Service worker registration failed' });
         },
     });

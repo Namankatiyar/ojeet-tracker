@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// ── Types ──────────────────────────────────────────────────────
 export type TimerMode = 'stopwatch' | 'countdown' | 'pomodoro' | 'custom';
 export type TimerPhase = 'work' | 'shortBreak' | 'longBreak' | null;
 export type EngineState = 'idle' | 'running' | 'paused' | 'completed';
@@ -48,40 +47,63 @@ export const DEFAULT_POMODORO: PomodoroConfig = {
     cyclesBeforeLongBreak: 4,
 };
 
-// Persisted state shape
 interface PersistedTimerState {
+    version: 2;
     mode: TimerMode;
     engineState: EngineState;
     phase: TimerPhase;
-    startTimestamp: number | null;     // When the current run started
-    pausedElapsedMs: number;           // Elapsed ms accumulated before current run
-    durationMs: number;                // Total duration for countdown modes (0 = stopwatch)
+    runStartedAtMs: number | null;
+    accumulatedActiveMs: number;
+    durationMs: number;
     cycleCount: number;
     config: TimerConfig;
-    // For custom mode
     currentIntervalIndex: number;
+}
+
+interface LegacyPersistedTimerState {
+    mode: TimerMode;
+    engineState: EngineState;
+    phase: TimerPhase;
+    startTimestamp: number | null;
+    pausedElapsedMs: number;
+    durationMs: number;
+    cycleCount: number;
+    config: TimerConfig;
+    currentIntervalIndex: number;
+}
+
+interface ReconcileResult {
+    nextState: PersistedTimerState;
+    elapsedMs: number;
+    completedWorkDurations: number[];
 }
 
 const STORAGE_KEY = 'jee-timer-engine';
 const PRESETS_KEY = 'jee-timer-presets';
 
-function loadState(): PersistedTimerState | null {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-    } catch { return null; }
+function createIdleState(config: TimerConfig = { mode: 'stopwatch' }): PersistedTimerState {
+    return {
+        version: 2,
+        mode: config.mode,
+        engineState: 'idle',
+        phase: null,
+        runStartedAtMs: null,
+        accumulatedActiveMs: 0,
+        durationMs: 0,
+        cycleCount: 0,
+        config,
+        currentIntervalIndex: 0,
+    };
 }
 
-function saveState(state: PersistedTimerState) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function clampDeltaMs(ms: number): number {
+    return Number.isFinite(ms) ? Math.max(0, ms) : 0;
 }
 
-function clearState() {
-    localStorage.removeItem(STORAGE_KEY);
+function statesMatch(a: PersistedTimerState, b: PersistedTimerState): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
 }
 
-// Get duration in ms for the current phase/interval
 function getPhaseDurationMs(
     mode: TimerMode,
     phase: TimerPhase,
@@ -104,31 +126,222 @@ function getPhaseDurationMs(
             }
             return 0;
         }
-        default: // stopwatch
+        default:
             return 0;
     }
 }
 
-// ── Hook ──────────────────────────────────────────────────────
+function migrateState(parsed: unknown): PersistedTimerState | null {
+    if (!parsed || typeof parsed !== 'object') return null;
+
+    const candidate = parsed as Partial<PersistedTimerState & LegacyPersistedTimerState>;
+    if (candidate.version === 2) {
+        if (!candidate.mode || !candidate.engineState || !candidate.config) return null;
+        return {
+            version: 2,
+            mode: candidate.mode,
+            engineState: candidate.engineState,
+            phase: candidate.phase ?? null,
+            runStartedAtMs: candidate.runStartedAtMs ?? null,
+            accumulatedActiveMs: clampDeltaMs(candidate.accumulatedActiveMs ?? 0),
+            durationMs: clampDeltaMs(candidate.durationMs ?? 0),
+            cycleCount: Math.max(0, candidate.cycleCount ?? 0),
+            config: candidate.config,
+            currentIntervalIndex: Math.max(0, candidate.currentIntervalIndex ?? 0),
+        };
+    }
+
+    if (!candidate.mode || !candidate.engineState || !candidate.config) return null;
+    return {
+        version: 2,
+        mode: candidate.mode,
+        engineState: candidate.engineState,
+        phase: candidate.phase ?? null,
+        runStartedAtMs: candidate.startTimestamp ?? null,
+        accumulatedActiveMs: clampDeltaMs(candidate.pausedElapsedMs ?? 0),
+        durationMs: clampDeltaMs(candidate.durationMs ?? 0),
+        cycleCount: Math.max(0, candidate.cycleCount ?? 0),
+        config: candidate.config,
+        currentIntervalIndex: Math.max(0, candidate.currentIntervalIndex ?? 0),
+    };
+}
+
+function loadState(): PersistedTimerState | null {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        return migrateState(JSON.parse(raw));
+    } catch {
+        return null;
+    }
+}
+
+function saveState(state: PersistedTimerState) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function clearState() {
+    localStorage.removeItem(STORAGE_KEY);
+}
+
+function getElapsedMsAt(state: PersistedTimerState, now: number): number {
+    if (state.engineState !== 'running' || state.runStartedAtMs === null) {
+        return state.accumulatedActiveMs;
+    }
+
+    return state.accumulatedActiveMs + clampDeltaMs(now - state.runStartedAtMs);
+}
+
+function buildCountdownCompletionState(state: PersistedTimerState): PersistedTimerState {
+    return {
+        ...state,
+        engineState: 'idle',
+        phase: null,
+        runStartedAtMs: null,
+        accumulatedActiveMs: 0,
+        durationMs: 0,
+        cycleCount: 0,
+        currentIntervalIndex: 0,
+    };
+}
+
+function buildNextPhaseState(state: PersistedTimerState, overflowMs: number, now: number): PersistedTimerState {
+    if (state.mode === 'countdown') {
+        return buildCountdownCompletionState(state);
+    }
+
+    if (state.mode === 'pomodoro') {
+        const pom = state.config.pomodoro ?? DEFAULT_POMODORO;
+        if (state.phase === 'work') {
+            const cycleCount = state.cycleCount + 1;
+            const phase: TimerPhase = cycleCount % pom.cyclesBeforeLongBreak === 0 ? 'longBreak' : 'shortBreak';
+            return {
+                ...state,
+                phase,
+                cycleCount,
+                durationMs: getPhaseDurationMs('pomodoro', phase, state.config, 0),
+                runStartedAtMs: now - overflowMs,
+                accumulatedActiveMs: 0,
+            };
+        }
+
+        return {
+            ...state,
+            phase: 'work',
+            durationMs: getPhaseDurationMs('pomodoro', 'work', state.config, 0),
+            runStartedAtMs: now - overflowMs,
+            accumulatedActiveMs: 0,
+        };
+    }
+
+    if (state.mode === 'custom') {
+        const intervals = state.config.custom?.intervals ?? [];
+        const nextIndex = state.currentIntervalIndex + 1;
+
+        if (nextIndex < intervals.length) {
+            const nextPhase: TimerPhase = intervals[nextIndex].type === 'work' ? 'work' : 'shortBreak';
+            return {
+                ...state,
+                phase: nextPhase,
+                currentIntervalIndex: nextIndex,
+                durationMs: getPhaseDurationMs('custom', nextPhase, state.config, nextIndex),
+                runStartedAtMs: now - overflowMs,
+                accumulatedActiveMs: 0,
+            };
+        }
+
+        if (state.config.custom?.repeat && intervals.length > 0) {
+            const firstPhase: TimerPhase = intervals[0].type === 'work' ? 'work' : 'shortBreak';
+            return {
+                ...state,
+                phase: firstPhase,
+                currentIntervalIndex: 0,
+                durationMs: getPhaseDurationMs('custom', firstPhase, state.config, 0),
+                runStartedAtMs: now - overflowMs,
+                accumulatedActiveMs: 0,
+            };
+        }
+
+        return {
+            ...state,
+            engineState: 'idle',
+            phase: null,
+            runStartedAtMs: null,
+            accumulatedActiveMs: 0,
+            durationMs: 0,
+            currentIntervalIndex: 0,
+        };
+    }
+
+    return state;
+}
+
+export function reconcileTimerState(state: PersistedTimerState, now: number): ReconcileResult {
+    if (state.engineState !== 'running' || state.runStartedAtMs === null) {
+        return {
+            nextState: state,
+            elapsedMs: state.accumulatedActiveMs,
+            completedWorkDurations: [],
+        };
+    }
+
+    if (state.mode === 'stopwatch' || state.durationMs <= 0) {
+        return {
+            nextState: state,
+            elapsedMs: getElapsedMsAt(state, now),
+            completedWorkDurations: [],
+        };
+    }
+
+    let nextState = state;
+    let elapsedMs = getElapsedMsAt(nextState, now);
+    const completedWorkDurations: number[] = [];
+
+    while (nextState.engineState === 'running' && nextState.durationMs > 0 && elapsedMs >= nextState.durationMs) {
+        const overflowMs = elapsedMs - nextState.durationMs;
+        if (nextState.phase === 'work' || nextState.phase === null) {
+            completedWorkDurations.push(nextState.durationMs);
+        }
+        nextState = buildNextPhaseState(nextState, overflowMs, now);
+        elapsedMs = getElapsedMsAt(nextState, now);
+    }
+
+    return {
+        nextState,
+        elapsedMs,
+        completedWorkDurations,
+    };
+}
+
+function normaliseRunningState(state: PersistedTimerState, now: number): PersistedTimerState {
+    if (state.engineState !== 'running' || state.runStartedAtMs === null) {
+        return state;
+    }
+
+    const elapsedMs = getElapsedMsAt(state, now);
+    return {
+        ...state,
+        runStartedAtMs: now,
+        accumulatedActiveMs: elapsedMs,
+    };
+}
+
 export interface UseTimerEngineOptions {
     onWorkComplete?: (durationMs: number) => void;
     onPhaseChange?: (phase: TimerPhase) => void;
 }
 
 export interface UseTimerEngineReturn {
-    // State
     mode: TimerMode;
     engineState: EngineState;
     phase: TimerPhase;
     elapsedMs: number;
     remainingMs: number;
-    progress: number;        // 0 → 1 (for countdown modes)
+    progress: number;
     durationMs: number;
     cycleCount: number;
     config: TimerConfig;
-    isCountingDown: boolean; // true if mode has a finite duration
-
-    // Controls
+    isCountingDown: boolean;
     start: () => void;
     pause: () => void;
     resume: () => void;
@@ -136,14 +349,10 @@ export interface UseTimerEngineReturn {
     skipBreak: () => void;
     resetCycle: () => void;
     setConfig: (config: TimerConfig) => void;
-
-    // Presets
     presets: TimerPreset[];
     savePreset: (name: string, subject?: string) => void;
     loadPreset: (preset: TimerPreset) => void;
     deletePreset: (id: string) => void;
-
-    // Convenience
     formatTime: (ms: number) => string;
 }
 
@@ -154,379 +363,320 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
     onWorkCompleteRef.current = onWorkComplete;
     onPhaseChangeRef.current = onPhaseChange;
 
-    // ── Initialise from persisted state ──
-    const [mode, setMode] = useState<TimerMode>('stopwatch');
-    const [engineState, setEngineState] = useState<EngineState>('idle');
-    const [phase, setPhase] = useState<TimerPhase>(null);
-    const [startTimestamp, setStartTimestamp] = useState<number | null>(null);
-    const [pausedElapsedMs, setPausedElapsedMs] = useState(0);
-    const [durationMs, setDurationMs] = useState(0);
-    const [cycleCount, setCycleCount] = useState(0);
-    const [config, setConfigState] = useState<TimerConfig>({ mode: 'stopwatch' });
-    const [currentIntervalIndex, setCurrentIntervalIndex] = useState(0);
+    const [timerState, setTimerState] = useState<PersistedTimerState>(() => createIdleState());
     const [elapsedMs, setElapsedMs] = useState(0);
-
-    // Presets
     const [presets, setPresets] = useState<TimerPreset[]>(() => {
         try {
             const raw = localStorage.getItem(PRESETS_KEY);
             return raw ? JSON.parse(raw) : [];
-        } catch { return []; }
+        } catch {
+            return [];
+        }
     });
 
-    // Flag to prevent double-firing completion
-    const completionFiredRef = useRef(false);
-    const intervalRef = useRef<number | null>(null);
+    const applyReconcileResult = useCallback((result: ReconcileResult) => {
+        if (!statesMatch(result.nextState, timerState)) {
+            if (result.nextState.phase !== timerState.phase) {
+                onPhaseChangeRef.current?.(result.nextState.phase);
+            }
+            setTimerState(result.nextState);
+        }
 
-    // ── Hydrate from localStorage on mount ──
+        setElapsedMs(result.elapsedMs);
+
+        result.completedWorkDurations.forEach((duration) => {
+            onWorkCompleteRef.current?.(duration);
+        });
+    }, [timerState]);
+
+    const reconcileNow = useCallback((sourceState?: PersistedTimerState) => {
+        const currentState = sourceState ?? timerState;
+        const result = reconcileTimerState(currentState, Date.now());
+        applyReconcileResult(result);
+        return result.nextState;
+    }, [applyReconcileResult, timerState]);
+
     useEffect(() => {
         const saved = loadState();
         if (!saved) return;
+        applyReconcileResult(reconcileTimerState(saved, Date.now()));
+    }, [applyReconcileResult]);
 
-        setMode(saved.mode);
-        setPhase(saved.phase);
-        setCycleCount(saved.cycleCount);
-        setConfigState(saved.config);
-        setDurationMs(saved.durationMs);
-        setCurrentIntervalIndex(saved.currentIntervalIndex);
-
-        if (saved.engineState === 'running' && saved.startTimestamp) {
-            // Timer was running — reconstruct elapsed
-            const now = Date.now();
-            const elapsed = (now - saved.startTimestamp) + saved.pausedElapsedMs;
-            setPausedElapsedMs(saved.pausedElapsedMs);
-            setStartTimestamp(saved.startTimestamp);
-            setElapsedMs(elapsed);
-            setEngineState('running');
-        } else if (saved.engineState === 'paused') {
-            setPausedElapsedMs(saved.pausedElapsedMs);
-            setElapsedMs(saved.pausedElapsedMs);
-            setStartTimestamp(null);
-            setEngineState('paused');
-        }
-    }, []);
-
-    // ── Persist state on change ──
     useEffect(() => {
-        if (engineState === 'idle') {
-            clearState();
-            return;
-        }
-        const state: PersistedTimerState = {
-            mode, engineState, phase, startTimestamp, pausedElapsedMs,
-            durationMs, cycleCount, config, currentIntervalIndex,
-        };
-        saveState(state);
-    }, [mode, engineState, phase, startTimestamp, pausedElapsedMs, durationMs, cycleCount, config, currentIntervalIndex]);
-
-    // ── Phase transition logic ──
-    const transitionToNextPhase = useCallback(() => {
-        if (mode === 'countdown') {
-            // Single countdown — just complete
-            setEngineState('idle');
+        if (timerState.engineState === 'idle') {
             clearState();
             return;
         }
 
-        if (mode === 'pomodoro') {
-            const pom = config.pomodoro ?? DEFAULT_POMODORO;
-            if (phase === 'work') {
-                const newCycleCount = cycleCount + 1;
-                setCycleCount(newCycleCount);
-                // Decide break type
-                const nextPhase: TimerPhase = (newCycleCount % pom.cyclesBeforeLongBreak === 0)
-                    ? 'longBreak'
-                    : 'shortBreak';
-                setPhase(nextPhase);
-                onPhaseChangeRef.current?.(nextPhase);
-                const dur = getPhaseDurationMs(mode, nextPhase, config, 0);
-                setDurationMs(dur);
-                setPausedElapsedMs(0);
-                setStartTimestamp(Date.now());
-                setElapsedMs(0);
-                setEngineState('running');
-                completionFiredRef.current = false;
-            } else {
-                // Break finished — start next work
-                setPhase('work');
-                onPhaseChangeRef.current?.('work');
-                const dur = getPhaseDurationMs(mode, 'work', config, 0);
-                setDurationMs(dur);
-                setPausedElapsedMs(0);
-                setStartTimestamp(Date.now());
-                setElapsedMs(0);
-                setEngineState('running');
-                completionFiredRef.current = false;
-            }
-            return;
-        }
+        saveState(timerState);
+    }, [timerState]);
 
-        if (mode === 'custom') {
-            const intervals = config.custom?.intervals ?? [];
-            const nextIdx = currentIntervalIndex + 1;
-            if (nextIdx < intervals.length) {
-                setCurrentIntervalIndex(nextIdx);
-                const interval = intervals[nextIdx];
-                const nextPhase: TimerPhase = interval.type === 'work' ? 'work' : 'shortBreak';
-                setPhase(nextPhase);
-                onPhaseChangeRef.current?.(nextPhase);
-                const dur = getPhaseDurationMs(mode, nextPhase, config, nextIdx);
-                setDurationMs(dur);
-                setPausedElapsedMs(0);
-                setStartTimestamp(Date.now());
-                setElapsedMs(0);
-                setEngineState('running');
-                completionFiredRef.current = false;
-            } else if (config.custom?.repeat && intervals.length > 0) {
-                // Restart from beginning
-                setCurrentIntervalIndex(0);
-                const interval = intervals[0];
-                const nextPhase: TimerPhase = interval.type === 'work' ? 'work' : 'shortBreak';
-                setPhase(nextPhase);
-                onPhaseChangeRef.current?.(nextPhase);
-                const dur = getPhaseDurationMs(mode, nextPhase, config, 0);
-                setDurationMs(dur);
-                setPausedElapsedMs(0);
-                setStartTimestamp(Date.now());
-                setElapsedMs(0);
-                setEngineState('running');
-                completionFiredRef.current = false;
-            } else {
-                // All intervals done
-                setEngineState('idle');
-                clearState();
-            }
-            return;
-        }
-    }, [mode, phase, cycleCount, config, currentIntervalIndex]);
-
-    // ── Tick loop ──
     useEffect(() => {
-        if (engineState !== 'running' || startTimestamp === null) {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-            return;
-        }
+        if (timerState.engineState !== 'running') return;
 
         const tick = () => {
-            const now = Date.now();
-            const elapsed = (now - startTimestamp) + pausedElapsedMs;
-            setElapsedMs(elapsed);
+            reconcileNow();
+        };
 
-            // Check completion for countdown modes
-            if (durationMs > 0 && elapsed >= durationMs && !completionFiredRef.current) {
-                completionFiredRef.current = true;
+        tick();
+        const intervalId = window.setInterval(tick, 1000);
+        return () => window.clearInterval(intervalId);
+    }, [timerState.engineState, timerState.runStartedAtMs, timerState.durationMs, reconcileNow]);
 
-                // Fire work complete callback only for work phases
-                if (phase === 'work' || phase === null) {
-                    onWorkCompleteRef.current?.(Math.min(elapsed, durationMs));
+    useEffect(() => {
+        const handleVisibleRefresh = () => {
+            reconcileNow();
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                reconcileNow();
+                return;
+            }
+
+            if (document.visibilityState === 'hidden') {
+                const currentState = normaliseRunningState(timerState, Date.now());
+                if (!statesMatch(currentState, timerState)) {
+                    setTimerState(currentState);
+                } else if (currentState.engineState !== 'idle') {
+                    saveState(currentState);
                 }
-
-                // Transition
-                transitionToNextPhase();
             }
         };
 
-        tick(); // Immediate tick
-        intervalRef.current = window.setInterval(tick, 1000);
+        const handlePageHide = () => {
+            const currentState = normaliseRunningState(timerState, Date.now());
+            if (currentState.engineState !== 'idle') {
+                saveState(currentState);
+            }
+        };
+
+        window.addEventListener('focus', handleVisibleRefresh);
+        window.addEventListener('pageshow', handleVisibleRefresh);
+        window.addEventListener('pagehide', handlePageHide);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
+            window.removeEventListener('focus', handleVisibleRefresh);
+            window.removeEventListener('pageshow', handleVisibleRefresh);
+            window.removeEventListener('pagehide', handlePageHide);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [engineState, startTimestamp, pausedElapsedMs, durationMs, phase, transitionToNextPhase]);
+    }, [reconcileNow, timerState]);
 
-    // ── Controls ──
     const start = useCallback(() => {
-        completionFiredRef.current = false;
-        const m = config.mode;
-        setMode(m);
+        const mode = timerState.config.mode;
+        const now = Date.now();
+        const baseState: PersistedTimerState = {
+            version: 2,
+            mode,
+            engineState: 'running',
+            phase: null,
+            runStartedAtMs: now,
+            accumulatedActiveMs: 0,
+            durationMs: 0,
+            cycleCount: 0,
+            config: timerState.config,
+            currentIntervalIndex: 0,
+        };
 
-        if (m === 'stopwatch') {
-            setPhase(null);
-            setDurationMs(0);
-        } else if (m === 'countdown') {
-            setPhase(null);
-            const dur = getPhaseDurationMs(m, null, config, 0);
-            setDurationMs(dur);
-        } else if (m === 'pomodoro') {
-            setPhase('work');
+        if (mode === 'countdown') {
+            baseState.durationMs = getPhaseDurationMs(mode, null, timerState.config, 0);
+        } else if (mode === 'pomodoro') {
+            baseState.phase = 'work';
+            baseState.durationMs = getPhaseDurationMs(mode, 'work', timerState.config, 0);
             onPhaseChangeRef.current?.('work');
-            const dur = getPhaseDurationMs(m, 'work', config, 0);
-            setDurationMs(dur);
-        } else if (m === 'custom') {
-            const intervals = config.custom?.intervals ?? [];
+        } else if (mode === 'custom') {
+            const intervals = timerState.config.custom?.intervals ?? [];
             if (intervals.length === 0) return;
-            setCurrentIntervalIndex(0);
             const firstPhase: TimerPhase = intervals[0].type === 'work' ? 'work' : 'shortBreak';
-            setPhase(firstPhase);
+            baseState.phase = firstPhase;
+            baseState.durationMs = getPhaseDurationMs(mode, firstPhase, timerState.config, 0);
             onPhaseChangeRef.current?.(firstPhase);
-            const dur = getPhaseDurationMs(m, firstPhase, config, 0);
-            setDurationMs(dur);
         }
 
-        setCycleCount(0);
-        setPausedElapsedMs(0);
-        setStartTimestamp(Date.now());
+        setTimerState(baseState);
         setElapsedMs(0);
-        setEngineState('running');
-    }, [config]);
+    }, [timerState.config]);
 
     const pause = useCallback(() => {
-        if (engineState !== 'running' || startTimestamp === null) return;
-        const now = Date.now();
-        const elapsed = (now - startTimestamp) + pausedElapsedMs;
-        setPausedElapsedMs(elapsed);
-        setElapsedMs(elapsed);
-        setStartTimestamp(null);
-        setEngineState('paused');
-    }, [engineState, startTimestamp, pausedElapsedMs]);
+        if (timerState.engineState !== 'running') return;
+        const nextElapsedMs = getElapsedMsAt(timerState, Date.now());
+        setTimerState({
+            ...timerState,
+            engineState: 'paused',
+            runStartedAtMs: null,
+            accumulatedActiveMs: nextElapsedMs,
+        });
+        setElapsedMs(nextElapsedMs);
+    }, [timerState]);
 
     const resume = useCallback(() => {
-        if (engineState !== 'paused') return;
-        completionFiredRef.current = false;
-        setStartTimestamp(Date.now());
-        setEngineState('running');
-    }, [engineState]);
+        if (timerState.engineState !== 'paused') return;
+        setTimerState({
+            ...timerState,
+            engineState: 'running',
+            runStartedAtMs: Date.now(),
+        });
+    }, [timerState]);
 
     const reset = useCallback(() => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-        }
-        setEngineState('idle');
-        setPhase(null);
-        setStartTimestamp(null);
-        setPausedElapsedMs(0);
+        const config = timerState.config;
+        setTimerState(createIdleState(config));
         setElapsedMs(0);
-        setDurationMs(0);
-        setCycleCount(0);
-        setCurrentIntervalIndex(0);
-        completionFiredRef.current = false;
         clearState();
-    }, []);
+    }, [timerState.config]);
 
     const skipBreak = useCallback(() => {
-        if (phase !== 'shortBreak' && phase !== 'longBreak') return;
-        completionFiredRef.current = false;
+        if (timerState.phase !== 'shortBreak' && timerState.phase !== 'longBreak') return;
 
-        if (mode === 'pomodoro') {
-            setPhase('work');
-            onPhaseChangeRef.current?.('work');
-            const dur = getPhaseDurationMs(mode, 'work', config, 0);
-            setDurationMs(dur);
-            setPausedElapsedMs(0);
-            setStartTimestamp(Date.now());
+        if (timerState.mode === 'pomodoro') {
+            const phase: TimerPhase = 'work';
+            setTimerState({
+                ...timerState,
+                phase,
+                durationMs: getPhaseDurationMs('pomodoro', phase, timerState.config, 0),
+                runStartedAtMs: Date.now(),
+                accumulatedActiveMs: 0,
+            });
             setElapsedMs(0);
-            setEngineState('running');
-        } else if (mode === 'custom') {
-            // Skip to next work interval or finish
-            const intervals = config.custom?.intervals ?? [];
-            let nextIdx = currentIntervalIndex + 1;
-            while (nextIdx < intervals.length && intervals[nextIdx].type === 'break') {
-                nextIdx++;
-            }
-            if (nextIdx < intervals.length) {
-                setCurrentIntervalIndex(nextIdx);
-                setPhase('work');
-                onPhaseChangeRef.current?.('work');
-                const dur = getPhaseDurationMs(mode, 'work', config, nextIdx);
-                setDurationMs(dur);
-                setPausedElapsedMs(0);
-                setStartTimestamp(Date.now());
-                setElapsedMs(0);
-                setEngineState('running');
-            } else {
-                reset();
-            }
+            onPhaseChangeRef.current?.(phase);
+            return;
         }
-    }, [phase, mode, config, currentIntervalIndex, reset]);
+
+        if (timerState.mode === 'custom') {
+            const intervals = timerState.config.custom?.intervals ?? [];
+            let nextIndex = timerState.currentIntervalIndex + 1;
+
+            while (nextIndex < intervals.length && intervals[nextIndex].type === 'break') {
+                nextIndex += 1;
+            }
+
+            if (nextIndex >= intervals.length) {
+                reset();
+                return;
+            }
+
+            setTimerState({
+                ...timerState,
+                phase: 'work',
+                currentIntervalIndex: nextIndex,
+                durationMs: getPhaseDurationMs('custom', 'work', timerState.config, nextIndex),
+                runStartedAtMs: Date.now(),
+                accumulatedActiveMs: 0,
+            });
+            setElapsedMs(0);
+            onPhaseChangeRef.current?.('work');
+        }
+    }, [reset, timerState]);
 
     const resetCycle = useCallback(() => {
-        setCycleCount(0);
-        completionFiredRef.current = false;
-
-        if (mode === 'pomodoro') {
-            setPhase('work');
-            onPhaseChangeRef.current?.('work');
-            const dur = getPhaseDurationMs(mode, 'work', config, 0);
-            setDurationMs(dur);
-            setPausedElapsedMs(0);
-            setStartTimestamp(Date.now());
+        if (timerState.mode === 'pomodoro') {
+            setTimerState({
+                ...timerState,
+                engineState: 'running',
+                phase: 'work',
+                cycleCount: 0,
+                durationMs: getPhaseDurationMs('pomodoro', 'work', timerState.config, 0),
+                runStartedAtMs: Date.now(),
+                accumulatedActiveMs: 0,
+            });
             setElapsedMs(0);
-            setEngineState('running');
-        } else if (mode === 'custom') {
-            setCurrentIntervalIndex(0);
-            const intervals = config.custom?.intervals ?? [];
-            if (intervals.length > 0) {
-                const firstPhase: TimerPhase = intervals[0].type === 'work' ? 'work' : 'shortBreak';
-                setPhase(firstPhase);
-                onPhaseChangeRef.current?.(firstPhase);
-                const dur = getPhaseDurationMs(mode, firstPhase, config, 0);
-                setDurationMs(dur);
-                setPausedElapsedMs(0);
-                setStartTimestamp(Date.now());
-                setElapsedMs(0);
-                setEngineState('running');
+            onPhaseChangeRef.current?.('work');
+            return;
+        }
+
+        if (timerState.mode === 'custom') {
+            const intervals = timerState.config.custom?.intervals ?? [];
+            if (intervals.length === 0) return;
+            const firstPhase: TimerPhase = intervals[0].type === 'work' ? 'work' : 'shortBreak';
+            setTimerState({
+                ...timerState,
+                engineState: 'running',
+                phase: firstPhase,
+                cycleCount: 0,
+                currentIntervalIndex: 0,
+                durationMs: getPhaseDurationMs('custom', firstPhase, timerState.config, 0),
+                runStartedAtMs: Date.now(),
+                accumulatedActiveMs: 0,
+            });
+            setElapsedMs(0);
+            onPhaseChangeRef.current?.(firstPhase);
+        }
+    }, [timerState]);
+
+    const setConfig = useCallback((config: TimerConfig) => {
+        setTimerState((prevState) => {
+            if (prevState.engineState === 'idle') {
+                return createIdleState(config);
             }
-        }
-    }, [mode, config]);
 
-    const setConfig = useCallback((newConfig: TimerConfig) => {
-        setConfigState(newConfig);
-        // If idle, update mode to match
-        if (engineState === 'idle') {
-            setMode(newConfig.mode);
-        }
-    }, [engineState]);
+            return {
+                ...prevState,
+                config,
+            };
+        });
+    }, []);
 
-    // ── Presets ──
     const savePreset = useCallback((name: string, subject?: string) => {
         const preset: TimerPreset = {
             id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
             name,
             subject,
-            config,
+            config: timerState.config,
         };
         const updated = [...presets, preset];
         setPresets(updated);
         localStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
-    }, [config, presets]);
+    }, [presets, timerState.config]);
 
     const loadPreset = useCallback((preset: TimerPreset) => {
-        setConfigState(preset.config);
-        setMode(preset.config.mode);
+        setTimerState((prevState) => prevState.engineState === 'idle'
+            ? createIdleState(preset.config)
+            : { ...prevState, config: preset.config });
     }, []);
 
     const deletePreset = useCallback((id: string) => {
-        const updated = presets.filter(p => p.id !== id);
+        const updated = presets.filter((preset) => preset.id !== id);
         setPresets(updated);
         localStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
     }, [presets]);
 
-    // ── Computed values ──
-    const isCountingDown = mode !== 'stopwatch';
-    const remainingMs = isCountingDown ? Math.max(0, durationMs - elapsedMs) : 0;
-    const progress = isCountingDown && durationMs > 0 ? Math.min(1, elapsedMs / durationMs) : 0;
+    const isCountingDown = timerState.mode !== 'stopwatch';
+    const remainingMs = isCountingDown ? Math.max(0, timerState.durationMs - elapsedMs) : 0;
+    const progress = isCountingDown && timerState.durationMs > 0 ? Math.min(1, elapsedMs / timerState.durationMs) : 0;
 
-    // ── Format ──
     const formatTime = useCallback((ms: number): string => {
         const totalSeconds = Math.max(0, Math.floor(ms / 1000));
         const hrs = Math.floor(totalSeconds / 3600);
         const mins = Math.floor((totalSeconds % 3600) / 60);
         const secs = totalSeconds % 60;
+
         return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }, []);
 
     return {
-        mode, engineState, phase, elapsedMs, remainingMs, progress, durationMs,
-        cycleCount, config, isCountingDown,
-        start, pause, resume, reset, skipBreak, resetCycle, setConfig,
-        presets, savePreset, loadPreset, deletePreset,
+        mode: timerState.mode,
+        engineState: timerState.engineState,
+        phase: timerState.phase,
+        elapsedMs,
+        remainingMs,
+        progress,
+        durationMs: timerState.durationMs,
+        cycleCount: timerState.cycleCount,
+        config: timerState.config,
+        isCountingDown,
+        start,
+        pause,
+        resume,
+        reset,
+        skipBreak,
+        resetCycle,
+        setConfig,
+        presets,
+        savePreset,
+        loadPreset,
+        deletePreset,
         formatTime,
     };
 }
