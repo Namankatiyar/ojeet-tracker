@@ -4,6 +4,7 @@ import { X, Download, Upload, RotateCcw, Eye, EyeOff, Clock, Trophy, Flame, Tren
 import html2canvas from 'html2canvas';
 import { UserAvatar } from './Avatar';
 import { StudySession, MockScore, ProgressCardSettings } from '../../types';
+import { getMockMaxMarks, getMockTotalMarks } from '../../utils/mockScores';
 
 interface ProgressCardModalProps {
     isOpen: boolean;
@@ -53,9 +54,16 @@ export function ProgressCardModal({
     if (!isOpen) return null;
 
     // Calculate stats
-    const highestMockScore = mockScores.length > 0
-        ? Math.max(...mockScores.map(m => m.totalMarks))
-        : 0;
+    const highestMockScore = mockScores.reduce<{ total: number; max: number }>(
+        (best, score) => {
+            const total = getMockTotalMarks(score);
+            if (total > best.total) {
+                return { total, max: getMockMaxMarks(score) };
+            }
+            return best;
+        },
+        { total: 0, max: 300 }
+    );
 
     let totalStudyTime = 0;
     let physicsTime = 0;
@@ -232,7 +240,7 @@ export function ProgressCardModal({
 
     const stats = [
         { key: 'totalStudyTime', label: 'Total Study Time', value: formatTime(totalStudyTime), icon: <Clock size={16} />, visible: visibleStats.totalStudyTime },
-        { key: 'highestMockScore', label: 'Highest Mock Score', value: `${highestMockScore}/300`, icon: <Trophy size={16} />, visible: visibleStats.highestMockScore },
+        { key: 'highestMockScore', label: 'Highest Mock Score', value: `${highestMockScore.total}/${highestMockScore.max}`, icon: <Trophy size={16} />, visible: visibleStats.highestMockScore },
         { key: 'highestDailyHours', label: 'Highest Daily Hours', value: `${highestDailyHours.toFixed(1)}h`, icon: <Flame size={16} />, visible: visibleStats.highestDailyHours },
         { key: 'highestWeekAverage', label: 'Best Week Average', value: `${highestWeekAverage.toFixed(1)}h/day`, icon: <TrendingUp size={16} />, visible: visibleStats.highestWeekAverage },
         { key: 'physicsTime', label: 'Physics Study Time', value: formatTime(physicsTime), icon: <Atom size={16} />, visible: visibleStats.physicsTime },

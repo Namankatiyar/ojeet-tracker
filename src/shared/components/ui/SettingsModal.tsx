@@ -5,6 +5,7 @@ import { Download, Upload, X, AlertTriangle, Check, Image, Trash2, Cloud, LogOut
 import { Vibrant } from 'node-vibrant/browser';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
+import { runPwaRecoveryAndReload } from '../../utils/pwaBridge';
 import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface SettingsModalProps {
@@ -64,10 +65,12 @@ export function SettingsModal({
     const bgFileInputRef = useRef<HTMLInputElement>(null);
     const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [statusMessage, setStatusMessage] = useState('');
+    const [isRepairingUpdates, setIsRepairingUpdates] = useState(false);
     const [authStatus, setAuthStatus] = useState<string>('');
     const [isAuthBusy, setIsAuthBusy] = useState(false);
     const { user, isConfigured, signInWithGoogle, signOut, resetPrompt } = useRemoteAuth();
     const { status: syncStatus, lastSyncedAt, lastError: syncError, remoteStudyAggregate, syncNow } = useRemoteSync();
+    const releaseChannel = import.meta.env.VITE_RELEASE_CHANNEL ?? 'stable';
 
     const modalRoot = document.getElementById('modal-root');
 
@@ -260,6 +263,24 @@ export function SettingsModal({
         navigate('/terms-of-service');
     };
 
+    const handleOpenChangelog = () => {
+        onClose();
+        navigate('/changelog');
+    };
+
+    const handleRepairUpdates = async () => {
+        setIsRepairingUpdates(true);
+        setImportStatus('idle');
+        setStatusMessage('');
+        try {
+            await runPwaRecoveryAndReload();
+        } catch (error) {
+            setImportStatus('error');
+            setStatusMessage(error instanceof Error ? error.message : 'Update repair failed.');
+            setIsRepairingUpdates(false);
+        }
+    };
+
     const modalContent = (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content settings-modal" onClick={e => e.stopPropagation()}>
@@ -418,6 +439,29 @@ export function SettingsModal({
                     </div>
 
                     <div className="settings-section">
+                        <h3 className="section-title">App Updates</h3>
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Release Channel</span>
+                                <span className="setting-description">{releaseChannel}</span>
+                            </div>
+                        </div>
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Repair Update Cache</span>
+                                <span className="setting-description">Use this if the app does not update after tapping "Update now".</span>
+                            </div>
+                            <button
+                                className="action-btn outline small"
+                                onClick={handleRepairUpdates}
+                                disabled={isRepairingUpdates}
+                            >
+                                {isRepairingUpdates ? 'Repairing...' : 'Repair & Reload'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="settings-section">
                         <h3 className="section-title">Cloud Sync (Optional)</h3>
                         {!isConfigured ? (
                             <div className="settings-row vertical">
@@ -481,6 +525,16 @@ export function SettingsModal({
 
                     <div className="settings-section">
                         <h3 className="section-title">Legal</h3>
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Changelog</span>
+                                <span className="setting-description">Review latest updates before and after each release</span>
+                            </div>
+                            <button className="action-btn outline small" onClick={handleOpenChangelog}>
+                                Open
+                            </button>
+                        </div>
+
                         <div className="settings-row">
                             <div className="setting-info">
                                 <span className="setting-label">Privacy Policy</span>

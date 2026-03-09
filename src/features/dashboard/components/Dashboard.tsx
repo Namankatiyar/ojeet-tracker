@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
 import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry } from '../../../shared/types';
@@ -12,6 +12,8 @@ import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
 import { PwaInstallPromptModal } from '../../sync/PwaInstallPromptModal';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
+import { applyPwaUpdate, getPwaBridgeState, subscribePwaBridge } from '../../../shared/utils/pwaBridge';
+import { DashboardNotificationCenter, DashboardNotificationItem } from './DashboardNotificationCenter';
 
 interface DashboardProps {
     physicsProgress: number;
@@ -56,26 +58,70 @@ export function Dashboard({
     onAddMockScore = () => { },
     onDeleteMockScore = () => { }
 }: DashboardProps) {
+    const navigate = useNavigate();
+
     interface BeforeInstallPromptEvent extends Event {
         prompt: () => Promise<void>;
         userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
     }
 
-    const PWA_INSTALL_PROMPT_DISMISSED_KEY = 'ojeet-pwa-install-prompt-dismissed';
+    interface DashboardNotificationMeta {
+        dismissedContexts: Record<string, true>;
+        readContexts: Record<string, true>;
+        lastAcknowledgedVersion: string;
+    }
+
+    const DASHBOARD_NOTIFICATION_META_KEY = 'ojeet-dashboard-notification-meta-v1';
+    const CHANGELOG_CONTEXT = `changelog:${__APP_VERSION__}`;
+    const CLOUD_SYNC_CONTEXT = 'cloud_sync:eligible';
+    const PWA_INSTALL_CONTEXT = 'pwa_install:available';
+    const PWA_UPDATE_CONTEXT = `pwa_update:${__APP_VERSION__}`;
+
     const [isExamModalOpen, setIsExamModalOpen] = useState(false);
     const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
     const [isPwaPromptOpen, setIsPwaPromptOpen] = useState(false);
     const [isPwaInstallBusy, setIsPwaInstallBusy] = useState(false);
+    const [isPwaUpdateBusy, setIsPwaUpdateBusy] = useState(false);
     const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-    const [isWideViewport, setIsWideViewport] = useState(() =>
-        typeof window !== 'undefined' && window.matchMedia('(min-width: 64rem)').matches
+    const [notificationMeta, setNotificationMeta] = useLocalStorage<DashboardNotificationMeta>(
+        DASHBOARD_NOTIFICATION_META_KEY,
+        {
+            dismissedContexts: {},
+            readContexts: {},
+            lastAcknowledgedVersion: __APP_VERSION__,
+        }
     );
-    const [isPwaPromptDismissed, setIsPwaPromptDismissed] = useLocalStorage<boolean>(PWA_INSTALL_PROMPT_DISMISSED_KEY, false);
+    const [pwaBridge, setPwaBridge] = useState(getPwaBridgeState());
     const [isAuthBusy, setIsAuthBusy] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
     const { user, isConfigured, isPromptDismissed, dismissPrompt, signInWithGoogle } = useRemoteAuth();
     const { remoteStudyAggregate } = useRemoteSync();
     const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
+
+    const markNotificationContextsRead = useCallback((contexts: string[]) => {
+        if (contexts.length === 0) return;
+        setNotificationMeta((prev) => {
+            const nextRead = { ...prev.readContexts };
+            contexts.forEach((context) => {
+                nextRead[context] = true;
+            });
+            return { ...prev, readContexts: nextRead };
+        });
+    }, [setNotificationMeta]);
+
+    const dismissNotificationContext = useCallback((context: string) => {
+        setNotificationMeta((prev) => ({
+            ...prev,
+            dismissedContexts: {
+                ...prev.dismissedContexts,
+                [context]: true,
+            },
+            readContexts: {
+                ...prev.readContexts,
+                [context]: true,
+            },
+        }));
+    }, [setNotificationMeta]);
 
     // Get primary exam
     const primaryExam = examDates.find(e => e.isPrimary) || examDates[0] || null;
@@ -102,34 +148,13 @@ export function Dashboard({
         }
     }, [primaryExam]);
 
-    useEffect(() => {
-        if (!syncPromptEligible) {
-            setIsSyncPromptOpen(false);
-            return;
-        }
-
-        const timer = window.setTimeout(() => {
-            setIsSyncPromptOpen(true);
-        }, 1000);
-
-        return () => {
-            window.clearTimeout(timer);
-        };
-    }, [syncPromptEligible]);
-
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(min-width: 64rem)');
-        const handleChange = (e: MediaQueryListEvent) => setIsWideViewport(e.matches);
-        setIsWideViewport(mediaQuery.matches);
-        mediaQuery.addEventListener('change', handleChange);
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
+    useEffect(() => subscribePwaBridge(setPwaBridge), []);
 
     useEffect(() => {
         const nav = window.navigator as Navigator & { standalone?: boolean };
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || nav.standalone === true;
         if (isStandalone) {
-            setIsPwaPromptDismissed(true);
+            setDeferredInstallPrompt(null);
             return;
         }
 
@@ -142,7 +167,7 @@ export function Dashboard({
         const handleAppInstalled = () => {
             setDeferredInstallPrompt(null);
             setIsPwaPromptOpen(false);
-            setIsPwaPromptDismissed(true);
+            dismissNotificationContext(PWA_INSTALL_CONTEXT);
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -152,22 +177,19 @@ export function Dashboard({
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
             window.removeEventListener('appinstalled', handleAppInstalled);
         };
-    }, [setIsPwaPromptDismissed]);
+    }, [dismissNotificationContext]);
 
     useEffect(() => {
-        if (!isWideViewport || isPwaPromptDismissed || !deferredInstallPrompt || syncPromptEligible || isSyncPromptOpen) {
+        if (!deferredInstallPrompt) {
             setIsPwaPromptOpen(false);
-            return;
         }
+    }, [deferredInstallPrompt]);
 
-        const timer = window.setTimeout(() => {
-            setIsPwaPromptOpen(true);
-        }, 1200);
-
-        return () => {
-            window.clearTimeout(timer);
-        };
-    }, [deferredInstallPrompt, isPwaPromptDismissed, isSyncPromptOpen, isWideViewport, syncPromptEligible]);
+    useEffect(() => {
+        if (!syncPromptEligible) {
+            setIsSyncPromptOpen(false);
+        }
+    }, [syncPromptEligible]);
 
     const subjects: { key: Subject; label: string; icon: React.ReactNode; progress: number; color: string }[] = [
         { key: 'physics', label: 'Physics', icon: <Atom size={24} />, progress: physicsProgress, color: 'var(--accent)' },
@@ -250,7 +272,6 @@ export function Dashboard({
     }, [remoteStudyAggregate?.total_seconds_overall, studySessions]);
 
     const handleSyncPromptClose = () => {
-        dismissPrompt();
         setIsSyncPromptOpen(false);
     };
 
@@ -266,7 +287,6 @@ export function Dashboard({
 
     const handlePwaPromptClose = () => {
         setIsPwaPromptOpen(false);
-        setIsPwaPromptDismissed(true);
     };
 
     const handleInstallPwa = async () => {
@@ -277,9 +297,9 @@ export function Dashboard({
             await deferredInstallPrompt.prompt();
             const choiceResult = await deferredInstallPrompt.userChoice;
 
-            if (choiceResult.outcome === 'accepted') {
-                setIsPwaPromptDismissed(true);
-            }
+                if (choiceResult.outcome === 'accepted') {
+                    dismissNotificationContext(PWA_INSTALL_CONTEXT);
+                }
 
             setIsPwaPromptOpen(false);
             setDeferredInstallPrompt(null);
@@ -289,6 +309,119 @@ export function Dashboard({
             setIsPwaInstallBusy(false);
         }
     };
+
+    const handleApplyPwaUpdate = async () => {
+        setIsPwaUpdateBusy(true);
+        try {
+            await applyPwaUpdate();
+        } finally {
+            setIsPwaUpdateBusy(false);
+        }
+    };
+
+    const handleDismissChangelogNotification = () => {
+        setNotificationMeta((prev) => ({
+            ...prev,
+            readContexts: {
+                ...prev.readContexts,
+                [CHANGELOG_CONTEXT]: true,
+            },
+            lastAcknowledgedVersion: __APP_VERSION__,
+        }));
+    };
+
+    const notificationItems = useMemo<DashboardNotificationItem[]>(() => {
+        const items: DashboardNotificationItem[] = [];
+
+        if (syncPromptEligible && !notificationMeta.dismissedContexts[CLOUD_SYNC_CONTEXT]) {
+            items.push({
+                id: CLOUD_SYNC_CONTEXT,
+                title: 'Sync Across Devices',
+                message: authError
+                    ? `Sign-in error: ${authError}`
+                    : 'Sign in with Google to back up progress and access it from multiple devices.',
+                unread: !notificationMeta.readContexts[CLOUD_SYNC_CONTEXT],
+                primaryAction: {
+                    label: 'Open Sign In',
+                    onClick: () => setIsSyncPromptOpen(true),
+                },
+                onDismiss: () => {
+                    dismissPrompt();
+                    dismissNotificationContext(CLOUD_SYNC_CONTEXT);
+                    setIsSyncPromptOpen(false);
+                },
+            });
+        }
+
+        if (deferredInstallPrompt && !notificationMeta.dismissedContexts[PWA_INSTALL_CONTEXT]) {
+            items.push({
+                id: PWA_INSTALL_CONTEXT,
+                title: 'Install As App',
+                message: 'Install OJEE Tracker for faster access and an app-like fullscreen experience.',
+                unread: !notificationMeta.readContexts[PWA_INSTALL_CONTEXT],
+                primaryAction: {
+                    label: 'Open Install Prompt',
+                    onClick: () => setIsPwaPromptOpen(true),
+                },
+                onDismiss: () => {
+                    dismissNotificationContext(PWA_INSTALL_CONTEXT);
+                    setIsPwaPromptOpen(false);
+                },
+            });
+        }
+
+        if (pwaBridge.needRefresh && !notificationMeta.dismissedContexts[PWA_UPDATE_CONTEXT]) {
+            items.push({
+                id: PWA_UPDATE_CONTEXT,
+                title: 'Update Available',
+                message: 'A newer app build is ready. Update now for the latest fixes and improvements.',
+                unread: !notificationMeta.readContexts[PWA_UPDATE_CONTEXT],
+                primaryAction: {
+                    label: isPwaUpdateBusy ? 'Updating...' : 'Update Now',
+                    onClick: handleApplyPwaUpdate,
+                    disabled: isPwaUpdateBusy,
+                },
+                secondaryAction: {
+                    label: 'Later',
+                    onClick: () => dismissNotificationContext(PWA_UPDATE_CONTEXT),
+                    disabled: isPwaUpdateBusy,
+                },
+                onDismiss: () => dismissNotificationContext(PWA_UPDATE_CONTEXT),
+            });
+        }
+
+        if (notificationMeta.lastAcknowledgedVersion !== __APP_VERSION__) {
+            items.push({
+                id: CHANGELOG_CONTEXT,
+                title: 'New Release Notes',
+                message: `Version ${__APP_VERSION__} is available. Review the changelog for new updates.`,
+                unread: !notificationMeta.readContexts[CHANGELOG_CONTEXT],
+                primaryAction: {
+                    label: 'View Changelog',
+                    onClick: () => navigate('/changelog?updated=1'),
+                },
+                onDismiss: handleDismissChangelogNotification,
+            });
+        }
+
+        return items;
+    }, [
+        syncPromptEligible,
+        notificationMeta.dismissedContexts,
+        notificationMeta.readContexts,
+        notificationMeta.lastAcknowledgedVersion,
+        authError,
+        deferredInstallPrompt,
+        pwaBridge.needRefresh,
+        isPwaUpdateBusy,
+        dismissPrompt,
+        dismissNotificationContext,
+        navigate,
+    ]);
+
+    const handleNotificationPanelOpen = useCallback(() => {
+        markNotificationContextsRead(notificationItems.map((item) => item.id));
+    }, [markNotificationContextsRead, notificationItems]);
 
     return (
         <div className="dashboard">
@@ -301,7 +434,6 @@ export function Dashboard({
                 ) : (
                     <h1>Your Progress</h1>
                 )}
-                {authError && <p className="cloud-sync-inline-error">{authError}</p>}
             </div>
 
             <div className="dashboard-stats-row">
@@ -423,7 +555,7 @@ export function Dashboard({
                                 >
                                     {daysRemaining}
                                 </span>
-                                <span className="days-label">{Math.abs(daysRemaining) === 1 ? 'Day' : 'Days'} {daysRemaining >= 0 ? 'Left' : 'Ago'}</span>
+                                <span className="days-label">{daysRemaining === 1 ? 'Day' : 'Days'} Left</span>
                                 <span className="exam-date-sub">{formatDateDisplay(primaryExam.date)}</span>
                             </div>
                         ) : (
@@ -446,7 +578,7 @@ export function Dashboard({
                                         const days = calculateDaysRemaining(activeSecondaryExam.date);
                                         return (
                                             <span className={`exam-secondary-days ${days !== null && days <= 7 ? 'urgent' : ''}`}>
-                                                {days !== null ? (days >= 0 ? `${days}d` : 'Passed') : '—'}
+                                                {days !== null ? `${days}d` : '—'}
                                             </span>
                                         );
                                     })()}
@@ -513,6 +645,11 @@ export function Dashboard({
                     <Github size={20} />
                 </a>
             </div>
+
+            <DashboardNotificationCenter
+                items={notificationItems}
+                onPanelOpen={handleNotificationPanelOpen}
+            />
 
             {isExamModalOpen && (
                 <ExamCountdownModal

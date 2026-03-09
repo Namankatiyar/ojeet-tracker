@@ -1,6 +1,7 @@
 export type Priority = 'high' | 'medium' | 'low' | 'none';
 
 export type Subject = 'physics' | 'chemistry' | 'maths';
+export type MockExamType = 'jm' | 'ja';
 
 export interface Chapter {
     serial: number;
@@ -59,15 +60,24 @@ export interface StudySession {
     sourceVideoId?: string;
 }
 
+export interface MockSubjectMarks {
+    physics: number;
+    chemistry: number;
+    maths: number;
+}
+
 export interface MockScore {
     id: string;
     name: string;           // e.g., "Mock Test 1", "NTA Mock 3"
     date: string;           // YYYY-MM-DD
+    examType?: MockExamType;
     physicsMarks: number;
     chemistryMarks: number;
     mathsMarks: number;
     totalMarks: number;     // Sum of all three
     maxMarks?: number;      // Optional, defaults to 300
+    paper1Marks?: MockSubjectMarks;
+    paper2Marks?: MockSubjectMarks;
 }
 
 export interface ExamEntry {

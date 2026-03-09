@@ -46,6 +46,31 @@
     line-height: 1.6;
 }
 
+.changelog-content {
+    gap: 1rem;
+}
+
+.changelog-entry {
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-sm);
+    background: var(--bg-tertiary);
+}
+
+.changelog-entry h2 {
+    margin: 0;
+}
+
+.changelog-entry p {
+    margin: 0.35rem 0 0.6rem;
+}
+
+.changelog-entry ul {
+    margin: 0;
+    padding-left: 1rem;
+    color: var(--text-primary);
+}
+
 .legal-actions {
     margin-top: 1.5rem;
     padding-top: 1rem;

@@ -20,6 +20,12 @@
 *   **Integrated Timer:** A distraction-free study clock that tracks your sessions and provides detailed analytics.
 *   **Auto-Rescheduling:** Incomplete tasks from past days are automatically moved to "Today" to ensure nothing falls through the cracks.
 
+### ☁️ Cloud Synchronization
+*   **Multi-Device Sync:** Seamlessly synchronize your progress across different devices using your Google account.
+*   **Automated Backups:** Real-time cloud saves ensure your data is never lost, even if you clear your browser's local storage.
+*   **High Integrity:** Uses LZ-compression and intelligent payload chunking to handle large datasets reliably.
+*   **Sync Dashboard:** Monitor your last sync time and status from the settings modal.
+
 ### 🎉 Visual Rewards
 *   **Celebrations:** Experience a burst of confetti (themed to your selected accent color) whenever you mark a chapter as completed.
 
@@ -31,9 +37,10 @@
 *   **Dynamic Theming:** Choose from a modern palette of accent colors. Your choice influences shadows, background tints, analogous gradients, avatars, and progress indicators throughout the app.
 *   **Dark/Light Mode:** Fully supported themes to reduce eye strain during late-night study sessions.
 
-### 💾 Persistence
-*   **Local Storage:** All your data—progress, exam date, custom columns, tasks, and theme preferences—is saved locally in your browser. No login or internet connection required (except for fetching quotes).
-*   **Data Backup:** Export and import your data as JSON to move between devices.
+### 💾 Persistence & Cloud Sync
+*   **Hybrid Storage Model:** **LocalStorage** remains the primary source of truth for a zero-latency, offline-first experience.
+*   **Supabase Integration:** When configured, data is automatically backed up to a secure remote Supabase instance.
+*   **Manual Data Management:** Still supports traditional JSON export and import for users who prefer manual backups.
 
 ### 📱 Install as App (PWA)
 **OJEE-Tracker** is a Progressive Web App. This means you can install it on your device for a native-like experience.
@@ -49,26 +56,29 @@
 OJEE-Tracker is built as a modular single-page application (SPA) focused on performance and user experience.
 
 *   **Frontend Framework:** [React 18](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/) for robust type safety.
-*   **State Management:** **React Context API** for global application state, modularized into three key providers:
+*   **State Management:** **React Context API** for global application state, modularized into five key providers:
     *   `ThemeContext`: Manages visual settings and dynamic CSS variables.
     *   `SubjectDataContext`: Handles syllabus structure, CSV parsing, and material customization.
     *   `UserProgressContext`: Manages completion progress, planner tasks, study sessions, and mock scores.
-*   **High-Performance Architecture**: Features are built with performance in mind. For example, the **Planner** uses custom hooks to pre-group data, converting slow O(N) searches into instantaneous O(1) lookups and preventing UI lag. The **Dashboard** analytics are similarly decoupled for isolated, efficient rendering.
+    *   `RemoteAuthContext`: Manages Supabase authentication and Google OAuth session state.
+    *   `RemoteSyncContext`: Orchestrates bidirectional synchronization between LocalStorage and the Cloud.
+*   **High-Performance Architecture**: Features are built with performance in mind. For example, the **Planner** uses custom hooks to pre-group data, converting slow O(N) searches into instantaneous O(1) lookups.
+*   **Backend Infrastructure**: [Supabase](https://supabase.com/) (PostgreSQL + Auth + RLS) for secure cloud data persistence.
 *   **Routing:** [React Router](https://reactrouter.com/) (v7) for seamless navigation, modularized into `AppRoutes`.
 *   **Build Tool:** [Vite](https://vitejs.dev/) for lightning-fast development server and optimized production builds.
 *   **Styling:** Modern **CSS Layers (@layer)** architecture for strict cascade control. Features a advanced glassmorphism design system, dynamic background customization, and `lucide-react` for modern iconography.
-*   **Persistence:** A custom `useLocalStorage` hook abstracts the browser's `localStorage` API, ensuring state persists across sessions without a backend database.
+*   **Persistence:** A hybrid engine (custom `useLocalStorage` + `RemoteSyncContext`) ensures data is always available locally while remaining safe in the cloud.
 
 ## 📂 Project Structure
 
 ```
 src/
 ├── core/               # Application setup (Context Providers, Custom Hooks, Routing)
-│   ├── context/        # Global state providers (Theme, Data, Progress)
+│   ├── context/        # Global state providers (Theme, Data, Progress, Auth, Sync)
 │   ├── hooks/          # Core business logic hooks (Shortcuts, Auto-shift, Quotes)
 │   └── AppRoutes.tsx   # Centralized Route definitions
-├── features/           # Domain-driven features (Dashboard, Planner, etc.)
-├── shared/             # Reusable UI components, hooks, and utils
+├── features/           # Domain-driven features (Dashboard, Planner, Sync, etc.)
+├── shared/             # Reusable UI components, hooks, and utils (including `lib/supabase.ts`)
 └── main.tsx            # Entry point
 ```
 
@@ -82,7 +92,13 @@ src/
     ```bash
     pnpm install
     ```
-3.  **Start the development server:**
+3.  **Configure Environment Variables:**
+    Create a `.env` file in the root with your Supabase credentials:
+    ```env
+    VITE_SUPABASE_URL=your_project_url
+    VITE_SUPABASE_ANON_KEY=your_anon_key
+    ```
+4.  **Start the development server:**
     ```bash
     pnpm dev
     ```

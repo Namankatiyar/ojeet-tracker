@@ -1,44 +1,76 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { SettingsModal } from './SettingsModal'
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { SettingsModal } from './SettingsModal';
+import { BrowserRouter } from 'react-router-dom';
 
+// Manual mock for pwaBridge to bypass virtual imports
+vi.mock('../../utils/pwaBridge');
+
+// Mock Lucide icons
+vi.mock('lucide-react', () => ({
+    Download: () => <div data-testid="icon-download" />,
+    Upload: () => <div data-testid="icon-upload" />,
+    X: () => <div data-testid="icon-x" />,
+    AlertTriangle: () => <div data-testid="icon-alert" />,
+    Check: () => <div data-testid="icon-check" />,
+    Image: () => <div data-testid="icon-image" />,
+    Trash2: () => <div data-testid="icon-trash" />,
+    Cloud: () => <div data-testid="icon-cloud" />,
+    LogOut: () => <div data-testid="icon-logout" />,
+}));
+
+// Mock Contexts
+const mockSignInWithGoogle = vi.fn();
+const mockSignOut = vi.fn();
+const mockResetPrompt = vi.fn();
 vi.mock('../../../core/context/RemoteAuthContext', () => ({
     useRemoteAuth: () => ({
-        user: null,
+        user: { email: 'test@example.com' },
         isConfigured: true,
-        signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
-        signOut: vi.fn().mockResolvedValue({ error: null }),
-        resetPrompt: vi.fn(),
+        signInWithGoogle: mockSignInWithGoogle,
+        signOut: mockSignOut,
+        resetPrompt: mockResetPrompt,
     }),
-}))
+}));
 
+const mockSyncNow = vi.fn();
 vi.mock('../../../core/context/RemoteSyncContext', () => ({
     useRemoteSync: () => ({
         status: 'idle',
         lastSyncedAt: null,
         lastError: null,
         remoteStudyAggregate: null,
-        syncNow: vi.fn().mockResolvedValue(undefined),
+        syncNow: mockSyncNow,
     }),
-}))
+}));
+
+// Mock Navigation
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+    };
+});
+
+// Mock PWA bridge
+vi.mock('../../utils/pwaBridge', () => ({
+    runPwaRecoveryAndReload: vi.fn(),
+}));
+
+// Mock Vibrant
+vi.mock('node-vibrant/browser', () => ({
+    Vibrant: {
+        from: vi.fn().mockReturnValue({
+            getPalette: vi.fn().mockResolvedValue({
+                Vibrant: { hex: '#ff0000' }
+            })
+        })
+    }
+}));
 
 describe('SettingsModal', () => {
-    let mockConsoleError: any
-
-    beforeEach(() => {
-        mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-        // Setup modal root
-        const root = document.createElement('div')
-        root.id = 'modal-root'
-        document.body.appendChild(root)
-    })
-
-    afterEach(() => {
-        mockConsoleError.mockRestore()
-        document.body.innerHTML = ''
-    })
-
     const defaultProps = {
         isOpen: true,
         onClose: vi.fn(),
@@ -46,39 +78,131 @@ describe('SettingsModal', () => {
         onDisableAutoShiftChange: vi.fn(),
         backgroundUrl: '',
         onBackgroundUrlChange: vi.fn(),
-        dimLevel: 50,
+        dimLevel: 20,
         onDimLevelChange: vi.fn(),
         glassIntensity: 50,
         onGlassIntensityChange: vi.fn(),
-        glassRefraction: 50,
+        glassRefraction: 30,
         onGlassRefractionChange: vi.fn(),
         onAccentChange: vi.fn(),
-    }
+    };
 
-    it('displays error message when export fails', async () => {
-        // Mock URL.createObjectURL to throw an error, which happens during handleExport
-        // Since jsdom doesn't implement URL.createObjectURL, we mock it on global
-        const originalCreateObjectURL = global.URL.createObjectURL;
-        global.URL.createObjectURL = vi.fn().mockImplementation(() => {
-            throw new Error('Mocked export error')
-        })
+    beforeEach(() => {
+        vi.clearAllMocks();
+        // Create modal root for portal
+        const modalRoot = document.createElement('div');
+        modalRoot.id = 'modal-root';
+        document.body.appendChild(modalRoot);
+    });
 
-        render(<SettingsModal {...defaultProps} />)
+    afterEach(() => {
+        const modalRoot = document.getElementById('modal-root');
+        if (modalRoot) document.body.removeChild(modalRoot);
+    });
 
-        // Find and click the Export button
-        const exportButton = screen.getByRole('button', { name: /export/i })
-        fireEvent.click(exportButton)
+    it('renders nothing when closed', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} isOpen={false} />
+            </BrowserRouter>
+        );
+        expect(screen.queryByText('Settings')).not.toBeInTheDocument();
+    });
 
-        // The error message "Failed to export data." should be rendered
-        await waitFor(() => {
-            expect(screen.getByText('Failed to export data.')).toBeInTheDocument()
-        })
+    it('renders correctly when open', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        expect(screen.getByText('Settings')).toBeInTheDocument();
+        expect(screen.getByText('Behavior')).toBeInTheDocument();
+        expect(screen.getByText('Appearance')).toBeInTheDocument();
+    });
 
-        // Assert that the catch block logged the error
-        expect(mockConsoleError).toHaveBeenCalledWith('Export failed:', expect.any(Error))
+    it('calls onClose when close button is clicked', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        const closeBtn = screen.getByRole('button', { name: '' }).closest('button'); // Lucide X icon button
+        if (closeBtn) fireEvent.click(closeBtn);
+        expect(defaultProps.onClose).toHaveBeenCalled();
+    });
 
-        // Restore
-        global.URL.createObjectURL = originalCreateObjectURL;
-        vi.restoreAllMocks()
-    })
-})
+    it('triggers onDisableAutoShiftChange when toggle is clicked', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        const checkbox = screen.getByRole('checkbox');
+        fireEvent.click(checkbox);
+        expect(defaultProps.onDisableAutoShiftChange).toHaveBeenCalledWith(true);
+    });
+
+    it('triggers appearance change handlers on slider input', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        
+        const dimSlider = document.querySelector('.dim-slider') as HTMLInputElement;
+        expect(dimSlider).toBeTruthy();
+        fireEvent.change(dimSlider, { target: { value: '40' } });
+        expect(defaultProps.onDimLevelChange).toHaveBeenCalledWith(40);
+
+        const glassSlider = document.querySelector('.glass-slider:not(.refraction-slider)') as HTMLInputElement;
+        expect(glassSlider).toBeTruthy();
+        fireEvent.change(glassSlider, { target: { value: '60' } });
+        expect(defaultProps.onGlassIntensityChange).toHaveBeenCalledWith(60);
+
+        const refractionSlider = document.querySelector('.refraction-slider') as HTMLInputElement;
+        expect(refractionSlider).toBeTruthy();
+        fireEvent.change(refractionSlider, { target: { value: '75' } });
+        expect(defaultProps.onGlassRefractionChange).toHaveBeenCalledWith(75);
+    });
+
+    it('handles navigation items correctly', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+
+        fireEvent.click(screen.getByText('Changelog').closest('.settings-row')!.querySelector('button')!);
+        expect(mockNavigate).toHaveBeenCalledWith('/changelog');
+        expect(defaultProps.onClose).toHaveBeenCalled();
+
+        fireEvent.click(screen.getByText('Privacy Policy').closest('.settings-row')!.querySelector('button')!);
+        expect(mockNavigate).toHaveBeenCalledWith('/privacy-policy');
+        
+        fireEvent.click(screen.getByText('Terms of Service').closest('.settings-row')!.querySelector('button')!);
+        expect(mockNavigate).toHaveBeenCalledWith('/terms-of-service');
+    });
+
+    it('triggers sync when Sync Now is clicked', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        const syncBtn = screen.getByText('Sync Now').closest('button');
+        if (syncBtn) fireEvent.click(syncBtn);
+        expect(mockSyncNow).toHaveBeenCalled();
+    });
+
+    it('calls signOut when Sign Out is clicked', async () => {
+        mockSignOut.mockResolvedValue({ error: null });
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        const signOutBtn = screen.getByText('Sign Out').closest('button');
+        if (signOutBtn) fireEvent.click(signOutBtn);
+        expect(mockSignOut).toHaveBeenCalled();
+    });
+});

@@ -40,5 +40,5 @@ export const calculateDaysRemaining = (dateString: string): number | null => {
     target.setHours(0, 0, 0, 0);
 
     const diffTime = target.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 };

@@ -179,9 +179,3 @@
     height: 40px;
     min-width: 140px;
 }
-
-@media (max-width: 64rem) {
-    .pwa-install-modal {
-        display: none;
-    }
-}

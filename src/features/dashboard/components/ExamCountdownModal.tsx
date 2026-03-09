@@ -151,7 +151,7 @@ export function ExamCountdownModal({
                                                 <div className="exam-item-countdown">
                                                     {days !== null && (
                                                         <span className={`exam-days-badge ${days <= 7 ? 'urgent' : days <= 30 ? 'soon' : ''}`}>
-                                                            {days >= 0 ? `${days}d` : 'Passed'}
+                                                            {`${days}d`}
                                                         </span>
                                                     )}
                                                 </div>
