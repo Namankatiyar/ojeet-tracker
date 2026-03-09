@@ -1,7 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../shared/components/layout/Header';
-import { PwaUpdateBanner } from '../shared/components/ui/PwaUpdateBanner';
 import { Subject } from '../shared/types';
 import { formatDateLocal } from '../shared/utils/date';
 
@@ -15,7 +14,6 @@ import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 import { AppRoutes } from './AppRoutes';
 
 type View = 'dashboard' | 'planner' | 'studyclock' | Subject;
-const LAST_SEEN_VERSION_KEY = 'pcm-tracker-last-seen-version';
 
 function AppContent() {
     const navigate = useNavigate();
@@ -41,23 +39,6 @@ function AppContent() {
     };
 
     const currentView = getCurrentView();
-
-    useEffect(() => {
-        const currentVersion = __APP_VERSION__;
-        const lastSeenVersion = localStorage.getItem(LAST_SEEN_VERSION_KEY);
-
-        if (!lastSeenVersion) {
-            localStorage.setItem(LAST_SEEN_VERSION_KEY, currentVersion);
-            return;
-        }
-
-        if (lastSeenVersion !== currentVersion) {
-            localStorage.setItem(LAST_SEEN_VERSION_KEY, currentVersion);
-            if (location.pathname !== '/changelog') {
-                navigate('/changelog?updated=1', { replace: true });
-            }
-        }
-    }, [location.pathname, navigate]);
 
     const handleNavigate = (view: View) => {
         if (view === 'dashboard') navigate('/');
@@ -105,7 +86,6 @@ function AppContent() {
                 progressCardSettings={progressCardSettings}
                 onProgressCardSettingsChange={setProgressCardSettings}
             />
-            <PwaUpdateBanner />
             <main className="main-content">
                 <AppRoutes
                     onNavigate={handleNavigate}

@@ -24,7 +24,7 @@
 *   **Multi-Device Sync:** Seamlessly synchronize your progress across different devices using your Google account.
 *   **Automated Backups:** Real-time cloud saves ensure your data is never lost, even if you clear your browser's local storage.
 *   **High Integrity:** Uses LZ-compression and intelligent payload chunking to handle large datasets reliably.
-*   **Sync Dashboard:** Monitor your last sync time and status directly from the dashboard.
+*   **Sync Dashboard:** Monitor your last sync time and status from the settings modal.
 
 ### 🎉 Visual Rewards
 *   **Celebrations:** Experience a burst of confetti (themed to your selected accent color) whenever you mark a chapter as completed.
