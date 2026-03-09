@@ -98,6 +98,31 @@ export function Dashboard({
     const { remoteStudyAggregate } = useRemoteSync();
     const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
 
+    const markNotificationContextsRead = useCallback((contexts: string[]) => {
+        if (contexts.length === 0) return;
+        setNotificationMeta((prev) => {
+            const nextRead = { ...prev.readContexts };
+            contexts.forEach((context) => {
+                nextRead[context] = true;
+            });
+            return { ...prev, readContexts: nextRead };
+        });
+    }, [setNotificationMeta]);
+
+    const dismissNotificationContext = useCallback((context: string) => {
+        setNotificationMeta((prev) => ({
+            ...prev,
+            dismissedContexts: {
+                ...prev.dismissedContexts,
+                [context]: true,
+            },
+            readContexts: {
+                ...prev.readContexts,
+                [context]: true,
+            },
+        }));
+    }, [setNotificationMeta]);
+
     // Get primary exam
     const primaryExam = examDates.find(e => e.isPrimary) || examDates[0] || null;
     const secondaryExams = useMemo(() => {
@@ -165,31 +190,6 @@ export function Dashboard({
             setIsSyncPromptOpen(false);
         }
     }, [syncPromptEligible]);
-
-    const markNotificationContextsRead = useCallback((contexts: string[]) => {
-        if (contexts.length === 0) return;
-        setNotificationMeta((prev) => {
-            const nextRead = { ...prev.readContexts };
-            contexts.forEach((context) => {
-                nextRead[context] = true;
-            });
-            return { ...prev, readContexts: nextRead };
-        });
-    }, [setNotificationMeta]);
-
-    const dismissNotificationContext = useCallback((context: string) => {
-        setNotificationMeta((prev) => ({
-            ...prev,
-            dismissedContexts: {
-                ...prev.dismissedContexts,
-                [context]: true,
-            },
-            readContexts: {
-                ...prev.readContexts,
-                [context]: true,
-            },
-        }));
-    }, [setNotificationMeta]);
 
     const subjects: { key: Subject; label: string; icon: React.ReactNode; progress: number; color: string }[] = [
         { key: 'physics', label: 'Physics', icon: <Atom size={24} />, progress: physicsProgress, color: 'var(--accent)' },
