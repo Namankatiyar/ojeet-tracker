@@ -286,6 +286,7 @@ function createLocalPayload(params: {
         disableAutoShift: params.disableAutoShift,
         progressCardSettings: params.progressCardSettings,
         plannerHistoryDays: SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
+        appVersion: __APP_VERSION__,
         subjects: {
             subjectData: params.subjectData,
             customColumns: params.customColumns,
@@ -479,6 +480,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     payload_bytes: encoded.compressedBytes,
                     checksum: encoded.checksum,
                     client_updated_at: new Date().toISOString(),
+                    app_version: __APP_VERSION__,
                 };
 
                 const { error: manifestError } = await supabase
