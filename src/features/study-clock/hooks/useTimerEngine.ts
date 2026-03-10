@@ -449,6 +449,7 @@ export interface UseTimerEngineReturn {
     start: () => void;
     pause: () => void;
     resume: () => void;
+    syncNow: () => number;
     reset: () => void;
     skipBreak: () => void;
     resetCycle: () => void;
@@ -485,6 +486,16 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
         setTimerState(nextState);
     }, []);
 
+    const persistSnapshot = useCallback((state: PersistedTimerState, now: number) => {
+        if (state.engineState === 'idle') {
+            clearState();
+            return;
+        }
+
+        const snapshot = normaliseRunningState(state, now);
+        saveState(snapshot);
+    }, []);
+
     const applyReconcileResult = useCallback((result: ReconcileResult) => {
         const currentState = timerStateRef.current;
         if (!statesMatch(result.nextState, currentState)) {
@@ -502,27 +513,33 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
         });
     }, [setTimerStateImmediate]);
 
-    const reconcileNow = useCallback((sourceState?: PersistedTimerState) => {
+    const reconcileNow = useCallback((sourceState?: PersistedTimerState, nowOverride?: number) => {
         const currentState = sourceState ?? timerStateRef.current;
-        const result = reconcileTimerState(currentState, Date.now());
+        const now = nowOverride ?? Date.now();
+        const result = reconcileTimerState(currentState, now);
         applyReconcileResult(result);
+        persistSnapshot(result.nextState, now);
         return result.nextState;
-    }, [applyReconcileResult]);
+    }, [applyReconcileResult, persistSnapshot]);
+
+    const syncNow = useCallback(() => {
+        const now = Date.now();
+        const currentState = timerStateRef.current;
+        const result = reconcileTimerState(currentState, now);
+        applyReconcileResult(result);
+        persistSnapshot(result.nextState, now);
+        return result.elapsedMs;
+    }, [applyReconcileResult, persistSnapshot]);
 
     useEffect(() => {
         const saved = loadState();
         if (!saved) return;
-        applyReconcileResult(reconcileTimerState(saved, Date.now()));
-    }, [applyReconcileResult]);
+        reconcileNow(saved, Date.now());
+    }, [reconcileNow]);
 
     useEffect(() => {
-        if (timerState.engineState === 'idle') {
-            clearState();
-            return;
-        }
-
-        saveState(timerState);
-    }, [timerState]);
+        persistSnapshot(timerState, Date.now());
+    }, [persistSnapshot, timerState]);
 
     useEffect(() => {
         if (timerState.engineState !== 'running') return;
@@ -548,20 +565,19 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             }
 
             if (document.visibilityState === 'hidden') {
-                const currentState = normaliseRunningState(timerState, Date.now());
-                if (!statesMatch(currentState, timerState)) {
+                const now = Date.now();
+                const currentState = normaliseRunningState(timerStateRef.current, now);
+                if (!statesMatch(currentState, timerStateRef.current)) {
                     setTimerStateImmediate(currentState);
-                } else if (currentState.engineState !== 'idle') {
-                    saveState(currentState);
                 }
+                persistSnapshot(currentState, now);
             }
         };
 
         const handlePageHide = () => {
-            const currentState = normaliseRunningState(timerState, Date.now());
-            if (currentState.engineState !== 'idle') {
-                saveState(currentState);
-            }
+            const now = Date.now();
+            const currentState = normaliseRunningState(timerStateRef.current, now);
+            persistSnapshot(currentState, now);
         };
 
         window.addEventListener('focus', handleVisibleRefresh);
@@ -575,7 +591,7 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             window.removeEventListener('pagehide', handlePageHide);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [reconcileNow, timerState]);
+    }, [persistSnapshot, reconcileNow, setTimerStateImmediate]);
 
     const start = useCallback(() => {
         const mode = timerState.config.mode;
@@ -799,6 +815,7 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
         start,
         pause,
         resume,
+        syncNow,
         reset,
         skipBreak,
         resetCycle,

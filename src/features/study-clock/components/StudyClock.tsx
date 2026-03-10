@@ -137,7 +137,8 @@ export function StudyClock({
 
     // ── Manual end (stopwatch) — creates session from elapsed time ──
     const handleEnd = useCallback((e?: React.MouseEvent) => {
-        const elapsedSec = Math.floor(engine.elapsedMs / 1000);
+        const latestElapsedMs = engine.syncNow();
+        const elapsedSec = Math.floor(latestElapsedMs / 1000);
         if (elapsedSec > 0) {
             let sessionSubject: Subject | undefined = undefined;
             let sessionChapterSerial: number | undefined = undefined;
@@ -171,7 +172,7 @@ export function StudyClock({
                 chapterName: sessionChapterName,
                 material: sessionMaterial,
                 type: sessionType,
-                startTime: new Date(Date.now() - engine.elapsedMs).toISOString(),
+                startTime: new Date(Date.now() - latestElapsedMs).toISOString(),
                 endTime: new Date().toISOString(),
                 localDate: formatDateLocal(new Date()),
                 duration: elapsedSec,
