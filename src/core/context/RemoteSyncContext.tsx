@@ -289,7 +289,6 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // --- Strategy 1: Checksum-gated fetch ---
             // First, fetch only the remote checksum (~50 bytes egress) to decide
             // whether a full payload download is necessary.
-            const anyLocalEdits = domainKeys.some((d) => hasLocalUnsyncedEdit(d));
             const cachedRemoteChecksum = readStorageValue(REMOTE_CHECKSUM_KEY);
             const { checksum: remoteChecksumLite, payloadVersion: remotePayloadVersionLite } = await fetchRemoteChecksum(user.id);
 
