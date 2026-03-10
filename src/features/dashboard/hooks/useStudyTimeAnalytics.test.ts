@@ -68,8 +68,11 @@ describe('useStudyTimeAnalytics', () => {
         // March has 31 days
         expect(result.current.labels).toHaveLength(31);
         
-        const totalDataset = result.current.datasets[0];
-        // March 1st (index 0) should have 1.5 total hours
-        expect(totalDataset.data[0]).toBe(1.5);
+        const physicsDataset = result.current.datasets.find(d => d.label === 'Physics');
+        const chemistryDataset = result.current.datasets.find(d => d.label === 'Chemistry');
+        
+        // March 1st (index 0) should have 1.0 for Physics and 0.5 for Chemistry
+        expect(physicsDataset?.data[0]).toBe(1.0);
+        expect(chemistryDataset?.data[0]).toBe(0.5);
     });
 });

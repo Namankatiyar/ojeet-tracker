@@ -7,13 +7,14 @@ import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { triggerSmallConfetti } from '../../../shared/utils/confetti';
 import { playCompletionBell, playStartBell, playPauseSound, playSaveAndEndSound } from '../utils/timerAudio';
 import { useTimerEngine, TimerPhase } from '../hooks/useTimerEngine';
-import { TimerControls } from './RadialTimer/TimerControls';
-import { ModeSelector } from './RadialTimer/ModeSelector';
+import { TimerControls } from './Timer/TimerControls';
+import { ModeSelector } from './Timer/ModeSelector';
 import { PresetManager } from './Presets/PresetManager';
 import { SessionHistory } from './SessionHistory';
 import { SessionStatistics } from './SessionStatistics';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { requestNotificationPermission, dispatchNotification } from '../../../shared/utils/notifications';
+import { formatDateLocal } from '../../../shared/utils/date';
 
 interface StudyClockProps {
     subjectData: Record<Subject, SubjectData | null>;
@@ -81,9 +82,10 @@ export function StudyClock({
                 dispatchNotification('Back to Work!', { body: 'Your break is over. Let\'s get back to it!' });
             }
         }, []),
-        onWorkComplete: (durationMs) => {
+        onWorkComplete: (durationMs, completedAtMs) => {
             const durationSec = Math.floor(durationMs / 1000);
             if (durationSec <= 0) return;
+            const endAtMs = completedAtMs ?? Date.now();
 
             // Build session metadata
             let sessionSubject: Subject | undefined = undefined;
@@ -118,8 +120,9 @@ export function StudyClock({
                 chapterName: sessionChapterName,
                 material: sessionMaterial,
                 type: sessionType,
-                startTime: new Date(Date.now() - durationMs).toISOString(),
-                endTime: new Date().toISOString(),
+                startTime: new Date(endAtMs - durationMs).toISOString(),
+                endTime: new Date(endAtMs).toISOString(),
+                localDate: formatDateLocal(new Date(endAtMs)),
                 duration: durationSec,
                 timerMode: engine.mode,
             };
@@ -134,7 +137,8 @@ export function StudyClock({
 
     // ── Manual end (stopwatch) — creates session from elapsed time ──
     const handleEnd = useCallback((e?: React.MouseEvent) => {
-        const elapsedSec = Math.floor(engine.elapsedMs / 1000);
+        const latestElapsedMs = engine.syncNow();
+        const elapsedSec = Math.floor(latestElapsedMs / 1000);
         if (elapsedSec > 0) {
             let sessionSubject: Subject | undefined = undefined;
             let sessionChapterSerial: number | undefined = undefined;
@@ -168,8 +172,9 @@ export function StudyClock({
                 chapterName: sessionChapterName,
                 material: sessionMaterial,
                 type: sessionType,
-                startTime: new Date(Date.now() - engine.elapsedMs).toISOString(),
+                startTime: new Date(Date.now() - latestElapsedMs).toISOString(),
                 endTime: new Date().toISOString(),
+                localDate: formatDateLocal(new Date()),
                 duration: elapsedSec,
                 timerMode: engine.mode,
             };

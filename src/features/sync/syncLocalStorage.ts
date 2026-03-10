@@ -6,6 +6,7 @@ export const SYNC_LOCAL_KEYS = {
     progress: 'jee-tracker-progress',
     plannerTasks: 'jee-tracker-planner-tasks',
     mockScores: 'jee-tracker-mock-scores',
+    studySessions: 'jee-tracker-study-sessions',
     examDates: 'jee-exam-dates',
     disableAutoShift: 'jee-tracker-disable-auto-shift',
     progressCardSettings: 'jee-tracker-progress-card',
@@ -89,3 +90,4 @@ export function buildSyncPayloadFromLocalStorage(options?: {
             : undefined,
     });
 }
+

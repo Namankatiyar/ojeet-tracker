@@ -8,9 +8,15 @@ const EMPTY_SUBJECT_MARKS: MockSubjectMarks = {
 
 export const getMockExamType = (score: MockScore): MockExamType => score.examType ?? 'jm';
 
+export const getMockDefaultMaxMarks = (examType: MockExamType): number => {
+    if (examType === 'ja') return 360;
+    if (examType === 'bt') return 390;
+    return 300;
+};
+
 export const getMockMaxMarks = (score: Pick<MockScore, 'examType' | 'maxMarks'>): number => {
     if (typeof score.maxMarks === 'number') return score.maxMarks;
-    return score.examType === 'ja' ? 360 : 300;
+    return getMockDefaultMaxMarks(score.examType ?? 'jm');
 };
 
 export const getMockPaperMarks = (score: MockScore, paper: 'paper1' | 'paper2'): MockSubjectMarks => {

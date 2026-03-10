@@ -2,26 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-## [0.0.28] – 2026-03-09
+## [1.0.4] – 2026-03-10
 
-### AI Maintenance Run (Orchestration)
+### AI Maintenance Run: Egress Optimization & Delta Sync Integration
 
-### Feature-Level Changes
-- **Cloud Synchronization**: Bidirectional sync with Google OAuth via Supabase. Includes payload compression and chunking (512KB segments) for high-volume study history.
-- **Study Time Aggregation**: Backend-optimized aggregation for per-subject study hours, enabling efficient cross-device analytics.
-- **Cloud Onboarding**: New modals for Cloud Sync invitation and PWA installation prompts.
-- **Import/Recovery Page**: New `/import` route for recovering data from cloud backups or shared profiles.
+This release drastically reduces Supabase egress bandwidth (projected ~90% reduction) and introduces a more robust, testable synchronization architecture.
 
-### Architectural Changes
-- **Supabase Integration**: Added `@supabase/supabase-js` and initialization infrastructure.
-- **Hybrid Storage Model**: `localStorage` as primary cache, Supabase as authoritative remote backup.
+#### Feature-Level Changes
+- **Bandwidth Optimization**: Implemented checksum-gated fetches to prevent redundant data downloads.
+- **Adaptive Polling**: Increased default sync interval from 30s to 5 minutes.
+- **Focus Cooldown**: Implemented a 60s cooldown for syncs triggered by tab focus/visibility changes.
+- **Study Session Delta Sync**: Transitioned from full-payload session sync to an incremental log-based system (`study_session_log`).
+- **Conditional Aggregation**: Subject aggregates are now only upserted when session data has actually changed.
 
-### State Changes
-- **Added**: `RemoteAuthContext` for user session management.
-- **Added**: `RemoteSyncContext` for synchronization orchestration and status tracking.
+#### Architectural Changes
+- **Logic Extraction**: Moved complex sync merging and aggregation logic from `RemoteSyncContext.tsx` into a pure, testable `remoteSyncHelpers.ts` module.
+- **Automated Retention**: Added Supabase-side SQL triggers to prune `study_session_log` entries older than 7 days.
+- **Exhaustive Testing**: Added a comprehensive suite of 61 unit tests for synchronization helpers.
 
-### Suggested ADR Entries
-- ADR-016: Hybrid Cloud Sync with Payload Chunking
+#### State Changes
+- **SyncPayloadV1**: Removed `studySessions` from the main compressed payload.
+- **Sync Control**: Added `lastSyncCompletedAtRef`, `pendingSessionLogsRef`, and `remoteStudyAggregate` to `RemoteSyncContext`.
+
+#### Documentation
+- **ADR-017**: Added decision record for Delta Sync and Egress Optimization.
+- **Dependency Map**: Updated to reflect the separation of concerns in the sync layer.
 
 ---
 

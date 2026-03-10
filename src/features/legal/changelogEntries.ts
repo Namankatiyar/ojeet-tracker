@@ -7,6 +7,17 @@ export interface ChangelogEntry {
 
 // Update this list before each rollout. Keep newest entry first.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+     {
+        version: '1.0.4',
+        date: 'March 10, 2026',
+        title: 'Fixed the unusable timer after last update',
+        changes: [
+            '-The timer is finally stable now.',
+            '-Added BITSAT mock score tracking in the dashboard.',
+            '-Optimised Egress spending by upto 90% .',
+            '-Please report any found bug in my Reddit DMs u/Big_Distribution_730.',
+        ],
+    },
     {
         version: '1.0.3',
         date: 'March 9, 2026',

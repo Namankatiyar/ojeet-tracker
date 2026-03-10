@@ -5,7 +5,7 @@ import { MockExamType, MockScore } from '../../../shared/types';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useMockScoresAnalytics } from '../hooks/useMockScoresAnalytics';
 import { getChartOptions, subjectColors } from '../utils/analyticsUtils';
-import { getMockExamType, getMockMaxMarks, getMockPaperTotal, getMockPercentage, getMockSubjectTotals, getMockTotalMarks } from '../../../shared/utils/mockScores';
+import { getMockDefaultMaxMarks, getMockExamType, getMockMaxMarks, getMockPaperTotal, getMockPercentage, getMockSubjectTotals, getMockTotalMarks } from '../../../shared/utils/mockScores';
 
 interface MockScoresPanelProps {
     mockScores: MockScore[];
@@ -17,14 +17,25 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
     const { theme } = useTheme();
     const [examType, setExamType] = useState<MockExamType>('jm');
     const { sortedScores, chartData } = useMockScoresAnalytics(mockScores, examType);
-    const maxMarks = examType === 'ja' ? 360 : 300;
+    const maxMarks = useMemo(() => {
+        if (sortedScores.length === 0) return getMockDefaultMaxMarks(examType);
+        return Math.max(...sortedScores.map((score) => getMockMaxMarks(score)));
+    }, [examType, sortedScores]);
 
     const chartOptions = useMemo(() => 
         getChartOptions(theme, 'mock', maxMarks), 
     [maxMarks, theme]);
 
-    const emptyLabel = examType === 'ja' ? 'No JEE Advanced mocks recorded yet' : 'No JEE Mains mocks recorded yet';
-    const emptyCta = examType === 'ja' ? 'Add Your First JA Mock' : 'Add Your First JM Mock';
+    const emptyLabel = examType === 'ja'
+        ? 'No JEE Advanced mocks recorded yet'
+        : examType === 'bt'
+            ? 'No BITSAT mocks recorded yet'
+            : 'No JEE Mains mocks recorded yet';
+    const emptyCta = examType === 'ja'
+        ? 'Add Your First JA Mock'
+        : examType === 'bt'
+            ? 'Add Your First BT Mock'
+            : 'Add Your First JM Mock';
 
     return (
         <div className="analytics-panel mock-scores-panel">
@@ -46,6 +57,12 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
                             onClick={() => setExamType('ja')}
                         >
                             JA
+                        </button>
+                        <button
+                            className={examType === 'bt' ? 'active' : ''}
+                            onClick={() => setExamType('bt')}
+                        >
+                            BT
                         </button>
                     </div>
                     <button className="add-mock-btn" onClick={() => onAddClick(examType)}>
@@ -79,6 +96,7 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
                         const totalMarks = getMockTotalMarks(score);
                         const scoreMaxMarks = getMockMaxMarks(score);
                         const isJa = getMockExamType(score) === 'ja';
+                        const isBt = getMockExamType(score) === 'bt';
                         const totalDisplay = isJa
                             ? `${getMockPercentage(score).toFixed(1)}%`
                             : `${totalMarks}/${scoreMaxMarks}`;
@@ -93,8 +111,8 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
                                         <span className="mock-date">
                                             {new Date(score.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                         </span>
-                                        <span className={`mock-exam-badge ${isJa ? 'ja' : 'jm'}`}>
-                                            {isJa ? 'JA' : 'JM'}
+                                        <span className={`mock-exam-badge ${isJa ? 'ja' : isBt ? 'bt' : 'jm'}`}>
+                                            {isJa ? 'JA' : isBt ? 'BT' : 'JM'}
                                         </span>
                                     </span>
                                     {isJa && (

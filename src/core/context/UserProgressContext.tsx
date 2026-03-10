@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useCallback, useEffect, useRef } from 'react';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { useProgress } from '../../shared/hooks/useProgress';
 import { triggerSmallConfetti } from '../../shared/utils/confetti';
@@ -108,34 +108,47 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const { physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress } = useProgress(progress, mergedSubjectData);
 
+    const progressRef = useRef(progress);
+    const plannerTasksRef = useRef(plannerTasks);
+    useEffect(() => {
+        progressRef.current = progress;
+    }, [progress]);
+    useEffect(() => {
+        plannerTasksRef.current = plannerTasks;
+    }, [plannerTasks]);
+
     const handleToggleMaterial = useCallback((subject: Subject, chapterSerial: number, material: string) => {
+        const currentProgress = progressRef.current;
+        const subjectProgress = currentProgress[subject];
+        const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
+        const isNowCompleted = !chapterProgress.completed[material];
+        const completedAt = isNowCompleted ? new Date().toISOString() : undefined;
+
         setProgress(prev => {
-            const subjectProgress = prev[subject];
-            const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
-            const isNowCompleted = !chapterProgress.completed[material];
-
-            setPlannerTasks(tasks => tasks.map(t => {
-                if (t.type === 'chapter' && t.subject === subject && t.chapterSerial === chapterSerial && t.material === material) {
-                    return {
-                        ...t,
-                        completed: isNowCompleted,
-                        completedAt: isNowCompleted ? new Date().toISOString() : undefined
-                    };
-                }
-                return t;
-            }));
-
+            const prevSubjectProgress = prev[subject];
+            const prevChapterProgress = prevSubjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
             return {
                 ...prev,
                 [subject]: {
-                    ...subjectProgress,
+                    ...prevSubjectProgress,
                     [chapterSerial]: {
-                        ...chapterProgress,
-                        completed: { ...chapterProgress.completed, [material]: isNowCompleted },
+                        ...prevChapterProgress,
+                        completed: { ...prevChapterProgress.completed, [material]: isNowCompleted },
                     },
                 },
             };
         });
+
+        setPlannerTasks(tasks => tasks.map(t => {
+            if (t.type === 'chapter' && t.subject === subject && t.chapterSerial === chapterSerial && t.material === material) {
+                return {
+                    ...t,
+                    completed: isNowCompleted,
+                    completedAt
+                };
+            }
+            return t;
+        }));
     }, [setProgress, setPlannerTasks]);
 
     const handleSetPriority = useCallback((subject: Subject, chapterSerial: number, priority: Priority) => {
@@ -157,30 +170,33 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }, [setPlannerTasks]);
 
     const handleTogglePlannerTask = useCallback((taskId: string) => {
+        const task = plannerTasksRef.current.find(t => t.id === taskId);
+        if (!task) return;
+
+        const newStatus = !task.completed;
+        if (newStatus) {
+            triggerSmallConfetti(accentColor);
+        }
+
+        if (task.type === 'chapter' && task.subject && task.chapterSerial && task.material) {
+            setProgress(prog => {
+                const subjectProgress = prog[task.subject!];
+                const chapterProgress = subjectProgress[task.chapterSerial!] || { completed: {}, priority: 'none' };
+                return {
+                    ...prog,
+                    [task.subject!]: {
+                        ...subjectProgress,
+                        [task.chapterSerial!]: {
+                            ...chapterProgress,
+                            completed: { ...chapterProgress.completed, [task.material!]: newStatus }
+                        }
+                    }
+                };
+            });
+        }
+
         setPlannerTasks(prev => prev.map(t => {
             if (t.id === taskId) {
-                const newStatus = !t.completed;
-                if (newStatus) {
-                    triggerSmallConfetti(accentColor);
-                }
-
-                if (t.type === 'chapter' && t.subject && t.chapterSerial && t.material) {
-                    setProgress(prog => {
-                        const subjectProgress = prog[t.subject!];
-                        const chapterProgress = subjectProgress[t.chapterSerial!] || { completed: {}, priority: 'none' };
-                        return {
-                            ...prog,
-                            [t.subject!]: {
-                                ...subjectProgress,
-                                [t.chapterSerial!]: {
-                                    ...chapterProgress,
-                                    completed: { ...chapterProgress.completed, [t.material!]: newStatus }
-                                }
-                            }
-                        };
-                    });
-                }
-
                 return {
                     ...t,
                     completed: newStatus,
@@ -190,7 +206,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             }
             return t;
         }));
-    }, [setPlannerTasks, setProgress]);
+    }, [accentColor, setPlannerTasks, setProgress]);
 
     const handleDeletePlannerTask = useCallback((taskId: string) => {
         setPlannerTasks(prev => prev.filter(t => t.id !== taskId));
@@ -243,7 +259,10 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const filtered = prev.filter(e => e.id !== id);
             // If the deleted exam was primary, make the first remaining one primary
             if (filtered.length > 0 && !filtered.some(e => e.isPrimary)) {
-                filtered[0].isPrimary = true;
+                return [
+                    { ...filtered[0], isPrimary: true },
+                    ...filtered.slice(1)
+                ];
             }
             return filtered;
         });

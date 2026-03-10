@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { formatDateLocal } from '../../shared/utils/date';
+import { formatDateLocal, parseDateLocal } from '../../shared/utils/date';
 import { PlannerTask } from '../../shared/types';
 
 export const useAutoShiftTasks = (
@@ -17,7 +17,8 @@ export const useAutoShiftTasks = (
             let shifted = false;
             const updatedTasks = currentTasks.map(task => {
                 if (task.completed) return task;
-                const taskDate = new Date(task.date);
+                const taskDate = parseDateLocal(task.date);
+                if (!taskDate) return task;
                 taskDate.setHours(0, 0, 0, 0);
                 if (taskDate < today) {
                     shifted = true;

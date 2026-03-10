@@ -13,6 +13,8 @@ interface AddMockModalProps {
 
 const JA_SUBJECT_MAX = 60;
 const JM_SUBJECT_MAX = 100;
+const BT_SUBJECT_MAX = 130;
+const BT_TOTAL_MAX = 390;
 
 const createEmptySubjectMarks = (): MockSubjectMarks => ({
     physics: 0,
@@ -110,6 +112,17 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                 paper1Marks: jaPaper1Marks,
                 paper2Marks: jaPaper2Marks,
             });
+        } else if (examType === 'bt') {
+            onAdd({
+                name,
+                date,
+                examType,
+                physicsMarks: jmMarks.physics,
+                chemistryMarks: jmMarks.chemistry,
+                mathsMarks: jmMarks.maths,
+                totalMarks: jmTotalMarks,
+                maxMarks: BT_TOTAL_MAX,
+            });
         } else {
             onAdd({
                 name,
@@ -185,6 +198,13 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                             >
                                 JA
                             </button>
+                            <button
+                                className={examType === 'bt' ? 'active' : ''}
+                                onClick={() => setExamType('bt')}
+                                type="button"
+                            >
+                                BT
+                            </button>
                         </div>
                     </div>
 
@@ -192,7 +212,13 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                         <label>Test Name</label>
                         <input
                             type="text"
-                            placeholder={examType === 'ja' ? 'e.g., Allen JA Mock 4' : 'e.g., NTA Mock 1'}
+                            placeholder={
+                                examType === 'ja'
+                                    ? 'e.g., Allen JA Mock 4'
+                                    : examType === 'bt'
+                                        ? 'e.g., BITSAT Mock 1'
+                                        : 'e.g., NTA Mock 1'
+                            }
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
@@ -215,6 +241,13 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                             {renderSubjectMarksGrid(jmMarks, (updater) => setJmMarks((current) => updater(current)), JM_SUBJECT_MAX)}
                             <div className="total-display">
                                 Total: <strong>{jmTotalMarks}</strong> / 300
+                            </div>
+                        </>
+                    ) : examType === 'bt' ? (
+                        <>
+                            {renderSubjectMarksGrid(jmMarks, (updater) => setJmMarks((current) => updater(current)), BT_SUBJECT_MAX)}
+                            <div className="total-display">
+                                Total: <strong>{jmTotalMarks}</strong> / {BT_TOTAL_MAX}
                             </div>
                         </>
                     ) : (

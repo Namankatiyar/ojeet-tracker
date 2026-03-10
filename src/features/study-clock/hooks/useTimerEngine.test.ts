@@ -1,5 +1,14 @@
-import { describe, expect, it } from 'vitest';
-import { reconcileTimerState, DEFAULT_POMODORO, type TimerConfig } from './useTimerEngine';
+import { renderHook, act } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { reconcileTimerState, useTimerEngine, DEFAULT_POMODORO, type TimerConfig } from './useTimerEngine';
+
+beforeEach(() => {
+    localStorage.clear();
+});
+
+afterEach(() => {
+    vi.useRealTimers();
+});
 
 describe('reconcileTimerState', () => {
     it('keeps stopwatch elapsed accurate across sleep or app close', () => {
@@ -144,5 +153,36 @@ describe('reconcileTimerState', () => {
         expect(result.nextState.currentIntervalIndex).toBe(2);
         expect(result.elapsedMs).toBe(3 * 60 * 1000);
         expect(result.completedWorkDurations).toEqual([20 * 60 * 1000]);
+    });
+});
+
+describe('useTimerEngine syncNow', () => {
+    it('reconciles elapsed time after long inactivity and persists a snapshot', () => {
+        vi.useFakeTimers();
+        const startMs = 1_000_000;
+        vi.setSystemTime(startMs);
+
+        const { result } = renderHook(() => useTimerEngine());
+
+        act(() => {
+            result.current.start();
+        });
+
+        const laterMs = startMs + 2 * 60 * 1000;
+        vi.setSystemTime(laterMs);
+
+        let elapsed = 0;
+        act(() => {
+            elapsed = result.current.syncNow();
+        });
+
+        expect(elapsed).toBe(2 * 60 * 1000);
+        expect(result.current.elapsedMs).toBe(2 * 60 * 1000);
+
+        const savedRaw = localStorage.getItem('jee-timer-engine');
+        expect(savedRaw).not.toBeNull();
+        const saved = JSON.parse(savedRaw ?? '{}');
+        expect(saved.accumulatedActiveMs).toBe(2 * 60 * 1000);
+        expect(saved.runStartedAtMs).toBe(laterMs);
     });
 });

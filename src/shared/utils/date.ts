@@ -5,6 +5,17 @@ export const formatDateLocal = (date: Date): string => {
     return `${year}-${month}-${day}`;
 };
 
+export const parseDateLocal = (dateString: string): Date | null => {
+    if (!dateString) return null;
+    const parts = dateString.split('-').map(Number);
+    if (parts.length !== 3) return null;
+    const [year, month, day] = parts;
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+    const date = new Date(year, month - 1, day);
+    if (Number.isNaN(date.getTime())) return null;
+    return date;
+};
+
 export const formatTime12Hour = (time24: string): string => {
     if (!time24) return '';
     const { hour12, minutes, period } = parse24hTo12h(time24);
@@ -34,7 +45,8 @@ export const format12hTo24h = (hour12: string | number, minutes: string | number
 
 export const calculateDaysRemaining = (dateString: string): number | null => {
     if (!dateString) return null;
-    const target = new Date(dateString);
+    const target = parseDateLocal(dateString);
+    if (!target) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     target.setHours(0, 0, 0, 0);

@@ -76,6 +76,7 @@ interface ReconcileResult {
     nextState: PersistedTimerState;
     elapsedMs: number;
     completedWorkDurations: number[];
+    completedWorkAtMs: number[];
 }
 
 const STORAGE_KEY = 'jee-timer-engine';
@@ -137,7 +138,7 @@ function migrateState(parsed: unknown): PersistedTimerState | null {
     const candidate = parsed as Partial<PersistedTimerState & LegacyPersistedTimerState>;
     if (candidate.version === 2) {
         if (!candidate.mode || !candidate.engineState || !candidate.config) return null;
-        return {
+        const nextState: PersistedTimerState = {
             version: 2,
             mode: candidate.mode,
             engineState: candidate.engineState,
@@ -149,10 +150,14 @@ function migrateState(parsed: unknown): PersistedTimerState | null {
             config: candidate.config,
             currentIntervalIndex: Math.max(0, candidate.currentIntervalIndex ?? 0),
         };
+        if (nextState.engineState === 'running' && nextState.runStartedAtMs === null) {
+            nextState.engineState = 'paused';
+        }
+        return nextState;
     }
 
     if (!candidate.mode || !candidate.engineState || !candidate.config) return null;
-    return {
+    const nextState: PersistedTimerState = {
         version: 2,
         mode: candidate.mode,
         engineState: candidate.engineState,
@@ -164,6 +169,10 @@ function migrateState(parsed: unknown): PersistedTimerState | null {
         config: candidate.config,
         currentIntervalIndex: Math.max(0, candidate.currentIntervalIndex ?? 0),
     };
+    if (nextState.engineState === 'running' && nextState.runStartedAtMs === null) {
+        nextState.engineState = 'paused';
+    }
+    return nextState;
 }
 
 function loadState(): PersistedTimerState | null {
@@ -277,30 +286,124 @@ function buildNextPhaseState(state: PersistedTimerState, overflowMs: number, now
 }
 
 export function reconcileTimerState(state: PersistedTimerState, now: number): ReconcileResult {
+    if (state.engineState === 'running' && state.runStartedAtMs === null) {
+        const nextState = { ...state, engineState: 'paused' as const };
+        return {
+            nextState,
+            elapsedMs: nextState.accumulatedActiveMs,
+            completedWorkDurations: [],
+            completedWorkAtMs: [],
+        };
+    }
+
     if (state.engineState !== 'running' || state.runStartedAtMs === null) {
         return {
             nextState: state,
             elapsedMs: state.accumulatedActiveMs,
             completedWorkDurations: [],
+            completedWorkAtMs: [],
         };
     }
 
-    if (state.mode === 'stopwatch' || state.durationMs <= 0) {
+    if (state.mode !== 'stopwatch' && state.durationMs <= 0) {
+        if (state.mode === 'countdown') {
+            const nextState = buildCountdownCompletionState(state);
+            return {
+                nextState,
+                elapsedMs: 0,
+                completedWorkDurations: [],
+                completedWorkAtMs: [],
+            };
+        }
+
+        if (state.mode === 'pomodoro') {
+            const phase = state.phase ?? 'work';
+            const durationMs = getPhaseDurationMs('pomodoro', phase, state.config, 0);
+            if (durationMs > 0) {
+                const nextState = { ...state, phase, durationMs };
+                return {
+                    nextState,
+                    elapsedMs: getElapsedMsAt(nextState, now),
+                    completedWorkDurations: [],
+                    completedWorkAtMs: [],
+                };
+            }
+
+            const nextState = createIdleState(state.config);
+            return {
+                nextState,
+                elapsedMs: 0,
+                completedWorkDurations: [],
+                completedWorkAtMs: [],
+            };
+        }
+
+        if (state.mode === 'custom') {
+            const intervals = state.config.custom?.intervals ?? [];
+            if (intervals.length === 0) {
+                const nextState = createIdleState(state.config);
+                return {
+                    nextState,
+                    elapsedMs: 0,
+                    completedWorkDurations: [],
+                    completedWorkAtMs: [],
+                };
+            }
+
+            let nextIndex = Math.max(0, state.currentIntervalIndex);
+            let nextPhase: TimerPhase = intervals[nextIndex].type === 'work' ? 'work' : 'shortBreak';
+            let durationMs = getPhaseDurationMs('custom', nextPhase, state.config, nextIndex);
+
+            while (durationMs <= 0 && nextIndex < intervals.length - 1) {
+                nextIndex += 1;
+                nextPhase = intervals[nextIndex].type === 'work' ? 'work' : 'shortBreak';
+                durationMs = getPhaseDurationMs('custom', nextPhase, state.config, nextIndex);
+            }
+
+            if (durationMs <= 0) {
+                const nextState = createIdleState(state.config);
+                return {
+                    nextState,
+                    elapsedMs: 0,
+                    completedWorkDurations: [],
+                    completedWorkAtMs: [],
+                };
+            }
+
+            const nextState = {
+                ...state,
+                phase: nextPhase,
+                currentIntervalIndex: nextIndex,
+                durationMs,
+            };
+            return {
+                nextState,
+                elapsedMs: getElapsedMsAt(nextState, now),
+                completedWorkDurations: [],
+                completedWorkAtMs: [],
+            };
+        }
+    }
+
+    if (state.mode === 'stopwatch') {
         return {
             nextState: state,
             elapsedMs: getElapsedMsAt(state, now),
             completedWorkDurations: [],
+            completedWorkAtMs: [],
         };
     }
 
     let nextState = state;
     let elapsedMs = getElapsedMsAt(nextState, now);
     const completedWorkDurations: number[] = [];
+    const completedWorkAtMs: number[] = [];
 
     while (nextState.engineState === 'running' && nextState.durationMs > 0 && elapsedMs >= nextState.durationMs) {
         const overflowMs = elapsedMs - nextState.durationMs;
         if (nextState.phase === 'work' || nextState.phase === null) {
             completedWorkDurations.push(nextState.durationMs);
+            completedWorkAtMs.push(Math.max(0, now - overflowMs));
         }
         nextState = buildNextPhaseState(nextState, overflowMs, now);
         elapsedMs = getElapsedMsAt(nextState, now);
@@ -310,6 +413,7 @@ export function reconcileTimerState(state: PersistedTimerState, now: number): Re
         nextState,
         elapsedMs,
         completedWorkDurations,
+        completedWorkAtMs,
     };
 }
 
@@ -327,7 +431,7 @@ function normaliseRunningState(state: PersistedTimerState, now: number): Persist
 }
 
 export interface UseTimerEngineOptions {
-    onWorkComplete?: (durationMs: number) => void;
+    onWorkComplete?: (durationMs: number, completedAtMs?: number) => void;
     onPhaseChange?: (phase: TimerPhase) => void;
 }
 
@@ -345,6 +449,7 @@ export interface UseTimerEngineReturn {
     start: () => void;
     pause: () => void;
     resume: () => void;
+    syncNow: () => number;
     reset: () => void;
     skipBreak: () => void;
     resetCycle: () => void;
@@ -364,6 +469,8 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
     onPhaseChangeRef.current = onPhaseChange;
 
     const [timerState, setTimerState] = useState<PersistedTimerState>(() => createIdleState());
+    const timerStateRef = useRef(timerState);
+    timerStateRef.current = timerState;
     const [elapsedMs, setElapsedMs] = useState(0);
     const [presets, setPresets] = useState<TimerPreset[]>(() => {
         try {
@@ -374,42 +481,65 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
         }
     });
 
-    const applyReconcileResult = useCallback((result: ReconcileResult) => {
-        if (!statesMatch(result.nextState, timerState)) {
-            if (result.nextState.phase !== timerState.phase) {
-                onPhaseChangeRef.current?.(result.nextState.phase);
-            }
-            setTimerState(result.nextState);
-        }
+    const setTimerStateImmediate = useCallback((nextState: PersistedTimerState) => {
+        timerStateRef.current = nextState;
+        setTimerState(nextState);
+    }, []);
 
-        setElapsedMs(result.elapsedMs);
-
-        result.completedWorkDurations.forEach((duration) => {
-            onWorkCompleteRef.current?.(duration);
-        });
-    }, [timerState]);
-
-    const reconcileNow = useCallback((sourceState?: PersistedTimerState) => {
-        const currentState = sourceState ?? timerState;
-        const result = reconcileTimerState(currentState, Date.now());
-        applyReconcileResult(result);
-        return result.nextState;
-    }, [applyReconcileResult, timerState]);
-
-    useEffect(() => {
-        const saved = loadState();
-        if (!saved) return;
-        applyReconcileResult(reconcileTimerState(saved, Date.now()));
-    }, [applyReconcileResult]);
-
-    useEffect(() => {
-        if (timerState.engineState === 'idle') {
+    const persistSnapshot = useCallback((state: PersistedTimerState, now: number) => {
+        if (state.engineState === 'idle') {
             clearState();
             return;
         }
 
-        saveState(timerState);
-    }, [timerState]);
+        const snapshot = normaliseRunningState(state, now);
+        saveState(snapshot);
+    }, []);
+
+    const applyReconcileResult = useCallback((result: ReconcileResult) => {
+        const currentState = timerStateRef.current;
+        if (!statesMatch(result.nextState, currentState)) {
+            if (result.nextState.phase !== currentState.phase) {
+                onPhaseChangeRef.current?.(result.nextState.phase);
+            }
+            setTimerStateImmediate(result.nextState);
+        }
+
+        setElapsedMs(result.elapsedMs);
+
+        result.completedWorkDurations.forEach((duration, index) => {
+            const completedAtMs = result.completedWorkAtMs[index];
+            onWorkCompleteRef.current?.(duration, completedAtMs);
+        });
+    }, [setTimerStateImmediate]);
+
+    const reconcileNow = useCallback((sourceState?: PersistedTimerState, nowOverride?: number) => {
+        const currentState = sourceState ?? timerStateRef.current;
+        const now = nowOverride ?? Date.now();
+        const result = reconcileTimerState(currentState, now);
+        applyReconcileResult(result);
+        persistSnapshot(result.nextState, now);
+        return result.nextState;
+    }, [applyReconcileResult, persistSnapshot]);
+
+    const syncNow = useCallback(() => {
+        const now = Date.now();
+        const currentState = timerStateRef.current;
+        const result = reconcileTimerState(currentState, now);
+        applyReconcileResult(result);
+        persistSnapshot(result.nextState, now);
+        return result.elapsedMs;
+    }, [applyReconcileResult, persistSnapshot]);
+
+    useEffect(() => {
+        const saved = loadState();
+        if (!saved) return;
+        reconcileNow(saved, Date.now());
+    }, [reconcileNow]);
+
+    useEffect(() => {
+        persistSnapshot(timerState, Date.now());
+    }, [persistSnapshot, timerState]);
 
     useEffect(() => {
         if (timerState.engineState !== 'running') return;
@@ -435,20 +565,19 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             }
 
             if (document.visibilityState === 'hidden') {
-                const currentState = normaliseRunningState(timerState, Date.now());
-                if (!statesMatch(currentState, timerState)) {
-                    setTimerState(currentState);
-                } else if (currentState.engineState !== 'idle') {
-                    saveState(currentState);
+                const now = Date.now();
+                const currentState = normaliseRunningState(timerStateRef.current, now);
+                if (!statesMatch(currentState, timerStateRef.current)) {
+                    setTimerStateImmediate(currentState);
                 }
+                persistSnapshot(currentState, now);
             }
         };
 
         const handlePageHide = () => {
-            const currentState = normaliseRunningState(timerState, Date.now());
-            if (currentState.engineState !== 'idle') {
-                saveState(currentState);
-            }
+            const now = Date.now();
+            const currentState = normaliseRunningState(timerStateRef.current, now);
+            persistSnapshot(currentState, now);
         };
 
         window.addEventListener('focus', handleVisibleRefresh);
@@ -462,7 +591,7 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             window.removeEventListener('pagehide', handlePageHide);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [reconcileNow, timerState]);
+    }, [persistSnapshot, reconcileNow, setTimerStateImmediate]);
 
     const start = useCallback(() => {
         const mode = timerState.config.mode;
@@ -495,45 +624,46 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             onPhaseChangeRef.current?.(firstPhase);
         }
 
-        setTimerState(baseState);
+        setTimerStateImmediate(baseState);
         setElapsedMs(0);
-    }, [timerState.config]);
+    }, [setTimerStateImmediate, timerState.config]);
 
     const pause = useCallback(() => {
         if (timerState.engineState !== 'running') return;
         const nextElapsedMs = getElapsedMsAt(timerState, Date.now());
-        setTimerState({
+        setTimerStateImmediate({
             ...timerState,
             engineState: 'paused',
             runStartedAtMs: null,
             accumulatedActiveMs: nextElapsedMs,
         });
         setElapsedMs(nextElapsedMs);
-    }, [timerState]);
+    }, [setTimerStateImmediate, timerState]);
 
     const resume = useCallback(() => {
         if (timerState.engineState !== 'paused') return;
-        setTimerState({
+        setTimerStateImmediate({
             ...timerState,
             engineState: 'running',
             runStartedAtMs: Date.now(),
         });
-    }, [timerState]);
+    }, [setTimerStateImmediate, timerState]);
 
     const reset = useCallback(() => {
         const config = timerState.config;
-        setTimerState(createIdleState(config));
+        setTimerStateImmediate(createIdleState(config));
         setElapsedMs(0);
         clearState();
-    }, [timerState.config]);
+    }, [setTimerStateImmediate, timerState.config]);
 
     const skipBreak = useCallback(() => {
         if (timerState.phase !== 'shortBreak' && timerState.phase !== 'longBreak') return;
 
         if (timerState.mode === 'pomodoro') {
             const phase: TimerPhase = 'work';
-            setTimerState({
+            setTimerStateImmediate({
                 ...timerState,
+                engineState: 'running',
                 phase,
                 durationMs: getPhaseDurationMs('pomodoro', phase, timerState.config, 0),
                 runStartedAtMs: Date.now(),
@@ -557,8 +687,9 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
                 return;
             }
 
-            setTimerState({
+            setTimerStateImmediate({
                 ...timerState,
+                engineState: 'running',
                 phase: 'work',
                 currentIntervalIndex: nextIndex,
                 durationMs: getPhaseDurationMs('custom', 'work', timerState.config, nextIndex),
@@ -568,11 +699,11 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             setElapsedMs(0);
             onPhaseChangeRef.current?.('work');
         }
-    }, [reset, timerState]);
+    }, [reset, setTimerStateImmediate, timerState]);
 
     const resetCycle = useCallback(() => {
         if (timerState.mode === 'pomodoro') {
-            setTimerState({
+            setTimerStateImmediate({
                 ...timerState,
                 engineState: 'running',
                 phase: 'work',
@@ -590,7 +721,7 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             const intervals = timerState.config.custom?.intervals ?? [];
             if (intervals.length === 0) return;
             const firstPhase: TimerPhase = intervals[0].type === 'work' ? 'work' : 'shortBreak';
-            setTimerState({
+            setTimerStateImmediate({
                 ...timerState,
                 engineState: 'running',
                 phase: firstPhase,
@@ -603,18 +734,29 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
             setElapsedMs(0);
             onPhaseChangeRef.current?.(firstPhase);
         }
-    }, [timerState]);
+    }, [setTimerStateImmediate, timerState]);
 
     const setConfig = useCallback((config: TimerConfig) => {
         setTimerState((prevState) => {
             if (prevState.engineState === 'idle') {
-                return createIdleState(config);
+                const nextState = createIdleState(config);
+                timerStateRef.current = nextState;
+                return nextState;
             }
 
-            return {
+            if (prevState.mode !== config.mode) {
+                const nextState = createIdleState(config);
+                timerStateRef.current = nextState;
+                return nextState;
+            }
+
+            const nextState = {
                 ...prevState,
+                mode: config.mode,
                 config,
             };
+            timerStateRef.current = nextState;
+            return nextState;
         });
     }, []);
 
@@ -631,9 +773,13 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
     }, [presets, timerState.config]);
 
     const loadPreset = useCallback((preset: TimerPreset) => {
-        setTimerState((prevState) => prevState.engineState === 'idle'
-            ? createIdleState(preset.config)
-            : { ...prevState, config: preset.config });
+        setTimerState((prevState) => {
+            const nextState = prevState.engineState === 'idle'
+                ? createIdleState(preset.config)
+                : { ...prevState, config: preset.config };
+            timerStateRef.current = nextState;
+            return nextState;
+        });
     }, []);
 
     const deletePreset = useCallback((id: string) => {
@@ -669,6 +815,7 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
         start,
         pause,
         resume,
+        syncNow,
         reset,
         skipBreak,
         resetCycle,

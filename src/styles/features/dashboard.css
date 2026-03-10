@@ -1036,6 +1036,12 @@
   gap: 0.75rem;
 }
 
+.mock-scores-panel .panel-header,
+.study-time-panel .panel-header {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
 .panel-title {
   display: flex;
   align-items: center;
@@ -1057,6 +1063,13 @@
   border: 1px solid var(--border);
 }
 
+.mock-scores-panel .view-toggle-small,
+.study-time-panel .view-toggle-small {
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .view-toggle-small button {
   padding: 6px 12px;
   border: none;
@@ -1067,6 +1080,12 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.mock-scores-panel .view-toggle-small button,
+.study-time-panel .view-toggle-small button {
+  flex: 1 1 70px;
+  text-align: center;
 }
 
 .view-toggle-small button.active {
@@ -1117,6 +1136,11 @@
   /* Fixes chart resizing issue in flex container */
 }
 
+.mock-scores-panel .chart-container {
+  flex: 0 0 auto;
+  height: 220px;
+}
+
 .chart-container.scrollable {
   overflow-x: auto;
   padding-bottom: 0.5rem;
@@ -1155,6 +1179,18 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.mock-scores-panel .mock-panel-actions {
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: stretch;
+}
+
+.mock-scores-panel .add-mock-btn {
+  flex: 0 0 auto;
+  width: 100%;
+  justify-content: center;
 }
 
 .empty-mock-state {
@@ -1212,9 +1248,10 @@
 }
 
 .mock-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px 28px;
   align-items: center;
-  justify-content: space-between;
+  column-gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   background: var(--bg-tertiary);
   border-radius: 8px;
@@ -1231,6 +1268,10 @@
 .mock-name {
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .mock-date-row {
@@ -1238,6 +1279,7 @@
   align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .mock-date {
@@ -1265,25 +1307,35 @@
   color: #60a5fa;
 }
 
+.mock-exam-badge.bt {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
 .mock-paper-summary {
   font-size: 0.72rem;
   color: var(--text-secondary);
 }
 
 .mock-scores-mini {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 72px;
   gap: 0.75rem;
   font-weight: 600;
   font-size: 0.8rem;
   align-items: center;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: end;
+  justify-items: end;
+  min-width: 260px;
+  font-variant-numeric: tabular-nums;
 }
 
 .mock-scores-mini .total-score {
   color: var(--text-primary);
   padding-left: 0.5rem;
   border-left: 1px solid var(--border);
+  justify-self: end;
 }
 
 .delete-mock-btn {
