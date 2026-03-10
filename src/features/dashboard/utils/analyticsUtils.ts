@@ -1,4 +1,5 @@
 import { StudySession } from '../../../shared/types';
+import { formatDateLocal } from '../../../shared/utils/date';
 
 /**
  * Get week days for the selected week offset
@@ -36,8 +37,15 @@ export const getMonthDays = (offset: number) => {
 /**
  * Calculate study time per subject for a given date
  */
+function getSessionLocalDate(session: StudySession): string | null {
+    if (session.localDate) return session.localDate;
+    const parsed = new Date(session.startTime);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return formatDateLocal(parsed);
+}
+
 export const getStudyTimeBySubject = (studySessions: StudySession[], dateStr: string) => {
-    const daySessions = studySessions.filter(s => s.startTime.startsWith(dateStr));
+    const daySessions = studySessions.filter(s => getSessionLocalDate(s) === dateStr);
 
     return {
         physics: daySessions.filter(s => s.subject === 'physics').reduce((acc, s) => acc + s.duration, 0) / 3600,
@@ -51,10 +59,10 @@ export const getStudyTimeBySubject = (studySessions: StudySession[], dateStr: st
  * Subject colors matching site-wide theme
  */
 export const subjectColors = {
-    physics: '#6366f1',
-    chemistry: '#10b981',
+    physics: '#0077ff',
+    chemistry: '#ff2e2e',
     maths: '#f59e0b',
-    custom: '#8b5cf6'
+    custom: '#ff57c7'
 };
 
 /**
@@ -131,6 +139,8 @@ export const getChartOptions = (theme: 'light' | 'dark', type: 'bar' | 'line' | 
                 ...baseOptions.scales,
                 y: {
                     ...baseOptions.scales.y,
+                    beginAtZero: true,
+                    min: 0,
                     ticks: {
                         ...baseOptions.scales.y.ticks,
                         callback: (value: number) => `${value}h`

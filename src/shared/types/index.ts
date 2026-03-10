@@ -1,7 +1,7 @@
 export type Priority = 'high' | 'medium' | 'low' | 'none';
 
 export type Subject = 'physics' | 'chemistry' | 'maths';
-export type MockExamType = 'jm' | 'ja';
+export type MockExamType = 'jm' | 'ja' | 'bt';
 
 export interface Chapter {
     serial: number;
@@ -54,6 +54,7 @@ export interface StudySession {
     type: 'chapter' | 'custom' | 'task';
     startTime: string;      // ISO timestamp
     endTime: string;        // ISO timestamp
+    localDate?: string;     // YYYY-MM-DD in local time
     duration: number;       // in seconds
     timerMode?: 'stopwatch' | 'countdown' | 'pomodoro' | 'custom' | 'video';
     profileId?: string;

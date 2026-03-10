@@ -3,6 +3,7 @@ import { Trash2, Clock, X, Pencil, Plus, Calendar } from 'lucide-react';
 import { Subject, SubjectData, StudySession } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
+import { formatDateLocal } from '../../../shared/utils/date';
 
 interface SessionHistoryProps {
     sessions: StudySession[];
@@ -107,6 +108,7 @@ export function SessionHistory({
             type: manualSubject ? 'chapter' : 'custom',
             startTime: entryDate.toISOString(),
             endTime: new Date(entryDate.getTime() + duration * 1000).toISOString(),
+            localDate: formatDateLocal(entryDate),
             duration,
         };
 

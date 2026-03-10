@@ -10,6 +10,15 @@ interface RemoteAggregateBucketEntry {
     maths?: number;
 }
 
+const HISTORY_WINDOW_DAYS = 60;
+
+function isWithinHistory(day: Date): boolean {
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - HISTORY_WINDOW_DAYS);
+    return day >= cutoff;
+}
+
 export function useStudyTimeAnalytics(
     studySessions: StudySession[],
     offset: number,
@@ -30,9 +39,11 @@ export function useStudyTimeAnalytics(
                 const dateStr = formatDateLocal(day);
                 const times = getStudyTimeBySubject(studySessions, dateStr);
                 const remote = remoteDailyBuckets?.[dateStr];
-                physicsData.push(Number(Math.max(times.physics, (remote?.physics ?? 0) / 3600).toFixed(2)));
-                chemistryData.push(Number(Math.max(times.chemistry, (remote?.chemistry ?? 0) / 3600).toFixed(2)));
-                mathsData.push(Number(Math.max(times.maths, (remote?.maths ?? 0) / 3600).toFixed(2)));
+                const useLocalOnly = isWithinHistory(day);
+
+                physicsData.push(Number((useLocalOnly ? times.physics : Math.max(times.physics, (remote?.physics ?? 0) / 3600)).toFixed(2)));
+                chemistryData.push(Number((useLocalOnly ? times.chemistry : Math.max(times.chemistry, (remote?.chemistry ?? 0) / 3600)).toFixed(2)));
+                mathsData.push(Number((useLocalOnly ? times.maths : Math.max(times.maths, (remote?.maths ?? 0) / 3600)).toFixed(2)));
                 customData.push(Number(times.other.toFixed(2)));
             });
 
@@ -73,27 +84,65 @@ export function useStudyTimeAnalytics(
             const monthDays = getMonthDays(offset);
             const labels = monthDays.map(d => d.getDate().toString());
 
-            const totalData: number[] = [];
+            const physicsData: number[] = [];
+            const chemistryData: number[] = [];
+            const mathsData: number[] = [];
+            const customData: number[] = [];
 
             monthDays.forEach(day => {
                 const dateStr = formatDateLocal(day);
                 const times = getStudyTimeBySubject(studySessions, dateStr);
-                const total = times.physics + times.chemistry + times.maths + times.other;
                 const remote = remoteDailyBuckets?.[dateStr];
-                const remoteTotal = (remote?.overall ?? 0) / 3600;
-                totalData.push(Number(Math.max(total, remoteTotal).toFixed(2)));
+                const useLocalOnly = isWithinHistory(day);
+
+                physicsData.push(Number((useLocalOnly ? times.physics : Math.max(times.physics, (remote?.physics ?? 0) / 3600)).toFixed(2)));
+                chemistryData.push(Number((useLocalOnly ? times.chemistry : Math.max(times.chemistry, (remote?.chemistry ?? 0) / 3600)).toFixed(2)));
+                mathsData.push(Number((useLocalOnly ? times.maths : Math.max(times.maths, (remote?.maths ?? 0) / 3600)).toFixed(2)));
+                customData.push(Number(times.other.toFixed(2)));
             });
 
             return {
                 labels,
                 datasets: [
                     {
-                        label: 'Total Hours',
-                        data: totalData,
-                        fill: true,
-                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                        borderColor: '#6366f1',
-                        pointBackgroundColor: '#6366f1',
+                        label: 'Physics',
+                        data: physicsData,
+                        fill: false,
+                        borderColor: subjectColors.physics,
+                        pointBackgroundColor: subjectColors.physics,
+                        pointBorderColor: '#fff',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Chemistry',
+                        data: chemistryData,
+                        fill: false,
+                        borderColor: subjectColors.chemistry,
+                        pointBackgroundColor: subjectColors.chemistry,
+                        pointBorderColor: '#fff',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Maths',
+                        data: mathsData,
+                        fill: false,
+                        borderColor: subjectColors.maths,
+                        pointBackgroundColor: subjectColors.maths,
+                        pointBorderColor: '#fff',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Custom',
+                        data: customData,
+                        fill: false,
+                        borderColor: subjectColors.custom,
+                        pointBackgroundColor: subjectColors.custom,
                         pointBorderColor: '#fff',
                         pointRadius: 3,
                         pointHoverRadius: 5,

@@ -68,14 +68,15 @@ export function Dashboard({
     interface DashboardNotificationMeta {
         dismissedContexts: Record<string, true>;
         readContexts: Record<string, true>;
-        lastAcknowledgedVersion: string;
+        lastAcknowledgedReleaseId?: string;
+        lastAcknowledgedVersion?: string;
     }
 
     const DASHBOARD_NOTIFICATION_META_KEY = 'ojeet-dashboard-notification-meta-v1';
-    const CHANGELOG_CONTEXT = `changelog:${__APP_VERSION__}`;
+    const CHANGELOG_CONTEXT = `changelog:${__APP_BUILD_ID__}`;
     const CLOUD_SYNC_CONTEXT = 'cloud_sync:eligible';
     const PWA_INSTALL_CONTEXT = 'pwa_install:available';
-    const PWA_UPDATE_CONTEXT = `pwa_update:${__APP_VERSION__}`;
+    const PWA_UPDATE_CONTEXT = `pwa_update:${__APP_BUILD_ID__}`;
 
     const [isExamModalOpen, setIsExamModalOpen] = useState(false);
     const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
@@ -88,6 +89,7 @@ export function Dashboard({
         {
             dismissedContexts: {},
             readContexts: {},
+            lastAcknowledgedReleaseId: __APP_BUILD_ID__,
             lastAcknowledgedVersion: __APP_VERSION__,
         }
     );
@@ -97,6 +99,9 @@ export function Dashboard({
     const { user, isConfigured, isPromptDismissed, dismissPrompt, signInWithGoogle } = useRemoteAuth();
     const { remoteStudyAggregate } = useRemoteSync();
     const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
+    const lastAcknowledgedReleaseId = notificationMeta.lastAcknowledgedReleaseId
+        ?? notificationMeta.lastAcknowledgedVersion
+        ?? __APP_BUILD_ID__;
 
     const markNotificationContextsRead = useCallback((contexts: string[]) => {
         if (contexts.length === 0) return;
@@ -326,6 +331,7 @@ export function Dashboard({
                 ...prev.readContexts,
                 [CHANGELOG_CONTEXT]: true,
             },
+            lastAcknowledgedReleaseId: __APP_BUILD_ID__,
             lastAcknowledgedVersion: __APP_VERSION__,
         }));
     };
@@ -390,11 +396,11 @@ export function Dashboard({
             });
         }
 
-        if (notificationMeta.lastAcknowledgedVersion !== __APP_VERSION__) {
+        if (lastAcknowledgedReleaseId !== __APP_BUILD_ID__) {
             items.push({
                 id: CHANGELOG_CONTEXT,
                 title: 'New Release Notes',
-                message: `Version ${__APP_VERSION__} is available. Review the changelog for new updates.`,
+                message: `A newer ${__APP_VERSION__} build is available. Review the changelog for the latest updates.`,
                 unread: !notificationMeta.readContexts[CHANGELOG_CONTEXT],
                 primaryAction: {
                     label: 'View Changelog',
@@ -409,7 +415,7 @@ export function Dashboard({
         syncPromptEligible,
         notificationMeta.dismissedContexts,
         notificationMeta.readContexts,
-        notificationMeta.lastAcknowledgedVersion,
+        lastAcknowledgedReleaseId,
         authError,
         deferredInstallPrompt,
         pwaBridge.needRefresh,

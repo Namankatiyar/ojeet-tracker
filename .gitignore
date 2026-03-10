@@ -44,9 +44,13 @@ Context.md
 .jules/
 *.exe
 *.zip
+*.png
 .gemini/config.yaml
 newfeatures.md
 newfeatures.txt
 .ai_workflow/
 agent.skills/
-
+docs/
+scripts/
+docs
+scripts

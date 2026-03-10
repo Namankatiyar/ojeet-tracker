@@ -59,13 +59,27 @@ interface UserStudyAggregateRow {
     updated_at: string;
 }
 
+export interface StudySessionLogEntry {
+    id: string;
+    user_id: string;
+    client_id: string;
+    session_id: string;
+    action: 'INSERT' | 'DELETE';
+    payload: StudySession | null;
+    created_at: string;
+}
+
 const REMOTE_SYNC_META_PREFIX = 'ojeet-remote-sync-';
 const LAST_SUCCESSFUL_PUSH_AT_KEY = `${REMOTE_SYNC_META_PREFIX}last-successful-push-at`;
 const LAST_SYNCED_AT_KEY = `${REMOTE_SYNC_META_PREFIX}last-synced-at`;
 const DOMAIN_EDITED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-edited-at-`;
-const SYNC_BATCH_INTERVAL_MS = 30_000;
+const REMOTE_CHECKSUM_KEY = `${REMOTE_SYNC_META_PREFIX}remote-checksum`;
+const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-delta-synced-at`;
+
+const SYNC_BATCH_INTERVAL_MS = 300_000;
 const SYNC_RETRY_BASE_MS = 5_000;
 const SYNC_RETRY_MAX_MS = 300_000;
+const FOCUS_SYNC_COOLDOWN_MS = 60_000;
 
 const domainKeys: SyncDomain[] = ['progress', 'plannerTasks', 'mockScores', 'examDates', 'settings', 'subjects'];
 
@@ -171,7 +185,8 @@ function computeLocalStudyAggregate(studySessions: StudySession[]) {
         if (session.subject === 'chemistry') totalChemistry += seconds;
         if (session.subject === 'maths') totalMaths += seconds;
 
-        addToBucket(bucketsDaily, formatDateLocal(date), session.subject, seconds);
+        const localDate = session.localDate ?? formatDateLocal(date);
+        addToBucket(bucketsDaily, localDate, session.subject, seconds);
         addToBucket(bucketsWeekly, getWeekKey(date), session.subject, seconds);
         addToBucket(bucketsMonthly, getMonthKey(date), session.subject, seconds);
     });
@@ -270,6 +285,7 @@ function createLocalPayload(params: {
     progress: ReturnType<typeof useUserProgress>['progress'];
     plannerTasks: ReturnType<typeof useUserProgress>['plannerTasks'];
     mockScores: ReturnType<typeof useUserProgress>['mockScores'];
+    studySessions: ReturnType<typeof useUserProgress>['studySessions'];
     examDates: ReturnType<typeof useUserProgress>['examDates'];
     disableAutoShift: ReturnType<typeof useUserProgress>['disableAutoShift'];
     progressCardSettings: ReturnType<typeof useUserProgress>['progressCardSettings'];
@@ -294,6 +310,21 @@ function createLocalPayload(params: {
             materialOrder: params.materialOrder,
         },
     });
+}
+
+// Strategy 1: Lightweight checksum-only fetch (~50 bytes egress vs ~200KB for full payload)
+async function fetchRemoteChecksum(userId: string): Promise<{ checksum: string | null; payloadVersion: number | null }> {
+    if (!supabase) return { checksum: null, payloadVersion: null };
+
+    const { data, error } = await supabase
+        .from('user_sync_state')
+        .select('checksum,payload_version')
+        .eq('user_id', userId)
+        .maybeSingle<{ checksum: string; payload_version: number }>();
+
+    if (error) throw new Error(error.message);
+    if (!data) return { checksum: null, payloadVersion: null };
+    return { checksum: data.checksum, payloadVersion: data.payload_version };
 }
 
 async function fetchRemotePayload(userId: string): Promise<{ payload: SyncPayloadV1 | null; row: UserSyncStateRow | null }> {
@@ -359,6 +390,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const scheduledTimerRef = useRef<number | null>(null);
     const scheduledDueAtRef = useRef<number | null>(null);
     const retryAttemptRef = useRef(0);
+    const lastSyncCompletedAtRef = useRef<number>(0);
     const domainSnapshotsRef = useRef<Record<SyncDomain, string | null>>({
         progress: null,
         plannerTasks: null,
@@ -368,6 +400,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         subjects: null,
     });
     const studySessionsSnapshotRef = useRef<string | null>(null);
+    const skipNextSessionsSyncRef = useRef(false);
+
+    const clientIdRef = useRef<string>(Math.random().toString(36).substring(2, 15));
+    const pendingSessionLogsRef = useRef<Omit<StudySessionLogEntry, 'id' | 'created_at' | 'user_id'>[]>([]);
 
     const domainSnapshots = useMemo<Record<SyncDomain, string>>(() => ({
         progress: JSON.stringify(progress),
@@ -436,6 +472,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 progress,
                 plannerTasks,
                 mockScores,
+                studySessions,
                 examDates,
                 disableAutoShift,
                 progressCardSettings,
@@ -445,13 +482,50 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 materialOrder,
             });
 
-            const { payload: remotePayload, row } = await fetchRemotePayload(user.id);
-            const remoteAggregate = await fetchRemoteStudyAggregate(user.id);
-            setRemoteStudyAggregate(remoteAggregate);
-            const videoLogs = remoteAggregate?.video_watch_45d_json ?? [];
-            const videoMergeResult = mergeRemoteVideoLogsIntoSessions(studySessions, videoLogs);
-            if (videoMergeResult.changed) {
-                setStudySessions(videoMergeResult.sessions);
+            // --- Strategy 1: Checksum-gated fetch ---
+            // First, fetch only the remote checksum (~50 bytes egress) to decide
+            // whether a full payload download is necessary.
+            const anyLocalEdits = domainKeys.some((d) => hasLocalUnsyncedEdit(d));
+            const cachedRemoteChecksum = readStorageValue(REMOTE_CHECKSUM_KEY);
+            const { checksum: remoteChecksumLite, payloadVersion: remotePayloadVersionLite } = await fetchRemoteChecksum(user.id);
+
+            const remoteUnchanged = remoteChecksumLite !== null && remoteChecksumLite === cachedRemoteChecksum;
+            const needsFullFetch = !remoteUnchanged || anyLocalEdits;
+
+            let remotePayload: SyncPayloadV1 | null = null;
+            let row: UserSyncStateRow | null = null;
+
+            if (needsFullFetch) {
+                const result = await fetchRemotePayload(user.id);
+                remotePayload = result.payload;
+                row = result.row;
+            } else {
+                // Synthesize a minimal row so the push-check below works
+                row = remoteChecksumLite ? {
+                    payload_inline: null,
+                    payload_storage: 'inline' as SyncStorageMode,
+                    payload_version: remotePayloadVersionLite ?? 0,
+                    chunk_count: 0,
+                    payload_bytes: 0,
+                    checksum: remoteChecksumLite,
+                } : null;
+            }
+
+            // --- Strategy 5: Conditional aggregate sync ---
+            // Only fetch the full study aggregate when studySessions have unsynced local edits.
+            const hasPendingSessionLogs = pendingSessionLogsRef.current.length > 0;
+            let remoteAggregate: UserStudyAggregateRow | null = null;
+            let videoMergeResult = { sessions: studySessions, changed: false };
+
+            if (hasPendingSessionLogs || !remoteUnchanged) {
+                remoteAggregate = await fetchRemoteStudyAggregate(user.id);
+                setRemoteStudyAggregate(remoteAggregate);
+                const videoLogs = remoteAggregate?.video_watch_45d_json ?? [];
+                videoMergeResult = mergeRemoteVideoLogsIntoSessions(studySessions, videoLogs);
+                if (videoMergeResult.changed) {
+                    skipNextSessionsSyncRef.current = true;
+                    setStudySessions(videoMergeResult.sessions);
+                }
             }
 
             const mergedPayload = remotePayload ? mergePayloadDomainsWithPolicy(localPayload, remotePayload, {
@@ -522,29 +596,110 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }
             }
 
-            const localAggregate = computeLocalStudyAggregate(videoMergeResult.sessions);
+            // Cache the remote checksum locally to enable checksum-gating on next cycle
+            writeStorageValue(REMOTE_CHECKSUM_KEY, encoded.checksum);
 
-            const mergedAggregateRow = {
-                user_id: user.id,
-                total_seconds_overall: Math.max(localAggregate.total_seconds_overall, remoteAggregate?.total_seconds_overall ?? 0),
-                total_seconds_physics: Math.max(localAggregate.total_seconds_physics, remoteAggregate?.total_seconds_physics ?? 0),
-                total_seconds_chemistry: Math.max(localAggregate.total_seconds_chemistry, remoteAggregate?.total_seconds_chemistry ?? 0),
-                total_seconds_maths: Math.max(localAggregate.total_seconds_maths, remoteAggregate?.total_seconds_maths ?? 0),
-                buckets_daily_json: mergeBucketMaps(remoteAggregate?.buckets_daily_json ?? {}, localAggregate.buckets_daily_json),
-                buckets_weekly_json: mergeBucketMaps(remoteAggregate?.buckets_weekly_json ?? {}, localAggregate.buckets_weekly_json),
-                buckets_monthly_json: mergeBucketMaps(remoteAggregate?.buckets_monthly_json ?? {}, localAggregate.buckets_monthly_json),
-                video_watch_45d_json: videoLogs,
-            };
-
-            const { data: aggregateUpsertData, error: aggregateError } = await supabase
-                .from('user_study_aggregate')
-                .upsert(mergedAggregateRow, { onConflict: 'user_id' })
+            // --- Delta Strategy: Pull and Push Study Session Logs ---
+            let latestDeltaSyncedAt = readStorageValue(LAST_SESSION_DELTA_SYNCED_KEY) || '2000-01-01T00:00:00.000Z';
+            
+            // 1. Pull changes
+            const { data: newLogs, error: deltaPullError } = await supabase
+                .from('study_session_log')
                 .select('*')
-                .maybeSingle<UserStudyAggregateRow>();
+                .eq('user_id', user.id)
+                .gt('created_at', latestDeltaSyncedAt)
+                .order('created_at', { ascending: true });
+                
+            if (deltaPullError) throw new Error(deltaPullError.message);
+            
+            let applyDeltaChanges = false;
+            let currentSessions = [...videoMergeResult.sessions];
+            
+            if (newLogs && newLogs.length > 0) {
+                const logs = newLogs as StudySessionLogEntry[];
+                logs.forEach((log) => {
+                    const logTime = new Date(log.created_at).getTime();
+                    const latestTime = new Date(latestDeltaSyncedAt).getTime();
+                    if (logTime > latestTime) {
+                        latestDeltaSyncedAt = log.created_at;
+                    }
 
-            if (aggregateError) throw new Error(aggregateError.message);
-            if (aggregateUpsertData) {
-                setRemoteStudyAggregate(aggregateUpsertData);
+                    if (log.client_id !== clientIdRef.current) {
+                        if (log.action === 'INSERT' && log.payload) {
+                            const existingIdx = currentSessions.findIndex(s => s.id === log.session_id);
+                            if (existingIdx >= 0) {
+                                currentSessions[existingIdx] = log.payload;
+                            } else {
+                                currentSessions.push(log.payload);
+                            }
+                            applyDeltaChanges = true;
+                        } else if (log.action === 'DELETE') {
+                            const existingIdx = currentSessions.findIndex(s => s.id === log.session_id);
+                            if (existingIdx >= 0) {
+                                currentSessions.splice(existingIdx, 1);
+                                applyDeltaChanges = true;
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // 2. Push pending
+            const pendingToPush = [...pendingSessionLogsRef.current];
+            if (pendingToPush.length > 0) {
+                const rowsToInsert = pendingToPush.map(log => ({
+                    user_id: user.id,
+                    client_id: log.client_id,
+                    session_id: log.session_id,
+                    action: log.action,
+                    payload: log.payload
+                }));
+                const { error: deltaPushError } = await supabase
+                    .from('study_session_log')
+                    .insert(rowsToInsert);
+                    
+                if (deltaPushError) {
+                    throw new Error(deltaPushError.message);
+                }
+                
+                pendingSessionLogsRef.current = pendingSessionLogsRef.current.slice(pendingToPush.length);
+                const nowIso = new Date().toISOString();
+                if (new Date(nowIso).getTime() > new Date(latestDeltaSyncedAt).getTime()) {
+                    latestDeltaSyncedAt = nowIso;
+                }
+            }
+            
+            writeStorageValue(LAST_SESSION_DELTA_SYNCED_KEY, latestDeltaSyncedAt);
+            
+            if (applyDeltaChanges) {
+                skipNextSessionsSyncRef.current = true;
+                setStudySessions(currentSessions);
+            }
+
+            // --- Strategy 5 (cont.): Only upsert aggregate when sessions changed ---
+            const pushHadEdits = pendingToPush.length > 0;
+            if (pushHadEdits || applyDeltaChanges || videoMergeResult.changed) {
+                const localAggregate = computeLocalStudyAggregate(currentSessions);
+
+                const mergedAggregateRow = {
+                    user_id: user.id,
+                    total_seconds_overall: Math.max(localAggregate.total_seconds_overall, remoteAggregate?.total_seconds_overall ?? 0),
+                    total_seconds_physics: Math.max(localAggregate.total_seconds_physics, remoteAggregate?.total_seconds_physics ?? 0),
+                    total_seconds_chemistry: Math.max(localAggregate.total_seconds_chemistry, remoteAggregate?.total_seconds_chemistry ?? 0),
+                    total_seconds_maths: Math.max(localAggregate.total_seconds_maths, remoteAggregate?.total_seconds_maths ?? 0),
+                    buckets_daily_json: mergeBucketMaps(remoteAggregate?.buckets_daily_json ?? {}, localAggregate.buckets_daily_json),
+                    buckets_weekly_json: mergeBucketMaps(remoteAggregate?.buckets_weekly_json ?? {}, localAggregate.buckets_weekly_json),
+                    buckets_monthly_json: mergeBucketMaps(remoteAggregate?.buckets_monthly_json ?? {}, localAggregate.buckets_monthly_json),
+                    video_watch_45d_json: remoteAggregate?.video_watch_45d_json ?? [],
+                };
+
+                // Strategy 4: Remove .select('*') — no need to read the row back as egress
+                const { error: aggregateError } = await supabase
+                    .from('user_study_aggregate')
+                    .upsert(mergedAggregateRow, { onConflict: 'user_id' });
+
+                if (aggregateError) throw new Error(aggregateError.message);
+                setRemoteStudyAggregate(mergedAggregateRow as unknown as UserStudyAggregateRow);
             }
 
             const syncedAt = new Date().toISOString();
@@ -552,6 +707,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             setLastSyncedAt(syncedAt);
             setStatus('synced');
             retryAttemptRef.current = 0;
+            lastSyncCompletedAtRef.current = Date.now();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Remote sync failed.';
             setLastError(message);
@@ -629,10 +785,44 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, [domainSnapshots, isConfigured, scheduleSync, user]);
 
     useEffect(() => {
+        if (isApplyingRemoteRef.current) return;
+        if (skipNextSessionsSyncRef.current) {
+            skipNextSessionsSyncRef.current = false;
+            return;
+        }
+
         const serialized = JSON.stringify(studySessions);
         const previous = studySessionsSnapshotRef.current;
         studySessionsSnapshotRef.current = serialized;
+        
         if (previous === null || previous === serialized) return;
+
+        // Compute Delta
+        const prevArray: StudySession[] = JSON.parse(previous);
+        const currArray: StudySession[] = studySessions;
+        const prevMap = new Map(prevArray.map(s => [s.id, s]));
+        const currMap = new Map(currArray.map(s => [s.id, s]));
+
+        const newPending: Omit<StudySessionLogEntry, 'id' | 'created_at' | 'user_id'>[] = [];
+        const cid = clientIdRef.current;
+
+        currMap.forEach((session, id) => {
+            const prevSession = prevMap.get(id);
+            if (!prevSession || JSON.stringify(prevSession) !== JSON.stringify(session)) {
+                newPending.push({ client_id: cid, session_id: id, action: 'INSERT', payload: session });
+            }
+        });
+
+        prevMap.forEach((_, id) => {
+            if (!currMap.has(id)) {
+                newPending.push({ client_id: cid, session_id: id, action: 'DELETE', payload: null });
+            }
+        });
+
+        if (newPending.length > 0) {
+            pendingSessionLogsRef.current.push(...newPending);
+        }
+
         if (!user || !isConfigured) return;
         scheduleSync(SYNC_BATCH_INTERVAL_MS);
     }, [isConfigured, scheduleSync, studySessions, user]);
@@ -665,15 +855,23 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         };
     }, [clearScheduledSync, isConfigured, scheduleSync, user]);
 
+    // Strategy 3: Debounce focus/visibility syncs with a 60s cooldown
     useEffect(() => {
         if (!user || !isConfigured) return;
 
+        const shouldSyncOnFocus = () => {
+            const elapsed = Date.now() - lastSyncCompletedAtRef.current;
+            return elapsed >= FOCUS_SYNC_COOLDOWN_MS;
+        };
+
         const handleFocusSync = () => {
-            scheduleSync(0);
+            if (shouldSyncOnFocus()) {
+                scheduleSync(0);
+            }
         };
 
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible' && shouldSyncOnFocus()) {
                 scheduleSync(0);
             }
         };
