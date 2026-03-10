@@ -204,6 +204,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         subjects: null,
     });
     const studySessionsSnapshotRef = useRef<string | null>(null);
+    const isHydratedRef = useRef(false);
     const skipNextSessionsSyncRef = useRef(false);
 
     const clientIdRef = useRef<string>(Math.random().toString(36).substring(2, 15));
@@ -587,6 +588,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const previous = studySessionsSnapshotRef.current;
         studySessionsSnapshotRef.current = serialized;
         
+        if (!isHydratedRef.current) {
+            isHydratedRef.current = true;
+            return;
+        }
+
         if (previous === null || previous === serialized) return;
 
         // Compute Delta

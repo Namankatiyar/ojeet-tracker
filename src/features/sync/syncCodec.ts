@@ -94,7 +94,10 @@ export function reconstructCompressedPayload(chunks: string[] | SyncChunkRow[]):
 export async function encodeSyncPayload(payload: SyncPayloadV1, maxChunkBytes = SYNC_MAX_COMPRESSED_BYTES): Promise<EncodedPayload> {
     const compressed = compressSyncPayload(payload);
     const compressedBytes = getUtf8ByteLength(compressed);
-    const checksum = await computeChecksum(compressed);
+    
+    // Hash only the deterministic data to prevent generatedAt from breaking caching
+    const dataString = JSON.stringify(payload.domains);
+    const checksum = await computeChecksum(dataString);
 
     if (compressedBytes <= maxChunkBytes) {
         return {
