@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RemoteSyncProvider } from './RemoteSyncContext';
@@ -81,7 +80,7 @@ const supabaseState = vi.hoisted(() => {
                 recordUpsert(table);
                 return Promise.resolve({ data: null, error: null });
             },
-            insert(rows: unknown[]) {
+            insert() {
                 recordInsert(table);
                 return {
                     select(sel?: string) {
