@@ -7,8 +7,7 @@ import { buildSyncPayload } from '../../features/sync/syncPayload';
 import { SYNC_DEFAULT_PLANNER_HISTORY_DAYS, SyncPayloadV1, SyncStorageMode } from '../../features/sync/syncTypes';
 import { computeChecksum, decompressSyncPayload, encodeSyncPayload, reconstructCompressedPayload } from '../../features/sync/syncCodec';
 import { mergePayloadDomainsWithPolicy, SyncDomain } from '../../features/sync/syncMerge';
-import { formatDateLocal } from '../../shared/utils/date';
-import { Subject, StudySession } from '../../shared/types';
+import { StudySession } from '../../shared/types';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
 
@@ -29,45 +28,14 @@ interface UserSyncStateRow {
     checksum: string;
 }
 
-interface AggregateBucketEntry {
-    overall: number;
-    physics: number;
-    chemistry: number;
-    maths: number;
-}
+import {
+    computeLocalStudyAggregate,
+    mergeBucketMaps,
+    mergeRemoteVideoLogsIntoSessions,
+} from './remoteSyncHelpers';
+import type { StudySessionLogEntry, UserStudyAggregateRow } from './remoteSyncHelpers';
 
-type AggregateBucketMap = Record<string, AggregateBucketEntry>;
-
-interface VideoWatchEntry {
-    video_id?: string;
-    video_name?: string;
-    subject?: Subject | string;
-    watched_seconds?: number;
-    watched_date?: string;
-}
-
-interface UserStudyAggregateRow {
-    user_id: string;
-    total_seconds_overall: number;
-    total_seconds_physics: number;
-    total_seconds_chemistry: number;
-    total_seconds_maths: number;
-    buckets_daily_json: AggregateBucketMap;
-    buckets_weekly_json: AggregateBucketMap;
-    buckets_monthly_json: AggregateBucketMap;
-    video_watch_45d_json: VideoWatchEntry[];
-    updated_at: string;
-}
-
-export interface StudySessionLogEntry {
-    id: string;
-    user_id: string;
-    client_id: string;
-    session_id: string;
-    action: 'INSERT' | 'DELETE';
-    payload: StudySession | null;
-    created_at: string;
-}
+export type { StudySessionLogEntry, UserStudyAggregateRow } from './remoteSyncHelpers';
 
 const REMOTE_SYNC_META_PREFIX = 'ojeet-remote-sync-';
 const LAST_SUCCESSFUL_PUSH_AT_KEY = `${REMOTE_SYNC_META_PREFIX}last-successful-push-at`;
@@ -115,170 +83,6 @@ function hasLocalUnsyncedEdit(domain: SyncDomain): boolean {
     if (!localEditedAt) return false;
     if (!lastPushAt) return true;
     return new Date(localEditedAt).getTime() > new Date(lastPushAt).getTime();
-}
-
-function getWeekKey(date: Date) {
-    const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = tmp.getUTCDay() || 7;
-    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((tmp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-    return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
-}
-
-function getMonthKey(date: Date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function buildBucketEntry(partial?: Partial<AggregateBucketEntry>): AggregateBucketEntry {
-    return {
-        overall: partial?.overall ?? 0,
-        physics: partial?.physics ?? 0,
-        chemistry: partial?.chemistry ?? 0,
-        maths: partial?.maths ?? 0,
-    };
-}
-
-function mergeBucketMaps(existing: AggregateBucketMap, incoming: AggregateBucketMap): AggregateBucketMap {
-    const merged: AggregateBucketMap = { ...existing };
-    Object.entries(incoming).forEach(([key, value]) => {
-        const current = buildBucketEntry(merged[key]);
-        const next = buildBucketEntry(value);
-        merged[key] = {
-            overall: Math.max(current.overall, next.overall),
-            physics: Math.max(current.physics, next.physics),
-            chemistry: Math.max(current.chemistry, next.chemistry),
-            maths: Math.max(current.maths, next.maths),
-        };
-    });
-    return merged;
-}
-
-function addToBucket(map: AggregateBucketMap, key: string, subject: Subject | undefined, seconds: number) {
-    const current = buildBucketEntry(map[key]);
-    current.overall += seconds;
-    if (subject === 'physics') current.physics += seconds;
-    if (subject === 'chemistry') current.chemistry += seconds;
-    if (subject === 'maths') current.maths += seconds;
-    map[key] = current;
-}
-
-function computeLocalStudyAggregate(studySessions: StudySession[]) {
-    const bucketsDaily: AggregateBucketMap = {};
-    const bucketsWeekly: AggregateBucketMap = {};
-    const bucketsMonthly: AggregateBucketMap = {};
-
-    let totalOverall = 0;
-    let totalPhysics = 0;
-    let totalChemistry = 0;
-    let totalMaths = 0;
-
-    studySessions.forEach((session) => {
-        const seconds = Math.max(0, Math.floor(session.duration || 0));
-        if (seconds <= 0) return;
-
-        const date = new Date(session.startTime);
-        if (Number.isNaN(date.getTime())) return;
-
-        totalOverall += seconds;
-        if (session.subject === 'physics') totalPhysics += seconds;
-        if (session.subject === 'chemistry') totalChemistry += seconds;
-        if (session.subject === 'maths') totalMaths += seconds;
-
-        const localDate = session.localDate ?? formatDateLocal(date);
-        addToBucket(bucketsDaily, localDate, session.subject, seconds);
-        addToBucket(bucketsWeekly, getWeekKey(date), session.subject, seconds);
-        addToBucket(bucketsMonthly, getMonthKey(date), session.subject, seconds);
-    });
-
-    return {
-        total_seconds_overall: totalOverall,
-        total_seconds_physics: totalPhysics,
-        total_seconds_chemistry: totalChemistry,
-        total_seconds_maths: totalMaths,
-        buckets_daily_json: bucketsDaily,
-        buckets_weekly_json: bucketsWeekly,
-        buckets_monthly_json: bucketsMonthly,
-    };
-}
-
-function normalizeSubject(raw: unknown): Subject | undefined {
-    if (raw !== 'physics' && raw !== 'chemistry' && raw !== 'maths') return undefined;
-    return raw;
-}
-
-function toVideoSessionTimestamp(value: string | undefined): string | null {
-    if (!value) return null;
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return null;
-    if (value.includes('T')) return parsed.toISOString();
-    return new Date(`${value}T09:00:00`).toISOString();
-}
-
-function mergeRemoteVideoLogsIntoSessions(existingSessions: StudySession[], videoLogs: VideoWatchEntry[]) {
-    if (!videoLogs.length) {
-        return { sessions: existingSessions, changed: false };
-    }
-
-    const byVideoId = new Map<string, VideoWatchEntry>();
-    videoLogs.forEach((entry) => {
-        const videoId = entry.video_id?.trim();
-        if (!videoId) return;
-        const nextSeconds = Math.max(0, Math.floor(entry.watched_seconds || 0));
-        if (nextSeconds <= 0) return;
-
-        const current = byVideoId.get(videoId);
-        const currentSeconds = Math.max(0, Math.floor(current?.watched_seconds || 0));
-        if (!current || nextSeconds >= currentSeconds) {
-            byVideoId.set(videoId, entry);
-        }
-    });
-
-    if (byVideoId.size === 0) {
-        return { sessions: existingSessions, changed: false };
-    }
-
-    const accumulatedByVideoId = new Map<string, number>();
-    existingSessions.forEach((session) => {
-        const videoId = session.sourceVideoId?.trim();
-        if (!videoId) return;
-        const running = accumulatedByVideoId.get(videoId) ?? 0;
-        accumulatedByVideoId.set(videoId, running + Math.max(0, Math.floor(session.duration || 0)));
-    });
-
-    const appendedSessions: StudySession[] = [];
-    byVideoId.forEach((entry, videoId) => {
-        const totalRemoteSeconds = Math.max(0, Math.floor(entry.watched_seconds || 0));
-        const alreadyImportedSeconds = accumulatedByVideoId.get(videoId) ?? 0;
-        const deltaSeconds = totalRemoteSeconds - alreadyImportedSeconds;
-        if (deltaSeconds <= 0) return;
-
-        const startTime = toVideoSessionTimestamp(entry.watched_date);
-        if (!startTime) return;
-
-        const subject = normalizeSubject(entry.subject);
-        const title = (entry.video_name || '').trim() || 'Video Session';
-        const endTime = new Date(new Date(startTime).getTime() + deltaSeconds * 1000).toISOString();
-
-        appendedSessions.push({
-            id: `remote-video-${videoId}-${totalRemoteSeconds}`,
-            title,
-            subject,
-            type: subject ? 'chapter' : 'custom',
-            startTime,
-            endTime,
-            duration: deltaSeconds,
-            timerMode: 'video',
-            sourceVideoId: videoId,
-        });
-    });
-
-    if (appendedSessions.length === 0) {
-        return { sessions: existingSessions, changed: false };
-    }
-
-    const mergedSessions = [...existingSessions, ...appendedSessions];
-    return { sessions: mergedSessions, changed: true };
 }
 
 function createLocalPayload(params: {
@@ -574,26 +378,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         .from('user_sync_chunks')
                         .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' });
                     if (chunkError) throw new Error(chunkError.message);
-
-                    const { error: pruneError } = await supabase.rpc('prune_stale_sync_chunks', {
-                        target_user_id: user.id,
-                        keep_payload_version: nextPayloadVersion,
-                    });
-                    if (pruneError) {
-                        const { error: fallbackDeleteError } = await supabase
-                            .from('user_sync_chunks')
-                            .delete()
-                            .eq('user_id', user.id)
-                            .neq('payload_version', nextPayloadVersion);
-                        if (fallbackDeleteError) throw new Error(fallbackDeleteError.message);
-                    }
-                } else {
-                    const { error: cleanupError } = await supabase
-                        .from('user_sync_chunks')
-                        .delete()
-                        .eq('user_id', user.id);
-                    if (cleanupError) throw new Error(cleanupError.message);
-                }
+                } 
+                // Database triggers automatically prune old chunks when the user_sync_state is updated.
             }
 
             // Cache the remote checksum locally to enable checksum-gating on next cycle
