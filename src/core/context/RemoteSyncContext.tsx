@@ -47,7 +47,7 @@ const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-de
 const SYNC_BATCH_INTERVAL_MS = 300_000;
 const SYNC_RETRY_BASE_MS = 5_000;
 const SYNC_RETRY_MAX_MS = 300_000;
-const FOCUS_SYNC_COOLDOWN_MS = 60_000;
+const FOCUS_SYNC_COOLDOWN_MS = 300_000;
 
 const domainKeys: SyncDomain[] = ['progress', 'plannerTasks', 'mockScores', 'examDates', 'settings', 'subjects'];
 
@@ -294,7 +294,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const { checksum: remoteChecksumLite, payloadVersion: remotePayloadVersionLite } = await fetchRemoteChecksum(user.id);
 
             const remoteUnchanged = remoteChecksumLite !== null && remoteChecksumLite === cachedRemoteChecksum;
-            const needsFullFetch = !remoteUnchanged || anyLocalEdits;
+            const needsFullFetch = !remoteUnchanged;
 
             let remotePayload: SyncPayloadV1 | null = null;
             let row: UserSyncStateRow | null = null;
@@ -315,15 +315,34 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 } : null;
             }
 
+            // --- Delta Strategy: Pull Study Session Logs ---
+            let latestDeltaSyncedAt = readStorageValue(LAST_SESSION_DELTA_SYNCED_KEY) || '2000-01-01T00:00:00.000Z';
+            
+            // 1. Pull changes
+            const { data: newLogs, error: deltaPullError } = await supabase
+                .from('study_session_log')
+                .select('*')
+                .eq('user_id', user.id)
+                .gt('created_at', latestDeltaSyncedAt)
+                .order('created_at', { ascending: true });
+                
+            if (deltaPullError) throw new Error(deltaPullError.message);
+
             // --- Strategy 5: Conditional aggregate sync ---
-            // Only fetch the full study aggregate when studySessions have unsynced local edits.
+            // Only fetch the full study aggregate when studySessions have unsynced local edits or remote changed.
             const hasPendingSessionLogs = pendingSessionLogsRef.current.length > 0;
+            const remoteAggregateDirty = !remoteUnchanged || (newLogs && newLogs.length > 0);
+            
             let remoteAggregate: UserStudyAggregateRow | null = null;
             let videoMergeResult = { sessions: studySessions, changed: false };
 
-            if (hasPendingSessionLogs || !remoteUnchanged) {
-                remoteAggregate = await fetchRemoteStudyAggregate(user.id);
-                setRemoteStudyAggregate(remoteAggregate);
+            if (hasPendingSessionLogs || remoteAggregateDirty) {
+                if (remoteAggregateDirty || !remoteStudyAggregate) {
+                    remoteAggregate = await fetchRemoteStudyAggregate(user.id);
+                    setRemoteStudyAggregate(remoteAggregate);
+                } else {
+                    remoteAggregate = remoteStudyAggregate;
+                }
                 const videoLogs = remoteAggregate?.video_watch_45d_json ?? [];
                 videoMergeResult = mergeRemoteVideoLogsIntoSessions(studySessions, videoLogs);
                 if (videoMergeResult.changed) {
@@ -385,19 +404,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // Cache the remote checksum locally to enable checksum-gating on next cycle
             writeStorageValue(REMOTE_CHECKSUM_KEY, encoded.checksum);
 
-            // --- Delta Strategy: Pull and Push Study Session Logs ---
-            let latestDeltaSyncedAt = readStorageValue(LAST_SESSION_DELTA_SYNCED_KEY) || '2000-01-01T00:00:00.000Z';
-            
-            // 1. Pull changes
-            const { data: newLogs, error: deltaPullError } = await supabase
-                .from('study_session_log')
-                .select('*')
-                .eq('user_id', user.id)
-                .gt('created_at', latestDeltaSyncedAt)
-                .order('created_at', { ascending: true });
-                
-            if (deltaPullError) throw new Error(deltaPullError.message);
-            
+            // --- Delta Strategy: Apply Pull and Push Study Session Logs ---
             let applyDeltaChanges = false;
             let currentSessions = [...videoMergeResult.sessions];
             

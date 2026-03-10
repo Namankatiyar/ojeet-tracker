@@ -45,7 +45,7 @@ Context.md
 *.exe
 *.zip
 *.png
-.gemini/config.yaml
+.gemini/
 newfeatures.md
 newfeatures.txt
 .ai_workflow/
