@@ -191,7 +191,8 @@ export function mergeRemoteVideoLogsIntoSessions(existingSessions: StudySession[
         const totalRemoteSeconds = Math.max(0, Math.floor(entry.watched_seconds || 0));
         const alreadyImportedSeconds = accumulatedByVideoId.get(videoId) ?? 0;
         const deltaSeconds = totalRemoteSeconds - alreadyImportedSeconds;
-        if (deltaSeconds <= 0) return;
+        // Require at least a 5-second difference to trigger a sync update and prevent float churn
+        if (deltaSeconds <= 5) return;
 
         const startTime = toVideoSessionTimestamp(entry.watched_date);
         if (!startTime) return;

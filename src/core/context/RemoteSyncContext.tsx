@@ -29,7 +29,9 @@ interface UserSyncStateRow {
 }
 
 import {
+    applyDeltaLogs,
     computeLocalStudyAggregate,
+    computeSessionDelta,
     mergeBucketMaps,
     mergeRemoteVideoLogsIntoSessions,
 } from './remoteSyncHelpers';
@@ -43,6 +45,7 @@ const LAST_SYNCED_AT_KEY = `${REMOTE_SYNC_META_PREFIX}last-synced-at`;
 const DOMAIN_EDITED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-edited-at-`;
 const REMOTE_CHECKSUM_KEY = `${REMOTE_SYNC_META_PREFIX}remote-checksum`;
 const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-delta-synced-at`;
+const DEFAULT_DELTA_CURSOR = { created_at: '2000-01-01T00:00:00.000Z' };
 
 const SYNC_BATCH_INTERVAL_MS = 300_000;
 const SYNC_RETRY_BASE_MS = 5_000;
@@ -75,6 +78,44 @@ function markAllDomainsAsSynced(syncedAt: string) {
     writeStorageValue(LAST_SUCCESSFUL_PUSH_AT_KEY, syncedAt);
     writeStorageValue(LAST_SYNCED_AT_KEY, syncedAt);
     domainKeys.forEach((domain) => setDomainEditedAt(domain, syncedAt));
+}
+
+type DeltaCursor = {
+    created_at: string;
+    id?: string;
+};
+
+function readDeltaCursor(): DeltaCursor {
+    const raw = readStorageValue(LAST_SESSION_DELTA_SYNCED_KEY);
+    if (!raw) return DEFAULT_DELTA_CURSOR;
+    try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.created_at === 'string') {
+            return { created_at: parsed.created_at, id: typeof parsed.id === 'string' ? parsed.id : undefined };
+        }
+        return DEFAULT_DELTA_CURSOR;
+    } catch {
+        // Legacy timestamp-only value.
+    }
+    return { created_at: raw };
+}
+
+function writeDeltaCursor(cursor: DeltaCursor) {
+    writeStorageValue(LAST_SESSION_DELTA_SYNCED_KEY, JSON.stringify(cursor));
+}
+
+function isCursorAfter(a: DeltaCursor, b: DeltaCursor) {
+    if (a.created_at > b.created_at) return true;
+    if (a.created_at < b.created_at) return false;
+    if (!a.id || !b.id) return false;
+    return a.id > b.id;
+}
+
+function isLogAfterCursor(log: StudySessionLogEntry, cursor: DeltaCursor) {
+    if (log.created_at > cursor.created_at) return true;
+    if (log.created_at < cursor.created_at) return false;
+    if (!cursor.id) return true;
+    return log.id > cursor.id;
 }
 
 function hasLocalUnsyncedEdit(domain: SyncDomain): boolean {
@@ -204,6 +245,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         subjects: null,
     });
     const studySessionsSnapshotRef = useRef<string | null>(null);
+    const isHydratedRef = useRef(false);
     const skipNextSessionsSyncRef = useRef(false);
 
     const clientIdRef = useRef<string>(Math.random().toString(36).substring(2, 15));
@@ -315,27 +357,30 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             }
 
             // --- Delta Strategy: Pull Study Session Logs ---
-            let latestDeltaSyncedAt = readStorageValue(LAST_SESSION_DELTA_SYNCED_KEY) || '2000-01-01T00:00:00.000Z';
-            
+            let deltaCursor = readDeltaCursor();
+
             // 1. Pull changes
-            const { data: newLogs, error: deltaPullError } = await supabase
+            const { data: newLogsRaw, error: deltaPullError } = await supabase
                 .from('study_session_log')
                 .select('*')
                 .eq('user_id', user.id)
-                .gt('created_at', latestDeltaSyncedAt)
-                .order('created_at', { ascending: true });
-                
+                .gte('created_at', deltaCursor.created_at)
+                .order('created_at', { ascending: true })
+                .order('id', { ascending: true });
+
             if (deltaPullError) throw new Error(deltaPullError.message);
+            const newLogs = (newLogsRaw ?? []).filter((log) => isLogAfterCursor(log, deltaCursor)) as StudySessionLogEntry[];
 
             // --- Strategy 5: Conditional aggregate sync ---
             // Only fetch the full study aggregate when studySessions have unsynced local edits or remote changed.
             const hasPendingSessionLogs = pendingSessionLogsRef.current.length > 0;
-            const remoteAggregateDirty = !remoteUnchanged || (newLogs && newLogs.length > 0);
+            const remoteAggregateDirty = !remoteUnchanged || newLogs.length > 0;
+            const shouldLoadAggregate = hasPendingSessionLogs || remoteAggregateDirty || !remoteStudyAggregate;
             
             let remoteAggregate: UserStudyAggregateRow | null = null;
             let videoMergeResult = { sessions: studySessions, changed: false };
 
-            if (hasPendingSessionLogs || remoteAggregateDirty) {
+            if (shouldLoadAggregate) {
                 if (remoteAggregateDirty || !remoteStudyAggregate) {
                     remoteAggregate = await fetchRemoteStudyAggregate(user.id);
                     setRemoteStudyAggregate(remoteAggregate);
@@ -406,34 +451,18 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // --- Delta Strategy: Apply Pull and Push Study Session Logs ---
             let applyDeltaChanges = false;
             let currentSessions = [...videoMergeResult.sessions];
-            
-            if (newLogs && newLogs.length > 0) {
-                const logs = newLogs as StudySessionLogEntry[];
-                logs.forEach((log) => {
-                    const logTime = new Date(log.created_at).getTime();
-                    const latestTime = new Date(latestDeltaSyncedAt).getTime();
-                    if (logTime > latestTime) {
-                        latestDeltaSyncedAt = log.created_at;
-                    }
 
-                    if (log.client_id !== clientIdRef.current) {
-                        if (log.action === 'INSERT' && log.payload) {
-                            const existingIdx = currentSessions.findIndex(s => s.id === log.session_id);
-                            if (existingIdx >= 0) {
-                                currentSessions[existingIdx] = log.payload;
-                            } else {
-                                currentSessions.push(log.payload);
-                            }
-                            applyDeltaChanges = true;
-                        } else if (log.action === 'DELETE') {
-                            const existingIdx = currentSessions.findIndex(s => s.id === log.session_id);
-                            if (existingIdx >= 0) {
-                                currentSessions.splice(existingIdx, 1);
-                                applyDeltaChanges = true;
-                            }
-                        }
+            if (newLogs.length > 0) {
+                newLogs.forEach((log) => {
+                    const nextCursor = { created_at: log.created_at, id: log.id };
+                    if (isCursorAfter(nextCursor, deltaCursor)) {
+                        deltaCursor = nextCursor;
                     }
                 });
+
+                const applied = applyDeltaLogs(currentSessions, newLogs, clientIdRef.current);
+                currentSessions = applied.sessions;
+                applyDeltaChanges = applied.changed;
             }
             
             // 2. Push pending
@@ -446,29 +475,33 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     action: log.action,
                     payload: log.payload
                 }));
-                const { error: deltaPushError } = await supabase
+                const { data: insertedLogs, error: deltaPushError } = await supabase
                     .from('study_session_log')
-                    .insert(rowsToInsert);
+                    .insert(rowsToInsert)
+                    .select('id, created_at');
                     
                 if (deltaPushError) {
                     throw new Error(deltaPushError.message);
                 }
                 
                 pendingSessionLogsRef.current = pendingSessionLogsRef.current.slice(pendingToPush.length);
-                const nowIso = new Date().toISOString();
-                if (new Date(nowIso).getTime() > new Date(latestDeltaSyncedAt).getTime()) {
-                    latestDeltaSyncedAt = nowIso;
-                }
+                const insertedRows = (insertedLogs ?? []) as Array<Pick<StudySessionLogEntry, 'id' | 'created_at'>>;
+                insertedRows.forEach((log) => {
+                    const nextCursor = { created_at: log.created_at, id: log.id };
+                    if (isCursorAfter(nextCursor, deltaCursor)) {
+                        deltaCursor = nextCursor;
+                    }
+                });
             }
-            
-            writeStorageValue(LAST_SESSION_DELTA_SYNCED_KEY, latestDeltaSyncedAt);
+
+            writeDeltaCursor(deltaCursor);
             
             if (applyDeltaChanges) {
                 skipNextSessionsSyncRef.current = true;
                 setStudySessions(currentSessions);
             }
 
-            // --- Strategy 5 (cont.): Only upsert aggregate when sessions changed ---
+            // --- Strategy 5 (cont.): Only compute aggregate for local state ---
             const pushHadEdits = pendingToPush.length > 0;
             if (pushHadEdits || applyDeltaChanges || videoMergeResult.changed) {
                 const localAggregate = computeLocalStudyAggregate(currentSessions);
@@ -483,15 +516,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     buckets_weekly_json: mergeBucketMaps(remoteAggregate?.buckets_weekly_json ?? {}, localAggregate.buckets_weekly_json),
                     buckets_monthly_json: mergeBucketMaps(remoteAggregate?.buckets_monthly_json ?? {}, localAggregate.buckets_monthly_json),
                     video_watch_45d_json: remoteAggregate?.video_watch_45d_json ?? [],
+                    updated_at: new Date().toISOString(),
                 };
 
-                // Strategy 4: Remove .select('*') — no need to read the row back as egress
-                const { error: aggregateError } = await supabase
-                    .from('user_study_aggregate')
-                    .upsert(mergedAggregateRow, { onConflict: 'user_id' });
-
-                if (aggregateError) throw new Error(aggregateError.message);
-                setRemoteStudyAggregate(mergedAggregateRow as unknown as UserStudyAggregateRow);
+                // The upsert has been removed from the hot loop to save egress.
+                // It is now handled by the beforeunload/throttled sync mechanism below.
+                setRemoteStudyAggregate(mergedAggregateRow);
             }
 
             const syncedAt = new Date().toISOString();
@@ -587,29 +617,18 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const previous = studySessionsSnapshotRef.current;
         studySessionsSnapshotRef.current = serialized;
         
+        if (!isHydratedRef.current) {
+            isHydratedRef.current = true;
+            return;
+        }
+
         if (previous === null || previous === serialized) return;
 
         // Compute Delta
         const prevArray: StudySession[] = JSON.parse(previous);
         const currArray: StudySession[] = studySessions;
-        const prevMap = new Map(prevArray.map(s => [s.id, s]));
-        const currMap = new Map(currArray.map(s => [s.id, s]));
-
-        const newPending: Omit<StudySessionLogEntry, 'id' | 'created_at' | 'user_id'>[] = [];
         const cid = clientIdRef.current;
-
-        currMap.forEach((session, id) => {
-            const prevSession = prevMap.get(id);
-            if (!prevSession || JSON.stringify(prevSession) !== JSON.stringify(session)) {
-                newPending.push({ client_id: cid, session_id: id, action: 'INSERT', payload: session });
-            }
-        });
-
-        prevMap.forEach((_, id) => {
-            if (!currMap.has(id)) {
-                newPending.push({ client_id: cid, session_id: id, action: 'DELETE', payload: null });
-            }
-        });
+        const newPending = computeSessionDelta(prevArray, currArray, cid);
 
         if (newPending.length > 0) {
             pendingSessionLogsRef.current.push(...newPending);
@@ -646,6 +665,38 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             clearScheduledSync();
         };
     }, [clearScheduledSync, isConfigured, scheduleSync, user]);
+
+    // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
+    const lastPushedAggregateRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!user || !isConfigured || !remoteStudyAggregate || !supabase) return;
+        const supabaseClient = supabase;
+        
+        const pushAggregate = async () => {
+            const currentStr = JSON.stringify(remoteStudyAggregate);
+            if (currentStr === lastPushedAggregateRef.current) return;
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('user_study_aggregate')
+                    .upsert(remoteStudyAggregate, { onConflict: 'user_id' });
+                if (!error) {
+                    lastPushedAggregateRef.current = currentStr;
+                }
+            } catch (err) {
+                console.warn('Failed to upsert aggregate', err);
+            }
+        };
+
+        const intervalId = setInterval(pushAggregate, 3600000); // Once per hour
+        window.addEventListener('beforeunload', pushAggregate);
+
+        return () => {
+            clearInterval(intervalId);
+            window.removeEventListener('beforeunload', pushAggregate);
+        };
+    }, [user, isConfigured, remoteStudyAggregate]);
 
     // Strategy 3: Debounce focus/visibility syncs with a 60s cooldown
     useEffect(() => {
