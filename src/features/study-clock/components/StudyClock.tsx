@@ -113,7 +113,7 @@ export function StudyClock({
             }
 
             const session: StudySession = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                id: crypto.randomUUID(),
                 title: getTaskTitle(),
                 subject: sessionSubject,
                 chapterSerial: sessionChapterSerial,
@@ -165,7 +165,7 @@ export function StudyClock({
             }
 
             const session: StudySession = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                id: crypto.randomUUID(),
                 title: getTaskTitle(),
                 subject: sessionSubject,
                 chapterSerial: sessionChapterSerial,

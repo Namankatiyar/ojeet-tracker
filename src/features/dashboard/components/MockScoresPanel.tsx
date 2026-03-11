@@ -4,7 +4,7 @@ import { Line } from 'react-chartjs-2';
 import { MockExamType, MockScore } from '../../../shared/types';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useMockScoresAnalytics } from '../hooks/useMockScoresAnalytics';
-import { getChartOptions, subjectColors } from '../utils/analyticsUtils';
+import { getChartOptions } from '../utils/analyticsUtils';
 import { getMockDefaultMaxMarks, getMockExamType, getMockMaxMarks, getMockPaperTotal, getMockPercentage, getMockSubjectTotals, getMockTotalMarks } from '../../../shared/utils/mockScores';
 
 interface MockScoresPanelProps {
@@ -40,9 +40,15 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
     return (
         <div className="analytics-panel mock-scores-panel">
             <div className="panel-header">
-                <div className="panel-title">
-                    <TrendingUp size={20} />
-                    <h3>Mock Scores</h3>
+                <div className="mock-panel-head">
+                    <div className="panel-title">
+                        <TrendingUp size={20} />
+                        <h3>Mock Scores</h3>
+                    </div>
+                    <button className="add-mock-btn add-mock-btn-compact" onClick={() => onAddClick(examType)}>
+                        <Plus size={14} />
+                        <span>Add</span>
+                    </button>
                 </div>
                 <div className="mock-panel-actions">
                     <div className="view-toggle-small">
@@ -65,10 +71,6 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
                             BT
                         </button>
                     </div>
-                    <button className="add-mock-btn" onClick={() => onAddClick(examType)}>
-                        <Plus size={16} />
-                        <span>Add</span>
-                    </button>
                 </div>
             </div>
 
@@ -122,9 +124,9 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
                                     )}
                                 </div>
                                 <div className="mock-scores-mini">
-                                    <span className="text-physics" style={{ color: subjectColors.physics }}>{subjectTotals.physics}</span>
-                                    <span className="text-chemistry" style={{ color: subjectColors.chemistry }}>{subjectTotals.chemistry}</span>
-                                    <span className="text-maths" style={{ color: subjectColors.maths }}>{subjectTotals.maths}</span>
+                                    <span className="text-physics" style={{ color: 'var(--color-physics)' }}>{subjectTotals.physics}</span>
+                                    <span className="text-chemistry" style={{ color: 'var(--color-chemistry)' }}>{subjectTotals.chemistry}</span>
+                                    <span className="text-maths" style={{ color: 'var(--color-maths)' }}>{subjectTotals.maths}</span>
                                     <span className="total-score">{totalDisplay}</span>
                                 </div>
                                 <button className="delete-mock-btn" onClick={() => onDeleteScore(score.id)}>

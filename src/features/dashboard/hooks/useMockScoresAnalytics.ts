@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { MockExamType, MockScore } from '../../../shared/types';
 import { getMockExamType, getMockSubjectTotals, getMockTotalMarks } from '../../../shared/utils/mockScores';
-import { subjectColors } from '../utils/analyticsUtils';
+import { getSubjectColors } from '../utils/analyticsUtils';
 
 export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockExamType) {
     const sortedScores = useMemo(() => {
@@ -11,6 +11,7 @@ export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockEx
     }, [examType, mockScores]);
 
     const chartData = useMemo(() => {
+        const subjectColors = getSubjectColors();
         // Use serial numbers if density is high (more than 3), otherwise names
         const useSerialNumbers = sortedScores.length > 3;
         const labels = sortedScores.map((s, index) => useSerialNumbers ? (index + 1).toString() : s.name);

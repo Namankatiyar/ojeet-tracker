@@ -59,10 +59,36 @@ export const getStudyTimeBySubject = (studySessions: StudySession[], dateStr: st
  * Subject colors matching site-wide theme
  */
 export const subjectColors = {
-    physics: '#0077ff',
-    chemistry: '#ff2e2e',
+    physics: '#6366f1',
+    chemistry: '#10b981',
     maths: '#f59e0b',
-    custom: '#ff57c7'
+    custom: '#ff57c7',
+    overall: '#22c55e'
+};
+
+const subjectColorVars = {
+    physics: '--color-physics',
+    chemistry: '--color-chemistry',
+    maths: '--color-maths'
+};
+
+export const getSubjectColors = () => {
+    if (typeof window === 'undefined') {
+        return subjectColors;
+    }
+
+    const styles = getComputedStyle(document.documentElement);
+    const read = (name: string, fallback: string) => {
+        const value = styles.getPropertyValue(name).trim();
+        return value || fallback;
+    };
+
+    return {
+        ...subjectColors,
+        physics: read(subjectColorVars.physics, subjectColors.physics),
+        chemistry: read(subjectColorVars.chemistry, subjectColors.chemistry),
+        maths: read(subjectColorVars.maths, subjectColors.maths)
+    };
 };
 
 /**
