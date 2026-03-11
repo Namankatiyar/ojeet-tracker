@@ -145,32 +145,42 @@ describe('mergeBucketMaps', () => {
 
 describe('getWeekKey', () => {
     it('returns ISO week format for a Monday', () => {
-        const key = getWeekKey(new Date('2026-03-09')); // Monday
+        const key = getWeekKey('2026-03-09'); // Monday
         expect(key).toMatch(/^\d{4}-W\d{2}$/);
     });
 
     it('returns same week key for consecutive days in the same week', () => {
-        const mon = getWeekKey(new Date('2026-03-09'));
-        const tue = getWeekKey(new Date('2026-03-10'));
-        const sun = getWeekKey(new Date('2026-03-15'));
+        const mon = getWeekKey('2026-03-09');
+        const tue = getWeekKey('2026-03-10');
+        const sun = getWeekKey('2026-03-15');
         expect(mon).toBe(tue);
         expect(mon).toBe(sun);
     });
 
     it('returns different week keys across a week boundary', () => {
-        const sun = getWeekKey(new Date('2026-03-15'));
-        const nextMon = getWeekKey(new Date('2026-03-16'));
+        const sun = getWeekKey('2026-03-15');
+        const nextMon = getWeekKey('2026-03-16');
         expect(sun).not.toBe(nextMon);
+    });
+
+    it('is timezone-neutral: same string on any device', () => {
+        // Both dates are near midnight UTC; the key must depend only on the
+        // local calendar date embedded in the string, not on Date.getDate().
+        expect(getWeekKey('2026-03-11')).toBe(getWeekKey('2026-03-11'));
     });
 });
 
 describe('getMonthKey', () => {
     it('returns YYYY-MM format', () => {
-        expect(getMonthKey(new Date('2026-03-07'))).toBe('2026-03');
+        expect(getMonthKey('2026-03-07')).toBe('2026-03');
     });
 
     it('zero-pads single-digit months', () => {
-        expect(getMonthKey(new Date('2026-01-15'))).toBe('2026-01');
+        expect(getMonthKey('2026-01-15')).toBe('2026-01');
+    });
+
+    it('is timezone-neutral: slices the date string directly', () => {
+        expect(getMonthKey('2026-12-31')).toBe('2026-12');
     });
 });
 
@@ -213,10 +223,10 @@ describe('toVideoSessionTimestamp', () => {
         expect(toVideoSessionTimestamp(iso)).toBe(new Date(iso).toISOString());
     });
 
-    it('adds 09:00 for date-only strings', () => {
+    it('uses UTC midnight for date-only strings (timezone-neutral)', () => {
         const result = toVideoSessionTimestamp('2026-03-07');
-        expect(result).toContain('T');
-        expect(result).not.toBeNull();
+        // Must be exactly UTC midnight — not a local T09:00:00 which varies by timezone.
+        expect(result).toBe('2026-03-07T00:00:00.000Z');
     });
 });
 

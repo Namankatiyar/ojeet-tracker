@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { StudySession } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
-import { getWeekDays, getMonthDays, getStudyTimeBySubject, subjectColors } from '../utils/analyticsUtils';
+import { getWeekDays, getMonthDays, getStudyTimeBySubject, getSubjectColors } from '../utils/analyticsUtils';
 
 interface RemoteAggregateBucketEntry {
     overall?: number;
@@ -26,6 +26,7 @@ export function useStudyTimeAnalytics(
     remoteDailyBuckets?: Record<string, RemoteAggregateBucketEntry>
 ) {
     const analyticsData = useMemo(() => {
+        const subjectColors = getSubjectColors();
         if (mode === 'weekly') {
             const weekDays = getWeekDays(offset);
             const labels = weekDays.map(d => d.toLocaleDateString('en-US', { weekday: 'short' }));
@@ -84,6 +85,7 @@ export function useStudyTimeAnalytics(
             const monthDays = getMonthDays(offset);
             const labels = monthDays.map(d => d.getDate().toString());
 
+            const overallData: number[] = [];
             const physicsData: number[] = [];
             const chemistryData: number[] = [];
             const mathsData: number[] = [];
@@ -94,7 +96,11 @@ export function useStudyTimeAnalytics(
                 const times = getStudyTimeBySubject(studySessions, dateStr);
                 const remote = remoteDailyBuckets?.[dateStr];
                 const useLocalOnly = isWithinHistory(day);
+                const localOverall = times.physics + times.chemistry + times.maths + times.other;
+                const remoteOverallHours = (remote?.overall ?? 0) / 3600;
+                const overallHours = useLocalOnly ? localOverall : Math.max(localOverall, remoteOverallHours);
 
+                overallData.push(Number(overallHours.toFixed(2)));
                 physicsData.push(Number((useLocalOnly ? times.physics : Math.max(times.physics, (remote?.physics ?? 0) / 3600)).toFixed(2)));
                 chemistryData.push(Number((useLocalOnly ? times.chemistry : Math.max(times.chemistry, (remote?.chemistry ?? 0) / 3600)).toFixed(2)));
                 mathsData.push(Number((useLocalOnly ? times.maths : Math.max(times.maths, (remote?.maths ?? 0) / 3600)).toFixed(2)));
@@ -104,6 +110,18 @@ export function useStudyTimeAnalytics(
             return {
                 labels,
                 datasets: [
+                    {
+                        label: 'Overall',
+                        data: overallData,
+                        fill: false,
+                        borderColor: subjectColors.overall,
+                        pointBackgroundColor: subjectColors.overall,
+                        pointBorderColor: '#fff',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        tension: 0.4,
+                        borderWidth: 3
+                    },
                     {
                         label: 'Physics',
                         data: physicsData,

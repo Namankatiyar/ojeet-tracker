@@ -67,7 +67,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
 
     return (
         <div className="modal-overlay" onClick={onClose} style={{ alignItems: 'center' }}>
-            <div className="modal-content input-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-content input-modal task-modal" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <h3>{taskToEdit ? 'Edit Task' : 'Add New Task'}</h3>
                     <button className="close-btn" onClick={onClose}><X size={20} /></button>
@@ -135,7 +135,7 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
                             key={subj}
                             className={`material-pill custom-subject-pill ${form.customSubject === subj ? 'selected' : ''}`}
                             onClick={() => form.setCustomSubject(subj)}
-                            style={{ '--pill-color': `var(--${subj})` } as any}
+                            style={{ '--pill-color': `var(--color-${subj})` } as any}
                         >
                             {subj.charAt(0).toUpperCase() + subj.slice(1)}
                         </button>
@@ -168,7 +168,7 @@ function ChapterTaskFields({ form, progress, subjectData }: { form: ReturnType<t
                                 form.resetChapterSelection();
                                 form.setChapterSearch('');
                             }}
-                            style={{ '--subj-color': `var(--${subj})` } as any}
+                            style={{ '--subj-color': `var(--color-${subj})` } as any}
                         >
                             {subj.charAt(0).toUpperCase() + subj.slice(1)}
                         </button>

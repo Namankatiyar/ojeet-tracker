@@ -48,10 +48,10 @@ const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-de
 const CACHED_AGGREGATE_KEY = `${REMOTE_SYNC_META_PREFIX}cached-aggregate`;
 const DEFAULT_DELTA_CURSOR = { created_at: '2000-01-01T00:00:00.000Z' };
 
-const SYNC_BATCH_INTERVAL_MS = 300_000;
+const SYNC_BATCH_INTERVAL_MS = 600_000; // 10 minutes — time-based polling only
 const SYNC_RETRY_BASE_MS = 5_000;
 const SYNC_RETRY_MAX_MS = 300_000;
-const FOCUS_SYNC_COOLDOWN_MS = 300_000;
+// Focus-triggered syncs removed — app uses time-based polling only.
 
 const domainKeys: SyncDomain[] = ['progress', 'plannerTasks', 'mockScores', 'examDates', 'settings', 'subjects'];
 
@@ -265,6 +265,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const studySessionsSnapshotRef = useRef<string | null>(null);
     const isHydratedRef = useRef(false);
     const skipNextSessionsSyncRef = useRef(false);
+    // Always-current mirror of studySessions so runSync never reads a stale closure value.
+    const latestStudySessionsRef = useRef(studySessions);
 
     const clientIdRef = useRef<string>(Math.random().toString(36).substring(2, 15));
     const pendingSessionLogsRef = useRef<Omit<StudySessionLogEntry, 'id' | 'created_at' | 'user_id'>[]>([]);
@@ -336,7 +338,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 progress,
                 plannerTasks,
                 mockScores,
-                studySessions,
+                studySessions: latestStudySessionsRef.current,
                 examDates,
                 disableAutoShift,
                 progressCardSettings,
@@ -397,7 +399,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const shouldLoadAggregate = hasPendingSessionLogs || remoteAggregateDirty || !remoteStudyAggregate;
 
             let remoteAggregate: UserStudyAggregateRow | null = null;
-            let videoMergeResult = { sessions: studySessions, changed: false };
+            let videoMergeResult = { sessions: latestStudySessionsRef.current, changed: false };
 
             if (shouldLoadAggregate) {
                 if (remoteAggregateDirty || !remoteStudyAggregate) {
@@ -408,7 +410,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     remoteAggregate = remoteStudyAggregate;
                 }
                 const videoLogs = remoteAggregate?.video_watch_45d_json ?? [];
-                videoMergeResult = mergeRemoteVideoLogsIntoSessions(studySessions, videoLogs);
+                videoMergeResult = mergeRemoteVideoLogsIntoSessions(latestStudySessionsRef.current, videoLogs);
                 if (videoMergeResult.changed) {
                     skipNextSessionsSyncRef.current = true;
                     setStudySessions(videoMergeResult.sessions);
@@ -574,7 +576,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         progress,
         progressCardSettings,
         setStudySessions,
-        studySessions,
+        // studySessions intentionally omitted — read via latestStudySessionsRef to prevent stale closure.
         subjectData,
         user,
     ]);
@@ -615,9 +617,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }, Math.max(0, delayMs));
     }, [clearScheduledSync, isConfigured, runSync, user]);
 
+    // Track which domains have been locally edited so the merge policy can decide
+    // which side wins during the next *scheduled* sync. We intentionally do NOT
+    // schedule an ad-hoc sync here — polling is time-based only.
     useEffect(() => {
         const nowIso = new Date().toISOString();
-        let changedAny = false;
         domainKeys.forEach((domain) => {
             const previous = domainSnapshotsRef.current[domain];
             const current = domainSnapshots[domain];
@@ -628,24 +632,32 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (isApplyingRemoteRef.current) return;
 
             setDomainEditedAt(domain, nowIso);
-            changedAny = true;
         });
+    }, [domainSnapshots]);
 
-        if (changedAny && user && isConfigured) {
-            scheduleSync(SYNC_BATCH_INTERVAL_MS);
-        }
-    }, [domainSnapshots, isConfigured, scheduleSync, user]);
-
+    // Keep the live ref in sync so runSync always has the latest sessions regardless
+    // of when its useCallback closure was last created.
     useEffect(() => {
+        latestStudySessionsRef.current = studySessions;
+    }, [studySessions]);
+
+    // Buffer study session deltas so they are ready for the next *scheduled* sync.
+    // We intentionally do NOT schedule an ad-hoc sync here.
+    useEffect(() => {
+        // Always update the snapshot FIRST, before any early-return guards.
+        // If we skip updating the snapshot when the skip-flag is set, the next
+        // delta computation diffs against a stale baseline and generates spurious
+        // INSERT logs for sessions that were added by a remote pull.
+        const serialized = JSON.stringify(studySessions);
+        const previous = studySessionsSnapshotRef.current;
+        studySessionsSnapshotRef.current = serialized;
+
         if (isApplyingRemoteRef.current) return;
+
         if (skipNextSessionsSyncRef.current) {
             skipNextSessionsSyncRef.current = false;
             return;
         }
-
-        const serialized = JSON.stringify(studySessions);
-        const previous = studySessionsSnapshotRef.current;
-        studySessionsSnapshotRef.current = serialized;
 
         if (!isHydratedRef.current) {
             isHydratedRef.current = true;
@@ -654,7 +666,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
         if (previous === null || previous === serialized) return;
 
-        // Compute Delta
+        // Compute Delta and buffer for the next scheduled sync cycle.
         const prevArray: StudySession[] = JSON.parse(previous);
         const currArray: StudySession[] = studySessions;
         const cid = clientIdRef.current;
@@ -663,10 +675,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (newPending.length > 0) {
             pendingSessionLogsRef.current.push(...newPending);
         }
-
-        if (!user || !isConfigured) return;
-        scheduleSync(SYNC_BATCH_INTERVAL_MS);
-    }, [isConfigured, scheduleSync, studySessions, user]);
+    }, [studySessions]);
 
     const syncNow = useCallback(async () => {
         if (!user || !isConfigured) return;
@@ -729,34 +738,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         };
     }, [user, isConfigured, remoteStudyAggregate]);
 
-    // Strategy 3: Debounce focus/visibility syncs with a 60s cooldown
-    useEffect(() => {
-        if (!user || !isConfigured) return;
-
-        const shouldSyncOnFocus = () => {
-            const elapsed = Date.now() - lastSyncCompletedAtRef.current;
-            return elapsed >= FOCUS_SYNC_COOLDOWN_MS;
-        };
-
-        const handleFocusSync = () => {
-            if (shouldSyncOnFocus()) {
-                scheduleSync(0);
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && shouldSyncOnFocus()) {
-                scheduleSync(0);
-            }
-        };
-
-        window.addEventListener('focus', handleFocusSync);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => {
-            window.removeEventListener('focus', handleFocusSync);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, [isConfigured, scheduleSync, user]);
+    // Focus/visibility-triggered syncs intentionally removed.
+    // App follows a time-based polling model: sync on start, then every 10 minutes.
 
     const value = useMemo<RemoteSyncContextType>(() => ({
         status,

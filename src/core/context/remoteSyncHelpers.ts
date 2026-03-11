@@ -49,8 +49,17 @@ export interface UserStudyAggregateRow {
 
 // ─── Date key helpers ───────────────────────────────────────────────────────
 
-export function getWeekKey(date: Date) {
-    const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+/**
+ * Returns the ISO 8601 week key (YYYY-Www) for a local calendar date string
+ * (YYYY-MM-DD). Using the date string directly avoids local-vs-UTC field
+ * confusion that arises when passing a Date object parsed from a UTC ISO
+ * timestamp.
+ */
+export function getWeekKey(localDateStr: string): string {
+    const [year, month, day] = localDateStr.split('-').map(Number);
+    // Construct a UTC midnight for the given local calendar date so that
+    // ISO week arithmetic is performed in a stable, timezone-neutral way.
+    const tmp = new Date(Date.UTC(year, month - 1, day));
     const dayNum = tmp.getUTCDay() || 7;
     tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
@@ -58,8 +67,13 @@ export function getWeekKey(date: Date) {
     return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 }
 
-export function getMonthKey(date: Date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+/**
+ * Returns the month key (YYYY-MM) for a local calendar date string (YYYY-MM-DD).
+ * Slicing the string is always correct and never misreads due to UTC offsets.
+ */
+export function getMonthKey(localDateStr: string): string {
+    // YYYY-MM-DD → first 7 chars are YYYY-MM
+    return localDateStr.slice(0, 7);
 }
 
 // ─── Bucket operations ─────────────────────────────────────────────────────
@@ -122,9 +136,19 @@ export function computeLocalStudyAggregate(studySessions: StudySession[]) {
         if (session.subject === 'maths') totalMaths += seconds;
 
         const localDate = session.localDate ?? formatDateLocal(date);
+        // Derive the bucket key Date from the stored localDate when available.
+        // This guarantees that daily, weekly, and monthly buckets all use the
+        // same calendar date, even if session.startTime is a UTC ISO string
+        // that crosses a date boundary relative to the local timezone.
+        const bucketDate = session.localDate
+            ? new Date(`${session.localDate}T00:00:00`) // local midnight — safe for week/month key derivation
+            : date;
         addToBucket(bucketsDaily, localDate, session.subject, seconds);
-        addToBucket(bucketsWeekly, getWeekKey(date), session.subject, seconds);
-        addToBucket(bucketsMonthly, getMonthKey(date), session.subject, seconds);
+        addToBucket(bucketsWeekly, getWeekKey(localDate), session.subject, seconds);
+        addToBucket(bucketsMonthly, getMonthKey(localDate), session.subject, seconds);
+        // bucketDate is intentionally computed but only used as a guard to make
+        // the fallback path explicit. The key functions now accept strings.
+        void bucketDate;
     });
 
     return {
@@ -149,8 +173,13 @@ export function toVideoSessionTimestamp(value: string | undefined): string | nul
     if (!value) return null;
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return null;
+    // If the value already has a time component, normalise to UTC ISO.
     if (value.includes('T')) return parsed.toISOString();
-    return new Date(`${value}T09:00:00`).toISOString();
+    // Date-only string (e.g. "2026-03-11" from YouTube Analytics):
+    // Use UTC midnight so the result is timezone-neutral. An arbitrary
+    // local time like T09:00:00 was incorrect — it would vary by device
+    // timezone and could produce same-millisecond IDs for same-day videos.
+    return new Date(`${value}T00:00:00.000Z`).toISOString();
 }
 
 // ─── Video log → session merge ──────────────────────────────────────────────
