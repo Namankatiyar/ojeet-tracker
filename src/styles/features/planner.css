@@ -1262,14 +1262,30 @@
 /* ===== Task Modal Content (Planner-specific) ===== */
 /* Base modal styles are in components/modals.css */
 
+.task-modal .modal-header {
+  padding: 1rem 1.25rem;
+}
+
+.task-modal .modal-header h3 {
+  font-size: 1.05rem;
+}
+
+.task-modal .modal-body-scrollable {
+  padding: 1.1rem 1.25rem;
+}
+
+.task-modal .modal-footer {
+  padding: 0.85rem 1.25rem;
+}
+
 /* Task Type Toggle - Unified Chapter/Custom Selector */
 .task-type-toggle {
   display: flex;
-  gap: 0.5rem;
-  padding: 4px;
+  gap: 0.4rem;
+  padding: 3px;
   background: var(--bg-tertiary);
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
+  border-radius: 9px;
+  margin-bottom: 1rem;
   border: 1px solid var(--border);
 }
 
@@ -1278,15 +1294,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: 0.4rem;
+  padding: 0.55rem 0.75rem;
   border: none;
   border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   transition: all 0.2s;
 }
 
@@ -1368,90 +1384,107 @@
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   font-weight: 500;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .subject-selector {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .subject-option {
-  flex: 1;
-  padding: 1rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: var(--panel-blur);
-  border-radius: 12px;
+  flex: 0 0 auto;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  border-radius: 16px;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-weight: 600;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   transition: all 0.2s;
 }
 
 .subject-option:hover {
-  border-color: var(--subj-color);
-  color: var(--subj-color);
+  background: var(--bg-primary);
+  border-color: var(--accent);
+  color: var(--text-primary);
 }
 
 .subject-option.selected {
-  background: color-mix(in srgb, var(--subj-color), transparent 85%);
-  backdrop-filter: var(--panel-blur);
+  background: var(--subj-color);
   border-color: var(--subj-color);
-  color: var(--subj-color);
-  box-shadow: 0 0 15px color-mix(in srgb, var(--subj-color), transparent 80%);
+  color: #fff;
+  box-shadow: none;
 }
 
 .chapter-picker {
   border: 1px solid var(--panel-border);
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.1);
   backdrop-filter: var(--panel-blur);
   display: flex;
   flex-direction: column;
-  max-height: 280px;
+  max-height: clamp(180px, 38vh, 320px);
 }
 
 .chapter-search-box {
   display: flex;
   align-items: center;
-  padding: 0 1.25rem;
-  height: 56px;
-  background: transparent;
-  border-bottom: none;
+  padding: 4px 0.85rem;
+  min-height: 40px;
+  margin: 8px;
+  gap: 0.5rem;
+  background: color-mix(in srgb, var(--bg-tertiary), transparent 20%);
+  border: 1px solid color-mix(in srgb, var(--border), transparent 20%);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.chapter-search-box:focus-within {
+  border-color: color-mix(in srgb, var(--accent), transparent 35%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 2px color-mix(in srgb, var(--accent), transparent 85%);
 }
 
 .search-icon {
   color: var(--text-muted);
-  margin-right: 0.75rem;
+  width: 18px;
+  height: 18px;
 }
 
-.search-input {
+.chapter-search-box .search-input {
   border: none;
   background: transparent;
   width: 100%;
   outline: none;
   box-shadow: none;
   color: var(--text-primary);
-  font-size: 1rem;
-  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  padding: 0.2rem 0;
   caret-color: var(--text-primary);
+  min-width: 0;
+  line-height: 1.2;
 }
 
 .chapter-list {
   overflow-y: auto;
-  flex: 1;
-  padding: 4px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 2px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .chapter-item {
@@ -1459,15 +1492,31 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.4rem 0.7rem;
   border: none;
   background: transparent;
   color: var(--text-primary);
   text-align: left;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 8px;
   transition: all 0.2s;
-  margin-bottom: 2px;
+  gap: 0.5rem;
+  line-height: 1.2;
+}
+
+.chapter-item-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.chapter-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chapter-item:hover {
@@ -1495,36 +1544,38 @@
 .bullet-icon {
   color: var(--accent);
   margin-right: 6px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   vertical-align: middle;
 }
 
 .chevron {
   opacity: 0.3;
+  flex-shrink: 0;
 }
 
 .no-chapters {
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .selected-chapter-display {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--text-primary);
   font-weight: 600;
   box-shadow: var(--shadow-sm);
+  font-size: 0.95rem;
 }
 
 .change-btn {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-decoration: underline;
   background: transparent;
   border: none;
@@ -1538,10 +1589,10 @@
 
 .large-input {
   width: 100%;
-  padding: 1rem;
-  font-size: 1.1rem;
+  padding: 0.75rem;
+  font-size: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: var(--panel-blur);
   color: var(--text-primary);
@@ -1555,24 +1606,24 @@
 }
 
 .large-input::placeholder {
-  font-size: 1.1rem;
+  font-size: 1rem;
   opacity: 0.6;
 }
 
 .material-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .material-pill {
-  padding: 0.5rem 1rem;
+  padding: 0.35rem 0.75rem;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: var(--panel-blur);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  border-radius: 16px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   transition: all 0.2s;
 }
@@ -1604,7 +1655,7 @@
 
 .no-materials {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-style: italic;
 }
 
@@ -1612,11 +1663,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.75rem;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: var(--panel-blur);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1628,13 +1679,13 @@
 }
 
 .time-value {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .period {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   margin-left: 2px;
 }
@@ -1645,12 +1696,12 @@
 
 .custom-time-picker {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-top: 1rem;
-  padding: 1rem;
+  padding: 0.75rem;
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: var(--panel-blur);
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: slideDown 0.2s ease;
 }
@@ -1676,14 +1727,14 @@
 }
 
 .col-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .scroll-container {
-  height: 150px;
+  height: 120px;
   overflow-y: auto;
   width: 100%;
   display: flex;
@@ -1697,13 +1748,14 @@
 }
 
 .time-btn {
-  padding: 0.5rem;
+  padding: 0.4rem;
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
   cursor: pointer;
   color: var(--text-secondary);
   font-weight: 500;
+  font-size: 0.85rem;
   transition: all 0.1s;
 }
 
@@ -1722,11 +1774,11 @@
 
 .period-col {
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .period-btn {
-  padding: 0.75rem 1rem;
+  padding: 0.55rem 0.75rem;
   width: 100%;
   background: var(--bg-tertiary);
   backdrop-filter: var(--panel-blur);
@@ -1735,7 +1787,16 @@
   cursor: pointer;
   font-weight: 600;
   color: var(--text-secondary);
+  font-size: 0.85rem;
   transition: all var(--transition-fast);
+}
+
+.task-modal .time-display-box,
+.task-modal .custom-time-picker,
+.task-modal .time-btn,
+.task-modal .period-btn,
+.task-modal .scroll-container {
+  box-sizing: border-box;
 }
 
 .period-btn.selected {

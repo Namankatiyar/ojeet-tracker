@@ -202,7 +202,10 @@ function ChapterTaskFields({ form, progress, subjectData }: { form: ReturnType<t
                                             className={`chapter-item ${priorityClass}`}
                                             onClick={() => form.setSelectedChapterSerial(c.serial)}
                                         >
-                                            <span><span className="bullet-icon">•</span> {c.name}</span>
+                                            <span className="chapter-item-title">
+                                                <span className="bullet-icon">•</span>
+                                                <span className="chapter-name">{c.name}</span>
+                                            </span>
                                             <ChevronRight size={16} className="chevron" />
                                         </button>
                                     );
