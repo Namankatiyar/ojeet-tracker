@@ -579,19 +579,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         user,
     ]);
 
-    // TEMP: measure egress — remove before deploy
-    const origFetch = window.fetch;
-    let totalEgressBytes = 0;
-    window.fetch = async (...args) => {
-        const res = await origFetch(...args);
-        const clone = res.clone();
-        const body = await clone.text();
-        totalEgressBytes += new TextEncoder().encode(body).length;
-        return res;
-    };
-    // ... at the end of runSync(), log it:
-    console.log(`[Egress] Total response bytes this cycle: ${totalEgressBytes}`);
-    window.fetch = origFetch; // restore
+
     const scheduleSync = useCallback((delayMs: number) => {
         if (!user || !isConfigured) return;
         const dueAt = Date.now() + Math.max(0, delayMs);
@@ -610,7 +598,14 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             try {
                 await runSync();
                 scheduleSync(SYNC_BATCH_INTERVAL_MS);
-            } catch {
+            } catch (error) {
+                // If sync fails with a "Payload version mismatch" or similar permanent-looking error,
+                // or after too many retries, prioritize a PWA update check.
+                if (retryAttemptRef.current > 5) {
+                    console.warn('[Sync] Persistent failures detected. Checking for PWA updates...');
+                    if ((window as any).__FORCE_PWA_UPDATE__) (window as any).__FORCE_PWA_UPDATE__();
+                }
+
                 const backoffDelay = Math.min(
                     SYNC_RETRY_BASE_MS * (2 ** Math.max(0, retryAttemptRef.current - 1)),
                     SYNC_RETRY_MAX_MS,

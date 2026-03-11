@@ -92,6 +92,8 @@ export async function applyPwaUpdate() {
 export async function runPwaRecoveryAndReload() {
     if (typeof window === 'undefined') return;
 
+    console.warn('[PWA] Triggering emergency recovery and reload...');
+
     try {
         if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
@@ -110,9 +112,17 @@ export async function runPwaRecoveryAndReload() {
             lastError: null,
         });
 
+        // Clear some critical localStorage flags that might be causing loops
+        localStorage.removeItem(BRIDGE_CACHE_CLEANUP_KEY);
+        
         window.location.reload();
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Recovery failed';
         publish({ lastError: message });
     }
+}
+
+// Global exposure for emergency use by other modules (e.g. RemoteSyncContext)
+if (typeof window !== 'undefined') {
+    (window as any).__FORCE_PWA_UPDATE__ = runPwaRecoveryAndReload;
 }
