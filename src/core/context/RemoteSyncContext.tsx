@@ -45,6 +45,7 @@ const LAST_SYNCED_AT_KEY = `${REMOTE_SYNC_META_PREFIX}last-synced-at`;
 const DOMAIN_EDITED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-edited-at-`;
 const REMOTE_CHECKSUM_KEY = `${REMOTE_SYNC_META_PREFIX}remote-checksum`;
 const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-delta-synced-at`;
+const CACHED_AGGREGATE_KEY = `${REMOTE_SYNC_META_PREFIX}cached-aggregate`;
 const DEFAULT_DELTA_CURSOR = { created_at: '2000-01-01T00:00:00.000Z' };
 
 const SYNC_BATCH_INTERVAL_MS = 300_000;
@@ -205,17 +206,34 @@ async function fetchRemotePayload(userId: string): Promise<{ payload: SyncPayloa
     return { payload, row: data };
 }
 
+const AGGREGATE_SELECT_COLUMNS = 'user_id,total_seconds_overall,total_seconds_physics,total_seconds_chemistry,total_seconds_maths,buckets_daily_json,buckets_weekly_json,buckets_monthly_json,video_watch_45d_json,updated_at' as const;
+
 async function fetchRemoteStudyAggregate(userId: string): Promise<UserStudyAggregateRow | null> {
     if (!supabase) return null;
 
     const { data, error } = await supabase
         .from('user_study_aggregate')
-        .select('*')
+        .select(AGGREGATE_SELECT_COLUMNS)
         .eq('user_id', userId)
         .maybeSingle<UserStudyAggregateRow>();
 
     if (error) throw new Error(error.message);
     return data ?? null;
+}
+
+function readCachedAggregate(): UserStudyAggregateRow | null {
+    const raw = readStorageValue(CACHED_AGGREGATE_KEY);
+    if (!raw) return null;
+    try {
+        return JSON.parse(raw) as UserStudyAggregateRow;
+    } catch {
+        return null;
+    }
+}
+
+function writeCachedAggregate(aggregate: UserStudyAggregateRow | null) {
+    if (!aggregate) return;
+    writeStorageValue(CACHED_AGGREGATE_KEY, JSON.stringify(aggregate));
 }
 
 export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -229,7 +247,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [status, setStatus] = useState<SyncStatus>('idle');
     const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => readStorageValue(LAST_SYNCED_AT_KEY));
     const [lastError, setLastError] = useState<string | null>(null);
-    const [remoteStudyAggregate, setRemoteStudyAggregate] = useState<UserStudyAggregateRow | null>(null);
+    const [remoteStudyAggregate, setRemoteStudyAggregate] = useState<UserStudyAggregateRow | null>(() => readCachedAggregate());
     const isApplyingRemoteRef = useRef(false);
     const syncInFlightRef = useRef(false);
     const scheduledTimerRef = useRef<number | null>(null);
@@ -362,11 +380,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // 1. Pull changes
             const { data: newLogsRaw, error: deltaPullError } = await supabase
                 .from('study_session_log')
-                .select('*')
+                .select('id,user_id,client_id,session_id,action,payload,created_at')
                 .eq('user_id', user.id)
-                .gte('created_at', deltaCursor.created_at)
+                .gt('created_at', deltaCursor.created_at)
                 .order('created_at', { ascending: true })
-                .order('id', { ascending: true });
+                .order('id', { ascending: true })
+                .limit(500);
 
             if (deltaPullError) throw new Error(deltaPullError.message);
             const newLogs = (newLogsRaw ?? []).filter((log) => isLogAfterCursor(log, deltaCursor)) as StudySessionLogEntry[];
@@ -376,7 +395,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const hasPendingSessionLogs = pendingSessionLogsRef.current.length > 0;
             const remoteAggregateDirty = !remoteUnchanged || newLogs.length > 0;
             const shouldLoadAggregate = hasPendingSessionLogs || remoteAggregateDirty || !remoteStudyAggregate;
-            
+
             let remoteAggregate: UserStudyAggregateRow | null = null;
             let videoMergeResult = { sessions: studySessions, changed: false };
 
@@ -384,6 +403,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 if (remoteAggregateDirty || !remoteStudyAggregate) {
                     remoteAggregate = await fetchRemoteStudyAggregate(user.id);
                     setRemoteStudyAggregate(remoteAggregate);
+                    writeCachedAggregate(remoteAggregate);
                 } else {
                     remoteAggregate = remoteStudyAggregate;
                 }
@@ -426,7 +446,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                 const { error: manifestError } = await supabase
                     .from('user_sync_state')
-                    .upsert(manifestRow, { onConflict: 'user_id' });
+                    .upsert(manifestRow, { onConflict: 'user_id' })
+                    .select();  // Suppress RETURNING * — we already have the data locally
                 if (manifestError) throw new Error(manifestError.message);
 
                 if (encoded.storage === 'chunked') {
@@ -439,9 +460,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                     const { error: chunkError } = await supabase
                         .from('user_sync_chunks')
-                        .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' });
+                        .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' })
+                        .select();  // Suppress RETURNING * — chunks can be large
                     if (chunkError) throw new Error(chunkError.message);
-                } 
+                }
                 // Database triggers automatically prune old chunks when the user_sync_state is updated.
             }
 
@@ -464,7 +486,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 currentSessions = applied.sessions;
                 applyDeltaChanges = applied.changed;
             }
-            
+
             // 2. Push pending
             const pendingToPush = [...pendingSessionLogsRef.current];
             if (pendingToPush.length > 0) {
@@ -479,11 +501,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     .from('study_session_log')
                     .insert(rowsToInsert)
                     .select('id, created_at');
-                    
+
                 if (deltaPushError) {
                     throw new Error(deltaPushError.message);
                 }
-                
+
                 pendingSessionLogsRef.current = pendingSessionLogsRef.current.slice(pendingToPush.length);
                 const insertedRows = (insertedLogs ?? []) as Array<Pick<StudySessionLogEntry, 'id' | 'created_at'>>;
                 insertedRows.forEach((log) => {
@@ -495,7 +517,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             }
 
             writeDeltaCursor(deltaCursor);
-            
+
             if (applyDeltaChanges) {
                 skipNextSessionsSyncRef.current = true;
                 setStudySessions(currentSessions);
@@ -557,6 +579,19 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         user,
     ]);
 
+    // TEMP: measure egress — remove before deploy
+    const origFetch = window.fetch;
+    let totalEgressBytes = 0;
+    window.fetch = async (...args) => {
+        const res = await origFetch(...args);
+        const clone = res.clone();
+        const body = await clone.text();
+        totalEgressBytes += new TextEncoder().encode(body).length;
+        return res;
+    };
+    // ... at the end of runSync(), log it:
+    console.log(`[Egress] Total response bytes this cycle: ${totalEgressBytes}`);
+    window.fetch = origFetch; // restore
     const scheduleSync = useCallback((delayMs: number) => {
         if (!user || !isConfigured) return;
         const dueAt = Date.now() + Math.max(0, delayMs);
@@ -616,7 +651,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const serialized = JSON.stringify(studySessions);
         const previous = studySessionsSnapshotRef.current;
         studySessionsSnapshotRef.current = serialized;
-        
+
         if (!isHydratedRef.current) {
             isHydratedRef.current = true;
             return;
@@ -672,15 +707,16 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     useEffect(() => {
         if (!user || !isConfigured || !remoteStudyAggregate || !supabase) return;
         const supabaseClient = supabase;
-        
+
         const pushAggregate = async () => {
             const currentStr = JSON.stringify(remoteStudyAggregate);
             if (currentStr === lastPushedAggregateRef.current) return;
-            
+
             try {
                 const { error } = await supabaseClient
                     .from('user_study_aggregate')
-                    .upsert(remoteStudyAggregate, { onConflict: 'user_id' });
+                    .upsert(remoteStudyAggregate, { onConflict: 'user_id' })
+                    .select();  // Suppress RETURNING * — avoid echoing JSONB bucket maps
                 if (!error) {
                     lastPushedAggregateRef.current = currentStr;
                 }
