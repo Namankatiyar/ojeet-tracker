@@ -16,7 +16,7 @@ interface RemoteAuthContextType {
 
 const SYNC_PROMPT_DISMISSED_KEY = 'ojeet-sync-prompt-dismissed';
 const REMOTE_SYNC_META_PREFIX = 'ojeet-remote-sync-';
-const PROD_OAUTH_REDIRECT_URL = 'https://pcm-tracker.vercel.app';
+const PROD_OAUTH_REDIRECT_URL = 'https://tracker.ojeet.tech';
 
 const readPromptDismissed = () => {
     if (typeof window === 'undefined') return false;
