@@ -850,6 +850,21 @@ html[data-theme="dark"] .distribution-modal {
   background: linear-gradient(135deg, var(--accent-light), transparent);
   border-radius: var(--border-radius-sm);
   margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.distribution-total-time:hover {
+  background: linear-gradient(135deg, var(--accent-light), var(--accent-light));
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.distribution-total-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
 }
 
 .distribution-total-label {

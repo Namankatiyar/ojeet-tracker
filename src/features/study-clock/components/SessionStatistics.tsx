@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { Subject, SubjectData, StudySession } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
@@ -15,12 +15,26 @@ function formatDuration(seconds: number): string {
     return `${mins}m`;
 }
 
+function getSessionDate(session: StudySession): Date {
+    if (session.localDate) {
+        const [y, m, d] = session.localDate.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    }
+    const parsed = new Date(session.startTime);
+    if (Number.isNaN(parsed.getTime())) return new Date(0);
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+}
+
 export function SessionStatistics({ sessions, subjectData }: SessionStatisticsProps) {
     const [statsSubject, setStatsSubject] = useState<Subject | 'all'>('all');
     const [statsChapter, setStatsChapter] = useState<number | 'all'>('all');
     const [statsMaterial, setStatsMaterial] = useState<string | 'all'>('all');
     const [showDistribution, setShowDistribution] = useState(false);
     const [openChapterGraphs, setOpenChapterGraphs] = useState<Subject[]>([]);
+    const [breakdownPeriod, setBreakdownPeriod] = useState<'overall' | 'daily' | 'weekly' | 'monthly'>(() => {
+        const saved = localStorage.getItem('breakdownPeriod');
+        return (saved as any) || 'overall';
+    });
 
     const getFilteredSessions = useCallback(() => {
         return sessions.filter(s => {
@@ -32,11 +46,37 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
     }, [sessions, statsSubject, statsChapter, statsMaterial]);
 
     const totalFilteredTime = getFilteredSessions().reduce((acc, s) => acc + s.duration, 0);
-    const totalTime = sessions.reduce((acc, s) => acc + s.duration, 0);
 
-    const getSubjectDistribution = useCallback(() => {
+    const getSessionsForPeriod = useCallback((period: 'overall' | 'daily' | 'weekly' | 'monthly') => {
+        const now = new Date();
+        const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        const currentDay = now.getDay();
+        const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+        const startOfWeekDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - distanceToMonday);
+        
+        const startOfMonthDate = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        return sessions.filter(s => {
+            const sDate = getSessionDate(s);
+            if (period === 'daily') return sDate >= todayDate;
+            if (period === 'weekly') return sDate >= startOfWeekDate;
+            if (period === 'monthly') return sDate >= startOfMonthDate;
+            return true;
+        });
+    }, [sessions]);
+
+    const activeSessions = useMemo(() => {
+        return getSessionsForPeriod(breakdownPeriod);
+    }, [getSessionsForPeriod, breakdownPeriod]);
+
+    const activeTotalTime = useMemo(() => {
+        return activeSessions.reduce((acc, s) => acc + s.duration, 0);
+    }, [activeSessions]);
+
+    const getSubjectDistribution = useCallback((periodSessions: StudySession[]) => {
         const distribution = { physics: 0, chemistry: 0, maths: 0, custom: 0 };
-        sessions.forEach(s => {
+        periodSessions.forEach(s => {
             if (s.subject && s.subject in distribution) {
                 distribution[s.subject] += s.duration;
             } else {
@@ -44,9 +84,11 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
             }
         });
         return distribution;
-    }, [sessions]);
+    }, []);
 
-    const subjectDistribution = getSubjectDistribution();
+    const subjectDistribution = useMemo(() => {
+        return getSubjectDistribution(activeSessions);
+    }, [getSubjectDistribution, activeSessions]);
 
     const statsAvailableChapters = statsSubject !== 'all'
         ? subjectData[statsSubject]?.chapters.filter(ch =>
@@ -60,7 +102,7 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
 
     const getTopChaptersForSubject = (subject: Subject) => {
         const chapterTimes: Map<number, { name: string; time: number }> = new Map();
-        sessions
+        activeSessions
             .filter(s => s.subject === subject && s.chapterSerial)
             .forEach(s => {
                 const current = chapterTimes.get(s.chapterSerial!) || { name: s.chapterName || `Chapter ${s.chapterSerial}`, time: 0 };
@@ -79,13 +121,30 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
         );
     };
 
+    const handleTogglePeriod = () => {
+        setBreakdownPeriod(prev => {
+            const next = prev === 'overall' ? 'daily' :
+                         prev === 'daily' ? 'weekly' :
+                         prev === 'weekly' ? 'monthly' : 'overall';
+            localStorage.setItem('breakdownPeriod', next);
+            return next;
+        });
+    };
+
+    const periodLabels = {
+        overall: 'Overall Study Time',
+        daily: "Today's Study Time",
+        weekly: "This Week's Study Time",
+        monthly: "This Month's Study Time"
+    };
+
     return (
         <>
             <div className="statistics-card">
                 <h3>Statistics</h3>
                 <div className="stats-total" onClick={() => setShowDistribution(true)}>
-                    <div className="stats-total-label">Total Study Time</div>
-                    <div className="stats-total-value">{formatDuration(totalTime)}</div>
+                    <div className="stats-total-label">{periodLabels[breakdownPeriod]}</div>
+                    <div className="stats-total-value">{formatDuration(activeTotalTime)}</div>
                     <div className="stats-total-hint">Click to see breakdown</div>
                 </div>
                 <div className="stats-filters">
@@ -155,9 +214,10 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="distribution-total-time">
-                            <div className="distribution-total-label">Total Study Time</div>
-                            <div className="distribution-total-value">{formatDuration(totalTime)}</div>
+                        <div className="distribution-total-time" onClick={handleTogglePeriod}>
+                            <div className="distribution-total-label">{periodLabels[breakdownPeriod]}</div>
+                            <div className="distribution-total-value">{formatDuration(activeTotalTime)}</div>
+                            <div className="distribution-total-hint">Click to toggle period</div>
                         </div>
                         <div className="distribution-section-title">Time by Subject</div>
                         <div className="distribution-chart">
@@ -180,13 +240,13 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
                                             <div className="distribution-bar-header">
                                                 <span className="distribution-bar-label">{item.label}</span>
                                                 <span className="distribution-bar-value">
-                                                    {formatDuration(item.time)} ({totalTime > 0 ? Math.round((item.time / totalTime) * 100) : 0}%)
+                                                    {formatDuration(item.time)} ({activeTotalTime > 0 ? Math.round((item.time / activeTotalTime) * 100) : 0}%)
                                                 </span>
                                             </div>
                                             <div className="distribution-bar-track">
                                                 <div
                                                     className={`distribution-bar-fill ${item.key}`}
-                                                    style={{ width: `${totalTime > 0 ? (item.time / totalTime) * 100 : 0}%` }}
+                                                    style={{ width: `${activeTotalTime > 0 ? (item.time / activeTotalTime) * 100 : 0}%` }}
                                                 />
                                             </div>
                                         </div>
