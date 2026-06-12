@@ -28,6 +28,7 @@ const payload: SyncPayloadV1 = {
                     examCountdown: true,
                 },
             },
+            mockExamPresets: [],
         },
     },
 };

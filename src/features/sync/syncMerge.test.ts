@@ -28,6 +28,7 @@ const makePayload = (tag: string): SyncPayloadV1 => ({
                     examCountdown: true,
                 },
             },
+            mockExamPresets: [],
         },
         subjects: {
             subjectData: { physics: null, chemistry: null, maths: null },

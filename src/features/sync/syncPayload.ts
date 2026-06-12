@@ -59,6 +59,7 @@ export function buildSyncPayload(input: SyncPayloadInput): SyncPayloadV1 {
                 disableAutoShift: input.disableAutoShift,
                 // customAvatarUrl is intentionally excluded from sync.
                 progressCardSettings: toSyncedProgressCardSettings(input.progressCardSettings),
+                mockExamPresets: input.mockExamPresets || [],
             },
             subjects: input.subjects,
         },

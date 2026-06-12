@@ -8,6 +8,19 @@ export interface ChangelogEntry {
 // Update this list before each rollout. Keep newest entry first.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
      {
+        version: '1.0.5',
+        date: 'June 12, 2026',
+        title: 'Fully Flexible Custom Exam Presets',
+        changes: [
+            '-Replaced hardcoded exam formats (JEE Main, Advanced, BITSAT) with fully flexible, user-defined presets.',
+            '-Added an Exam Preset Manager modal allowing users to create, edit, and delete custom exam configurations.',
+            '-Supports custom exam name, short name, paper count, and per-subject max marks boundaries.',
+            '-Updated mock score analytics and score entry forms to dynamically recalculate scores and percentages from user presets.',
+            '-Integrated presets with the local and remote synchronization layers for seamless cross-device compatibility.',
+            '-Please report any found bug in my Reddit DMs u/Big_Distribution_730.'
+        ],
+    },
+     {
         version: '1.0.4',
         date: 'March 10, 2026',
         title: 'Fixed the unusable timer after last update',

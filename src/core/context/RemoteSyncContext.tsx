@@ -135,6 +135,7 @@ function createLocalPayload(params: {
     examDates: ReturnType<typeof useUserProgress>['examDates'];
     disableAutoShift: ReturnType<typeof useUserProgress>['disableAutoShift'];
     progressCardSettings: ReturnType<typeof useUserProgress>['progressCardSettings'];
+    mockExamPresets: ReturnType<typeof useUserProgress>['mockExamPresets'];
     subjectData: ReturnType<typeof useSubjectData>['subjectData'];
     customColumns: ReturnType<typeof useSubjectData>['customColumns'];
     excludedColumns: ReturnType<typeof useSubjectData>['excludedColumns'];
@@ -147,6 +148,7 @@ function createLocalPayload(params: {
         examDates: params.examDates,
         disableAutoShift: params.disableAutoShift,
         progressCardSettings: params.progressCardSettings,
+        mockExamPresets: params.mockExamPresets,
         plannerHistoryDays: SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
         appVersion: __APP_VERSION__,
         subjects: {
@@ -240,7 +242,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const { user, isConfigured } = useRemoteAuth();
     const {
         progress, setProgress, plannerTasks, setPlannerTasks, studySessions, setStudySessions, mockScores, setMockScores,
-        examDates, setExamDates, disableAutoShift, setDisableAutoShift, progressCardSettings, setProgressCardSettings
+        examDates, setExamDates, disableAutoShift, setDisableAutoShift, progressCardSettings, setProgressCardSettings, mockExamPresets, setMockExamPresets
     } = useUserProgress();
     const { subjectData, setSubjectData, customColumns, setCustomColumns, excludedColumns, setExcludedColumns, materialOrder, setMaterialOrder } = useSubjectData();
 
@@ -282,6 +284,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 userName: progressCardSettings.userName,
                 visibleStats: progressCardSettings.visibleStats,
             },
+            mockExamPresets,
         }),
         subjects: JSON.stringify({
             subjectData,
@@ -289,7 +292,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             excludedColumns,
             materialOrder,
         }),
-    }), [progress, plannerTasks, mockScores, examDates, disableAutoShift, progressCardSettings.userName, progressCardSettings.visibleStats, subjectData, customColumns, excludedColumns, materialOrder]);
+    }), [progress, plannerTasks, mockScores, examDates, disableAutoShift, progressCardSettings.userName, progressCardSettings.visibleStats, mockExamPresets, subjectData, customColumns, excludedColumns, materialOrder]);
 
     const clearScheduledSync = useCallback(() => {
         if (scheduledTimerRef.current !== null) {
@@ -312,6 +315,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             userName: payload.domains.settings.progressCardSettings.userName,
             visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
         }));
+        setMockExamPresets(payload.domains.settings.mockExamPresets || []);
 
         if (payload.domains.subjects) {
             setSubjectData(payload.domains.subjects.subjectData);
@@ -323,7 +327,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         window.setTimeout(() => {
             isApplyingRemoteRef.current = false;
         }, 0);
-    }, [setCustomColumns, setDisableAutoShift, setExamDates, setExcludedColumns, setMaterialOrder, setMockScores, setPlannerTasks, setProgress, setProgressCardSettings, setSubjectData]);
+    }, [setCustomColumns, setDisableAutoShift, setExamDates, setExcludedColumns, setMaterialOrder, setMockScores, setPlannerTasks, setProgress, setProgressCardSettings, setMockExamPresets, setSubjectData]);
 
     const runSync = useCallback(async () => {
         if (!user || !isConfigured || !supabase) return;
@@ -342,6 +346,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 examDates,
                 disableAutoShift,
                 progressCardSettings,
+                mockExamPresets,
                 subjectData,
                 customColumns,
                 excludedColumns,
@@ -575,6 +580,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         plannerTasks,
         progress,
         progressCardSettings,
+        mockExamPresets,
         setStudySessions,
         // studySessions intentionally omitted — read via latestStudySessionsRef to prevent stale closure.
         subjectData,

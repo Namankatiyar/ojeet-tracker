@@ -1,4 +1,4 @@
-import { AppProgress, ExamEntry, MockScore, PlannerTask, ProgressCardSettings, Subject, SubjectData } from '../../shared/types';
+import { AppProgress, ExamEntry, MockScore, PlannerTask, ProgressCardSettings, Subject, SubjectData, MockExamPreset } from '../../shared/types';
 
 export const SYNC_SCHEMA_VERSION = 1 as const;
 export const SYNC_DEFAULT_PLANNER_HISTORY_DAYS = 60;
@@ -23,6 +23,7 @@ export interface SyncPayloadV1 {
         settings: {
             disableAutoShift: boolean;
             progressCardSettings: SyncedProgressCardSettings;
+            mockExamPresets: MockExamPreset[];
         };
         subjects?: {
             subjectData: Record<Subject, SubjectData | null>;
@@ -40,6 +41,7 @@ export interface SyncPayloadInput {
     examDates: ExamEntry[];
     disableAutoShift: boolean;
     progressCardSettings: ProgressCardSettings;
+    mockExamPresets: MockExamPreset[];
     appVersion?: string;
     generatedAt?: string;
     now?: Date;

@@ -46,6 +46,7 @@ describe('syncPayload', () => {
             examDates: [],
             disableAutoShift: false,
             progressCardSettings,
+            mockExamPresets: [],
             generatedAt: '2026-03-07T10:00:00.000Z',
         });
 

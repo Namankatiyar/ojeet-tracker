@@ -1,7 +1,7 @@
 export type Priority = 'high' | 'medium' | 'low' | 'none';
 
 export type Subject = 'physics' | 'chemistry' | 'maths';
-export type MockExamType = 'jm' | 'ja' | 'bt';
+export type MockExamType = 'jm' | 'ja' | 'bt' | string;
 
 export interface Chapter {
     serial: number;
@@ -65,6 +65,14 @@ export interface MockSubjectMarks {
     physics: number;
     chemistry: number;
     maths: number;
+}
+
+export interface MockExamPreset {
+    id: string;
+    name: string;
+    shortName: string;
+    paperCount: 1 | 2;
+    subjectMaxMarks: MockSubjectMarks;
 }
 
 export interface MockScore {

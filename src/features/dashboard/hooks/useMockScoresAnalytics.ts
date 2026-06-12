@@ -1,18 +1,19 @@
 import { useMemo } from 'react';
-import { MockExamType, MockScore } from '../../../shared/types';
+import { MockExamType, MockScore, MockExamPreset } from '../../../shared/types';
 import { getMockExamType, getMockSubjectTotals, getMockTotalMarks } from '../../../shared/utils/mockScores';
 import { getSubjectColors } from '../utils/analyticsUtils';
 
-export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockExamType) {
+export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockExamType, presets: MockExamPreset[] = []) {
     const sortedScores = useMemo(() => {
         return mockScores
             .filter((score) => getMockExamType(score) === examType)
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [examType, mockScores]);
 
+    const preset = useMemo(() => presets.find(p => p.id === examType), [presets, examType]);
+
     const chartData = useMemo(() => {
         const subjectColors = getSubjectColors();
-        // Use serial numbers if density is high (more than 3), otherwise names
         const useSerialNumbers = sortedScores.length > 3;
         const labels = sortedScores.map((s, index) => useSerialNumbers ? (index + 1).toString() : s.name);
 
@@ -21,7 +22,7 @@ export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockEx
             datasets: [
                 {
                     label: 'Total',
-                    data: sortedScores.map((s) => getMockTotalMarks(s)),
+                    data: sortedScores.map((s) => getMockTotalMarks(s, preset)),
                     borderColor: '#8b5cf6',
                     backgroundColor: 'rgba(139, 92, 246, 0.1)',
                     pointBackgroundColor: '#8b5cf6',
@@ -34,7 +35,7 @@ export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockEx
                 },
                 {
                     label: 'Physics',
-                    data: sortedScores.map((s) => getMockSubjectTotals(s).physics),
+                    data: sortedScores.map((s) => getMockSubjectTotals(s, preset).physics),
                     borderColor: subjectColors.physics,
                     backgroundColor: 'transparent',
                     pointBackgroundColor: subjectColors.physics,
@@ -47,7 +48,7 @@ export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockEx
                 },
                 {
                     label: 'Chemistry',
-                    data: sortedScores.map((s) => getMockSubjectTotals(s).chemistry),
+                    data: sortedScores.map((s) => getMockSubjectTotals(s, preset).chemistry),
                     borderColor: subjectColors.chemistry,
                     backgroundColor: 'transparent',
                     pointBackgroundColor: subjectColors.chemistry,
@@ -60,7 +61,7 @@ export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockEx
                 },
                 {
                     label: 'Maths',
-                    data: sortedScores.map((s) => getMockSubjectTotals(s).maths),
+                    data: sortedScores.map((s) => getMockSubjectTotals(s, preset).maths),
                     borderColor: subjectColors.maths,
                     backgroundColor: 'transparent',
                     pointBackgroundColor: subjectColors.maths,
@@ -73,7 +74,7 @@ export function useMockScoresAnalytics(mockScores: MockScore[], examType: MockEx
                 }
             ]
         };
-    }, [sortedScores]);
+    }, [sortedScores, preset]);
 
     return { sortedScores, chartData };
 }

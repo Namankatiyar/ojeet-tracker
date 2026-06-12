@@ -1311,6 +1311,8 @@
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--accent), transparent 82%);
+  color: var(--accent);
 }
 
 .mock-exam-badge.jm {
@@ -1898,4 +1900,303 @@
     flex-direction: column;
     align-items: stretch;
   }
+}
+/* ===== Mock Manage Presets Button ===== */
+
+.mock-manage-presets-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mock-manage-presets-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light, var(--bg-primary));
+  transform: translateY(-1px);
+}
+
+/* ===== Manage Mock Presets Modal ===== */
+
+.mock-preset-manager-modal {
+  width: 95%;
+  max-width: 580px;
+  max-height: min(85vh, 560px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+}
+
+.mock-preset-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-shrink: 0;
+}
+
+.mock-preset-manager-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.mock-preset-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mock-preset-close-btn:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+/* Preset List */
+
+.mock-preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mock-preset-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mock-preset-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.mock-preset-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 12px);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.mock-preset-item:hover {
+  border-color: var(--panel-border-light, var(--text-muted));
+  background: var(--panel-bg-hover, var(--bg-primary));
+  transform: translateY(-1px);
+}
+
+.mock-preset-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.mock-preset-item-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mock-preset-item-short {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 0.125rem 0.4rem;
+  border-radius: var(--radius-xs, 4px);
+  border: 1px solid var(--border);
+}
+
+.mock-preset-item-meta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mock-preset-item-meta .text-physics,
+.mock-preset-item-meta .text-chemistry,
+.mock-preset-item-meta .text-maths {
+  font-weight: 600;
+}
+
+.mock-preset-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.mock-preset-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.mock-preset-edit-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.mock-preset-edit-btn:hover {
+  background: var(--accent-light, var(--bg-primary));
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.mock-preset-delete-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.mock-preset-delete-btn:hover:not(:disabled) {
+  background: var(--priority-high-bg, rgba(239, 68, 68, 0.1));
+  border-color: var(--priority-high, #ef4444);
+  color: var(--priority-high, #ef4444);
+  transform: translateY(-1px);
+}
+
+.mock-preset-delete-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Add Custom Preset Button */
+
+.mock-preset-add-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.25rem;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mock-preset-add-btn:hover {
+  transform: scale(1.015);
+  opacity: 0.92;
+}
+
+/* Preset Editor */
+
+.mock-preset-editor {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 12px);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+  min-height: 0; /* allows flex shrinking/growth within modal container */
+  overflow-y: auto;
+}
+
+.mock-preset-editor-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mock-preset-editor-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.mock-preset-editor-field {
+  flex: 1;
+}
+
+/* Select styling to match app inputs */
+
+.mock-preset-select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+  transition: border-color 0.2s ease;
+}
+
+.mock-preset-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light, rgba(139, 92, 246, 0.15));
+}
+
+.mock-preset-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Override .form-group label color for subject-colored labels */
+.form-group label.text-physics {
+  color: var(--color-physics) !important;
+}
+
+.form-group label.text-chemistry {
+  color: var(--color-chemistry) !important;
+}
+
+.form-group label.text-maths {
+  color: var(--color-maths) !important;
 }

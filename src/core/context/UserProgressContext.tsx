@@ -2,7 +2,7 @@ import React, { createContext, useContext, useCallback, useEffect, useRef } from
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { useProgress } from '../../shared/hooks/useProgress';
 import { triggerSmallConfetti } from '../../shared/utils/confetti';
-import { AppProgress, Subject, Priority, PlannerTask, StudySession, MockScore, ExamEntry, ProgressCardSettings } from '../../shared/types';
+import { AppProgress, Subject, Priority, PlannerTask, StudySession, MockScore, ExamEntry, ProgressCardSettings, MockExamPreset } from '../../shared/types';
 import { useSubjectData } from './SubjectDataContext';
 import { useTheme } from './ThemeContext';
 
@@ -17,6 +17,8 @@ interface UserProgressContextType {
     setMockScores: (scores: MockScore[] | ((prev: MockScore[]) => MockScore[])) => void;
     examDates: ExamEntry[];
     setExamDates: (dates: ExamEntry[] | ((prev: ExamEntry[]) => ExamEntry[])) => void;
+    mockExamPresets: MockExamPreset[];
+    setMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
     primaryExamDate: string;
     disableAutoShift: boolean;
     setDisableAutoShift: (disable: boolean | ((prev: boolean) => boolean)) => void;
@@ -46,6 +48,9 @@ interface UserProgressContextType {
     handleSetPrimaryExam: (id: string) => void;
     handleAddMockScore: (score: Omit<MockScore, 'id'>) => void;
     handleDeleteMockScore: (id: string) => void;
+    handleAddMockExamPreset: (preset: MockExamPreset) => void;
+    handleDeleteMockExamPreset: (id: string) => void;
+    handleUpdateMockExamPreset: (preset: MockExamPreset) => void;
 }
 
 const UserProgressContext = createContext<UserProgressContextType | undefined>(undefined);
@@ -56,6 +61,30 @@ const initialProgress: AppProgress = {
     maths: {},
 };
 
+export const defaultMockExamPresets: MockExamPreset[] = [
+    {
+        id: 'jm',
+        name: 'JEE Main',
+        shortName: 'JM',
+        paperCount: 1,
+        subjectMaxMarks: { physics: 100, chemistry: 100, maths: 100 }
+    },
+    {
+        id: 'ja',
+        name: 'JEE Advanced',
+        shortName: 'JA',
+        paperCount: 2,
+        subjectMaxMarks: { physics: 60, chemistry: 60, maths: 60 }
+    },
+    {
+        id: 'bt',
+        name: 'BITSAT',
+        shortName: 'BT',
+        paperCount: 1,
+        subjectMaxMarks: { physics: 130, chemistry: 130, maths: 130 }
+    }
+];
+
 export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { mergedSubjectData } = useSubjectData();
     const { accentColor } = useTheme();
@@ -65,6 +94,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [studySessions, setStudySessions] = useLocalStorage<StudySession[]>('jee-tracker-study-sessions', []);
     const [mockScores, setMockScores] = useLocalStorage<MockScore[]>('jee-tracker-mock-scores', []);
     const [examDates, setExamDates] = useLocalStorage<ExamEntry[]>('jee-exam-dates', []);
+    const [mockExamPresets, setMockExamPresets] = useLocalStorage<MockExamPreset[]>('jee-tracker-mock-presets', defaultMockExamPresets);
 
     // Migrate legacy single examDate to new examDates array
     useEffect(() => {
@@ -276,6 +306,18 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         setExamDates(prev => prev.map(e => ({ ...e, isPrimary: e.id === id })));
     }, [setExamDates]);
 
+    const handleAddMockExamPreset = useCallback((preset: MockExamPreset) => {
+        setMockExamPresets(prev => [...prev, preset]);
+    }, [setMockExamPresets]);
+
+    const handleDeleteMockExamPreset = useCallback((id: string) => {
+        setMockExamPresets(prev => prev.filter(p => p.id !== id));
+    }, [setMockExamPresets]);
+
+    const handleUpdateMockExamPreset = useCallback((preset: MockExamPreset) => {
+        setMockExamPresets(prev => prev.map(p => p.id === preset.id ? preset : p));
+    }, [setMockExamPresets]);
+
     return (
         <UserProgressContext.Provider value={{
             progress, setProgress, plannerTasks, setPlannerTasks, studySessions, setStudySessions,
@@ -285,7 +327,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             handleToggleMaterial, handleSetPriority, handleAddPlannerTask, handleTogglePlannerTask,
             handleDeletePlannerTask, handleEditPlannerTask, handleAddStudySession, handleDeleteStudySession,
             handleEditStudySession, handleAddMockScore, handleDeleteMockScore,
-            handleAddExam, handleDeleteExam, handleUpdateExam, handleSetPrimaryExam
+            handleAddExam, handleDeleteExam, handleUpdateExam, handleSetPrimaryExam,
+            mockExamPresets, setMockExamPresets, handleAddMockExamPreset, handleDeleteMockExamPreset, handleUpdateMockExamPreset
         }}>
             {children}
         </UserProgressContext.Provider>

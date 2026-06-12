@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { TrendingUp, Plus, Trash2 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { MockExamType, MockScore } from '../../../shared/types';
 import { useTheme } from '../../../core/context/ThemeContext';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useMockScoresAnalytics } from '../hooks/useMockScoresAnalytics';
 import { getChartOptions } from '../utils/analyticsUtils';
 import { getMockDefaultMaxMarks, getMockExamType, getMockMaxMarks, getMockPaperTotal, getMockPercentage, getMockSubjectTotals, getMockTotalMarks } from '../../../shared/utils/mockScores';
@@ -15,27 +16,29 @@ interface MockScoresPanelProps {
 
 export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockScoresPanelProps) {
     const { theme } = useTheme();
+    const { mockExamPresets } = useUserProgress();
     const [examType, setExamType] = useState<MockExamType>('jm');
-    const { sortedScores, chartData } = useMockScoresAnalytics(mockScores, examType);
+
+    useEffect(() => {
+        if (!mockExamPresets.find(p => p.id === examType) && mockExamPresets.length > 0) {
+            setExamType(mockExamPresets[0].id);
+        }
+    }, [mockExamPresets, examType]);
+
+    const activePreset = useMemo(() => mockExamPresets.find(p => p.id === examType) || mockExamPresets[0], [mockExamPresets, examType]);
+
+    const { sortedScores, chartData } = useMockScoresAnalytics(mockScores, examType, mockExamPresets);
     const maxMarks = useMemo(() => {
-        if (sortedScores.length === 0) return getMockDefaultMaxMarks(examType);
-        return Math.max(...sortedScores.map((score) => getMockMaxMarks(score)));
-    }, [examType, sortedScores]);
+        if (sortedScores.length === 0) return getMockDefaultMaxMarks(examType, mockExamPresets);
+        return Math.max(...sortedScores.map((score) => getMockMaxMarks(score, mockExamPresets)));
+    }, [examType, sortedScores, mockExamPresets]);
 
     const chartOptions = useMemo(() => 
         getChartOptions(theme, 'mock', maxMarks), 
     [maxMarks, theme]);
 
-    const emptyLabel = examType === 'ja'
-        ? 'No JEE Advanced mocks recorded yet'
-        : examType === 'bt'
-            ? 'No BITSAT mocks recorded yet'
-            : 'No JEE Mains mocks recorded yet';
-    const emptyCta = examType === 'ja'
-        ? 'Add Your First JA Mock'
-        : examType === 'bt'
-            ? 'Add Your First BT Mock'
-            : 'Add Your First JM Mock';
+    const emptyLabel = `No ${activePreset?.name || 'mock'} scores recorded yet`;
+    const emptyCta = `Add Your First ${activePreset?.shortName || 'Mock'} Score`;
 
     return (
         <div className="analytics-panel mock-scores-panel">
@@ -52,24 +55,15 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
                 </div>
                 <div className="mock-panel-actions">
                     <div className="view-toggle-small">
-                        <button
-                            className={examType === 'jm' ? 'active' : ''}
-                            onClick={() => setExamType('jm')}
-                        >
-                            JM
-                        </button>
-                        <button
-                            className={examType === 'ja' ? 'active' : ''}
-                            onClick={() => setExamType('ja')}
-                        >
-                            JA
-                        </button>
-                        <button
-                            className={examType === 'bt' ? 'active' : ''}
-                            onClick={() => setExamType('bt')}
-                        >
-                            BT
-                        </button>
+                        {mockExamPresets.map(preset => (
+                            <button
+                                key={preset.id}
+                                className={examType === preset.id ? 'active' : ''}
+                                onClick={() => setExamType(preset.id)}
+                            >
+                                {preset.shortName}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -91,16 +85,15 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
             {sortedScores.length > 0 && (
                 <div className={`mock-list ${sortedScores.length > 3 ? 'scrollable-list' : ''}`}>
                     {[...sortedScores].reverse().map((score) => {
-                        // Find the original index/serial number from the sorted array
-                        // Since sortedScores is already sorted by date ascending, the index + 1 is the serial
                         const serialNumber = sortedScores.findIndex(s => s.id === score.id) + 1;
-                        const subjectTotals = getMockSubjectTotals(score);
-                        const totalMarks = getMockTotalMarks(score);
-                        const scoreMaxMarks = getMockMaxMarks(score);
-                        const isJa = getMockExamType(score) === 'ja';
-                        const isBt = getMockExamType(score) === 'bt';
-                        const totalDisplay = isJa
-                            ? `${getMockPercentage(score).toFixed(1)}%`
+                        const subjectTotals = getMockSubjectTotals(score, activePreset);
+                        const totalMarks = getMockTotalMarks(score, activePreset);
+                        const scoreMaxMarks = getMockMaxMarks(score, mockExamPresets);
+                        
+                        const isDoublePaper = activePreset ? activePreset.paperCount === 2 : getMockExamType(score) === 'ja';
+                        
+                        const totalDisplay = isDoublePaper
+                            ? `${getMockPercentage(score, mockExamPresets).toFixed(1)}%`
                             : `${totalMarks}/${scoreMaxMarks}`;
 
                         return (
@@ -113,11 +106,11 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
                                         <span className="mock-date">
                                             {new Date(score.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                         </span>
-                                        <span className={`mock-exam-badge ${isJa ? 'ja' : isBt ? 'bt' : 'jm'}`}>
-                                            {isJa ? 'JA' : isBt ? 'BT' : 'JM'}
+                                        <span className="mock-exam-badge">
+                                            {activePreset?.shortName || getMockExamType(score)}
                                         </span>
                                     </span>
-                                    {isJa && (
+                                    {isDoublePaper && (
                                         <span className="mock-paper-summary">
                                             P1 {getMockPaperTotal(score, 'paper1')} • P2 {getMockPaperTotal(score, 'paper2')}
                                         </span>

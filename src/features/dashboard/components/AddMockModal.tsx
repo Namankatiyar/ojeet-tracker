@@ -1,20 +1,17 @@
-import { useState } from 'react';
-import { Calendar, ChevronUp, ChevronDown } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Calendar, ChevronUp, ChevronDown, Settings } from 'lucide-react';
 import { MockExamType, MockScore, MockSubjectMarks } from '../../../shared/types';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
 import { formatDateLocal } from '../../../shared/utils/date';
 import { getMockPercentage } from '../../../shared/utils/mockScores';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { ManageMockPresetsModal } from './ManageMockPresetsModal';
 
 interface AddMockModalProps {
     defaultExamType: MockExamType;
     onAdd: (score: Omit<MockScore, 'id'>) => void;
     onClose: () => void;
 }
-
-const JA_SUBJECT_MAX = 60;
-const JM_SUBJECT_MAX = 100;
-const BT_SUBJECT_MAX = 130;
-const BT_TOTAL_MAX = 390;
 
 const createEmptySubjectMarks = (): MockSubjectMarks => ({
     physics: 0,
@@ -59,13 +56,36 @@ const NumberInput = ({
 const getSubjectTotal = (marks: MockSubjectMarks) => marks.physics + marks.chemistry + marks.maths;
 
 export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalProps) {
+    const { mockExamPresets } = useUserProgress();
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [isManagePresetsOpen, setIsManagePresetsOpen] = useState(false);
+    
     const [examType, setExamType] = useState<MockExamType>(defaultExamType);
+
+    useEffect(() => {
+        if (!mockExamPresets.find(p => p.id === examType) && mockExamPresets.length > 0) {
+            setExamType(mockExamPresets[0].id);
+        }
+    }, [mockExamPresets, examType]);
+
+    const activePreset = useMemo(() => mockExamPresets.find(p => p.id === examType) || mockExamPresets[0], [mockExamPresets, examType]);
+
     const [name, setName] = useState('');
     const [date, setDate] = useState(formatDateLocal(new Date()));
-    const [jmMarks, setJmMarks] = useState<MockSubjectMarks>(createEmptySubjectMarks());
-    const [jaPaper1Marks, setJaPaper1Marks] = useState<MockSubjectMarks>(createEmptySubjectMarks());
-    const [jaPaper2Marks, setJaPaper2Marks] = useState<MockSubjectMarks>(createEmptySubjectMarks());
+    
+    const [paper1Marks, setPaper1Marks] = useState<MockSubjectMarks>(createEmptySubjectMarks());
+    const [paper2Marks, setPaper2Marks] = useState<MockSubjectMarks>(createEmptySubjectMarks());
+
+    useEffect(() => {
+        setPaper1Marks(createEmptySubjectMarks());
+        setPaper2Marks(createEmptySubjectMarks());
+    }, [examType]);
+
+    if (isManagePresetsOpen) {
+        return <ManageMockPresetsModal onClose={() => setIsManagePresetsOpen(false)} />;
+    }
+
+    if (!activePreset) return null; // Edge case
 
     const formatDateDisplay = (dateString: string) => {
         if (!dateString) return 'Select Date';
@@ -73,83 +93,63 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
         return selectedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     };
 
-    const jaTotals = {
-        physics: jaPaper1Marks.physics + jaPaper2Marks.physics,
-        chemistry: jaPaper1Marks.chemistry + jaPaper2Marks.chemistry,
-        maths: jaPaper1Marks.maths + jaPaper2Marks.maths,
-        paper1: getSubjectTotal(jaPaper1Marks),
-        paper2: getSubjectTotal(jaPaper2Marks),
+    const isDoublePaper = activePreset.paperCount === 2;
+    const sMax = activePreset.subjectMaxMarks;
+    const singlePaperMaxMarks = sMax.physics + sMax.chemistry + sMax.maths;
+    const totalMaxMarks = singlePaperMaxMarks * activePreset.paperCount;
+
+    const paper1Total = getSubjectTotal(paper1Marks);
+    const paper2Total = getSubjectTotal(paper2Marks);
+    const combinedTotals = {
+        physics: paper1Marks.physics + paper2Marks.physics,
+        chemistry: paper1Marks.chemistry + paper2Marks.chemistry,
+        maths: paper1Marks.maths + paper2Marks.maths,
     };
-    const jaTotalMarks = jaTotals.paper1 + jaTotals.paper2;
-    const jaPercentage = getMockPercentage({
-        id: 'draft',
-        name,
-        date,
-        examType: 'ja',
-        physicsMarks: jaTotals.physics,
-        chemistryMarks: jaTotals.chemistry,
-        mathsMarks: jaTotals.maths,
-        totalMarks: jaTotalMarks,
-        maxMarks: 360,
-        paper1Marks: jaPaper1Marks,
-        paper2Marks: jaPaper2Marks,
-    });
-    const jmTotalMarks = getSubjectTotal(jmMarks);
+    const combinedTotalMarks = paper1Total + (isDoublePaper ? paper2Total : 0);
+
+    const dummyScore: any = {
+        examType: activePreset.id,
+        totalMarks: combinedTotalMarks,
+        maxMarks: totalMaxMarks
+    };
+    const percentage = getMockPercentage(dummyScore, mockExamPresets);
 
     const handleAddMock = () => {
         if (!name.trim()) return;
 
-        if (examType === 'ja') {
+        const scoreBase = {
+            name,
+            date,
+            examType,
+            physicsMarks: combinedTotals.physics,
+            chemistryMarks: combinedTotals.chemistry,
+            mathsMarks: combinedTotals.maths,
+            totalMarks: combinedTotalMarks,
+            maxMarks: totalMaxMarks,
+        };
+
+        if (isDoublePaper) {
             onAdd({
-                name,
-                date,
-                examType,
-                physicsMarks: jaTotals.physics,
-                chemistryMarks: jaTotals.chemistry,
-                mathsMarks: jaTotals.maths,
-                totalMarks: jaTotalMarks,
-                maxMarks: 360,
-                paper1Marks: jaPaper1Marks,
-                paper2Marks: jaPaper2Marks,
-            });
-        } else if (examType === 'bt') {
-            onAdd({
-                name,
-                date,
-                examType,
-                physicsMarks: jmMarks.physics,
-                chemistryMarks: jmMarks.chemistry,
-                mathsMarks: jmMarks.maths,
-                totalMarks: jmTotalMarks,
-                maxMarks: BT_TOTAL_MAX,
+                ...scoreBase,
+                paper1Marks,
+                paper2Marks,
             });
         } else {
-            onAdd({
-                name,
-                date,
-                examType,
-                physicsMarks: jmMarks.physics,
-                chemistryMarks: jmMarks.chemistry,
-                mathsMarks: jmMarks.maths,
-                totalMarks: jmTotalMarks,
-                maxMarks: 300,
-            });
+            onAdd(scoreBase);
         }
-
         onClose();
     };
 
     const renderSubjectMarksGrid = (
         values: MockSubjectMarks,
         onChange: (updater: (current: MockSubjectMarks) => MockSubjectMarks) => void,
-        max: number,
     ) => (
         <div className="marks-grid">
             <div className="form-group">
                 <label className="text-physics">Physics</label>
                 <NumberInput
                     min={0}
-                    max={max}
+                    max={sMax.physics}
                     value={values.physics}
                     onChange={(val) => onChange((current) => ({ ...current, physics: val }))}
                 />
@@ -158,7 +158,7 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                 <label className="text-chemistry">Chemistry</label>
                 <NumberInput
                     min={0}
-                    max={max}
+                    max={sMax.chemistry}
                     value={values.chemistry}
                     onChange={(val) => onChange((current) => ({ ...current, chemistry: val }))}
                 />
@@ -167,7 +167,7 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                 <label className="text-maths">Maths</label>
                 <NumberInput
                     min={0}
-                    max={max}
+                    max={sMax.maths}
                     value={values.maths}
                     onChange={(val) => onChange((current) => ({ ...current, maths: val }))}
                 />
@@ -179,32 +179,26 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
         <>
             <div className="modal-overlay" onClick={onClose}>
                 <div className="add-mock-modal add-mock-modal-wide" onClick={(e) => e.stopPropagation()}>
-                    <h3>Add Mock Test Score</h3>
+                    <div className="mock-preset-manager-header">
+                        <h3>Add Mock Test Score</h3>
+                        <button className="mock-manage-presets-btn" onClick={() => setIsManagePresetsOpen(true)} title="Manage Presets">
+                            <Settings size={16} /> Presets
+                        </button>
+                    </div>
 
                     <div className="form-group">
                         <label>Exam</label>
                         <div className="view-toggle-small mock-exam-toggle">
-                            <button
-                                className={examType === 'jm' ? 'active' : ''}
-                                onClick={() => setExamType('jm')}
-                                type="button"
-                            >
-                                JM
-                            </button>
-                            <button
-                                className={examType === 'ja' ? 'active' : ''}
-                                onClick={() => setExamType('ja')}
-                                type="button"
-                            >
-                                JA
-                            </button>
-                            <button
-                                className={examType === 'bt' ? 'active' : ''}
-                                onClick={() => setExamType('bt')}
-                                type="button"
-                            >
-                                BT
-                            </button>
+                            {mockExamPresets.map(preset => (
+                                <button
+                                    key={preset.id}
+                                    className={examType === preset.id ? 'active' : ''}
+                                    onClick={() => setExamType(preset.id)}
+                                    type="button"
+                                >
+                                    {preset.shortName}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -212,13 +206,7 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                         <label>Test Name</label>
                         <input
                             type="text"
-                            placeholder={
-                                examType === 'ja'
-                                    ? 'e.g., Allen JA Mock 4'
-                                    : examType === 'bt'
-                                        ? 'e.g., BITSAT Mock 1'
-                                        : 'e.g., NTA Mock 1'
-                            }
+                            placeholder={`e.g., ${activePreset.name} Mock`}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
@@ -236,18 +224,11 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                         </button>
                     </div>
 
-                    {examType === 'jm' ? (
+                    {!isDoublePaper ? (
                         <>
-                            {renderSubjectMarksGrid(jmMarks, (updater) => setJmMarks((current) => updater(current)), JM_SUBJECT_MAX)}
+                            {renderSubjectMarksGrid(paper1Marks, (updater) => setPaper1Marks((current) => updater(current)))}
                             <div className="total-display">
-                                Total: <strong>{jmTotalMarks}</strong> / 300
-                            </div>
-                        </>
-                    ) : examType === 'bt' ? (
-                        <>
-                            {renderSubjectMarksGrid(jmMarks, (updater) => setJmMarks((current) => updater(current)), BT_SUBJECT_MAX)}
-                            <div className="total-display">
-                                Total: <strong>{jmTotalMarks}</strong> / {BT_TOTAL_MAX}
+                                Total: <strong>{combinedTotalMarks}</strong> / {totalMaxMarks}
                             </div>
                         </>
                     ) : (
@@ -256,28 +237,28 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
                                 <div className="ja-paper-card">
                                     <div className="ja-paper-header">
                                         <span>Paper 1</span>
-                                        <span>{jaTotals.paper1}/180</span>
+                                        <span>{paper1Total}/{singlePaperMaxMarks}</span>
                                     </div>
-                                    {renderSubjectMarksGrid(jaPaper1Marks, (updater) => setJaPaper1Marks((current) => updater(current)), JA_SUBJECT_MAX)}
+                                    {renderSubjectMarksGrid(paper1Marks, (updater) => setPaper1Marks((current) => updater(current)))}
                                 </div>
 
                                 <div className="ja-paper-card">
                                     <div className="ja-paper-header">
                                         <span>Paper 2</span>
-                                        <span>{jaTotals.paper2}/180</span>
+                                        <span>{paper2Total}/{singlePaperMaxMarks}</span>
                                     </div>
-                                    {renderSubjectMarksGrid(jaPaper2Marks, (updater) => setJaPaper2Marks((current) => updater(current)), JA_SUBJECT_MAX)}
+                                    {renderSubjectMarksGrid(paper2Marks, (updater) => setPaper2Marks((current) => updater(current)))}
                                 </div>
                             </div>
 
                             <div className="ja-subject-summary">
-                                <span className="text-physics">P {jaTotals.physics}</span>
-                                <span className="text-chemistry">C {jaTotals.chemistry}</span>
-                                <span className="text-maths">M {jaTotals.maths}</span>
+                                <span className="text-physics">P {combinedTotals.physics}</span>
+                                <span className="text-chemistry">C {combinedTotals.chemistry}</span>
+                                <span className="text-maths">M {combinedTotals.maths}</span>
                             </div>
 
                             <div className="total-display">
-                                Percentage: <strong>{jaPercentage.toFixed(1)}%</strong>
+                                Percentage: <strong>{percentage.toFixed(1)}%</strong>
                             </div>
                         </>
                     )}

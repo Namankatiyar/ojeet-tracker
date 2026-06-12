@@ -1,6 +1,7 @@
-import { AppProgress, ExamEntry, MockScore, PlannerTask, ProgressCardSettings, Subject, SubjectData } from '../../shared/types';
+import { AppProgress, ExamEntry, MockScore, PlannerTask, ProgressCardSettings, Subject, SubjectData, MockExamPreset } from '../../shared/types';
 import { buildSyncPayload } from './syncPayload';
 import { SyncPayloadV1 } from './syncTypes';
+import { defaultMockExamPresets } from '../../core/context/UserProgressContext';
 
 export const SYNC_LOCAL_KEYS = {
     progress: 'jee-tracker-progress',
@@ -10,6 +11,7 @@ export const SYNC_LOCAL_KEYS = {
     examDates: 'jee-exam-dates',
     disableAutoShift: 'jee-tracker-disable-auto-shift',
     progressCardSettings: 'jee-tracker-progress-card',
+    mockExamPresets: 'jee-tracker-mock-presets',
     subjectData: 'jee-tracker-subject-data',
     customColumns: 'jee-tracker-custom-columns',
     excludedColumns: 'jee-tracker-excluded-columns',
@@ -77,6 +79,7 @@ export function buildSyncPayloadFromLocalStorage(options?: {
         examDates: readJson<ExamEntry[]>(SYNC_LOCAL_KEYS.examDates, []),
         disableAutoShift: readJson<boolean>(SYNC_LOCAL_KEYS.disableAutoShift, false),
         progressCardSettings: readJson<ProgressCardSettings>(SYNC_LOCAL_KEYS.progressCardSettings, defaultProgressCardSettings),
+        mockExamPresets: readJson<MockExamPreset[]>(SYNC_LOCAL_KEYS.mockExamPresets, defaultMockExamPresets),
         appVersion: options?.appVersion,
         plannerHistoryDays: options?.plannerHistoryDays,
         now: options?.now,
