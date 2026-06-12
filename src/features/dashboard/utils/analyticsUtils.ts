@@ -25,7 +25,11 @@ export const getWeekDays = (offset: number) => {
 export const getMonthDays = (offset: number) => {
     const today = new Date();
     const targetMonth = new Date(today.getFullYear(), today.getMonth() + offset, 1);
-    const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+    let daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+
+    if (offset === 0) {
+        daysInMonth = today.getDate();
+    }
 
     const days: Date[] = [];
     for (let i = 1; i <= daysInMonth; i++) {
