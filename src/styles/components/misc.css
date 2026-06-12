@@ -3,90 +3,300 @@
 
 
 /* ===== Date Picker Modal ===== */
-.date-picker-header {
+
+/* Backdrop */
+.dp-backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg-base), transparent 40%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  animation: dp-fade-in 0.18s ease;
+}
+
+@keyframes dp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Panel */
+.dp-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.25rem;
+  width: min(92vw, 22rem);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: dp-slide-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+html[data-theme="dark"] .dp-panel {
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border-color: var(--panel-border);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow), 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes dp-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* Header row */
+.dp-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
 }
 
-.date-picker-header button {
+.dp-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.dp-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  transition: all var(--transition-fast);
+  transition: all 0.15s;
 }
 
-.date-picker-header button:hover {
+.dp-close-btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
-.date-picker-header span {
-  font-weight: 600;
+/* Month navigation */
+.dp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dp-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.dp-nav-btn:hover {
+  background: color-mix(in srgb, var(--accent), transparent 85%);
+  border-color: color-mix(in srgb, var(--accent), transparent 60%);
+  color: var(--accent);
+}
+
+.dp-month-label {
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text-primary);
+  text-align: center;
+  flex: 1;
 }
 
-.calendar-grid {
+.dp-month-label em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-left: 0.3rem;
+  font-size: 0.92rem;
+}
+
+/* Calendar grid */
+.dp-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.25rem;
+  gap: 3px;
+}
+
+.dp-weekday {
   text-align: center;
-}
-
-.calendar-day-header {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 600;
-  padding: 0.5rem 0;
+  padding: 0.4rem 0;
 }
 
-.calendar-day {
+.dp-day {
   aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
-  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background 0.12s, color 0.12s, transform 0.1s;
   color: var(--text-primary);
   background: transparent;
-  border: none;
+  border: 1.5px solid transparent;
+  position: relative;
 }
 
-.calendar-day:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-}
-
-.calendar-day.selected {
-  background: var(--accent);
-  color: var(--accent-text);
-}
-
-.calendar-day.today {
-  border: 1px solid var(--accent);
-  color: var(--accent);
-}
-
-.calendar-day.today.selected {
-  color: var(--accent-text);
-  border-color: transparent;
-}
-
-.calendar-day.empty {
+.dp-day.empty {
   pointer-events: none;
 }
 
-.calendar-day.disabled {
-  opacity: 0.3;
-  cursor: not-allowed !important;
-  color: var(--text-muted);
+.dp-day:hover:not(:disabled):not(.empty) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.08);
 }
 
+.dp-day.today {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.dp-day.today::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.dp-day.selected {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: transparent;
+  font-weight: 700;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 55%);
+  transform: scale(1.08);
+}
+
+html[data-theme="dark"] .dp-day.selected {
+  background: color-mix(in srgb, var(--accent), transparent 15%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 75%),
+              0 4px 16px color-mix(in srgb, var(--accent), transparent 55%);
+}
+
+.dp-day.today.selected::after {
+  display: none;
+}
+
+.dp-day.disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+  color: var(--text-muted);
+  transform: none !important;
+}
+
+/* Footer */
+.dp-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.dp-cancel-btn {
+  flex: 1;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.dp-cancel-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.dp-today-btn {
+  flex: 1;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent), transparent 85%);
+  border: 1.5px solid color-mix(in srgb, var(--accent), transparent 65%);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.dp-today-btn:hover {
+  background: color-mix(in srgb, var(--accent), transparent 75%);
+  border-color: color-mix(in srgb, var(--accent), transparent 50%);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+/* Light mode adjustments */
+:root:not([data-theme="dark"]) .dp-panel,
+[data-theme="light"] .dp-panel {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+:root:not([data-theme="dark"]) .dp-nav-btn,
+[data-theme="light"] .dp-nav-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+}
+
+:root:not([data-theme="dark"]) .dp-nav-btn:hover,
+[data-theme="light"] .dp-nav-btn:hover {
+  background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 80%);
+}
+
+:root:not([data-theme="dark"]) .dp-day:hover:not(:disabled):not(.empty),
+[data-theme="light"] .dp-day:hover:not(:disabled):not(.empty) {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+}
+
+:root:not([data-theme="dark"]) .dp-day.selected,
+[data-theme="light"] .dp-day.selected {
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--accent), transparent 60%);
+}
+
+/* Legacy class aliases so existing .calendar-day references still work */
+.calendar-day { /* kept for any inline usage */ }
+
+/* Date display button (used in some feature views) */
 .date-display-btn {
   display: flex;
   align-items: center;

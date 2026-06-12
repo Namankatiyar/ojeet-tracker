@@ -1,7 +1,8 @@
+import { useRef, useEffect } from 'react';
 import { X, BookOpen, Type, Search, ChevronRight } from 'lucide-react';
 import { Subject, SubjectData, PlannerTask, AppProgress } from '../../../shared/types';
 import { useTaskForm, TaskType } from '../hooks/useTaskForm';
-import { TimePicker } from '../../../shared/components/ui/TimePicker';
+import { TimePicker, TimePickerHandle } from '../../../shared/components/ui/TimePicker';
 
 interface TaskModalProps {
     isOpen: boolean;
@@ -15,6 +16,16 @@ interface TaskModalProps {
 
 export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, taskToEdit, progress }: TaskModalProps) {
     const form = useTaskForm({ isOpen, initialDate, taskToEdit, subjectData, progress });
+    const timePickerRef = useRef<TimePickerHandle>(null);
+
+    // Auto-focus hour input when chapter selection is completed and no material choice is shown.
+    useEffect(() => {
+        if (isOpen && !taskToEdit && form.selectedChapterSerial !== '' && form.availableMaterials.length === 0) {
+            // Small delay to let the selected chapter state render first.
+            const timer = setTimeout(() => timePickerRef.current?.focusHour(), 80);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, taskToEdit, form.selectedChapterSerial, form.availableMaterials.length]);
 
     if (!isOpen) return null;
 
@@ -83,9 +94,9 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
                             <CustomTaskFields form={form} />
                         )}
 
-                        <div className="form-group">
+                        <div className="form-group deadline-form-group">
                             <label>Till when? (Deadline)</label>
-                            <TimePicker value={form.time} onChange={form.setTime} />
+                            <TimePicker ref={timePickerRef} value={form.time} onChange={form.setTime} />
                         </div>
                     </div>
                 </div>

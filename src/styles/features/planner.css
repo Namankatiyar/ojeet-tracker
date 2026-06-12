@@ -1395,6 +1395,10 @@
   font-size: 0.85rem;
 }
 
+.deadline-form-group label {
+  margin-bottom: 0.5rem;
+}
+
 .subject-selector {
   display: flex;
   gap: 0.5rem;
@@ -1659,62 +1663,193 @@
   font-style: italic;
 }
 
+/* ===== Segmented Time Picker ===== */
+.time-picker-container {
+  position: relative;
+}
+
 .time-display-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 0.6rem 1rem 0.6rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: var(--panel-blur);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: text;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  gap: 0.55rem;
+}
+
+.time-display-box:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .time-display-box.active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light);
-  background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 82%);
+  background: color-mix(in srgb, var(--accent), transparent 94%);
 }
 
+/* The left side: the three input segments */
 .time-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 0.02rem;
+  flex: 1;
+  line-height: 1;
 }
 
-.period {
-  font-size: 0.8rem;
+/* Neuter the global dark-mode input override for segment inputs */
+[data-theme="dark"] .time-segment-input {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+[data-theme="dark"] .time-segment-input:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.time-segment-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  width: 2ch;
+  text-align: center;
+  padding: 0.08rem 0.04rem;
+  border-radius: 5px;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+  caret-color: var(--accent);
+}
+
+.time-segment-input:focus {
+  background: color-mix(in srgb, var(--accent), transparent 88%);
+  color: var(--accent);
+  outline: none;
+}
+
+.time-segment-separator {
   color: var(--text-muted);
-  margin-left: 2px;
+  user-select: none;
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 0;
+}
+
+/* AM/PM clickable badge */
+.period-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.28rem 0.62rem;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1.5px solid;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.period-badge.am {
+  color: color-mix(in srgb, var(--accent), var(--text-primary) 22%);
+  background: color-mix(in srgb, var(--accent), transparent 90%);
+  border-color: color-mix(in srgb, var(--accent), transparent 68%);
+}
+
+.period-badge.pm {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 86%);
+  border-color: color-mix(in srgb, var(--accent), transparent 65%);
+}
+
+.period-badge:hover {
+  transform: scale(1.06);
+  filter: brightness(1.15);
+}
+
+.period-badge:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 78%);
+}
+
+.time-picker-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: 0.1rem;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.time-picker-toggle:hover {
+  background: color-mix(in srgb, var(--accent), transparent 90%);
+}
+
+.time-picker-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 78%);
 }
 
 .time-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.2s, transform 0.2s;
+  opacity: 0.5;
+}
+
+.time-display-box:hover .time-icon,
+.time-display-box.active .time-icon,
+.time-picker-toggle:focus-visible .time-icon {
   color: var(--accent);
+  opacity: 1;
 }
 
 .custom-time-picker {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  padding: 0.75rem;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.6rem;
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: var(--panel-blur);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: slideDown 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  animation: slideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px) scale(0.98);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1723,24 +1858,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .col-label {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .scroll-container {
-  height: 120px;
+  height: 108px;
   overflow-y: auto;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 0 4px;
+  gap: 2px;
+  padding: 2px;
+  scroll-behavior: smooth;
 }
 
 .scroll-container::-webkit-scrollbar {
@@ -1748,47 +1885,57 @@
 }
 
 .time-btn {
-  padding: 0.4rem;
+  padding: 0.35rem 0.4rem;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 7px;
   background: transparent;
   cursor: pointer;
   color: var(--text-secondary);
   font-weight: 500;
   font-size: 0.85rem;
-  transition: all 0.1s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  width: 100%;
+  text-align: center;
 }
 
 .time-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
 }
 
 .time-btn.selected {
-  background: color-mix(in srgb, var(--accent), transparent 80%);
-  backdrop-filter: var(--panel-blur);
+  background: color-mix(in srgb, var(--accent), transparent 82%);
   color: var(--accent);
   font-weight: 700;
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent), transparent 60%);
 }
 
 .period-col {
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  min-width: 3.2rem;
 }
 
 .period-btn {
-  padding: 0.55rem 0.75rem;
+  padding: 0.45rem 0.6rem;
   width: 100%;
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: var(--panel-blur);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
-  font-size: 0.85rem;
-  transition: all var(--transition-fast);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+}
+
+.period-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .task-modal .time-display-box,
@@ -1800,10 +1947,9 @@
 }
 
 .period-btn.selected {
-  background: color-mix(in srgb, var(--accent), transparent 80%);
-  backdrop-filter: var(--panel-blur);
+  background: color-mix(in srgb, var(--accent), transparent 82%);
+  border-color: color-mix(in srgb, var(--accent), transparent 55%);
   color: var(--accent);
-  border-color: var(--accent);
 }
 
 @media (max-width: 30rem) {
@@ -1826,6 +1972,23 @@
 
   .modal-footer {
     padding: var(--space-4);
+  }
+
+  .time-display-box {
+    min-height: 44px;
+  }
+
+  .period-badge,
+  .time-picker-toggle,
+  .time-btn,
+  .period-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .custom-time-picker {
+    gap: 0.4rem;
+    padding: 0.5rem;
   }
 }
 
@@ -1854,25 +2017,79 @@
   border: 1px solid var(--border);
 }
 
+/* Light mode time picker */
 :root:not([data-theme="dark"]) .time-display-box,
 [data-theme="light"] .time-display-box {
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
+}
+
+:root:not([data-theme="dark"]) .time-display-box:hover,
+[data-theme="light"] .time-display-box:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-secondary);
+}
+
+:root:not([data-theme="dark"]) .time-display-box.active,
+[data-theme="light"] .time-display-box.active {
+  background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 90%);
 }
 
 :root:not([data-theme="dark"]) .custom-time-picker,
 [data-theme="light"] .custom-time-picker {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+:root:not([data-theme="dark"]) .time-btn,
+[data-theme="light"] .time-btn {
+  color: var(--text-secondary);
 }
 
 :root:not([data-theme="dark"]) .time-btn:hover,
 [data-theme="light"] .time-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 :root:not([data-theme="dark"]) .period-btn,
 [data-theme="light"] .period-btn {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
+}
+
+:root:not([data-theme="dark"]) .period-btn:hover,
+[data-theme="light"] .period-btn:hover {
+  background: var(--bg-primary);
+  border-color: var(--border-hover);
+}
+
+/* Light mode: neuter the global input override for segment inputs */
+:root:not([data-theme="dark"]) .time-segment-input,
+[data-theme="light"] .time-segment-input {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-theme="dark"]) .time-segment-input:focus,
+[data-theme="light"] .time-segment-input:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background: color-mix(in srgb, var(--accent), transparent 88%) !important;
+  color: var(--accent);
+}
+
+/* Light mode period badge */
+:root:not([data-theme="dark"]) .period-badge.am,
+[data-theme="light"] .period-badge.am {
+  color: color-mix(in srgb, var(--accent), var(--text-primary) 18%);
+  background: color-mix(in srgb, var(--accent), transparent 92%);
+  border-color: color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+:root:not([data-theme="dark"]) .period-badge.pm,
+[data-theme="light"] .period-badge.pm {
+  background: color-mix(in srgb, var(--accent), transparent 88%);
 }
