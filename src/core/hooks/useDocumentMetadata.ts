@@ -1,6 +1,12 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
+declare global {
+    interface Window {
+        gtag?: (...args: any[]) => void;
+    }
+}
+
 const BASE_URL = 'https://tracker.ojeet.tech';
 const SITE_NAME = 'OJEE Tracker';
 const OG_IMAGE = `${BASE_URL}/og_image.jpg`;
@@ -11,10 +17,10 @@ interface PageMeta {
 }
 
 const routeMetadata: Record<string, PageMeta> = {
-    '/': {
-        title: 'OJEE Tracker – JEE Study Dashboard | Syllabus Tracker, Planner & Study Clock',
+    '/jee-syllabus-tracker': {
+        title: 'JEE Syllabus Tracker – OJEE Tracker | Study Dashboard & Planner',
         description:
-            'Free JEE study dashboard with syllabus tracker, daily planner, and study clock. Track your Physics, Chemistry & Maths preparation progress for JEE Main & Advanced.',
+            '100% Free, offline-first JEE tracker. Seamlessly manage your daily study planner, track PCM chapter completion, utilize a built-in study clock, and sync data.',
     },
     '/physics': {
         title: 'Physics Syllabus Tracker – OJEE Tracker',
@@ -31,15 +37,15 @@ const routeMetadata: Record<string, PageMeta> = {
         description:
             'Track your JEE Maths chapter-wise preparation progress. Stay organized with your preparation in Calculus, Algebra, Coordinate Geometry, and Vectors & 3D Geometry.',
     },
-    '/planner': {
-        title: 'JEE Study Planner – OJEE Tracker',
+    '/jee-study-planner': {
+        title: 'JEE Study Planner & Timetable App for Droppers | OJEE',
         description:
-            'Plan your daily and weekly JEE study schedule. Add tasks, track completion, and stay organized with the OJEE Tracker study planner.',
+            'Interactive daily timetable app with rescheduling. Free JEE study planner for droppers and Class 12, weekly task manager, and progress calendar.',
     },
-    '/studyclock': {
-        title: 'Study Clock & Timer – OJEE Tracker',
+    '/jee-study-timer': {
+        title: 'JEE Study Timer & Pomodoro Clock | Log Hours | OJEE',
         description:
-            'Track your JEE study sessions with a built-in study clock. Log study time by subject and chapter, and review your study history.',
+            'Free online digital study stopwatch for JEE aspirants. Log your study hours, track focus sessions with a pomodoro timer, and analyze your preparation time.',
     },
     '/changelog': {
         title: 'Changelog – OJEE Tracker',
@@ -87,7 +93,7 @@ export function useDocumentMetadata() {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        const meta = routeMetadata[pathname] ?? routeMetadata['/']!;
+        const meta = routeMetadata[pathname] ?? routeMetadata['/jee-syllabus-tracker']!;
         const canonicalUrl = `${BASE_URL}${pathname === '/' ? '/' : pathname}`;
 
         // Document title
@@ -113,5 +119,13 @@ export function useDocumentMetadata() {
         setMetaTag('name', 'twitter:description', meta.description);
         setMetaTag('name', 'twitter:image', OG_IMAGE);
         setMetaTag('name', 'twitter:card', 'summary_large_image');
+
+        // Google Analytics Pageview Tracking
+        if (window.gtag) {
+            window.gtag('config', 'G-LPYD20N2G5', {
+                page_path: pathname,
+                page_title: meta.title,
+            });
+        }
     }, [pathname]);
 }

@@ -431,7 +431,7 @@ export function Dashboard({
 
     return (
         <div className="dashboard">
-            <h1 className="sr-only">JEE Study Dashboard – OJEE Tracker</h1>
+            <h1 className="sr-only">The Ultimate Offline-First JEE Tracker for Aspirants</h1>
             <div className="dashboard-header">
                 {quote ? (
                     <div className="quote-container">

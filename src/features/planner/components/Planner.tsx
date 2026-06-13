@@ -118,7 +118,8 @@ export function Planner({
 
     return (
         <div className="planner-page">
-            <h1 className="sr-only">JEE Study Planner – OJEE Tracker</h1>
+            <h1 className="sr-only">Interactive JEE Study Planner and Timetable App for Droppers</h1>
+            <h2 className="sr-only">Weekly task manager and study calendar with auto-rescheduling for IIT preparation</h2>
             <div className="planner-header">
                 <div className="view-toggles">
                     <button className={`view-btn ${viewMode === 'weekly' ? 'active' : ''}`} onClick={() => setViewMode('weekly')}>Weekly</button>

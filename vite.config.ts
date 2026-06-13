@@ -35,7 +35,7 @@ export default defineConfig({
       manifest: {
         name: 'OJEE-Tracker',
         short_name: 'OJEE-Tracker',
-        description: 'Track your PCM preparation progress offline',
+        description: 'Track your IIT JEE syllabus progress, daily planner, and study clock offline.',
         theme_color: '#6366f1',
         background_color: '#f8fafc',
         display: 'standalone',

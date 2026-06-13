@@ -315,6 +315,7 @@ export function StudyClock({
         <div className="study-clock-page">
             <div className="study-clock-header">
                 <h1><Clock size={28} /> Study Clock</h1>
+                <h2 className="sr-only">JEE Pomodoro Timer and Free Digital Study Stopwatch to log study hours for JEE Main exam</h2>
                 <p>Track your study sessions and analyze your progress</p>
             </div>
 

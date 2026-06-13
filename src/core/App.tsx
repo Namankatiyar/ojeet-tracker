@@ -12,6 +12,7 @@ import { RemoteSyncProvider } from './context/RemoteSyncContext';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { useDocumentMetadata } from './hooks/useDocumentMetadata';
 import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
+
 import { AppRoutes } from './AppRoutes';
 
 type View = 'dashboard' | 'planner' | 'studyclock' | Subject;
@@ -35,20 +36,24 @@ function AppContent() {
     // Determine current view from path
     const getCurrentView = (): View => {
         const path = location.pathname.substring(1);
-        if (!path) return 'dashboard';
+        if (!path || path === 'jee-syllabus-tracker') return 'dashboard';
+        if (path === 'jee-study-planner') return 'planner';
+        if (path === 'jee-study-timer') return 'studyclock';
         return path as View;
     };
 
     const currentView = getCurrentView();
 
     const handleNavigate = (view: View) => {
-        if (view === 'dashboard') navigate('/');
+        if (view === 'dashboard') navigate('/jee-syllabus-tracker');
+        else if (view === 'planner') navigate('/jee-study-planner');
+        else if (view === 'studyclock') navigate('/jee-study-timer');
         else navigate(`/${view}`);
     };
 
     const handleQuickAddTask = useCallback((date: string) => {
         setPlannerDateToOpen(date);
-        navigate('/planner');
+        navigate('/jee-study-planner');
     }, [navigate]);
 
     const onQuickAddTaskStatic = useCallback(() => {

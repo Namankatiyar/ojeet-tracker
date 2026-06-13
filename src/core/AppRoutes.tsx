@@ -44,7 +44,12 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     return (
         <Suspense fallback={<PageLoader />}>
             <Routes>
-                <Route path="/" element={
+                {/* Redirects from old paths to SEO paths */}
+                <Route path="/" element={<Navigate to="/jee-syllabus-tracker" replace />} />
+                <Route path="/planner" element={<Navigate to="/jee-study-planner" replace />} />
+                <Route path="/studyclock" element={<Navigate to="/jee-study-timer" replace />} />
+
+                <Route path="/jee-syllabus-tracker" element={
                     <Dashboard
                         physicsProgress={physicsProgress}
                         chemistryProgress={chemistryProgress}
@@ -68,7 +73,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                     />
                 } />
 
-                <Route path="/planner" element={
+                <Route path="/jee-study-planner" element={
                     <Planner
                         tasks={plannerTasks}
                         onAddTask={handleAddPlannerTask}
@@ -85,7 +90,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                     />
                 } />
 
-                <Route path="/studyclock" element={
+                <Route path="/jee-study-timer" element={
                     <StudyClock
                         subjectData={mergedSubjectData}
                         sessions={studySessions}
