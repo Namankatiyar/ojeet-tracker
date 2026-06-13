@@ -19,17 +19,17 @@ const routeMetadata: Record<string, PageMeta> = {
     '/physics': {
         title: 'Physics Syllabus Tracker – OJEE Tracker',
         description:
-            'Track your JEE Physics chapter-wise preparation progress. Mark study materials completed, set priorities, and monitor coverage across all topics.',
+            'Track your JEE Physics chapter-wise preparation progress. Mark study materials completed for Mechanics, Electromagnetism, Optics, and Modern Physics to master core concepts.',
     },
     '/chemistry': {
         title: 'Chemistry Syllabus Tracker – OJEE Tracker',
         description:
-            'Track your JEE Chemistry chapter-wise preparation progress. Mark study materials completed, set priorities, and monitor coverage across all topics.',
+            'Track your JEE Chemistry chapter-wise preparation progress. Monitor coverage across Physical, Organic, and Inorganic Chemistry topics and study resources.',
     },
     '/maths': {
         title: 'Maths Syllabus Tracker – OJEE Tracker',
         description:
-            'Track your JEE Maths chapter-wise preparation progress. Mark study materials completed, set priorities, and monitor coverage across all topics.',
+            'Track your JEE Maths chapter-wise preparation progress. Stay organized with your preparation in Calculus, Algebra, Coordinate Geometry, and Vectors & 3D Geometry.',
     },
     '/planner': {
         title: 'JEE Study Planner – OJEE Tracker',

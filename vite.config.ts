@@ -26,7 +26,7 @@ export default defineConfig({
     !isTest && VitePWA({
       injectRegister: false,
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.png'],
+      includeAssets: ['logo.png', 'og_image.jpg'],
       workbox: {
         cleanupOutdatedCaches: true,
         clientsClaim: true,
