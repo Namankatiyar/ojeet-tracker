@@ -10,7 +10,8 @@
   padding: 0.25rem 0;
 }
 
-.dashboard-header h1 {
+.dashboard-header .quote-text,
+.dashboard-header .dashboard-title {
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.2rem;
@@ -1879,7 +1880,8 @@
 }
 
 @media (max-width: 30rem) {
-  .dashboard-header h1 {
+  .dashboard-header .quote-text,
+  .dashboard-header .dashboard-title {
     font-size: 1.5rem;
   }
 

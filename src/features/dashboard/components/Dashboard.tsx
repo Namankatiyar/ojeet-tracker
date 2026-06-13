@@ -431,14 +431,15 @@ export function Dashboard({
 
     return (
         <div className="dashboard">
+            <h1 className="sr-only">JEE Study Dashboard – OJEE Tracker</h1>
             <div className="dashboard-header">
                 {quote ? (
                     <div className="quote-container">
-                        <h1>"{quote.quote}"</h1>
+                        <p className="quote-text">"{quote.quote}"</p>
                         <p className="quote-author">- {quote.author}</p>
                     </div>
                 ) : (
-                    <h1>Your Progress</h1>
+                    <p className="dashboard-title">Your Progress</p>
                 )}
             </div>
 

@@ -118,6 +118,7 @@ export function Planner({
 
     return (
         <div className="planner-page">
+            <h1 className="sr-only">JEE Study Planner – OJEE Tracker</h1>
             <div className="planner-header">
                 <div className="view-toggles">
                     <button className={`view-btn ${viewMode === 'weekly' ? 'active' : ''}`} onClick={() => setViewMode('weekly')}>Weekly</button>

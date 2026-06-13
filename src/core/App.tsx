@@ -10,6 +10,7 @@ import { UserProgressProvider, useUserProgress } from './context/UserProgressCon
 import { RemoteAuthProvider } from './context/RemoteAuthContext';
 import { RemoteSyncProvider } from './context/RemoteSyncContext';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
+import { useDocumentMetadata } from './hooks/useDocumentMetadata';
 import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 import { AppRoutes } from './AppRoutes';
 
@@ -57,6 +58,7 @@ function AppContent() {
     // Custom Hooks
     useGlobalShortcuts(handleQuickAddTask);
     useAutoShiftTasks(setPlannerTasks, disableAutoShift);
+    useDocumentMetadata();
 
     return (
         <div className="app">
