@@ -24,7 +24,8 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
             name: '',
             shortName: '',
             paperCount: 1,
-            subjectMaxMarks: { physics: 100, chemistry: 100, maths: 100 }
+            subjectMaxMarks: { physics: 100, chemistry: 100, maths: 100 },
+            enabledSubjects: { physics: true, chemistry: true, maths: true }
         });
     };
 
@@ -50,6 +51,19 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
                 [subject]: clamped
             }
         }));
+    };
+
+    const toggleSubject = (subject: 'physics' | 'chemistry' | 'maths') => {
+        setEditForm(prev => {
+            const currentEnabled = prev.enabledSubjects || { physics: true, chemistry: true, maths: true };
+            return {
+                ...prev,
+                enabledSubjects: {
+                    ...currentEnabled,
+                    [subject]: !currentEnabled[subject]
+                }
+            };
+        });
     };
 
     return (
@@ -105,30 +119,33 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
                         <div className="form-group">
                             <label>Max Marks Per Subject (per paper)</label>
                             <div className="marks-grid">
-                                <div className="form-group">
-                                    <label className="text-physics">Physics</label>
-                                    <input
-                                        type="number" min={1}
-                                        value={editForm.subjectMaxMarks?.physics || 0}
-                                        onChange={e => updateSubjectMax('physics', Number(e.target.value))}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label className="text-chemistry">Chemistry</label>
-                                    <input
-                                        type="number" min={1}
-                                        value={editForm.subjectMaxMarks?.chemistry || 0}
-                                        onChange={e => updateSubjectMax('chemistry', Number(e.target.value))}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label className="text-maths">Maths</label>
-                                    <input
-                                        type="number" min={1}
-                                        value={editForm.subjectMaxMarks?.maths || 0}
-                                        onChange={e => updateSubjectMax('maths', Number(e.target.value))}
-                                    />
-                                </div>
+                                {(['physics', 'chemistry', 'maths'] as const).map(subject => {
+                                    const isEnabled = editForm.enabledSubjects?.[subject] ?? true;
+                                    return (
+                                        <div className="form-group" key={subject}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                                <label className="checkbox-container" style={{ margin: 0 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isEnabled}
+                                                        onChange={() => toggleSubject(subject)}
+                                                    />
+                                                    <span className="checkmark"></span>
+                                                </label>
+                                                <span className={`text-${subject}`} style={{ marginBottom: 0, cursor: 'pointer', userSelect: 'none', fontWeight: 600, fontSize: 'var(--text-sm)' }} onClick={() => toggleSubject(subject)}>
+                                                    {subject.charAt(0).toUpperCase() + subject.slice(1)}
+                                                </span>
+                                            </div>
+                                            <input
+                                                type="number" min={1}
+                                                value={editForm.subjectMaxMarks?.[subject] || 0}
+                                                onChange={e => updateSubjectMax(subject, Number(e.target.value))}
+                                                disabled={!isEnabled}
+                                                style={{ opacity: isEnabled ? 1 : 0.5 }}
+                                            />
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -154,10 +171,10 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
                                             <span className="mock-preset-item-short">{preset.shortName}</span>
                                         </span>
                                         <span className="mock-preset-item-meta">
-                                            {preset.paperCount} {preset.paperCount === 1 ? 'Paper' : 'Papers'} ·{' '}
-                                            <span className="text-physics">P:{preset.subjectMaxMarks.physics}</span>{' '}
-                                            <span className="text-chemistry">C:{preset.subjectMaxMarks.chemistry}</span>{' '}
-                                            <span className="text-maths">M:{preset.subjectMaxMarks.maths}</span>
+                                            {preset.paperCount} {preset.paperCount === 1 ? 'Paper' : 'Papers'}
+                                            {(preset.enabledSubjects?.physics ?? true) && <span className="text-physics"> · P:{preset.subjectMaxMarks.physics}</span>}
+                                            {(preset.enabledSubjects?.chemistry ?? true) && <span className="text-chemistry"> · C:{preset.subjectMaxMarks.chemistry}</span>}
+                                            {(preset.enabledSubjects?.maths ?? true) && <span className="text-maths"> · M:{preset.subjectMaxMarks.maths}</span>}
                                         </span>
                                     </div>
                                     <div className="mock-preset-item-actions">

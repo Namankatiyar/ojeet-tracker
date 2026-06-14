@@ -53,8 +53,6 @@ const NumberInput = ({
     );
 };
 
-const getSubjectTotal = (marks: MockSubjectMarks) => marks.physics + marks.chemistry + marks.maths;
-
 export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalProps) {
     const { mockExamPresets } = useUserProgress();
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -95,11 +93,21 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
 
     const isDoublePaper = activePreset.paperCount === 2;
     const sMax = activePreset.subjectMaxMarks;
-    const singlePaperMaxMarks = sMax.physics + sMax.chemistry + sMax.maths;
+    const enabledSubjects = activePreset.enabledSubjects || { physics: true, chemistry: true, maths: true };
+    const singlePaperMaxMarks = 
+        (enabledSubjects.physics ? sMax.physics : 0) + 
+        (enabledSubjects.chemistry ? sMax.chemistry : 0) + 
+        (enabledSubjects.maths ? sMax.maths : 0);
     const totalMaxMarks = singlePaperMaxMarks * activePreset.paperCount;
 
-    const paper1Total = getSubjectTotal(paper1Marks);
-    const paper2Total = getSubjectTotal(paper2Marks);
+    const getEnabledSubjectTotal = (marks: MockSubjectMarks) => {
+        return (enabledSubjects.physics ? marks.physics : 0) +
+               (enabledSubjects.chemistry ? marks.chemistry : 0) +
+               (enabledSubjects.maths ? marks.maths : 0);
+    };
+
+    const paper1Total = getEnabledSubjectTotal(paper1Marks);
+    const paper2Total = getEnabledSubjectTotal(paper2Marks);
     const combinedTotals = {
         physics: paper1Marks.physics + paper2Marks.physics,
         chemistry: paper1Marks.chemistry + paper2Marks.chemistry,
@@ -121,9 +129,9 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
             name,
             date,
             examType,
-            physicsMarks: combinedTotals.physics,
-            chemistryMarks: combinedTotals.chemistry,
-            mathsMarks: combinedTotals.maths,
+            physicsMarks: enabledSubjects.physics ? combinedTotals.physics : 0,
+            chemistryMarks: enabledSubjects.chemistry ? combinedTotals.chemistry : 0,
+            mathsMarks: enabledSubjects.maths ? combinedTotals.maths : 0,
             totalMarks: combinedTotalMarks,
             maxMarks: totalMaxMarks,
         };
@@ -145,33 +153,39 @@ export function AddMockModal({ defaultExamType, onAdd, onClose }: AddMockModalPr
         onChange: (updater: (current: MockSubjectMarks) => MockSubjectMarks) => void,
     ) => (
         <div className="marks-grid">
-            <div className="form-group">
-                <label className="text-physics">Physics</label>
-                <NumberInput
-                    min={0}
-                    max={sMax.physics}
-                    value={values.physics}
-                    onChange={(val) => onChange((current) => ({ ...current, physics: val }))}
-                />
-            </div>
-            <div className="form-group">
-                <label className="text-chemistry">Chemistry</label>
-                <NumberInput
-                    min={0}
-                    max={sMax.chemistry}
-                    value={values.chemistry}
-                    onChange={(val) => onChange((current) => ({ ...current, chemistry: val }))}
-                />
-            </div>
-            <div className="form-group">
-                <label className="text-maths">Maths</label>
-                <NumberInput
-                    min={0}
-                    max={sMax.maths}
-                    value={values.maths}
-                    onChange={(val) => onChange((current) => ({ ...current, maths: val }))}
-                />
-            </div>
+            {enabledSubjects.physics && (
+                <div className="form-group">
+                    <label className="text-physics">Physics</label>
+                    <NumberInput
+                        min={0}
+                        max={sMax.physics}
+                        value={values.physics}
+                        onChange={(val) => onChange((current) => ({ ...current, physics: val }))}
+                    />
+                </div>
+            )}
+            {enabledSubjects.chemistry && (
+                <div className="form-group">
+                    <label className="text-chemistry">Chemistry</label>
+                    <NumberInput
+                        min={0}
+                        max={sMax.chemistry}
+                        value={values.chemistry}
+                        onChange={(val) => onChange((current) => ({ ...current, chemistry: val }))}
+                    />
+                </div>
+            )}
+            {enabledSubjects.maths && (
+                <div className="form-group">
+                    <label className="text-maths">Maths</label>
+                    <NumberInput
+                        min={0}
+                        max={sMax.maths}
+                        value={values.maths}
+                        onChange={(val) => onChange((current) => ({ ...current, maths: val }))}
+                    />
+                </div>
+            )}
         </div>
     );
 

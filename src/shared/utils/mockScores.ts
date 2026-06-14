@@ -12,7 +12,12 @@ export const getMockDefaultMaxMarks = (examType: MockExamType, presets: MockExam
     const preset = presets.find(p => p.id === examType);
     if (preset) {
         const s = preset.subjectMaxMarks;
-        return (s.physics + s.chemistry + s.maths) * preset.paperCount;
+        const e = preset.enabledSubjects || { physics: true, chemistry: true, maths: true };
+        let singlePaperMax = 0;
+        if (e.physics) singlePaperMax += s.physics;
+        if (e.chemistry) singlePaperMax += s.chemistry;
+        if (e.maths) singlePaperMax += s.maths;
+        return singlePaperMax * preset.paperCount;
     }
     if (examType === 'ja') return 360;
     if (examType === 'bt') return 390;

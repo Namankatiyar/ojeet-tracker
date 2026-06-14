@@ -73,6 +73,11 @@ export interface MockExamPreset {
     shortName: string;
     paperCount: 1 | 2;
     subjectMaxMarks: MockSubjectMarks;
+    enabledSubjects?: {
+        physics: boolean;
+        chemistry: boolean;
+        maths: boolean;
+    };
 }
 
 export interface MockScore {
