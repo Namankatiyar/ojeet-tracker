@@ -1,6 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../shared/components/layout/Header';
+import { Footer } from '../shared/components/layout/Footer';
+import { DiscordInviteModal } from '../shared/components/ui/DiscordInviteModal';
 import { Subject } from '../shared/types';
 import { formatDateLocal } from '../shared/utils/date';
 
@@ -60,6 +62,18 @@ function AppContent() {
         handleQuickAddTask(formatDateLocal(new Date()));
     }, [handleQuickAddTask]);
 
+    const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false);
+
+    useEffect(() => {
+        const dismissed = localStorage.getItem('ojee_discord_dismissed');
+        if (!dismissed) {
+            const timer = setTimeout(() => {
+                setIsDiscordModalOpen(true);
+            }, 3000); // 3 seconds delay
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
     // Custom Hooks
     useGlobalShortcuts(handleQuickAddTask);
     useAutoShiftTasks(setPlannerTasks, disableAutoShift);
@@ -101,6 +115,11 @@ function AppContent() {
                     onQuickAddTask={onQuickAddTaskStatic}
                 />
             </main>
+            <Footer />
+            <DiscordInviteModal
+                isOpen={isDiscordModalOpen}
+                onClose={() => setIsDiscordModalOpen(false)}
+            />
         </div>
     );
 }
