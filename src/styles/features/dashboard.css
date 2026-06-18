@@ -614,6 +614,7 @@
   align-items: center;
   gap: 1.25rem;
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);
+  text-align: center;
 }
 
 .subject-card:hover {
@@ -630,7 +631,8 @@
 .subject-card-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  gap: var(--space-2);
   width: 100%;
 }
 
@@ -639,31 +641,95 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--accent);
 }
 
 .subject-card-header h3 {
-  font-size: 1.125rem;
+  font-size: var(--text-lg);
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text-primary);
 }
 
-.subject-card-footer {
+.subject-ring-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--space-2) 0;
+}
+
+.subject-ring-container .progress-ring-container {
+  flex-shrink: 0;
+}
+
+.subject-card-stats {
   display: flex;
   justify-content: space-between;
   width: 100%;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
+  gap: var(--space-2);
+  margin-top: auto;
 }
 
-.chapter-count {
+.subject-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.subject-card-stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.2;
+}
+
+.subject-card-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
   color: var(--text-muted);
-  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.subject-card-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .view-link {
   color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  transition: color var(--transition-fast);
+}
+
+.view-link-arrow {
+  transition: transform var(--transition-fast);
+}
+
+.subject-card:hover .view-link-arrow {
+  transform: translateX(4px);
+}
+
+/* Proportional styling for ProgressRing inside subject cards */
+.subject-card .progress-value {
+  font-size: 1.5rem;
+}
+
+.subject-card .progress-symbol {
   font-size: 0.875rem;
-  font-weight: 500;
 }
 
 /* Progress Components */

@@ -28,7 +28,7 @@ html[data-theme="dark"] body.has-custom-bg::before {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  z-index: -3;
+  z-index: -2;
   pointer-events: none;
 }
 
@@ -38,7 +38,7 @@ html[data-theme="dark"] body.has-custom-bg::after {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, var(--dim-level, 0));
-  z-index: -2;
+  z-index: -1;
   pointer-events: none;
   transition: background var(--transition-normal);
 }
@@ -72,13 +72,10 @@ html[data-theme="dark"] body {
   }
 }
 
-/* When custom background is set, make body's gradient semi-transparent to show image */
+/* When custom background is set, make body's gradient transparent to show image and create a stacking context */
 body.has-custom-bg {
   background: transparent !important;
-}
-
-html[data-theme="dark"] body.has-custom-bg {
-  background: rgba(0, 0, 0, 0.3) !important;
+  z-index: 0;
 }
 
 /* Remove accent glow when custom background is active (looks better with image backgrounds) */
@@ -172,3 +169,4 @@ body.has-custom-bg {
     border: 1px solid var(--border);
   }
 }
+

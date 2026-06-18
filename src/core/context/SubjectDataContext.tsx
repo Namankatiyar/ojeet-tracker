@@ -186,7 +186,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 ...prev,
                 [subject]: {
                     ...data,
-                    chapters: data.chapters.map(c => c.serial === serial ? { ...c, name: newName.trim() } : c)
+                    chapters: data.chapters.map(c => c.serial === serial ? { ...c, name: newName } : c)
                 }
             };
         });

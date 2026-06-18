@@ -98,7 +98,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Apply custom background, dimming, and glassmorphism intensity
     useEffect(() => {
-        if (backgroundUrl) {
+        // Clear direct background inline style from previous implementation
+        document.body.style.backgroundImage = '';
+
+        if (backgroundUrl && theme === 'dark') {
             document.documentElement.style.setProperty('--custom-bg-url', `url("${backgroundUrl}")`);
             document.body.classList.add('has-custom-bg');
         } else {
@@ -123,7 +126,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         document.documentElement.style.setProperty('--glass-border', `rgba(255, 255, 255, ${borderOpacity})`);
         document.documentElement.style.setProperty('--glass-border-light', `rgba(255, 255, 255, ${borderOpacity + 0.05})`);
         document.documentElement.style.setProperty('--glass-refraction', `saturate(${saturation}%) brightness(${brightness}%) hue-rotate(${hueRotate}deg)`);
-    }, [backgroundUrl, dimLevel, glassIntensity, glassRefraction]);
+    }, [backgroundUrl, theme, dimLevel, glassIntensity, glassRefraction]);
 
     return (
         <ThemeContext.Provider value={{

@@ -108,79 +108,69 @@ function HoverPanel({ x, y, chapterName, progress }: HoverPanelProps) {
     return createPortal(panel, document.body);
 }
 
-// ─── Main ChapterRow Component ───────────────────────────────────────────────
+// ─── Split Row Components ───────────────────────────────────────────────
 
-interface ChapterRowProps {
+interface LeftChapterRowProps {
     chapter: Chapter;
-    materialNames: string[];
+    index?: number;
     progress: ChapterProgress | undefined;
-    onToggleMaterial: (chapterSerial: number, material: string) => void;
-    onSetPriority: (chapterSerial: number, priority: Priority) => void;
-    onOpenDetails?: () => void;
     isEditing?: boolean;
     onRename?: (newName: string) => void;
-    onDelete?: () => void;
-    isFirst?: boolean;
-    isLast?: boolean;
-    index?: number;
+    onOpenDetails?: () => void;
+    isHovered: boolean;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+    priorityClass: string;
     onDragStart?: (e: React.DragEvent<HTMLTableRowElement>) => void;
     onDragEnter?: (e: React.DragEvent<HTMLTableRowElement>) => void;
     onDragEnd?: (e: React.DragEvent<HTMLTableRowElement>) => void;
 }
 
-function ChapterRowComponent({
+export const LeftChapterRow = React.memo(({
     chapter,
-    materialNames,
+    index,
     progress,
-    onToggleMaterial,
-    onSetPriority,
-    onOpenDetails,
     isEditing = false,
     onRename,
-    onDelete,
-    index,
+    onOpenDetails,
+    isHovered,
+    onMouseEnter,
+    onMouseLeave,
+    priorityClass,
     onDragStart,
     onDragEnter,
     onDragEnd
-}: ChapterRowProps) {
-    const completed = progress?.completed || {};
-    const priority = progress?.priority || 'none';
-
-    const completedCount = materialNames.filter(m => completed[m]).length;
-    const isFullyCompleted = completedCount === materialNames.length && materialNames.length > 0;
+}: LeftChapterRowProps) => {
     const hasDetailData = hasChapterDetailData(progress);
     const totalAttempted = getTotalAttemptedQuestions(progress);
-
-    const getPriorityClass = () => {
-        if (isEditing) return ''; // No priority styling in edit mode
-        if (isFullyCompleted) return 'completed';
-        return priority !== 'none' ? `priority-${priority}` : '';
-    };
+    const priority = progress?.priority || 'none';
 
     const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
     const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const handleMouseEnter = useCallback((e: React.MouseEvent) => {
+    const handleMouseEnterLocal = useCallback((e: React.MouseEvent) => {
+        onMouseEnter();
         if (isEditing) return;
         if (!hasDetailData && priority === 'none') return;
         if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
         setHoverPos({ x: e.clientX, y: e.clientY });
-    }, [isEditing, hasDetailData, priority]);
+    }, [isEditing, hasDetailData, priority, onMouseEnter]);
 
-    const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const handleMouseMoveLocal = useCallback((e: React.MouseEvent) => {
         if (isEditing) return;
         if (!hasDetailData && priority === 'none') return;
         setHoverPos({ x: e.clientX, y: e.clientY });
     }, [isEditing, hasDetailData, priority]);
 
-    const handleMouseLeave = useCallback(() => {
+    const handleMouseLeaveLocal = useCallback(() => {
+        onMouseLeave();
         leaveTimerRef.current = setTimeout(() => setHoverPos(null), 80);
-    }, []);
+    }, [onMouseLeave]);
 
     return (
         <>
             <tr
-                className={`chapter-row ${getPriorityClass()}`}
+                className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
                 draggable={isEditing}
                 onDragStart={isEditing ? onDragStart : undefined}
                 onDragEnter={isEditing ? onDragEnter : undefined}
@@ -196,13 +186,11 @@ function ChapterRowComponent({
                 role={!isEditing ? 'button' : undefined}
                 tabIndex={!isEditing ? 0 : undefined}
                 style={isEditing ? { cursor: 'grab' } : undefined}
+                onMouseEnter={handleMouseEnterLocal}
+                onMouseLeave={handleMouseLeaveLocal}
+                onMouseMove={handleMouseMoveLocal}
             >
-                <td 
-                    className="serial-cell"
-                    onMouseEnter={handleMouseEnter}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                >
+                <td className="serial-cell">
                     {isEditing ? (
                         <div className="grip-icon-wrapper">
                             <GripVertical size={20} />
@@ -211,63 +199,32 @@ function ChapterRowComponent({
                         index !== undefined ? index + 1 : chapter.serial
                     )}
                 </td>
-                <td 
-                    className="chapter-cell"
-                    onMouseEnter={handleMouseEnter}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                >
+                <td className="chapter-cell">
                     {isEditing ? (
                         <input
                             type="text"
                             value={chapter.name}
                             onChange={(e) => onRename?.(e.target.value)}
+                            onBlur={(e) => {
+                                onRename?.(e.target.value.trim());
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.currentTarget.blur();
+                                }
+                            }}
                             className="modal-input chapter-edit-input"
                             onClick={(e) => e.stopPropagation()}
                         />
                     ) : (
-                        <>
-                            <span className="chapter-name-wrap">
-                                <span className={isFullyCompleted ? 'chapter-name completed' : 'chapter-name'}>
-                                    {chapter.name}
-                                </span>
-                                {hasDetailData && <span className="chapter-detail-dot" aria-label="Has detail tracking">•</span>}
-                                {totalAttempted > 0 && <span className="chapter-question-badge">{totalAttempted} qs</span>}
+                        <span className="chapter-name-wrap">
+                            <span className={priorityClass === 'completed' ? 'chapter-name completed' : 'chapter-name'}>
+                                {chapter.name}
                             </span>
-                            {isFullyCompleted && <span className="completed-badge">✓</span>}
-                        </>
-                    )}
-                </td>
-                {materialNames.map((material) => (
-                    <td key={material} className="material-cell">
-                        <label className="checkbox-container" onClick={(e) => e.stopPropagation()}>
-                            <input
-                                type="checkbox"
-                                checked={!!completed[material]}
-                                onChange={() => onToggleMaterial(chapter.serial, material)}
-                                onClick={(e) => e.stopPropagation()}
-                            />
-                            <span className="checkmark"></span>
-                        </label>
-                    </td>
-                ))}
-                <td className="priority-cell" onClick={(e) => e.stopPropagation()}>
-                    {isEditing ? (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete?.();
-                            }}
-                            className="chapter-delete-btn"
-                        >
-                            <Trash2 size={14} />
-                            Delete
-                        </button>
-                    ) : (
-                        <PrioritySelector
-                            priority={priority}
-                            onChange={(p) => onSetPriority(chapter.serial, p)}
-                        />
+                            {hasDetailData && <span className="chapter-detail-dot" aria-label="Has detail tracking">•</span>}
+                            {totalAttempted > 0 && <span className="chapter-question-badge">{totalAttempted} Qs</span>}
+                            {priorityClass === 'completed' && <span className="completed-badge">✓</span>}
+                        </span>
                     )}
                 </td>
             </tr>
@@ -281,6 +238,128 @@ function ChapterRowComponent({
             )}
         </>
     );
+});
+
+interface MiddleChapterRowProps {
+    chapter: Chapter;
+    materialNames: string[];
+    progress: ChapterProgress | undefined;
+    onToggleMaterial: (chapterSerial: number, material: string) => void;
+    isHovered: boolean;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+    priorityClass: string;
+    onOpenDetails?: () => void;
+    isEditing?: boolean;
 }
 
-export const ChapterRow = React.memo(ChapterRowComponent);
+export const MiddleChapterRow = React.memo(({
+    chapter,
+    materialNames,
+    progress,
+    onToggleMaterial,
+    isHovered,
+    onMouseEnter,
+    onMouseLeave,
+    priorityClass,
+    onOpenDetails,
+    isEditing = false
+}: MiddleChapterRowProps) => {
+    const completed = progress?.completed || {};
+
+    return (
+        <tr
+            className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
+            onClick={!isEditing ? onOpenDetails : undefined}
+            onKeyDown={!isEditing ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onOpenDetails?.();
+                }
+            } : undefined}
+            role={!isEditing ? 'button' : undefined}
+            tabIndex={!isEditing ? 0 : undefined}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
+            {materialNames.map((material) => (
+                <td key={material} className="material-cell">
+                    <label className="checkbox-container" onClick={(e) => e.stopPropagation()}>
+                        <input
+                            type="checkbox"
+                            checked={!!completed[material]}
+                            onChange={() => onToggleMaterial(chapter.serial, material)}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        <span className="checkmark"></span>
+                    </label>
+                </td>
+            ))}
+        </tr>
+    );
+});
+
+interface RightChapterRowProps {
+    chapter: Chapter;
+    progress: ChapterProgress | undefined;
+    onSetPriority: (chapterSerial: number, priority: Priority) => void;
+    isEditing?: boolean;
+    onDelete?: () => void;
+    isHovered: boolean;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+    priorityClass: string;
+    onOpenDetails?: () => void;
+}
+
+export const RightChapterRow = React.memo(({
+    chapter,
+    progress,
+    onSetPriority,
+    isEditing = false,
+    onDelete,
+    isHovered,
+    onMouseEnter,
+    onMouseLeave,
+    priorityClass,
+    onOpenDetails
+}: RightChapterRowProps) => {
+    const priority = progress?.priority || 'none';
+
+    return (
+        <tr
+            className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
+            onClick={!isEditing ? onOpenDetails : undefined}
+            onKeyDown={!isEditing ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onOpenDetails?.();
+                }
+            } : undefined}
+            role={!isEditing ? 'button' : undefined}
+            tabIndex={!isEditing ? 0 : undefined}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
+            <td className="priority-cell" onClick={(e) => e.stopPropagation()}>
+                {isEditing ? (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete?.();
+                        }}
+                        className="chapter-delete-btn"
+                    >
+                        <Trash2 size={14} />
+                        Delete
+                    </button>
+                ) : (
+                    <PrioritySelector
+                        priority={priority}
+                        onChange={(p) => onSetPriority(chapter.serial, p)}
+                    />
+                )}
+            </td>
+        </tr>
+    );
+});

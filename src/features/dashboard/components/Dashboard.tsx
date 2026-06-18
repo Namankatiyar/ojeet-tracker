@@ -14,6 +14,7 @@ import { PwaInstallPromptModal } from '../../sync/PwaInstallPromptModal';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 import { applyPwaUpdate, getPwaBridgeState, subscribePwaBridge } from '../../../shared/utils/pwaBridge';
 import { DashboardNotificationCenter, DashboardNotificationItem } from './DashboardNotificationCenter';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 interface DashboardProps {
     physicsProgress: number;
@@ -98,6 +99,7 @@ export function Dashboard({
     const [authError, setAuthError] = useState<string | null>(null);
     const { user, isConfigured, isPromptDismissed, dismissPrompt, signInWithGoogle } = useRemoteAuth();
     const { remoteStudyAggregate } = useRemoteSync();
+    const { progress } = useUserProgress();
     const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
     const lastAcknowledgedReleaseId = notificationMeta.lastAcknowledgedReleaseId
         ?? notificationMeta.lastAcknowledgedVersion
@@ -207,6 +209,39 @@ export function Dashboard({
         if (!data) return { total: 0, completed: 0 };
         return { total: data.chapters.length, completed: 0 };
     };
+
+    const getQuestionsSolved = useCallback((subject: Subject) => {
+        const subjectProgress = progress[subject] || {};
+        let totalQuestions = 0;
+        Object.values(subjectProgress).forEach((chapterProgress) => {
+            if (chapterProgress?.detail?.attemptedByMaterial) {
+                Object.values(chapterProgress.detail.attemptedByMaterial).forEach((questions) => {
+                    if (typeof questions === 'number' && !isNaN(questions)) {
+                        totalQuestions += questions;
+                    }
+                });
+            }
+        });
+        return totalQuestions;
+    }, [progress]);
+
+    const getSubjectStudyTime = useCallback((subject: Subject) => {
+        const localSeconds = studySessions
+            .filter(s => s.subject === subject)
+            .reduce((acc, s) => acc + s.duration, 0);
+        
+        let remoteSeconds: number | undefined;
+        if (remoteStudyAggregate) {
+            if (subject === 'physics') remoteSeconds = remoteStudyAggregate.total_seconds_physics;
+            else if (subject === 'chemistry') remoteSeconds = remoteStudyAggregate.total_seconds_chemistry;
+            else if (subject === 'maths') remoteSeconds = remoteStudyAggregate.total_seconds_maths;
+        }
+        
+        const totalSeconds = remoteSeconds ?? localSeconds;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    }, [studySessions, remoteStudyAggregate]);
 
     const daysRemaining = primaryExam ? calculateDaysRemaining(primaryExam.date) : null;
 
@@ -612,10 +647,28 @@ export function Dashboard({
                                 <span className="subject-icon">{icon}</span>
                                 <h3>{label}</h3>
                             </div>
-                            <ProgressRing progress={progress} size={100} strokeWidth={6} color={color} />
-                            <div className="subject-card-footer">
-                                <span className="chapter-count">{stats.total} Chapters</span>
-                                <span className="view-link">View Details →</span>
+                            <div className="subject-ring-container">
+                                <ProgressRing progress={progress} size={100} strokeWidth={8} color={color} />
+                            </div>
+                            <div className="subject-card-stats">
+                                <div className="subject-card-stat">
+                                    <span className="subject-card-stat-value">{stats.total}</span>
+                                    <span className="subject-card-stat-label">Chapters</span>
+                                </div>
+                                <div className="subject-card-stat">
+                                    <span className="subject-card-stat-value">{getQuestionsSolved(key)}</span>
+                                    <span className="subject-card-stat-label">Solved</span>
+                                </div>
+                                <div className="subject-card-stat">
+                                    <span className="subject-card-stat-value">{getSubjectStudyTime(key)}</span>
+                                    <span className="subject-card-stat-label">Studied</span>
+                                </div>
+                            </div>
+                            <div className="subject-card-link">
+                                <span className="view-link">
+                                    View Details
+                                    <svg className="view-link-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: '4px', verticalAlign: 'middle' }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </span>
                             </div>
                         </div>
                     );

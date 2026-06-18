@@ -58,6 +58,13 @@ export function ChapterDetailDrawer({
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [onClose]);
 
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, []);
+
     const setAttempted = (material: string, nextValue: number) => {
         const normalizedValue = Number.isFinite(nextValue) ? Math.max(0, Math.floor(nextValue)) : 0;
         onUpdateDetail(chapter.serial, {
@@ -191,35 +198,33 @@ export function ChapterDetailDrawer({
                                                 </div>
                                             </div>
                                             
-                                            {isChecked && (
-                                                <div className="material-card-actions">
-                                                    <span className="action-label">Questions Attempted</span>
-                                                    <div className="modern-stepper">
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => { e.stopPropagation(); setAttempted(material, attemptedValue - 1); }}
-                                                            aria-label={`Decrease ${material} attempted questions`}
-                                                        >
-                                                            <Minus size={14} />
-                                                        </button>
-                                                        <input
-                                                            type="number"
-                                                            min={0}
-                                                            value={attemptedValue}
-                                                            onChange={(event) => setAttempted(material, event.target.valueAsNumber)}
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            aria-label={`${material} attempted questions`}
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => { e.stopPropagation(); setAttempted(material, attemptedValue + 1); }}
-                                                            aria-label={`Increase ${material} attempted questions`}
-                                                        >
-                                                            <Plus size={14} />
-                                                        </button>
-                                                    </div>
+                                            <div className="material-card-actions" onClick={(e) => e.stopPropagation()}>
+                                                <span className="action-label">Questions Attempted</span>
+                                                <div className="modern-stepper">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); setAttempted(material, attemptedValue - 1); }}
+                                                        aria-label={`Decrease ${material} attempted questions`}
+                                                    >
+                                                        <Minus size={14} />
+                                                    </button>
+                                                    <input
+                                                        type="number"
+                                                        min={0}
+                                                        value={attemptedValue}
+                                                        onChange={(event) => setAttempted(material, event.target.valueAsNumber)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        aria-label={`${material} attempted questions`}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); setAttempted(material, attemptedValue + 1); }}
+                                                        aria-label={`Increase ${material} attempted questions`}
+                                                    >
+                                                        <Plus size={14} />
+                                                    </button>
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     );
                                 })}
