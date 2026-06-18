@@ -33,7 +33,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     const {
         progress, plannerTasks, studySessions, mockScores, examDates, primaryExamDate,
         physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress,
-        handleToggleMaterial, handleSetPriority, handleAddPlannerTask, handleTogglePlannerTask,
+        handleToggleMaterial, handleSetPriority, handleUpdateChapterDetail, handleAddPlannerTask, handleTogglePlannerTask,
         handleDeletePlannerTask, handleEditPlannerTask, handleAddStudySession, handleDeleteStudySession,
         handleEditStudySession, handleAddMockScore, handleDeleteMockScore,
         handleAddExam, handleDeleteExam, handleUpdateExam, handleSetPrimaryExam
@@ -113,6 +113,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                             subjectProgress={calculateSubjectProgress(subject)}
                             onToggleMaterial={(serial, material) => handleToggleMaterial(subject, serial, material)}
                             onSetPriority={(serial, priority) => handleSetPriority(subject, serial, priority)}
+                            onUpdateChapterDetail={(serial, patch) => handleUpdateChapterDetail(subject, serial, patch)}
                             onAddMaterial={(name) => handleAddColumn(subject, name)}
                             onRemoveMaterial={(name) => handleRemoveColumn(subject, name)}
                             onAddChapter={(name) => handleAddChapter(subject, name)}

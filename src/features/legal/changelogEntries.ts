@@ -8,6 +8,19 @@ export interface ChangelogEntry {
 // Update this list before each rollout. Keep newest entry first.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
      {
+        version: '1.0.6',
+        date: 'June 18, 2026',
+        title: 'Modern UI & UX Overhaul for Chapter Tracking',
+        changes: [
+            '-More granular syllabus tracking is now possible, no. of questions can be tracked now.',
+            '-Introduced a revision counter directly in the chapter drawer.',
+            '-Added a dynamic, color-coded chapter insights hover panel on the subject page mirroring the planner styling.',
+            '-Optimized chapter row hitboxes to allow seamless drawer opening by clicking anywhere on the row background.',
+            '-Fixed a bug causing the priority filter dropdown to clip off the screen.',
+            '-Please report any found bug in my Reddit DMs u/Big_Distribution_730.'
+        ],
+    },
+     {
         version: '1.0.5',
         date: 'June 12, 2026',
         title: 'Fully Flexible Custom Exam Presets',

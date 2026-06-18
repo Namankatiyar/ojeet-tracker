@@ -1,18 +1,18 @@
 import { useState, useCallback } from 'react';
-import { Subject, SubjectData, SubjectProgress, Priority, Chapter } from '../../../shared/types';
+import { Subject, SubjectData, SubjectProgress, Priority, Chapter, ChapterDetailProgress } from '../../../shared/types';
 import { ChapterRow } from './ChapterRow';
 import { SubjectHeader } from './SubjectHeader';
 import { PriorityFilterDropdown } from './PriorityFilterDropdown';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
 import { InputModal } from '../../../shared/components/ui/InputModal';
 import { triggerConfetti } from '../../../shared/utils/confetti';
-import { Plus, X as XIcon, Square, CheckSquare } from 'lucide-react';
+import { Plus, X as XIcon } from 'lucide-react';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { useChapterSort } from '../hooks/useChapterSort';
 import { useReorderDrag } from '../hooks/useReorderDrag';
 import { useTheme } from '../../../core/context/ThemeContext';
-import { PrioritySelector } from '../../../shared/components/ui/PrioritySelector';
 import { MobileChapterCard } from './MobileChapterCard';
+import { ChapterDetailDrawer } from './ChapterDetailDrawer';
 
 interface SubjectPageProps {
     subject: Subject;
@@ -21,6 +21,7 @@ interface SubjectPageProps {
     subjectProgress: number;
     onToggleMaterial: (chapterSerial: number, material: string) => void;
     onSetPriority: (chapterSerial: number, priority: Priority) => void;
+    onUpdateChapterDetail: (chapterSerial: number, patch: Partial<ChapterDetailProgress>) => void;
     onAddMaterial?: (name: string) => void;
     onRemoveMaterial?: (name: string) => void;
     onAddChapter?: (name: string) => void;
@@ -37,6 +38,7 @@ export function SubjectPage({
     subjectProgress,
     onToggleMaterial,
     onSetPriority,
+    onUpdateChapterDetail,
     onAddMaterial,
     onRemoveMaterial,
     onAddChapter,
@@ -219,6 +221,7 @@ export function SubjectPage({
                                 progress={progress[chapter.serial]}
                                 onToggleMaterial={handleToggleMaterialWithConfetti}
                                 onSetPriority={onSetPriority}
+                                onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
                                 isEditing={isEditing}
                                 onRename={(name) => onRenameChapter?.(chapter.serial, name)}
                                 onDelete={() => setChapterToDelete({ isOpen: true, serial: chapter.serial, name: chapter.name })}
@@ -359,76 +362,16 @@ export function SubjectPage({
             />
 
             {selectedChapter && (
-                <div className="modal-overlay" onClick={() => setSelectedChapterSerial(null)}>
-                    <div className="modal-content chapter-detail-sheet" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Chapter #{selectedChapter.serial}</h3>
-                            <button className="close-btn" onClick={() => setSelectedChapterSerial(null)} aria-label="Close chapter details">
-                                <XIcon size={18} />
-                            </button>
-                        </div>
-                        <div className="modal-body chapter-detail-body">
-                            <div className="chapter-detail-section">
-                                <label>Chapter Name</label>
-                                {isEditing ? (
-                                    <input
-                                        type="text"
-                                        className="modal-input"
-                                        value={selectedChapter.name}
-                                        onChange={(e) => onRenameChapter?.(selectedChapter.serial, e.target.value)}
-                                    />
-                                ) : (
-                                    <p className="chapter-detail-title">{selectedChapter.name}</p>
-                                )}
-                            </div>
-
-                            <div className="chapter-detail-section">
-                                <label>Priority</label>
-                                <PrioritySelector
-                                    priority={selectedChapterProgress?.priority || 'none'}
-                                    onChange={(p) => onSetPriority(selectedChapter.serial, p)}
-                                />
-                            </div>
-
-                            <div className="chapter-detail-section">
-                                <label>Materials</label>
-                                <div className="chapter-material-list">
-                                    {data.materialNames.map((material) => (
-                                        <div key={material} className="chapter-material-item">
-                                            <span>{material}</span>
-                                            <button
-                                                type="button"
-                                                className="chapter-material-toggle"
-                                                onClick={() => handleToggleMaterialWithConfetti(selectedChapter.serial, material)}
-                                                aria-label={`Toggle ${material} completion`}
-                                                aria-pressed={!!selectedChapterProgress?.completed?.[material]}
-                                            >
-                                                {selectedChapterProgress?.completed?.[material] ? (
-                                                    <CheckSquare size={18} />
-                                                ) : (
-                                                    <Square size={18} />
-                                                )}
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        {isEditing && (
-                            <div className="modal-footer">
-                                <button
-                                    className="modal-btn confirm"
-                                    onClick={() => {
-                                        setChapterToDelete({ isOpen: true, serial: selectedChapter.serial, name: selectedChapter.name });
-                                        setSelectedChapterSerial(null);
-                                    }}
-                                >
-                                    Delete Chapter
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <ChapterDetailDrawer
+                    key={`${subject}-${selectedChapter.serial}`}
+                    chapter={selectedChapter}
+                    materialNames={data.materialNames}
+                    progress={selectedChapterProgress}
+                    onClose={() => setSelectedChapterSerial(null)}
+                    onToggleMaterial={handleToggleMaterialWithConfetti}
+                    onSetPriority={onSetPriority}
+                    onUpdateDetail={onUpdateChapterDetail}
+                />
             )}
         </div>
     );

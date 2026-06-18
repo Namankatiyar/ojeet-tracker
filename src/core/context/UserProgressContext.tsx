@@ -2,7 +2,7 @@ import React, { createContext, useContext, useCallback, useEffect, useRef } from
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { useProgress } from '../../shared/hooks/useProgress';
 import { triggerSmallConfetti } from '../../shared/utils/confetti';
-import { AppProgress, Subject, Priority, PlannerTask, StudySession, MockScore, ExamEntry, ProgressCardSettings, MockExamPreset } from '../../shared/types';
+import { AppProgress, Subject, Priority, PlannerTask, StudySession, MockScore, ExamEntry, ProgressCardSettings, MockExamPreset, ChapterDetailProgress } from '../../shared/types';
 import { useSubjectData } from './SubjectDataContext';
 import { useTheme } from './ThemeContext';
 
@@ -35,6 +35,7 @@ interface UserProgressContextType {
     // Handlers
     handleToggleMaterial: (subject: Subject, chapterSerial: number, material: string) => void;
     handleSetPriority: (subject: Subject, chapterSerial: number, priority: Priority) => void;
+    handleUpdateChapterDetail: (subject: Subject, chapterSerial: number, patch: Partial<ChapterDetailProgress>) => void;
     handleAddPlannerTask: (task: PlannerTask) => void;
     handleTogglePlannerTask: (taskId: string) => void;
     handleDeletePlannerTask: (taskId: string) => void;
@@ -195,6 +196,32 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         });
     }, [setProgress]);
 
+    const handleUpdateChapterDetail = useCallback((subject: Subject, chapterSerial: number, patch: Partial<ChapterDetailProgress>) => {
+        setProgress(prev => {
+            const subjectProgress = prev[subject];
+            const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
+            const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+
+            return {
+                ...prev,
+                [subject]: {
+                    ...subjectProgress,
+                    [chapterSerial]: {
+                        ...chapterProgress,
+                        detail: {
+                            ...currentDetail,
+                            ...patch,
+                            attemptedByMaterial: {
+                                ...currentDetail.attemptedByMaterial,
+                                ...patch.attemptedByMaterial,
+                            },
+                        },
+                    },
+                },
+            };
+        });
+    }, [setProgress]);
+
     const handleAddPlannerTask = useCallback((task: PlannerTask) => {
         setPlannerTasks(prev => [...prev, task]);
     }, [setPlannerTasks]);
@@ -324,7 +351,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             mockScores, setMockScores, examDates, setExamDates, primaryExamDate, disableAutoShift, setDisableAutoShift,
             progressCardSettings, setProgressCardSettings,
             physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress,
-            handleToggleMaterial, handleSetPriority, handleAddPlannerTask, handleTogglePlannerTask,
+            handleToggleMaterial, handleSetPriority, handleUpdateChapterDetail, handleAddPlannerTask, handleTogglePlannerTask,
             handleDeletePlannerTask, handleEditPlannerTask, handleAddStudySession, handleDeleteStudySession,
             handleEditStudySession, handleAddMockScore, handleDeleteMockScore,
             handleAddExam, handleDeleteExam, handleUpdateExam, handleSetPrimaryExam,

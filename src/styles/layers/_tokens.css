@@ -45,6 +45,11 @@
     --color-priority-low: #22c55e;
     --color-priority-low-bg: rgba(34, 197, 94, 0.08);
     --color-completed-bg: rgba(99, 102, 241, 0.08);
+    --color-confidence-red: #ef4444;
+    --color-confidence-amber: #f59e0b;
+    --color-confidence-yellow: #eab308;
+    --color-confidence-purple: #8b5cf6;
+    --color-confidence-green: #22c55e;
 
     /* Subject Colors */
     --color-physics: #6366f1;
@@ -68,6 +73,11 @@
     --priority-low: var(--color-priority-low);
     --priority-low-bg: var(--color-priority-low-bg);
     --completed-bg: var(--color-completed-bg);
+    --confidence-red: var(--color-confidence-red);
+    --confidence-amber: var(--color-confidence-amber);
+    --confidence-yellow: var(--color-confidence-yellow);
+    --confidence-purple: var(--color-confidence-purple);
+    --confidence-green: var(--color-confidence-green);
     --physics: var(--color-physics);
     --chemistry: var(--color-chemistry);
     --maths: var(--color-maths);

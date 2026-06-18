@@ -97,8 +97,9 @@ export function DatePickerModal({ isOpen, selectedDate, onSelect, onClose, disab
     };
 
     return (
-        <div className="dp-backdrop" onClick={onClose}>
-            <div className="dp-panel" onClick={e => e.stopPropagation()}>
+        <div className="dp-wrapper">
+            <div className="dp-backdrop" onClick={onClose} />
+            <div className="dp-panel">
                 {/* Header */}
                 <div className="dp-header">
                     <span className="dp-title">Select Date</span>

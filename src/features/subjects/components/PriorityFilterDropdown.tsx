@@ -101,6 +101,7 @@ export function PriorityFilterDropdown({ priorityFilter, onFilterChange }: Prior
                         position: 'fixed',
                         top: `${menuPosition.top}px`,
                         left: `${menuPosition.left}px`,
+                        right: 'auto',
                         minWidth: `${menuPosition.minWidth}px`
                     }}
                 >

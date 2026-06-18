@@ -12,6 +12,17 @@ export interface Chapter {
 export interface ChapterProgress {
     completed: Record<string, boolean>;
     priority: Priority;
+    detail?: ChapterDetailProgress;
+}
+
+export type ConfidenceLevel = 1 | 2 | 3 | 4 | 5;
+
+export interface ChapterDetailProgress {
+    attemptedByMaterial: Record<string, number>;
+    confidence?: ConfidenceLevel;
+    lastRevised?: string;
+    revisionCount?: number;
+    notes?: string;
 }
 
 export interface SubjectProgress {

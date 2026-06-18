@@ -1,6 +1,7 @@
 import React from 'react';
 import { Chapter, ChapterProgress, Priority } from '../../../shared/types';
 import { GripVertical, ChevronRight } from 'lucide-react';
+import { getTotalAttemptedQuestions, hasChapterDetailData } from '../utils/chapterDetail';
 
 interface MobileChapterCardProps {
     chapter: Chapter;
@@ -38,6 +39,8 @@ function MobileChapterCardComponent({
     const totalCount = materialNames.length;
     const completionPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const isFullyCompleted = totalCount > 0 && completedCount === totalCount;
+    const hasDetailData = hasChapterDetailData(progress);
+    const totalAttempted = getTotalAttemptedQuestions(progress);
 
     const cardStateClass = isFullyCompleted
         ? 'completed'
@@ -69,6 +72,7 @@ function MobileChapterCardComponent({
                     )}
                     <span className="mobile-chapter-index">#{index + 1}</span>
                     <span className={`mobile-chapter-name ${isFullyCompleted ? 'completed' : ''}`}>{chapter.name}</span>
+                    {hasDetailData && <span className="chapter-detail-dot" aria-label="Has detail tracking">•</span>}
                 </div>
                 <ChevronRight size={18} className="mobile-chapter-chevron" />
             </div>
@@ -78,6 +82,7 @@ function MobileChapterCardComponent({
                     {getPriorityLabel(priority)}
                 </span>
                 <span className="mobile-completion-label">{completedCount}/{totalCount} done</span>
+                {totalAttempted > 0 && <span className="chapter-question-badge">{totalAttempted} qs</span>}
             </div>
 
             <div className="mobile-progress-track" aria-hidden="true">

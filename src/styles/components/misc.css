@@ -4,18 +4,29 @@
 
 /* ===== Date Picker Modal ===== */
 
-/* Backdrop */
-.dp-backdrop {
+/* Wrapper */
+.dp-wrapper {
   position: fixed;
   inset: 0;
-  background: color-mix(in srgb, var(--bg-base), transparent 40%);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1200;
+}
+
+/* Backdrop */
+.dp-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
   animation: dp-fade-in 0.18s ease;
+}
+
+html[data-theme="dark"] .dp-backdrop {
+  background: color-mix(in srgb, var(--bg-base), transparent 40%);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 @keyframes dp-fade-in {
@@ -25,6 +36,8 @@
 
 /* Panel */
 .dp-panel {
+  position: relative;
+  z-index: 2;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -156,7 +169,7 @@ html[data-theme="dark"] .dp-panel {
   font-weight: 500;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, transform 0.1s;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   color: var(--text-primary);
   background: transparent;
   border: 1.5px solid transparent;
@@ -167,10 +180,9 @@ html[data-theme="dark"] .dp-panel {
   pointer-events: none;
 }
 
-.dp-day:hover:not(:disabled):not(.empty) {
+.dp-day:hover:not(:disabled):not(.empty):not(.selected) {
   background: rgba(255, 255, 255, 0.07);
   border-color: rgba(255, 255, 255, 0.1);
-  transform: scale(1.08);
 }
 
 .dp-day.today {
@@ -196,14 +208,10 @@ html[data-theme="dark"] .dp-panel {
   color: var(--accent-text);
   border-color: transparent;
   font-weight: 700;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 55%);
-  transform: scale(1.08);
 }
 
 html[data-theme="dark"] .dp-day.selected {
   background: color-mix(in srgb, var(--accent), transparent 15%);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 75%),
-              0 4px 16px color-mix(in srgb, var(--accent), transparent 55%);
 }
 
 .dp-day.today.selected::after {
@@ -282,16 +290,13 @@ html[data-theme="dark"] .dp-day.selected {
   background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 80%);
 }
 
-:root:not([data-theme="dark"]) .dp-day:hover:not(:disabled):not(.empty),
-[data-theme="light"] .dp-day:hover:not(:disabled):not(.empty) {
+:root:not([data-theme="dark"]) .dp-day:hover:not(:disabled):not(.empty):not(.selected),
+[data-theme="light"] .dp-day:hover:not(:disabled):not(.empty):not(.selected) {
   background: var(--bg-tertiary);
   border-color: var(--border);
 }
 
-:root:not([data-theme="dark"]) .dp-day.selected,
-[data-theme="light"] .dp-day.selected {
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--accent), transparent 60%);
-}
+
 
 /* Legacy class aliases so existing .calendar-day references still work */
 .calendar-day { /* kept for any inline usage */ }
