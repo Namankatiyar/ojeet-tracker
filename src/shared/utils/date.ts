@@ -54,3 +54,43 @@ export const calculateDaysRemaining = (dateString: string): number | null => {
     const diffTime = target.getTime() - today.getTime();
     return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 };
+
+export const formatRelativeTime = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = parseDateLocal(dateString);
+    if (!date) return '';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    const diffTime = today.getTime() - date.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return 'in the future';
+    }
+    if (diffDays === 0) {
+        return 'today';
+    }
+    if (diffDays === 1) {
+        return '1 day ago';
+    }
+    if (diffDays < 7) {
+        return `${diffDays} days ago`;
+    }
+    if (diffDays < 30) {
+        const weeks = Math.floor(diffDays / 7);
+        return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    }
+    if (diffDays < 365) {
+        const months = Math.floor(diffDays / 30);
+        if (months >= 12) {
+            return '1 year ago';
+        }
+        return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    }
+    const years = Math.floor(diffDays / 365);
+    return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+};
+

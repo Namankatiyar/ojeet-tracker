@@ -116,7 +116,7 @@ export function ChapterDetailDrawer({
                                                     key={level}
                                                     type="button"
                                                     className={`segment-btn confidence-${level} ${isActive ? 'active' : ''}`}
-                                                    onClick={() => onUpdateDetail(chapter.serial, { confidence: level })}
+                                                    onClick={() => onUpdateDetail(chapter.serial, { confidence: isActive ? undefined : level })}
                                                     role="radio"
                                                     aria-checked={isActive}
                                                     aria-label={`Confidence ${level}`}

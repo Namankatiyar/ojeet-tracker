@@ -4,7 +4,8 @@ import {
     formatDateLocal, 
     parse24hTo12h, 
     format12hTo24h, 
-    calculateDaysRemaining 
+    calculateDaysRemaining,
+    formatRelativeTime
 } from './date';
 
 describe('formatTime12Hour', () => {
@@ -104,3 +105,60 @@ describe('calculateDaysRemaining', () => {
         expect(calculateDaysRemaining('2025-02-28')).toBe(0);
     });
 });
+
+describe('formatRelativeTime', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+        const date = new Date(2025, 2, 10); // Mock today as March 10th, 2025
+        vi.setSystemTime(date);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('should return empty string for falsy/invalid dates', () => {
+        expect(formatRelativeTime('')).toBe('');
+        expect(formatRelativeTime('invalid')).toBe('');
+    });
+
+    it('should return today for today date', () => {
+        expect(formatRelativeTime('2025-03-10')).toBe('today');
+    });
+
+    it('should return 1 day ago for yesterday', () => {
+        expect(formatRelativeTime('2025-03-09')).toBe('1 day ago');
+    });
+
+    it('should return days ago for recent dates', () => {
+        expect(formatRelativeTime('2025-03-07')).toBe('3 days ago');
+        expect(formatRelativeTime('2025-03-04')).toBe('6 days ago');
+    });
+
+    it('should return weeks ago for older dates within a month', () => {
+        expect(formatRelativeTime('2025-03-03')).toBe('1 week ago');
+        expect(formatRelativeTime('2025-02-24')).toBe('2 weeks ago');
+        expect(formatRelativeTime('2025-02-10')).toBe('4 weeks ago');
+    });
+
+    it('should return months ago for older dates within a year', () => {
+        expect(formatRelativeTime('2025-02-08')).toBe('1 month ago');
+        expect(formatRelativeTime('2024-12-10')).toBe('3 months ago');
+        expect(formatRelativeTime('2024-04-10')).toBe('11 months ago');
+    });
+
+    it('should return 1 year ago for dates exactly or around 1 year ago', () => {
+        expect(formatRelativeTime('2024-03-10')).toBe('1 year ago');
+        expect(formatRelativeTime('2024-02-10')).toBe('1 year ago');
+    });
+
+    it('should return years ago for older dates', () => {
+        expect(formatRelativeTime('2023-03-10')).toBe('2 years ago');
+        expect(formatRelativeTime('2020-03-10')).toBe('5 years ago');
+    });
+
+    it('should return in the future for future dates', () => {
+        expect(formatRelativeTime('2025-03-11')).toBe('in the future');
+    });
+});
+

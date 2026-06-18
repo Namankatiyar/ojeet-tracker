@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
 import { Subject, SubjectData, PlannerTask, StudySession, MockScore, ExamEntry } from '../../../shared/types';
 import { TaskLog } from '../../planner/components/TaskLog';
 import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
-import { Atom, FlaskConical, Pi, Calendar, Check, Pencil, Github } from 'lucide-react';
+import { Atom, FlaskConical, Pi, Calendar, Check, Pencil } from 'lucide-react';
 import { formatDateLocal, formatTime12Hour, calculateDaysRemaining } from '../../../shared/utils/date';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
@@ -631,27 +631,7 @@ export function Dashboard({
 
             <TaskLog tasks={plannerTasks} />
 
-            <div className="glass-panel credits-panel">
-                <span className="credits-text">
-                    Made for and by a JEE Aspirant with ❤
-                </span>
-                <Link
-                    to="/privacy-policy"
-                    className="credits-legal-link"
-                    title="Read Privacy Policy"
-                >
-                    Privacy Policy
-                </Link>
-                <a
-                    href="https://github.com/Namankatiyar/ojeet-tracker"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="credits-github-link"
-                    title="View project on GitHub"
-                >
-                    <Github size={20} />
-                </a>
-            </div>
+
 
             <DashboardNotificationCenter
                 items={notificationItems}

@@ -4,6 +4,7 @@ import { Chapter, ChapterProgress, Priority } from '../../../shared/types';
 import { PrioritySelector } from '../../../shared/components/ui/PrioritySelector';
 import { Trash2, GripVertical, Star } from 'lucide-react';
 import { getTotalAttemptedQuestions, hasChapterDetailData } from '../utils/chapterDetail';
+import { formatRelativeTime } from '../../../shared/utils/date';
 
 // ─── Cursor-anchored hover panel (portalled to body) ───────────────────────
 interface HoverPanelProps {
@@ -88,7 +89,7 @@ function HoverPanel({ x, y, chapterName, progress }: HoverPanelProps) {
                         {detail?.lastRevised && (
                             <div className="chp-stat">
                                 <span>Last Revised</span>
-                                <span className="chp-stat-val">{new Date(detail.lastRevised).toLocaleDateString()}</span>
+                                <span className="chp-stat-val">{formatRelativeTime(detail.lastRevised)}</span>
                             </div>
                         )}
                     </div>
@@ -192,14 +193,16 @@ function ChapterRowComponent({
                         onOpenDetails?.();
                     }
                 } : undefined}
-                onMouseEnter={handleMouseEnter}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
                 role={!isEditing ? 'button' : undefined}
                 tabIndex={!isEditing ? 0 : undefined}
                 style={isEditing ? { cursor: 'grab' } : undefined}
             >
-                <td className="serial-cell">
+                <td 
+                    className="serial-cell"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                >
                     {isEditing ? (
                         <div className="grip-icon-wrapper">
                             <GripVertical size={20} />
@@ -208,7 +211,12 @@ function ChapterRowComponent({
                         index !== undefined ? index + 1 : chapter.serial
                     )}
                 </td>
-                <td className="chapter-cell">
+                <td 
+                    className="chapter-cell"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                >
                     {isEditing ? (
                         <input
                             type="text"
