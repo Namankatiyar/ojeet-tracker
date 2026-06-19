@@ -139,7 +139,9 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                             onClick={() => onNavigate(key)}
                         >
                             <span className="nav-icon">{icon}</span>
-                            <span className="nav-label">{label}</span>
+                            <span className="nav-label-wrapper">
+                                <span className="nav-label">{label}</span>
+                            </span>
                         </button>
                     ))}
                 </nav>

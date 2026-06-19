@@ -28,15 +28,19 @@ This document captures key learnings about the project architecture and our curr
 
 ---
 
-## 2. Active Focus: Subtopics Tracking & Chapter Workspace (V2)
+## 2. Recent Implementation: Subtopics Tracking & Chapter Workspace (V2)
 
-We are extending chapter-level syllabus tracking into a detailed **Chapter Workspace** using subtopics loaded from the syllabus JSON files.
+The subtopics tracking and Chapter Workspace (V2) features have been fully implemented and integrated. 
 
-### Key Objectives
-1. **Status Column Refactor**: Rename the `Priority` column in the subject chapter table to `Status`. Display a 5-block segmented progress bar (20% increments) side-by-side with the priority selector dropdown.
-2. **Subtopic Progress States**: Enable tracking subtopic completion across different study materials (NCERT, PYQs, Modules) and attempted question counts.
-3. **Derived Metrics**:
-   - **Progress**: Dynamic computation of chapter progress percentages based on completed subtopic tasks.
-   - **Questions**: Auto-sum attempted questions across subtopics to display chapter-level totals.
-4. **Revision Controls**: Add reset buttons in steppers/dates to clear accidental markings. Highlight subtopics not revised in over 30 days.
-5. **Indeterminate Checkboxes**: The main table checkboxes will reflect fully completed, incomplete, or partially completed (indeterminate) states of subtopic materials.
+### Key Implementations & Architecture
+1. **Collapsible Row-Based Subtopics**: Replaced nested card clutter in [ChapterDetailDrawer.tsx](file:///home/naman/Documents/ojee-tracker/src/features/subjects/components/ChapterDetailDrawer.tsx) with clean, collapsible subtopic rows.
+   - **Collapsed State**: Shows the subtopic name, a completion fraction, and horizontal progress dots mapping to NCERT, PYQs, and Modules.
+   - **Expanded State**: Expands inline to reveal material checklist selectors, a compact question stepper, revision date/count selectors, and reset buttons.
+   - **Performance & Animations**: Optimized using local component states, semantic HTML layout, and explicit CSS transition properties (avoiding the banned `transition: all`).
+2. **Dynamic Progress & Question Totals**:
+   - Chapter progress percentages are derived dynamically from completed subtopic study materials.
+   - Total questions attempted for a chapter are calculated as the sum of all subtopic question counts.
+3. **Indeterminate State Main Checkboxes**: The syllabus table checkboxes automatically reflect completed, incomplete, or partially completed (indeterminate) subtopic states.
+4. **Revision Trackers & Stale Badges**: Revision counters and dates are trackable. Warning badges are automatically shown for subtopics not revised in more than 30 days. Includes unified `.icon-btn-reset` action buttons for clearing.
+5. **Design System & Styling Standards**: CSS rules in [subjects.css](file:///home/naman/Documents/ojee-tracker/src/styles/features/subjects.css) strictly utilize core design tokens (e.g., `var(--bg-tertiary)`, `var(--border)`, `var(--text-primary)`) rather than custom/undefined variables. Control heights (e.g., mark today, reset, stepper buttons) are standardized to 24px (`var(--space-6)`) or 28px (`1.75rem` for date buttons) for pixel-perfect alignment.
+
