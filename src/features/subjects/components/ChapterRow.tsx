@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Chapter, ChapterProgress, Priority } from '../../../shared/types';
-import { PrioritySelector } from '../../../shared/components/ui/PrioritySelector';
+import { PriorityPillSelector } from '../../../shared/components/ui/PriorityPillSelector';
 import { Trash2, GripVertical, Star } from 'lucide-react';
 import { getTotalAttemptedQuestions, hasChapterDetailData } from '../utils/chapterDetail';
 import { formatRelativeTime } from '../../../shared/utils/date';
@@ -401,12 +401,10 @@ export const RightChapterRow = React.memo(({
                     </button>
                 ) : (
                     <div className="status-cell-content">
-                        <div className="progress-blocks" title={`Progress: ${percent}%`}>
-                            {[1, 2, 3, 4, 5].map((b) => (
-                                <span key={b} className={`progress-block-segment ${b <= filledBlocks ? 'filled' : ''}`} />
-                            ))}
+                        <div className="mini-progress-bar" title={`Progress: ${percent}%`}>
+                            <div className="mini-progress-fill" style={{ width: `${percent}%` }} />
                         </div>
-                        <PrioritySelector
+                        <PriorityPillSelector
                             priority={priority}
                             onChange={(p) => onSetPriority(chapter.serial, p)}
                         />
