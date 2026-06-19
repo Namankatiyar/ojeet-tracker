@@ -370,7 +370,6 @@ export const RightChapterRow = React.memo(({
 }: RightChapterRowProps) => {
     const priority = progress?.priority || 'none';
     const percent = getChapterProgressPercent(progress, chapter, materialNames);
-    const filledBlocks = Math.round(percent / 20);
 
     return (
         <tr

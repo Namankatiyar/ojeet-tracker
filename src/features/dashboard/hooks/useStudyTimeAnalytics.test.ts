@@ -27,8 +27,6 @@ describe('useStudyTimeAnalytics', () => {
 
     beforeEach(() => {
         vi.useFakeTimers();
-        // Set fixed date to March 5th, 2025 (Wednesday)
-        vi.setSystemTime(new Date(2025, 2, 5));
     });
 
     afterEach(() => {
@@ -36,6 +34,8 @@ describe('useStudyTimeAnalytics', () => {
     });
 
     it('should calculate weekly analytics correctly', () => {
+        // Set fixed date to March 5th, 2025 (Wednesday)
+        vi.setSystemTime(new Date(2025, 2, 5));
         const { result } = renderHook(() => useStudyTimeAnalytics(mockSessions, 0, 'weekly'));
         
         // Match weekday labels
@@ -63,6 +63,8 @@ describe('useStudyTimeAnalytics', () => {
     });
 
     it('should calculate monthly analytics correctly', () => {
+        // Set fixed date to March 31st, 2025
+        vi.setSystemTime(new Date(2025, 2, 31));
         const { result } = renderHook(() => useStudyTimeAnalytics(mockSessions, 0, 'monthly'));
         
         // March has 31 days
