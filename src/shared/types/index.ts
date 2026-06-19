@@ -7,12 +7,20 @@ export interface Chapter {
     serial: number;
     name: string;
     materials: string[];
+    subtopics?: string[];
+}
+
+export interface SubtopicState {
+    completed: Record<string, boolean>;
+    attemptedByMaterial?: Record<string, number>;
+    lastRevised?: string;
 }
 
 export interface ChapterProgress {
     completed: Record<string, boolean>;
     priority: Priority;
     detail?: ChapterDetailProgress;
+    subtopics?: Record<string, SubtopicState>;
 }
 
 export type ConfidenceLevel = 1 | 2 | 3 | 4 | 5;

@@ -18,8 +18,19 @@ export function useProgress(progress: AppProgress, subjectData: Record<Subject, 
 
             const materialSet = new Set(data.materialNames);
             const chapterSet = new Set(data.chapters.map((chapter) => chapter.serial));
+
+            let totalItems = 0;
+            data.chapters.forEach((chapter) => {
+                const subtopicCount = chapter.subtopics?.length || 0;
+                if (subtopicCount > 0) {
+                    totalItems += subtopicCount * data.materialNames.length;
+                } else {
+                    totalItems += data.materialNames.length;
+                }
+            });
+
             meta[subject] = {
-                totalItems: data.chapters.length * data.materialNames.length,
+                totalItems,
                 materialSet,
                 chapterSet,
             };
@@ -37,22 +48,39 @@ export function useProgress(progress: AppProgress, subjectData: Record<Subject, 
 
         (['physics', 'chemistry', 'maths'] as Subject[]).forEach((subject) => {
             const meta = subjectMeta[subject];
-            if (!meta) return;
+            const data = subjectData[subject];
+            if (!meta || !data) return;
             const subjectProgress = progress[subject];
-            for (const [serialKey, chapterProgress] of Object.entries(subjectProgress)) {
-                const serial = Number(serialKey);
-                if (!meta.chapterSet.has(serial)) continue;
-                const completed = chapterProgress?.completed ?? {};
-                for (const [material, isCompleted] of Object.entries(completed)) {
-                    if (isCompleted && meta.materialSet.has(material)) {
-                        counts[subject] += 1;
+
+            data.chapters.forEach((chapter) => {
+                const chapterProgress = subjectProgress[chapter.serial];
+                if (!chapterProgress) return;
+
+                const subtopics = chapter.subtopics || [];
+                if (subtopics.length > 0) {
+                    subtopics.forEach((sub) => {
+                        const subState = chapterProgress.subtopics?.[sub];
+                        if (subState?.completed) {
+                            for (const [material, isCompleted] of Object.entries(subState.completed)) {
+                                if (isCompleted && meta.materialSet.has(material)) {
+                                    counts[subject] += 1;
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    const completed = chapterProgress.completed ?? {};
+                    for (const [material, isCompleted] of Object.entries(completed)) {
+                        if (isCompleted && meta.materialSet.has(material)) {
+                            counts[subject] += 1;
+                        }
                     }
                 }
-            }
+            });
         });
 
         return counts;
-    }, [progress, subjectMeta]);
+    }, [progress, subjectMeta, subjectData]);
 
     const calculateSubjectProgress = useCallback((subject: Subject): number => {
         const meta = subjectMeta[subject];

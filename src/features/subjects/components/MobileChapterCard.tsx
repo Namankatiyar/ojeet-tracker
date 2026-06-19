@@ -35,8 +35,22 @@ function MobileChapterCardComponent({
 }: MobileChapterCardProps) {
     const completed = progress?.completed || {};
     const priority = progress?.priority || 'none';
-    const completedCount = materialNames.filter((m) => completed[m]).length;
-    const totalCount = materialNames.length;
+    const subtopics = chapter.subtopics || [];
+
+    const completedCount = subtopics.length > 0
+        ? subtopics.reduce((acc, sub) => {
+            const subState = progress?.subtopics?.[sub];
+            materialNames.forEach((mat) => {
+                if (subState?.completed?.[mat]) acc++;
+            });
+            return acc;
+        }, 0)
+        : materialNames.filter((m) => completed[m]).length;
+
+    const totalCount = subtopics.length > 0
+        ? subtopics.length * materialNames.length
+        : materialNames.length;
+
     const completionPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const isFullyCompleted = totalCount > 0 && completedCount === totalCount;
     const hasDetailData = hasChapterDetailData(progress);

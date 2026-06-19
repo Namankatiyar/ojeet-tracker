@@ -51,6 +51,7 @@ export async function parseSubjectJSON(subject: string): Promise<SubjectData> {
         serial: unit.unit_number,
         name: unit.unit_name,
         materials: [...materialNames],
+        subtopics: unit.subtopics || [],
     }));
 
     return {

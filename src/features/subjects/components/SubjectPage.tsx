@@ -22,6 +22,9 @@ interface SubjectPageProps {
     onToggleMaterial: (chapterSerial: number, material: string) => void;
     onSetPriority: (chapterSerial: number, priority: Priority) => void;
     onUpdateChapterDetail: (chapterSerial: number, patch: Partial<ChapterDetailProgress>) => void;
+    onToggleSubtopicMaterial: (chapterSerial: number, subtopicName: string, material: string) => void;
+    onUpdateSubtopicAttempted: (chapterSerial: number, subtopicName: string, material: string, count: number) => void;
+    onSetSubtopicLastRevised: (chapterSerial: number, subtopicName: string, date: string | undefined) => void;
     onAddMaterial?: (name: string) => void;
     onRemoveMaterial?: (name: string) => void;
     onAddChapter?: (name: string) => void;
@@ -39,6 +42,9 @@ export function SubjectPage({
     onToggleMaterial,
     onSetPriority,
     onUpdateChapterDetail,
+    onToggleSubtopicMaterial,
+    onUpdateSubtopicAttempted,
+    onSetSubtopicLastRevised,
     onAddMaterial,
     onRemoveMaterial,
     onAddChapter,
@@ -334,7 +340,7 @@ export function SubjectPage({
                                 <th className="priority-header">
                                     {isEditing ? 'Actions' : (
                                         <div className="priority-header-content">
-                                            <span>Priority</span>
+                                            <span>Status</span>
                                             <PriorityFilterDropdown
                                                 priorityFilter={priorityFilter}
                                                 onFilterChange={setPriorityFilter}
@@ -357,6 +363,7 @@ export function SubjectPage({
                                     <RightChapterRow
                                         key={chapter.serial}
                                         chapter={chapter}
+                                        materialNames={data.materialNames}
                                         progress={chProgress}
                                         onSetPriority={onSetPriority}
                                         isEditing={isEditing}
@@ -503,17 +510,20 @@ export function SubjectPage({
             />
 
             {selectedChapter && (
-                <ChapterDetailDrawer
-                    key={`${subject}-${selectedChapter.serial}`}
-                    chapter={selectedChapter}
-                    materialNames={data.materialNames}
-                    progress={selectedChapterProgress}
-                    onClose={() => setSelectedChapterSerial(null)}
-                    onToggleMaterial={handleToggleMaterialWithConfetti}
-                    onSetPriority={onSetPriority}
-                    onUpdateDetail={onUpdateChapterDetail}
-                />
-            )}
+                                <ChapterDetailDrawer
+                                    key={`${subject}-${selectedChapter.serial}`}
+                                    chapter={selectedChapter}
+                                    materialNames={data.materialNames}
+                                    progress={selectedChapterProgress}
+                                    onClose={() => setSelectedChapterSerial(null)}
+                                    onToggleMaterial={handleToggleMaterialWithConfetti}
+                                    onSetPriority={onSetPriority}
+                                    onUpdateDetail={onUpdateChapterDetail}
+                                    onToggleSubtopicMaterial={(subtopicName, material) => onToggleSubtopicMaterial(selectedChapter.serial, subtopicName, material)}
+                                    onUpdateSubtopicAttempted={(subtopicName, material, count) => onUpdateSubtopicAttempted(selectedChapter.serial, subtopicName, material, count)}
+                                    onSetSubtopicLastRevised={(subtopicName, date) => onSetSubtopicLastRevised(selectedChapter.serial, subtopicName, date)}
+                                />
+                            )}
         </div>
     );
 }

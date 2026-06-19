@@ -36,6 +36,9 @@ interface UserProgressContextType {
     handleToggleMaterial: (subject: Subject, chapterSerial: number, material: string) => void;
     handleSetPriority: (subject: Subject, chapterSerial: number, priority: Priority) => void;
     handleUpdateChapterDetail: (subject: Subject, chapterSerial: number, patch: Partial<ChapterDetailProgress>) => void;
+    handleToggleSubtopicMaterial: (subject: Subject, chapterSerial: number, subtopicName: string, material: string) => void;
+    handleUpdateSubtopicAttempted: (subject: Subject, chapterSerial: number, subtopicName: string, material: string, count: number) => void;
+    handleSetSubtopicLastRevised: (subject: Subject, chapterSerial: number, subtopicName: string, date: string | undefined) => void;
     handleAddPlannerTask: (task: PlannerTask) => void;
     handleTogglePlannerTask: (taskId: string) => void;
     handleDeletePlannerTask: (taskId: string) => void;
@@ -152,12 +155,37 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const currentProgress = progressRef.current;
         const subjectProgress = currentProgress[subject];
         const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
-        const isNowCompleted = !chapterProgress.completed[material];
+        
+        const chapterObj = mergedSubjectData[subject]?.chapters.find(ch => ch.serial === chapterSerial);
+        const subtopics = chapterObj?.subtopics || [];
+
+        let isNowCompleted = false;
+        if (subtopics.length > 0) {
+            isNowCompleted = !subtopics.every(sub => !!chapterProgress.subtopics?.[sub]?.completed?.[material]);
+        } else {
+            isNowCompleted = !chapterProgress.completed[material];
+        }
+
         const completedAt = isNowCompleted ? new Date().toISOString() : undefined;
 
         setProgress(prev => {
             const prevSubjectProgress = prev[subject];
             const prevChapterProgress = prevSubjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
+            
+            let nextSubtopicProgress = { ...(prevChapterProgress.subtopics || {}) };
+            if (subtopics.length > 0) {
+                subtopics.forEach(sub => {
+                    const currentSubState = nextSubtopicProgress[sub] || { completed: {} };
+                    nextSubtopicProgress[sub] = {
+                        ...currentSubState,
+                        completed: {
+                            ...currentSubState.completed,
+                            [material]: isNowCompleted
+                        }
+                    };
+                });
+            }
+
             return {
                 ...prev,
                 [subject]: {
@@ -165,6 +193,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     [chapterSerial]: {
                         ...prevChapterProgress,
                         completed: { ...prevChapterProgress.completed, [material]: isNowCompleted },
+                        subtopics: nextSubtopicProgress
                     },
                 },
             };
@@ -180,7 +209,190 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             }
             return t;
         }));
-    }, [setProgress, setPlannerTasks]);
+    }, [setProgress, setPlannerTasks, mergedSubjectData]);
+
+    const handleToggleSubtopicMaterial = useCallback((subject: Subject, chapterSerial: number, subtopicName: string, material: string) => {
+        const chapterObj = mergedSubjectData[subject]?.chapters.find(ch => ch.serial === chapterSerial);
+        const chapterSubtopics = chapterObj?.subtopics || [];
+
+        const currentProgress = progressRef.current;
+        const currentChapterProgress = currentProgress[subject][chapterSerial] || { completed: {}, priority: 'none' as Priority };
+        const currentSubtopics = currentChapterProgress.subtopics || {};
+        const currentSubState = currentSubtopics[subtopicName] || { completed: {} };
+        const isNowCompleted = !currentSubState.completed[material];
+
+        const nextSubtopics = {
+            ...currentSubtopics,
+            [subtopicName]: {
+                ...currentSubState,
+                completed: {
+                    ...currentSubState.completed,
+                    [material]: isNowCompleted
+                }
+            }
+        };
+
+        const allCompleted = chapterSubtopics.length > 0 && chapterSubtopics.every(sub => !!nextSubtopics[sub]?.completed?.[material]);
+        const completedAt = allCompleted ? new Date().toISOString() : undefined;
+
+        setProgress(prev => {
+            const subjectProgress = prev[subject];
+            const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
+            const subtopicStates = chapterProgress.subtopics || {};
+            const subState = subtopicStates[subtopicName] || { completed: {} };
+            const isNowComp = !subState.completed[material];
+
+            const nextSubState = {
+                ...subState,
+                completed: {
+                    ...subState.completed,
+                    [material]: isNowComp
+                }
+            };
+
+            const updatedSubtopics = {
+                ...subtopicStates,
+                [subtopicName]: nextSubState
+            };
+
+            const isAllCompleted = chapterSubtopics.length > 0 && chapterSubtopics.every(sub => !!updatedSubtopics[sub]?.completed?.[material]);
+
+            return {
+                ...prev,
+                [subject]: {
+                    ...subjectProgress,
+                    [chapterSerial]: {
+                        ...chapterProgress,
+                        completed: {
+                            ...chapterProgress.completed,
+                            [material]: isAllCompleted
+                        },
+                        subtopics: updatedSubtopics
+                    }
+                }
+            };
+        });
+
+        setPlannerTasks(tasks => tasks.map(t => {
+            if (t.type === 'chapter' && t.subject === subject && t.chapterSerial === chapterSerial && t.material === material) {
+                return {
+                    ...t,
+                    completed: allCompleted,
+                    completedAt
+                };
+            }
+            return t;
+        }));
+    }, [mergedSubjectData, setProgress, setPlannerTasks]);
+
+    const handleUpdateSubtopicAttempted = useCallback((subject: Subject, chapterSerial: number, subtopicName: string, material: string, count: number) => {
+        setProgress(prev => {
+            const subjectProgress = prev[subject];
+            const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
+            const subtopicStates = chapterProgress.subtopics || {};
+            const subState = subtopicStates[subtopicName] || { completed: {} };
+            const currentSubAttempted = subState.attemptedByMaterial || {};
+
+            const nextSubState = {
+                ...subState,
+                attemptedByMaterial: {
+                    ...currentSubAttempted,
+                    [material]: Math.max(0, count)
+                }
+            };
+
+            const nextSubtopics = {
+                ...subtopicStates,
+                [subtopicName]: nextSubState
+            };
+
+            // Derive overall chapter attempted questions by summing up subtopic counts for each material
+            const chapterObj = mergedSubjectData[subject]?.chapters.find(ch => ch.serial === chapterSerial);
+            const chapterSubtopics = chapterObj?.subtopics || [];
+
+            const totalAttemptedByMaterial: Record<string, number> = {};
+            const activeMaterials = chapterObj?.materials || ['NCERT', 'PYQs', 'Modules'];
+
+            activeMaterials.forEach(mat => {
+                let sum = 0;
+                chapterSubtopics.forEach(sub => {
+                    const c = sub === subtopicName ? Math.max(0, count) : nextSubtopics[sub]?.attemptedByMaterial?.[mat];
+                    if (c !== undefined && Number.isFinite(c)) {
+                        sum += c;
+                    }
+                });
+                totalAttemptedByMaterial[mat] = sum;
+            });
+
+            const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+
+            return {
+                ...prev,
+                [subject]: {
+                    ...subjectProgress,
+                    [chapterSerial]: {
+                        ...chapterProgress,
+                        detail: {
+                            ...currentDetail,
+                            attemptedByMaterial: totalAttemptedByMaterial
+                        },
+                        subtopics: nextSubtopics
+                    }
+                }
+            };
+        });
+    }, [mergedSubjectData, setProgress]);
+
+    const handleSetSubtopicLastRevised = useCallback((subject: Subject, chapterSerial: number, subtopicName: string, date: string | undefined) => {
+        setProgress(prev => {
+            const subjectProgress = prev[subject];
+            const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
+            const subtopicStates = chapterProgress.subtopics || {};
+            const subState = subtopicStates[subtopicName] || { completed: {} };
+
+            const nextSubState = {
+                ...subState,
+                lastRevised: date
+            };
+
+            const nextSubtopics = {
+                ...subtopicStates,
+                [subtopicName]: nextSubState
+            };
+
+            // Derive overall chapter's lastRevised (latest revision date across subtopics)
+            const chapterObj = mergedSubjectData[subject]?.chapters.find(ch => ch.serial === chapterSerial);
+            const chapterSubtopics = chapterObj?.subtopics || [];
+
+            let latestDate: string | undefined = undefined;
+            chapterSubtopics.forEach(sub => {
+                const d = sub === subtopicName ? date : nextSubtopics[sub]?.lastRevised;
+                if (d) {
+                    if (!latestDate || new Date(d) > new Date(latestDate)) {
+                        latestDate = d;
+                    }
+                }
+            });
+
+            const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+
+            return {
+                ...prev,
+                [subject]: {
+                    ...subjectProgress,
+                    [chapterSerial]: {
+                        ...chapterProgress,
+                        detail: {
+                            ...currentDetail,
+                            lastRevised: latestDate || undefined
+                        },
+                        subtopics: nextSubtopics
+                    }
+                }
+            };
+        });
+    }, [mergedSubjectData, setProgress]);
+
 
     const handleSetPriority = useCallback((subject: Subject, chapterSerial: number, priority: Priority) => {
         setProgress(prev => {
@@ -352,6 +564,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             progressCardSettings, setProgressCardSettings,
             physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress,
             handleToggleMaterial, handleSetPriority, handleUpdateChapterDetail, handleAddPlannerTask, handleTogglePlannerTask,
+            handleToggleSubtopicMaterial, handleUpdateSubtopicAttempted, handleSetSubtopicLastRevised,
             handleDeletePlannerTask, handleEditPlannerTask, handleAddStudySession, handleDeleteStudySession,
             handleEditStudySession, handleAddMockScore, handleDeleteMockScore,
             handleAddExam, handleDeleteExam, handleUpdateExam, handleSetPrimaryExam,

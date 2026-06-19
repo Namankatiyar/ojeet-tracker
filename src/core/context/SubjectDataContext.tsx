@@ -5,7 +5,7 @@ import { parseSubjectJSON } from '../../shared/utils/jsonParser';
 
 // Force migration from old CSV syllabus data to new JSON syllabus (v2026)
 if (typeof window !== 'undefined') {
-    const isOldVersion = window.localStorage.getItem('jee-tracker-syllabus-version') !== 'json-2026';
+    const isOldVersion = window.localStorage.getItem('jee-tracker-syllabus-version') !== 'json-2026-v3';
     if (isOldVersion) {
         window.localStorage.removeItem('jee-tracker-subject-data');
         window.localStorage.removeItem('jee-tracker-progress');
@@ -14,7 +14,7 @@ if (typeof window !== 'undefined') {
         window.localStorage.removeItem('jee-tracker-custom-columns');
         window.localStorage.removeItem('jee-tracker-excluded-columns');
         window.localStorage.removeItem('jee-tracker-material-order');
-        window.localStorage.setItem('jee-tracker-syllabus-version', 'json-2026');
+        window.localStorage.setItem('jee-tracker-syllabus-version', 'json-2026-v3');
     }
 }
 
@@ -63,14 +63,35 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
         maths: []
     });
 
-    // Load JSON data if not in local storage
+    // Load JSON data if not in local storage, or merge subtopics if missing
     useEffect(() => {
         const loadSubjectData = async (subject: Subject) => {
             try {
                 const data = await parseSubjectJSON(subject);
                 setSubjectData(prev => {
-                    if (prev[subject] && prev[subject]?.chapters && prev[subject]!.chapters.length > 0) {
-                        return prev;
+                    const existing = prev[subject];
+                    if (existing && existing.chapters && existing.chapters.length > 0) {
+                        const mergedChapters = existing.chapters.map(c => {
+                            const match = data.chapters.find(nc => nc.serial === c.serial || nc.name.toLowerCase() === c.name.toLowerCase());
+                            return {
+                                ...c,
+                                subtopics: match?.subtopics || c.subtopics || []
+                            };
+                        });
+                        
+                        // Avoid redundant state updates if chapters are identical
+                        const hasDifferences = JSON.stringify(existing.chapters.map(ch => ch.subtopics)) !== JSON.stringify(mergedChapters.map(ch => ch.subtopics));
+                        if (!hasDifferences) {
+                            return prev;
+                        }
+
+                        return {
+                            ...prev,
+                            [subject]: {
+                                ...existing,
+                                chapters: mergedChapters
+                            }
+                        };
                     }
                     return { ...prev, [subject]: data };
                 });
@@ -79,10 +100,10 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
             }
         };
 
-        if (!subjectData.physics?.chapters?.length) loadSubjectData('physics');
-        if (!subjectData.chemistry?.chapters?.length) loadSubjectData('chemistry');
-        if (!subjectData.maths?.chapters?.length) loadSubjectData('maths');
-    }, [subjectData.physics?.chapters?.length, subjectData.chemistry?.chapters?.length, subjectData.maths?.chapters?.length]);
+        loadSubjectData('physics');
+        loadSubjectData('chemistry');
+        loadSubjectData('maths');
+    }, []);
 
     // Merge CSV data with custom columns and filter excluded ones
     const mergedSubjectData = useMemo(() => {

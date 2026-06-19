@@ -240,6 +240,27 @@ export const LeftChapterRow = React.memo(({
     );
 });
 
+export function getChapterProgressPercent(progress: ChapterProgress | undefined, chapter: Chapter, materialNames: string[]): number {
+    const subtopics = chapter.subtopics || [];
+    if (subtopics.length > 0) {
+        let completedCount = 0;
+        const totalCount = subtopics.length * materialNames.length;
+        subtopics.forEach((sub) => {
+            const subState = progress?.subtopics?.[sub];
+            materialNames.forEach((mat) => {
+                if (subState?.completed?.[mat]) {
+                    completedCount++;
+                }
+            });
+        });
+        return totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    } else {
+        const completed = progress?.completed || {};
+        const completedCount = materialNames.filter((m) => completed[m]).length;
+        return materialNames.length > 0 ? Math.round((completedCount / materialNames.length) * 100) : 0;
+    }
+}
+
 interface MiddleChapterRowProps {
     chapter: Chapter;
     materialNames: string[];
@@ -265,7 +286,20 @@ export const MiddleChapterRow = React.memo(({
     onOpenDetails,
     isEditing = false
 }: MiddleChapterRowProps) => {
-    const completed = progress?.completed || {};
+    const subtopics = chapter.subtopics || [];
+
+    const isMaterialChecked = (material: string) => {
+        if (subtopics.length > 0) {
+            return subtopics.every(sub => !!progress?.subtopics?.[sub]?.completed?.[material]);
+        }
+        return !!progress?.completed?.[material];
+    };
+
+    const isMaterialIndeterminate = (material: string) => {
+        if (subtopics.length === 0) return false;
+        const completedCount = subtopics.filter(sub => !!progress?.subtopics?.[sub]?.completed?.[material]).length;
+        return completedCount > 0 && completedCount < subtopics.length;
+    };
 
     return (
         <tr
@@ -282,25 +316,34 @@ export const MiddleChapterRow = React.memo(({
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
         >
-            {materialNames.map((material) => (
-                <td key={material} className="material-cell">
-                    <label className="checkbox-container" onClick={(e) => e.stopPropagation()}>
-                        <input
-                            type="checkbox"
-                            checked={!!completed[material]}
-                            onChange={() => onToggleMaterial(chapter.serial, material)}
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                        <span className="checkmark"></span>
-                    </label>
-                </td>
-            ))}
+            {materialNames.map((material) => {
+                const isChecked = isMaterialChecked(material);
+                const isIndeterminate = isMaterialIndeterminate(material);
+
+                return (
+                    <td key={material} className="material-cell">
+                        <label className={`checkbox-container ${isIndeterminate ? 'indeterminate' : ''}`} onClick={(e) => e.stopPropagation()}>
+                            <input
+                                type="checkbox"
+                                checked={isChecked}
+                                ref={(el) => {
+                                    if (el) el.indeterminate = isIndeterminate;
+                                }}
+                                onChange={() => onToggleMaterial(chapter.serial, material)}
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                            <span className="checkmark"></span>
+                        </label>
+                    </td>
+                );
+            })}
         </tr>
     );
 });
 
 interface RightChapterRowProps {
     chapter: Chapter;
+    materialNames: string[];
     progress: ChapterProgress | undefined;
     onSetPriority: (chapterSerial: number, priority: Priority) => void;
     isEditing?: boolean;
@@ -314,6 +357,7 @@ interface RightChapterRowProps {
 
 export const RightChapterRow = React.memo(({
     chapter,
+    materialNames,
     progress,
     onSetPriority,
     isEditing = false,
@@ -325,6 +369,8 @@ export const RightChapterRow = React.memo(({
     onOpenDetails
 }: RightChapterRowProps) => {
     const priority = progress?.priority || 'none';
+    const percent = getChapterProgressPercent(progress, chapter, materialNames);
+    const filledBlocks = Math.round(percent / 20);
 
     return (
         <tr
@@ -354,10 +400,17 @@ export const RightChapterRow = React.memo(({
                         Delete
                     </button>
                 ) : (
-                    <PrioritySelector
-                        priority={priority}
-                        onChange={(p) => onSetPriority(chapter.serial, p)}
-                    />
+                    <div className="status-cell-content">
+                        <div className="progress-blocks" title={`Progress: ${percent}%`}>
+                            {[1, 2, 3, 4, 5].map((b) => (
+                                <span key={b} className={`progress-block-segment ${b <= filledBlocks ? 'filled' : ''}`} />
+                            ))}
+                        </div>
+                        <PrioritySelector
+                            priority={priority}
+                            onChange={(p) => onSetPriority(chapter.serial, p)}
+                        />
+                    </div>
                 )}
             </td>
         </tr>

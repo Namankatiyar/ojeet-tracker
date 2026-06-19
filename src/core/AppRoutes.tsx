@@ -34,6 +34,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
         progress, plannerTasks, studySessions, mockScores, examDates, primaryExamDate,
         physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress,
         handleToggleMaterial, handleSetPriority, handleUpdateChapterDetail, handleAddPlannerTask, handleTogglePlannerTask,
+        handleToggleSubtopicMaterial, handleUpdateSubtopicAttempted, handleSetSubtopicLastRevised,
         handleDeletePlannerTask, handleEditPlannerTask, handleAddStudySession, handleDeleteStudySession,
         handleEditStudySession, handleAddMockScore, handleDeleteMockScore,
         handleAddExam, handleDeleteExam, handleUpdateExam, handleSetPrimaryExam
@@ -114,6 +115,9 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                             onToggleMaterial={(serial, material) => handleToggleMaterial(subject, serial, material)}
                             onSetPriority={(serial, priority) => handleSetPriority(subject, serial, priority)}
                             onUpdateChapterDetail={(serial, patch) => handleUpdateChapterDetail(subject, serial, patch)}
+                            onToggleSubtopicMaterial={(serial, subtopic, material) => handleToggleSubtopicMaterial(subject, serial, subtopic, material)}
+                            onUpdateSubtopicAttempted={(serial, subtopic, material, count) => handleUpdateSubtopicAttempted(subject, serial, subtopic, material, count)}
+                            onSetSubtopicLastRevised={(serial, subtopic, date) => handleSetSubtopicLastRevised(subject, serial, subtopic, date)}
                             onAddMaterial={(name) => handleAddColumn(subject, name)}
                             onRemoveMaterial={(name) => handleRemoveColumn(subject, name)}
                             onAddChapter={(name) => handleAddChapter(subject, name)}
