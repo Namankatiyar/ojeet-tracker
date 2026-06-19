@@ -1,0 +1,355 @@
+{
+  "JEE_Main_Physics_Syllabus_2026": [
+    {
+      "unit_number": 1,
+      "unit_name": "Units and Measurements",
+      "subtopics": [
+        "Units of measurements",
+        "System of units",
+        "SI Units (fundamental and derived)",
+        "Least count",
+        "Significant figures",
+        "Errors in measurements",
+        "Dimensions of Physics quantities",
+        "Dimensional analysis and its applications"
+      ]
+    },
+    {
+      "unit_number": 2,
+      "unit_name": "Kinematics",
+      "subtopics": [
+        "Frame of reference",
+        "Motion in a straight line",
+        "Uniform and non-uniform motion",
+        "Average speed and instantaneous velocity",
+        "Uniformly accelerated motion",
+        "Velocity-time and position-time graphs",
+        "Equations of motion",
+        "Relative velocity",
+        "Motion in a plane",
+        "Projectile motion",
+        "Uniform circular motion"
+      ]
+    },
+    {
+      "unit_number": 3,
+      "unit_name": "Laws of Motion",
+      "subtopics": [
+        "Force and inertia",
+        "Newton's laws of motion",
+        "Momentum and impulse",
+        "Conservation of linear momentum",
+        "Equilibrium of concurrent forces",
+        "Static and kinetic friction",
+        "Laws of friction",
+        "Rolling friction",
+        "Dynamics of circular motion",
+        "Vehicle on level and banked roads"
+      ]
+    },
+    {
+      "unit_number": 4,
+      "unit_name": "Work, Energy and Power",
+      "subtopics": [
+        "Work done by constant and variable forces",
+        "Kinetic energy",
+        "Potential energy",
+        "Work-energy theorem",
+        "Power",
+        "Potential energy of spring",
+        "Conservation of mechanical energy",
+        "Conservative and non-conservative forces",
+        "Motion in vertical circle",
+        "Elastic and inelastic collisions"
+      ]
+    },
+    {
+      "unit_number": 5,
+      "unit_name": "System of Particles and Rotational Motion",
+      "subtopics": [
+        "Centre of mass",
+        "Moment of force and torque",
+        "Angular momentum",
+        "Conservation of angular momentum",
+        "Moment of inertia",
+        "Radius of gyration",
+        "Parallel axis theorem",
+        "Perpendicular axis theorem",
+        "Equilibrium of rigid bodies",
+        "Rotational motion equations"
+      ]
+    },
+    {
+      "unit_number": 6,
+      "unit_name": "Gravitation",
+      "subtopics": [
+        "Universal law of gravitation",
+        "Acceleration due to gravity",
+        "Variation of g with altitude and depth",
+        "Kepler's laws",
+        "Gravitational potential",
+        "Gravitational potential energy",
+        "Escape velocity",
+        "Orbital velocity",
+        "Satellite motion"
+      ]
+    },
+    {
+      "unit_number": 7,
+      "unit_name": "Mechanical Properties of Solids",
+      "subtopics": [
+        "Elastic behaviour",
+        "Stress and strain",
+        "Hooke's law",
+        "Young's modulus",
+        "Bulk modulus",
+        "Modulus of rigidity"
+      ]
+    },
+    {
+      "unit_number": 8,
+      "unit_name": "Mechanical Properties of Fluids",
+      "subtopics": [
+        "Pressure in fluids",
+        "Pascal's law",
+        "Viscosity",
+        "Stoke's law",
+        "Terminal velocity",
+        "Streamline and turbulent flow",
+        "Critical velocity",
+        "Bernoulli's theorem",
+        "Surface tension",
+        "Angle of contact",
+        "Capillary rise"
+      ]
+    },
+    {
+      "unit_number": 9,
+      "unit_name": "Thermal Properties of Matter",
+      "subtopics": [
+        "Temperature and heat",
+        "Thermal expansion",
+        "Specific heat capacity",
+        "Calorimetry",
+        "Change of state",
+        "Latent heat",
+        "Heat transfer",
+        "Conduction",
+        "Convection",
+        "Radiation"
+      ]
+    },
+    {
+      "unit_number": 10,
+      "unit_name": "Thermodynamics",
+      "subtopics": [
+        "Thermal equilibrium",
+        "Zeroth law",
+        "Heat, work and internal energy",
+        "First law of thermodynamics",
+        "Isothermal process",
+        "Adiabatic process",
+        "Second law of thermodynamics",
+        "Reversible and irreversible processes"
+      ]
+    },
+    {
+      "unit_number": 11,
+      "unit_name": "Kinetic Theory of Gases",
+      "subtopics": [
+        "Equation of state of ideal gas",
+        "Assumptions of kinetic theory",
+        "Pressure of gas",
+        "Kinetic interpretation of temperature",
+        "RMS speed",
+        "Degrees of freedom",
+        "Law of equipartition of energy",
+        "Specific heats",
+        "Mean free path"
+      ]
+    },
+    {
+      "unit_number": 12,
+      "unit_name": "Oscillations",
+      "subtopics": [
+        "Periodic motion",
+        "Simple harmonic motion",
+        "Phase of oscillation",
+        "Energy in SHM",
+        "Oscillations of spring",
+        "Simple pendulum"
+      ]
+    },
+    {
+      "unit_number": 13,
+      "unit_name": "Waves",
+      "subtopics": [
+        "Wave motion",
+        "Longitudinal and transverse waves",
+        "Speed of wave",
+        "Superposition principle",
+        "Reflection of waves",
+        "Standing waves",
+        "Fundamental mode",
+        "Harmonics",
+        "Beats"
+      ]
+    },
+    {
+      "unit_number": 14,
+      "unit_name": "Electrostatics",
+      "subtopics": [
+        "Electric charge",
+        "Coulomb's law",
+        "Electric field",
+        "Electric dipole",
+        "Torque on dipole",
+        "Electric flux",
+        "Gauss law",
+        "Electric potential",
+        "Equipotential surfaces",
+        "Capacitance",
+        "Energy stored in capacitor"
+      ]
+    },
+    {
+      "unit_number": 15,
+      "unit_name": "Current Electricity",
+      "subtopics": [
+        "Electric current",
+        "Drift velocity",
+        "Ohm's law",
+        "Resistance",
+        "Resistivity",
+        "Series and parallel circuits",
+        "Temperature dependence of resistance",
+        "Internal resistance",
+        "Kirchhoff's laws",
+        "Wheatstone bridge"
+      ]
+    },
+    {
+      "unit_number": 16,
+      "unit_name": "Magnetic Effects of Current and Magnetism",
+      "subtopics": [
+        "Biot-Savart law",
+        "Ampere's law",
+        "Force on moving charge",
+        "Force on current conductor",
+        "Current loop as magnetic dipole",
+        "Moving coil galvanometer",
+        "Magnetic properties of materials"
+      ]
+    },
+    {
+      "unit_number": 17,
+      "unit_name": "Electromagnetic Induction",
+      "subtopics": [
+        "Faraday's laws",
+        "Lenz's law",
+        "Induced emf",
+        "Eddy currents",
+        "Self inductance",
+        "Mutual inductance"
+      ]
+    },
+    {
+      "unit_number": 18,
+      "unit_name": "Alternating Current",
+      "subtopics": [
+        "AC voltage and current",
+        "Peak and RMS values",
+        "Reactance",
+        "Impedance",
+        "LCR circuit",
+        "Resonance",
+        "AC generator",
+        "Transformer"
+      ]
+    },
+    {
+      "unit_number": 19,
+      "unit_name": "Electromagnetic Waves",
+      "subtopics": [
+        "Displacement current",
+        "Nature of EM waves",
+        "Electromagnetic spectrum",
+        "Applications of EM waves"
+      ]
+    },
+    {
+      "unit_number": 20,
+      "unit_name": "Ray Optics",
+      "subtopics": [
+        "Reflection",
+        "Spherical mirrors",
+        "Mirror formula",
+        "Refraction",
+        "Lens formula",
+        "Lens maker formula",
+        "Total internal reflection",
+        "Prism",
+        "Optical instruments"
+      ]
+    },
+    {
+      "unit_number": 21,
+      "unit_name": "Wave Optics",
+      "subtopics": [
+        "Huygens principle",
+        "Interference",
+        "Young's double slit experiment",
+        "Diffraction",
+        "Polarization",
+        "Brewster law"
+      ]
+    },
+    {
+      "unit_number": 22,
+      "unit_name": "Dual Nature of Matter and Radiation",
+      "subtopics": [
+        "Photoelectric effect",
+        "Einstein photoelectric equation",
+        "Matter waves",
+        "de Broglie relation"
+      ]
+    },
+    {
+      "unit_number": 23,
+      "unit_name": "Atoms",
+      "subtopics": [
+        "Alpha scattering",
+        "Rutherford model",
+        "Bohr model",
+        "Energy levels",
+        "Hydrogen spectrum"
+      ]
+    },
+    {
+      "unit_number": 24,
+      "unit_name": "Nuclei",
+      "subtopics": [
+        "Composition of nucleus",
+        "Mass defect",
+        "Binding energy",
+        "Binding energy per nucleon",
+        "Nuclear fission",
+        "Nuclear fusion"
+      ]
+    },
+    {
+      "unit_number": 25,
+      "unit_name": "Semiconductor Electronics",
+      "subtopics": [
+        "Semiconductors",
+        "p-n junction diode",
+        "Rectifier",
+        "LED",
+        "Photodiode",
+        "Solar cell",
+        "Zener diode",
+        "Logic gates"
+      ]
+    }
+  ]
+}

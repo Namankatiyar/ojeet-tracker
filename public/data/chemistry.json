@@ -1,0 +1,291 @@
+{
+  "JEE_Main_Chemistry_Syllabus_2026": {
+    "Physical_Chemistry": [
+      {
+        "unit_number": 1,
+        "unit_name": "Some Basic Concepts in Chemistry",
+        "subtopics": [
+          "Matter and its nature",
+          "Laws of chemical combination",
+          "Atomic and molecular masses",
+          "Mole concept",
+          "Stoichiometry"
+        ]
+      },
+      {
+        "unit_number": 2,
+        "unit_name": "Atomic Structure",
+        "subtopics": [
+          "Electromagnetic radiation",
+          "Photoelectric effect",
+          "Bohr model",
+          "de Broglie hypothesis",
+          "Heisenberg uncertainty principle",
+          "Quantum numbers",
+          "Atomic orbitals",
+          "Electronic configuration"
+        ]
+      },
+      {
+        "unit_number": 3,
+        "unit_name": "Chemical Bonding and Molecular Structure",
+        "subtopics": [
+          "Ionic bonding",
+          "Covalent bonding",
+          "VSEPR theory",
+          "Hybridization",
+          "Resonance",
+          "Molecular orbital theory",
+          "Hydrogen bonding"
+        ]
+      },
+      {
+        "unit_number": 4,
+        "unit_name": "Chemical Thermodynamics",
+        "subtopics": [
+          "System and surroundings",
+          "First law of thermodynamics",
+          "Enthalpy",
+          "Hess law",
+          "Entropy",
+          "Gibbs free energy"
+        ]
+      },
+      {
+        "unit_number": 5,
+        "unit_name": "Solutions",
+        "subtopics": [
+          "Concentration terms",
+          "Raoult law",
+          "Colligative properties",
+          "Abnormal molar mass",
+          "Van't Hoff factor"
+        ]
+      },
+      {
+        "unit_number": 6,
+        "unit_name": "Equilibrium",
+        "subtopics": [
+          "Chemical equilibrium",
+          "Equilibrium constant",
+          "Le Chatelier principle",
+          "Ionic equilibrium",
+          "Acids and bases",
+          "Buffer solutions",
+          "Solubility product"
+        ]
+      },
+      {
+        "unit_number": 7,
+        "unit_name": "Redox Reactions",
+        "subtopics": [
+          "Oxidation and reduction",
+          "Oxidation number",
+          "Balancing redox reactions",
+          "Redox titrations"
+        ]
+      },
+      {
+        "unit_number": 8,
+        "unit_name": "Electrochemistry",
+        "subtopics": [
+          "Electrochemical cells",
+          "Galvanic and electrolytic cells",
+          "Electrode potential",
+          "Nernst equation",
+          "Conductance",
+          "Kohlrausch law",
+          "Batteries and fuel cells"
+        ]
+      },
+      {
+        "unit_number": 9,
+        "unit_name": "Chemical Kinetics",
+        "subtopics": [
+          "Rate of reaction",
+          "Rate law",
+          "Order and molecularity",
+          "Integrated rate equations",
+          "Activation energy",
+          "Arrhenius equation"
+        ]
+      }
+    ],
+
+    "Inorganic_Chemistry": [
+      {
+        "unit_number": 10,
+        "unit_name": "Classification of Elements and Periodicity",
+        "subtopics": [
+          "Modern periodic law",
+          "Periodic trends",
+          "Atomic size",
+          "Ionization energy",
+          "Electron affinity",
+          "Electronegativity"
+        ]
+      },
+      {
+        "unit_number": 11,
+        "unit_name": "Hydrogen",
+        "subtopics": [
+          "Position of hydrogen",
+          "Isotopes",
+          "Hydrides",
+          "Water",
+          "Hydrogen peroxide"
+        ]
+      },
+      {
+        "unit_number": 12,
+        "unit_name": "s-Block Elements",
+        "subtopics": [
+          "Group 1 elements",
+          "Group 2 elements",
+          "Anomalous behaviour",
+          "Important compounds"
+        ]
+      },
+      {
+        "unit_number": 13,
+        "unit_name": "p-Block Elements I",
+        "subtopics": [
+          "Group 13 elements",
+          "Group 14 elements",
+          "Important compounds",
+          "Anomalous properties"
+        ]
+      },
+      {
+        "unit_number": 14,
+        "unit_name": "p-Block Elements II",
+        "subtopics": [
+          "Group 15 elements",
+          "Group 16 elements",
+          "Group 17 elements",
+          "Group 18 elements"
+        ]
+      },
+      {
+        "unit_number": 15,
+        "unit_name": "d and f Block Elements",
+        "subtopics": [
+          "Transition elements",
+          "Electronic configuration",
+          "Oxidation states",
+          "Lanthanoids",
+          "Actinoids",
+          "Lanthanoid contraction"
+        ]
+      },
+      {
+        "unit_number": 16,
+        "unit_name": "Coordination Compounds",
+        "subtopics": [
+          "Werner theory",
+          "Ligands",
+          "Coordination number",
+          "Isomerism",
+          "Crystal field theory",
+          "Applications"
+        ]
+      }
+    ],
+
+    "Organic_Chemistry": [
+      {
+        "unit_number": 17,
+        "unit_name": "Organic Chemistry – Some Basic Principles and Techniques",
+        "subtopics": [
+          "Purification methods",
+          "Qualitative analysis",
+          "Organic reactions",
+          "Electronic effects",
+          "Reaction intermediates",
+          "Isomerism"
+        ]
+      },
+      {
+        "unit_number": 18,
+        "unit_name": "Hydrocarbons",
+        "subtopics": [
+          "Alkanes",
+          "Alkenes",
+          "Alkynes",
+          "Aromatic hydrocarbons",
+          "Electrophilic substitution"
+        ]
+      },
+      {
+        "unit_number": 19,
+        "unit_name": "Haloalkanes and Haloarenes",
+        "subtopics": [
+          "Preparation methods",
+          "Substitution reactions",
+          "Environmental effects"
+        ]
+      },
+      {
+        "unit_number": 20,
+        "unit_name": "Alcohols, Phenols and Ethers",
+        "subtopics": [
+          "Preparation methods",
+          "Reactions",
+          "Phenol acidity",
+          "Ether reactions"
+        ]
+      },
+      {
+        "unit_number": 21,
+        "unit_name": "Aldehydes, Ketones and Carboxylic Acids",
+        "subtopics": [
+          "Preparation methods",
+          "Nucleophilic addition",
+          "Reduction reactions",
+          "Aldol condensation",
+          "Cannizzaro reaction"
+        ]
+      },
+      {
+        "unit_number": 22,
+        "unit_name": "Amines",
+        "subtopics": [
+          "Classification",
+          "Basicity",
+          "Preparation methods",
+          "Diazonium salts"
+        ]
+      },
+      {
+        "unit_number": 23,
+        "unit_name": "Biomolecules",
+        "subtopics": [
+          "Carbohydrates",
+          "Proteins",
+          "Vitamins",
+          "Nucleic acids"
+        ]
+      },
+      {
+        "unit_number": 24,
+        "unit_name": "Chemistry in Everyday Life",
+        "subtopics": [
+          "Drugs",
+          "Cleansing agents",
+          "Food additives",
+          "Chemicals in medicine"
+        ]
+      },
+      {
+        "unit_number": 25,
+        "unit_name": "Principles Related to Practical Chemistry",
+        "subtopics": [
+          "Salt analysis",
+          "Titrations",
+          "Preparation of compounds",
+          "Enthalpy experiments"
+        ]
+      }
+    ]
+  }
+}

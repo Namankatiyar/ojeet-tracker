@@ -41,9 +41,6 @@ importers:
       node-vibrant:
         specifier: ^4.0.4
         version: 4.0.4
-      papaparse:
-        specifier: ^5.4.1
-        version: 5.5.3
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -78,9 +75,6 @@ importers:
       '@types/canvas-confetti':
         specifier: ^1.6.4
         version: 1.9.0
-      '@types/papaparse':
-        specifier: ^5.3.14
-        version: 5.5.2
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.27
@@ -1307,9 +1301,6 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
-
-  '@types/papaparse@5.5.2':
-    resolution: {integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==}
 
   '@types/phoenix@1.6.7':
     resolution: {integrity: sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==}
@@ -3094,9 +3085,6 @@ packages:
 
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
-
-  papaparse@5.5.3:
-    resolution: {integrity: sha512-5QvjGxYVjxO59MGU2lHVYpRWBBtKHnlIAcSe1uNFCkkptUh63NFRj0FJQm7nR67puEruUci/ZkjmEFrjCAyP4A==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -5445,10 +5433,6 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
-  '@types/papaparse@5.5.2':
-    dependencies:
-      '@types/node': 25.0.3
-
   '@types/phoenix@1.6.7': {}
 
   '@types/prop-types@15.7.15': {}
@@ -7379,8 +7363,6 @@ snapshots:
   package-json-from-dist@1.0.1: {}
 
   pako@1.0.11: {}
-
-  papaparse@5.5.3: {}
 
   parent-module@1.0.1:
     dependencies:

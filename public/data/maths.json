@@ -1,0 +1,256 @@
+{
+  "JEE_Main_Mathematics_Syllabus_2026": [
+    {
+      "unit_number": 1,
+      "unit_name": "Sets, Relations and Functions",
+      "subtopics": [
+        "Sets and their representation",
+        "Union, intersection and complement of sets",
+        "Power set",
+        "Relations and types of relations",
+        "Equivalence relations"
+      ]
+    },
+    {
+      "unit_number": 2,
+      "unit_name": "Functions",
+      "subtopics": [
+        "Domain and range",
+        "Types of functions (one-one, onto, into)",
+        "Composition of functions",
+        "Inverse of a function"
+      ]
+    },
+    {
+      "unit_number": 3,
+      "unit_name": "Complex Numbers and Quadratic Equations",
+      "subtopics": [
+        "Complex numbers",
+        "Argand plane",
+        "Modulus and argument",
+        "Algebra of complex numbers",
+        "Quadratic equations",
+        "Relations between roots and coefficients"
+      ]
+    },
+    {
+      "unit_number": 4,
+      "unit_name": "Matrices",
+      "subtopics": [
+        "Types of matrices",
+        "Algebra of matrices",
+        "Transpose of a matrix",
+        "Symmetric and skew-symmetric matrices"
+      ]
+    },
+    {
+      "unit_number": 5,
+      "unit_name": "Determinants",
+      "subtopics": [
+        "Determinant of a matrix",
+        "Properties of determinants",
+        "Adjoint and inverse of matrix",
+        "Area of triangle",
+        "Solution of linear equations"
+      ]
+    },
+    {
+      "unit_number": 6,
+      "unit_name": "Permutations and Combinations",
+      "subtopics": [
+        "Fundamental principle of counting",
+        "Permutations",
+        "Combinations",
+        "Applications"
+      ]
+    },
+    {
+      "unit_number": 7,
+      "unit_name": "Binomial Theorem",
+      "subtopics": [
+        "Binomial theorem for positive integral index",
+        "General term",
+        "Middle term",
+        "Applications"
+      ]
+    },
+    {
+      "unit_number": 8,
+      "unit_name": "Sequences and Series",
+      "subtopics": [
+        "Arithmetic progression",
+        "Geometric progression",
+        "Sum of series",
+        "Arithmetic mean",
+        "Geometric mean"
+      ]
+    },
+    {
+      "unit_number": 9,
+      "unit_name": "Trigonometric Functions",
+      "subtopics": [
+        "Trigonometric identities",
+        "Graphs of trigonometric functions",
+        "Properties of trigonometric functions"
+      ]
+    },
+    {
+      "unit_number": 10,
+      "unit_name": "Inverse Trigonometric Functions",
+      "subtopics": [
+        "Domain and range",
+        "Principal values",
+        "Properties",
+        "Identities"
+      ]
+    },
+    {
+      "unit_number": 11,
+      "unit_name": "Limits, Continuity and Differentiability",
+      "subtopics": [
+        "Limits of functions",
+        "Continuity",
+        "Differentiability",
+        "Derivatives of functions"
+      ]
+    },
+    {
+      "unit_number": 12,
+      "unit_name": "Applications of Derivatives",
+      "subtopics": [
+        "Increasing and decreasing functions",
+        "Maxima and minima",
+        "Rate of change",
+        "Tangents and normals"
+      ]
+    },
+    {
+      "unit_number": 13,
+      "unit_name": "Indefinite Integrals",
+      "subtopics": [
+        "Integration as inverse of differentiation",
+        "Standard integrals",
+        "Integration by substitution",
+        "Integration by parts",
+        "Partial fractions"
+      ]
+    },
+    {
+      "unit_number": 14,
+      "unit_name": "Definite Integrals",
+      "subtopics": [
+        "Fundamental theorem of calculus",
+        "Properties of definite integrals",
+        "Evaluation of definite integrals"
+      ]
+    },
+    {
+      "unit_number": 15,
+      "unit_name": "Area Under Curves",
+      "subtopics": [
+        "Area between curve and axis",
+        "Area between two curves"
+      ]
+    },
+    {
+      "unit_number": 16,
+      "unit_name": "Differential Equations",
+      "subtopics": [
+        "Order and degree",
+        "Formation of differential equations",
+        "Solution by separation of variables",
+        "Linear differential equations"
+      ]
+    },
+    {
+      "unit_number": 17,
+      "unit_name": "Straight Lines",
+      "subtopics": [
+        "Slope of line",
+        "Equation of line",
+        "Angle between lines",
+        "Distance from point to line"
+      ]
+    },
+    {
+      "unit_number": 18,
+      "unit_name": "Circle",
+      "subtopics": [
+        "Equation of circle",
+        "General form",
+        "Tangent and normal"
+      ]
+    },
+    {
+      "unit_number": 19,
+      "unit_name": "Parabola",
+      "subtopics": [
+        "Standard equation",
+        "Focus and directrix",
+        "Parametric equations",
+        "Tangents and normals"
+      ]
+    },
+    {
+      "unit_number": 20,
+      "unit_name": "Ellipse",
+      "subtopics": [
+        "Standard equation",
+        "Eccentricity",
+        "Parametric form",
+        "Tangents and normals"
+      ]
+    },
+    {
+      "unit_number": 21,
+      "unit_name": "Hyperbola",
+      "subtopics": [
+        "Standard equation",
+        "Eccentricity",
+        "Parametric equations",
+        "Asymptotes"
+      ]
+    },
+    {
+      "unit_number": 22,
+      "unit_name": "Vector Algebra",
+      "subtopics": [
+        "Vectors and scalars",
+        "Addition of vectors",
+        "Scalar product",
+        "Vector product"
+      ]
+    },
+    {
+      "unit_number": 23,
+      "unit_name": "Three Dimensional Geometry",
+      "subtopics": [
+        "Direction ratios and cosines",
+        "Equation of line in space",
+        "Angle between lines",
+        "Shortest distance between skew lines"
+      ]
+    },
+    {
+      "unit_number": 24,
+      "unit_name": "Statistics",
+      "subtopics": [
+        "Mean, median, mode",
+        "Variance",
+        "Standard deviation"
+      ]
+    },
+    {
+      "unit_number": 25,
+      "unit_name": "Probability",
+      "subtopics": [
+        "Classical probability",
+        "Addition theorem",
+        "Multiplication theorem",
+        "Conditional probability",
+        "Bayes theorem",
+        "Random variables"
+      ]
+    }
+  ]
+}

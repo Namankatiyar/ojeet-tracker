@@ -1,7 +1,23 @@
 import React, { createContext, useContext, useEffect, useMemo, useCallback } from 'react';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { Subject, SubjectData } from '../../shared/types';
-import { parseSubjectCSV } from '../../shared/utils/csvParser';
+import { parseSubjectJSON } from '../../shared/utils/jsonParser';
+
+// Force migration from old CSV syllabus data to new JSON syllabus (v2026)
+if (typeof window !== 'undefined') {
+    const isOldVersion = window.localStorage.getItem('jee-tracker-syllabus-version') !== 'json-2026';
+    if (isOldVersion) {
+        window.localStorage.removeItem('jee-tracker-subject-data');
+        window.localStorage.removeItem('jee-tracker-progress');
+        window.localStorage.removeItem('jee-tracker-planner-tasks');
+        window.localStorage.removeItem('jee-tracker-study-sessions');
+        window.localStorage.removeItem('jee-tracker-custom-columns');
+        window.localStorage.removeItem('jee-tracker-excluded-columns');
+        window.localStorage.removeItem('jee-tracker-material-order');
+        window.localStorage.setItem('jee-tracker-syllabus-version', 'json-2026');
+    }
+}
+
 
 interface SubjectDataContextType {
     subjectData: Record<Subject, SubjectData | null>;
@@ -47,11 +63,11 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
         maths: []
     });
 
-    // Load CSV data if not in local storage
+    // Load JSON data if not in local storage
     useEffect(() => {
         const loadSubjectData = async (subject: Subject) => {
             try {
-                const data = await parseSubjectCSV(subject);
+                const data = await parseSubjectJSON(subject);
                 setSubjectData(prev => {
                     if (prev[subject] && prev[subject]?.chapters && prev[subject]!.chapters.length > 0) {
                         return prev;
@@ -66,7 +82,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (!subjectData.physics?.chapters?.length) loadSubjectData('physics');
         if (!subjectData.chemistry?.chapters?.length) loadSubjectData('chemistry');
         if (!subjectData.maths?.chapters?.length) loadSubjectData('maths');
-    }, []);
+    }, [subjectData.physics?.chapters?.length, subjectData.chemistry?.chapters?.length, subjectData.maths?.chapters?.length]);
 
     // Merge CSV data with custom columns and filter excluded ones
     const mergedSubjectData = useMemo(() => {
