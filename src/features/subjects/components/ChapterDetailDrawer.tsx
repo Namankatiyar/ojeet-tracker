@@ -15,7 +15,25 @@ interface ChapterDetailDrawerProps {
     onUpdateDetail: (chapterSerial: number, patch: Partial<ChapterDetailProgress>) => void;
 }
 
-const confidenceLevels: ConfidenceLevel[] = [1, 2, 3, 4, 5];
+const confidenceColorsList = [
+    'var(--text-muted)',
+    'var(--confidence-red)',
+    'var(--confidence-amber)',
+    'var(--confidence-yellow)',
+    'var(--confidence-purple)',
+    'var(--confidence-green)'
+];
+
+function getConfidenceLabel(level: number | undefined) {
+    switch (level) {
+        case 1: return '1 - Need Help';
+        case 2: return '2 - Low';
+        case 3: return '3 - Medium';
+        case 4: return '4 - High';
+        case 5: return '5 - Mastered';
+        default: return 'Not Rated';
+    }
+}
 
 function todayString() {
     return formatDateLocal(new Date());
@@ -114,24 +132,34 @@ export function ChapterDetailDrawer({
                                 </div>
 
                                 <div className="drawer-field column-field">
-                                    <label>Confidence Level</label>
-                                    <div className="segmented-confidence-control" role="radiogroup" aria-label="Confidence level">
-                                        {confidenceLevels.map((level) => {
-                                            const isActive = detail?.confidence === level;
-                                            return (
-                                                <button
-                                                    key={level}
-                                                    type="button"
-                                                    className={`segment-btn confidence-${level} ${isActive ? 'active' : ''}`}
-                                                    onClick={() => onUpdateDetail(chapter.serial, { confidence: isActive ? undefined : level })}
-                                                    role="radio"
-                                                    aria-checked={isActive}
-                                                    aria-label={`Confidence ${level}`}
-                                                >
-                                                    {level}
-                                                </button>
-                                            );
-                                        })}
+                                    <div className="confidence-slider-header">
+                                        <label>Confidence Level</label>
+                                        <span className={`confidence-badge val-${detail?.confidence || 0}`}>
+                                            {getConfidenceLabel(detail?.confidence)}
+                                        </span>
+                                    </div>
+                                    <div className="confidence-slider-container">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="5"
+                                            step="1"
+                                            value={detail?.confidence || 0}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value);
+                                                onUpdateDetail(chapter.serial, { confidence: val === 0 ? undefined : val as ConfidenceLevel });
+                                            }}
+                                            className="confidence-slider"
+                                            style={{ '--thumb-color': confidenceColorsList[detail?.confidence || 0] } as React.CSSProperties}
+                                        />
+                                        <div className="confidence-slider-ticks">
+                                            <span style={{ left: '0%' }}>None</span>
+                                            <span style={{ left: '20%' }}>1</span>
+                                            <span style={{ left: '40%' }}>2</span>
+                                            <span style={{ left: '60%' }}>3</span>
+                                            <span style={{ left: '80%' }}>4</span>
+                                            <span style={{ left: '100%' }}>5</span>
+                                        </div>
                                     </div>
                                 </div>
 

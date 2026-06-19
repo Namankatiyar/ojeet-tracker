@@ -465,9 +465,13 @@ td.material-cell .checkbox-container {
   --row-bg: var(--panel-bg);
   background: var(--row-bg);
   transition: background-color var(--transition-fast);
-  cursor: pointer;
+  cursor: default;
   height: 2.375rem; /* 38px */
   box-sizing: border-box;
+}
+
+.left-table-section .chapter-row {
+  cursor: pointer;
 }
 
 .chapter-row:hover,
@@ -1111,6 +1115,10 @@ td.material-cell .checkbox-container {
   justify-content: space-between;
 }
 
+.drawer-field .priority-selector {
+  margin: 0;
+}
+
 .column-field {
   flex-direction: column;
 }
@@ -1121,36 +1129,155 @@ td.material-cell .checkbox-container {
   font-weight: 600;
 }
 
-.segmented-confidence-control {
+.confidence-slider-header {
   display: flex;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
-  padding: var(--space-1);
-  gap: var(--space-1);
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
-.segment-btn {
-  flex: 1;
-  min-height: 2rem;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-secondary);
+.confidence-badge {
+  font-size: 0.7rem;
   font-weight: 700;
-  font-size: var(--text-xs);
-  cursor: pointer;
+  padding: 0 0.4rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: var(--radius-xs);
   transition: all var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.segment-btn:hover {
-  background: color-mix(in srgb, var(--text-secondary) 10%, transparent);
+.confidence-badge.val-0 {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
 }
 
-.segment-btn.active.confidence-1 { background: color-mix(in srgb, var(--confidence-red) 20%, transparent); color: var(--confidence-red); }
-.segment-btn.active.confidence-2 { background: color-mix(in srgb, var(--confidence-amber) 20%, transparent); color: var(--confidence-amber); }
-.segment-btn.active.confidence-3 { background: color-mix(in srgb, var(--confidence-yellow) 20%, transparent); color: var(--confidence-yellow); }
-.segment-btn.active.confidence-4 { background: color-mix(in srgb, var(--confidence-purple) 20%, transparent); color: var(--confidence-purple); }
-.segment-btn.active.confidence-5 { background: color-mix(in srgb, var(--confidence-green) 20%, transparent); color: var(--confidence-green); }
+.confidence-badge.val-1 {
+  background: color-mix(in srgb, var(--confidence-red) 15%, transparent);
+  color: var(--confidence-red);
+  border: 1px solid color-mix(in srgb, var(--confidence-red) 30%, transparent);
+}
+
+.confidence-badge.val-2 {
+  background: color-mix(in srgb, var(--confidence-amber) 15%, transparent);
+  color: var(--confidence-amber);
+  border: 1px solid color-mix(in srgb, var(--confidence-amber) 30%, transparent);
+}
+
+.confidence-badge.val-3 {
+  background: color-mix(in srgb, var(--confidence-yellow) 15%, transparent);
+  color: var(--confidence-yellow);
+  border: 1px solid color-mix(in srgb, var(--confidence-yellow) 30%, transparent);
+}
+
+.confidence-badge.val-4 {
+  background: color-mix(in srgb, var(--confidence-purple) 15%, transparent);
+  color: var(--confidence-purple);
+  border: 1px solid color-mix(in srgb, var(--confidence-purple) 30%, transparent);
+}
+
+.confidence-badge.val-5 {
+  background: color-mix(in srgb, var(--confidence-green) 15%, transparent);
+  color: var(--confidence-green);
+  border: 1px solid color-mix(in srgb, var(--confidence-green) 30%, transparent);
+}
+
+.confidence-slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-1);
+}
+
+.confidence-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    var(--border) 0%,
+    var(--confidence-red) 20%,
+    var(--confidence-amber) 40%,
+    var(--confidence-yellow) 60%,
+    var(--confidence-purple) 80%,
+    var(--confidence-green) 100%
+  );
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Webkit browser thumb */
+.confidence-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--thumb-color, var(--text-muted));
+  border: 2px solid var(--bg-secondary);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.confidence-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+/* Firefox browser thumb */
+.confidence-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--thumb-color, var(--text-muted));
+  border: 2px solid var(--bg-secondary);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.confidence-slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+/* Firefox track override to match */
+.confidence-slider::-moz-range-track {
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    var(--border) 0%,
+    var(--confidence-red) 20%,
+    var(--confidence-amber) 40%,
+    var(--confidence-yellow) 60%,
+    var(--confidence-purple) 80%,
+    var(--confidence-green) 100%
+  );
+  border-radius: 3px;
+}
+
+.confidence-slider-ticks {
+  position: relative;
+  height: 1rem;
+  margin: 4px 8px 0; /* 8px left/right margin offsets the container edges to match the center of the 16px thumb at limits */
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.confidence-slider-ticks span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
 
 .modern-date-btn {
   display: inline-flex;
