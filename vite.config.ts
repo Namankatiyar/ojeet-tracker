@@ -25,7 +25,7 @@ export default defineConfig({
     react(),
     !isTest && VitePWA({
       injectRegister: false,
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['logo.png', 'og_image.jpg'],
       workbox: {
         cleanupOutdatedCaches: true,
