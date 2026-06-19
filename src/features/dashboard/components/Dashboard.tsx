@@ -15,7 +15,6 @@ import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 import { applyPwaUpdate, getPwaBridgeState, subscribePwaBridge } from '../../../shared/utils/pwaBridge';
 import { DashboardNotificationCenter, DashboardNotificationItem } from './DashboardNotificationCenter';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
-import { StudyCoPilotWidget } from './StudyCoPilotWidget';
 
 interface DashboardProps {
     physicsProgress: number;
@@ -631,8 +630,6 @@ export function Dashboard({
                     </div>
                 </div>
             </div>
-
-            <StudyCoPilotWidget />
 
             <div className="subject-cards">
                 {subjects.map(({ key, label, icon, progress, color }) => {

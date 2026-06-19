@@ -528,7 +528,7 @@
 }
 
 .session-log-list {
-  max-height: 300px;
+  max-height: 410px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

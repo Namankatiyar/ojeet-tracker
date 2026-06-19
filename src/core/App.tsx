@@ -17,7 +17,7 @@ import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 
 import { AppRoutes } from './AppRoutes';
 
-type View = 'dashboard' | 'planner' | 'studyclock' | Subject;
+type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | Subject;
 
 function AppContent() {
     const navigate = useNavigate();
@@ -38,9 +38,10 @@ function AppContent() {
     // Determine current view from path
     const getCurrentView = (): View => {
         const path = location.pathname.substring(1);
-        if (!path || path === 'jee-syllabus-tracker') return 'dashboard';
+        if (path === 'jee-syllabus-tracker') return 'dashboard';
         if (path === 'jee-study-planner') return 'planner';
         if (path === 'jee-study-timer') return 'studyclock';
+        if (path === 'reports') return 'reports';
         return path as View;
     };
 
@@ -50,6 +51,7 @@ function AppContent() {
         if (view === 'dashboard') navigate('/jee-syllabus-tracker');
         else if (view === 'planner') navigate('/jee-study-planner');
         else if (view === 'studyclock') navigate('/jee-study-timer');
+        else if (view === 'reports') navigate('/reports');
         else navigate(`/${view}`);
     };
 

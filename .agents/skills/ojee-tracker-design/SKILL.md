@@ -3,93 +3,78 @@ name: ojee-tracker-design
 description: Governs the premium glassmorphism visual language, colors, typography, layout grid, component patterns, and animations in the ojee-tracker project. Use when the user asks to design, style, or edit UI elements, buttons, cards, modals, themes, or layouts, or mentions files in src/styles/ or src/components/.
 ---
 
-# ojee-tracker Design System Skill
+# ojee-tracker Design System & Frontend Design Philosophy
 
-This document is the canonical visual design specification and style contract for the **ojee-tracker** codebase. Any AI coding session performing UI modifications, styling, or creating new frontend components must strictly adhere to these rules.
+This document merges the visual design specifications for **ojee-tracker** with our studio's opinionated frontend design philosophy. Adhere to these principles and specifications during any UI styling, layout modification, component creation, or copywriting task in this codebase.
 
 ---
 
-## 1. Project Identity
+## 1. Design Philosophy: Grounded in the Subject
 
-`ojee-tracker` is an offline-first, high-focus JEE/OJEE syllabus tracker and study planner. The interface is optimized to minimize cognitive load and provide an immersive, premium workspace for students. 
-- **Aesthetic Direction**: Premium translucent glassmorphism in dark mode (layered shadows, internal glowing boundaries, and blurred backdrop refractions) and clean card surfaces in light mode.
+`ojee-tracker` is an offline-first, high-focus JEE/OJEE syllabus tracker and study planner designed for students preparing for one of the most demanding exams. 
+- **The Subject & Context**: The exam preparation journey is a high-stakes, long-term marathon. The interface must not feel like a casual app or a generic SaaS dashboard. It must feel like an immersive, high-performance instrument or workspace—a premium dashboard that helps students focus, track, and execute.
+- **Aesthetic Direction**: Premium translucent glassmorphism in dark mode (layered shadows, internal glowing boundaries, and blurred backdrop refractions) and clean card surfaces in light mode. This provides depth and focus, evoking a professional dark IDE or high-end laboratory terminal.
 - **Dynamic Adaptability**: The interface supports a dynamic accent color engine. Users can pick a custom accent color, which is saved in local storage. The application then dynamically shifts the color's hue by 60 degrees to compute a complementary secondary accent, updates the PWA theme, and recalculates text contrast boundaries (switching text between `#ffffff` and `#000000` depending on accent brightness).
 - **Responsive Performance**: On desktop (viewport width $\ge$ 48rem), the application shows full glassmorphism, blur refractions, and fixed side sections. On mobile (viewport width < 48rem), glassmorphism falls back to solid background layers (`var(--bg-secondary)`) to avoid GPU scrolling lag.
 
 ---
 
-## 2. Color Tokens
+## 2. Design Principles
 
-Never write raw hex or RGB values directly in component styles. All styling must pull from the custom properties defined in `@layer tokens` (within [src/styles/layers/_tokens.css](file:///home/naman/Documents/ojee-tracker/src/styles/layers/_tokens.css)).
+### 2.1 The Hero is a Thesis
+Open pages or sections with the most characteristic element in the subject's world. Avoid generic dashboard templates (like a large number, small label, and gradient accent) unless it is genuinely the most effective choice. Instead, lead with visual thesis statements—for example, the countdown timer to the exam date, a live study clock, or a clear visual completion ring.
 
-### 2.1 Background Topology
-| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
-| :--- | :--- | :--- | :--- |
-| **Base Background** | `--color-bg-base` | `#f8fafc` | `#0a0a0f` |
-| **Primary Background** | `--color-bg-primary` | `color-mix(...)` (accent + base 96%) | `color-mix(...)` (accent + base 95%) |
-| **Secondary Background** | `--color-bg-secondary` | `#ffffff` | `rgba(18, 18, 26, 0.35)` |
-| **Tertiary Background** | `--color-bg-tertiary` | `#f1f5f9` | `rgba(26, 26, 40, 0.5)` |
-
-### 2.2 Text Hierarchy
-| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
-| :--- | :--- | :--- | :--- |
-| **Primary Text** | `--color-text-primary` | `#0f172a` | `#f1f5f9` |
-| **Secondary Text** | `--color-text-secondary` | `#475569` | `#94a3b8` |
-| **Muted Text** | `--color-text-muted` | `#94a3b8` | `#64748b` |
-
-### 2.3 Borders
-| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
-| :--- | :--- | :--- | :--- |
-| **Default Border** | `--color-border` | `#e2e8f0` | `rgba(255, 255, 255, 0.08)` |
-| **Hover Border** | `--color-border-hover` | `#cbd5e1` | `rgba(255, 255, 255, 0.15)` |
-
-### 2.4 Accent System (Dynamic)
-Accent tokens are dynamically written to the `:root` element by the theme provider. Always use the following semantic mappings:
-- `--accent`: Primary interactive color (defaults to `#f59e0b` amber or `#06b6d4` cyan).
-- `--accent-hover`: 10% darkened variant for hover feedback.
-- `--accent-light`: Translucent tint (10-15% opacity) for active list items or highlights.
-- `--accent-text`: Calculated high-contrast text color (`#ffffff` or `#000000`) based on accent brightness.
-- `--accent-border`: Border styling wrapping interactive elements (becomes `var(--border)` if the accent is too bright).
-- `--secondary-accent`: Hue-shifted complementary accent used for ambient background gradients.
-
-### 2.5 Subject & Priority Semantics
-- **Subject Colors**:
-  - Physics: `var(--color-physics)` $\rightarrow$ `#6366f1` (Indigo)
-  - Chemistry: `var(--color-chemistry)` $\rightarrow$ `#10b981` (Emerald)
-  - Mathematics: `var(--color-maths)` $\rightarrow$ `#f59e0b` (Amber)
-- **Priority/Confidence Levels**:
-  - High Priority / Level 1 Confidence: `var(--color-priority-high)` $\rightarrow$ `#ef4444` (Red), BG: `var(--color-priority-high-bg)`
-  - Medium Priority / Level 2 Confidence: `var(--color-priority-medium)` $\rightarrow$ `#f59e0b` (Amber), BG: `var(--color-priority-medium-bg)`
-  - Low Priority / Level 3 Confidence: `var(--color-priority-low)` $\rightarrow$ `#22c55e` (Green), BG: `var(--color-priority-low-bg)`
-  - Level 4 Confidence (Purple): `var(--color-confidence-purple)` $\rightarrow$ `#8b5cf6`
-  - Level 5 Confidence (Green/Mastered): `var(--color-confidence-green)` $\rightarrow$ `#22c55e`
-
----
-
-## 3. Typography Rules
-
-Fluid typography scales are utilized in headings to ensure responsive fitting without sudden break-point shifts.
-
-- **Primary Typeface Stack**: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
+### 2.2 Typography with Personality
+Typography carries the personality of the page. Pair the display and body faces deliberately:
+- **Primary Typeface Stack**: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` for clean readability.
 - **Timer/Digits Monospace Stack**: `'Montserrat', monospace`
   > [!IMPORTANT]
   > Stopwatch displays and timer numbers must use Montserrat/monospace to prevent visual "jittering" or layout reflow when numbers increment.
+
+Make the type treatment itself a memorable part of the design. Set a clear type scale with intentional weights, widths, and spacing:
 - **Fluid Font Sizes (clamped)**:
-  - `--text-xs`: `clamp(0.7rem, 0.65vw + 0.5rem, 0.75rem)` (Metadata, subtopic tags)
-  - `--text-sm`: `clamp(0.8rem, 0.75vw + 0.6rem, 0.875rem)` (Navigation labels, subtopic headers)
-  - `--text-base`: `clamp(0.9375rem, 1vw + 0.75rem, 1rem)` (Default body text, inputs)
-  - `--text-lg`: `clamp(1.125rem, 1.25vw + 0.8rem, 1.25rem)` (Small headers, card titles)
-  - `--text-xl`: `clamp(1.25rem, 1.5vw + 1rem, 1.5rem)` (Main page titles, primary headers)
+  - `--text-xs`: `0.75rem` (12px - Badges, labels, tags)
+  - `--text-sm`: `0.875rem` (14px - Sidebar items, secondary buttons, subtopic text)
+  - `--text-base`: `clamp(0.9375rem, 0.25vw + 0.875rem, 1rem)` (15px-16px - Base body text, input fields)
+  - `--text-lg`: `clamp(1.125rem, 0.8vw + 0.95rem, 1.25rem)` (18px-20px - Small headings, card titles)
+  - `--text-xl`: `clamp(1.375rem, 1.5vw + 1rem, 1.75rem)` (22px-28px - Primary headers, page titles)
 - **Font Weight Conventions**:
   - `400`: Regular body reading and secondary copy.
   - `500`: Interactive navigation, buttons, and custom select labels.
   - `600`/`700`: Layout headings, active nav items, and primary actions.
 
+### 2.3 Structure is Information
+Structural devices, numbering, dividers, and labels should encode something true about the content. 
+- Avoid arbitrary numbered markers (e.g., `01 / 02 / 03` for decor) unless the content represents a strict sequence (like step-by-step revision stages or chronological study milestones).
+- Use spacing, grid dividers, and subtopic status dots to reveal progress structure (e.g., NCERT, PYQs, Modules) rather than decoration.
+
+### 2.4 Leverage Motion Deliberately
+Animate sparingly to serve the student's focus and preserve system performance, targeting only GPU-friendly composition properties.
+- Use orchestrated moments (e.g., a completion celebration, a countdown tick transition, a sidebar drawer reveal) rather than scattered effects.
+- Avoid over-animating, which contributes to the feeling that a design is templated or AI-generated.
+
+### 2.5 Restraint: Spend Boldness in One Place
+Let a single signature element be the memorable aspect of each interface (e.g., the Chapter Workspace drawer with its dynamic confidence slider, or the countdown-integrated study clock). Keep everything around it quiet, disciplined, and functional. Cut decorative elements that do not serve the brief.
+
+---
+
+## 3. Two-Pass Design Process
+
+Before implementing new layouts or UI elements, work in two distinct passes:
+1. **Pass 1: Brainstorm & Plan**:
+   - Establish a compact token system mapping color, type, layout, and signature.
+   - Propose an ASCII wireframe or prose layout.
+   - Identify the signature element representing the subject.
+2. **Pass 2: Default Review & Critique**:
+   - Review the plan against default AI designs (e.g., cream/serif/terracotta, black/acid-green, or broadsheet/hairline rules). Unless explicitly requested, avoid these defaults.
+   - Refine selector specificities to prevent CSS classes from canceling each other out (particularly with type selectors like `.section` vs. `.cta`).
+   - Iterate in your thinking first and present high-confidence ideas to the user.
+
 ---
 
 ## 4. Spacing & Layout Contract
 
-We run on a strict **4px baseline grid**. Do not introduce rogue numbers (e.g. `11px`, `19px`, `13px`) for spacing or positioning.
+We run on a strict **4px baseline grid**. Do not introduce rogue numbers (e.g., `11px`, `13px`, `19px`) for spacing or positioning.
 
 ### 4.1 Grid Increments
 - `--space-1`: `0.25rem` (4px)
@@ -112,7 +97,55 @@ We run on a strict **4px baseline grid**. Do not introduce rogue numbers (e.g. `
 
 ---
 
-## 5. CSS Layer Architecture
+## 5. Color Tokens
+
+Never write raw hex or RGB values directly in component styles. All styling must pull from the custom properties defined in `@layer tokens` (within [src/styles/layers/_tokens.css](file:///home/naman/Documents/ojee-tracker/src/styles/layers/_tokens.css)).
+
+### 5.1 Background Topology
+| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
+| :--- | :--- | :--- | :--- |
+| **Base Background** | `--color-bg-base` | `#f8fafc` | `#0a0a0f` |
+| **Primary Background** | `--color-bg-primary` | `color-mix(...)` (accent + base 96%) | `color-mix(...)` (accent + base 95%) |
+| **Secondary Background** | `--color-bg-secondary` | `#ffffff` | `rgba(18, 18, 26, 0.35)` |
+| **Tertiary Background** | `--color-bg-tertiary` | `#f1f5f9` | `rgba(26, 26, 40, 0.5)` |
+
+### 5.2 Text Hierarchy
+| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
+| :--- | :--- | :--- | :--- |
+| **Primary Text** | `--color-text-primary` | `#0f172a` | `#f1f5f9` |
+| **Secondary Text** | `--color-text-secondary` | `#475569` | `#94a3b8` |
+| **Muted Text** | `--color-text-muted` | `#94a3b8` | `#64748b` |
+
+### 5.3 Borders
+| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
+| :--- | :--- | :--- | :--- |
+| **Default Border** | `--color-border` | `#e2e8f0` | `rgba(255, 255, 255, 0.08)` |
+| **Hover Border** | `--color-border-hover` | `#cbd5e1` | `rgba(255, 255, 255, 0.15)` |
+
+### 5.4 Accent System (Dynamic)
+Accent tokens are dynamically written to the `:root` element by the theme provider. Always use the following semantic mappings:
+- `--accent`: Primary interactive color (defaults to `#f59e0b` amber or `#06b6d4` cyan).
+- `--accent-hover`: 10% darkened variant for hover feedback.
+- `--accent-light`: Translucent tint (10-15% opacity) for active list items or highlights.
+- `--accent-text`: Calculated high-contrast text color (`#ffffff` or `#000000`) based on accent brightness.
+- `--accent-border`: Border styling wrapping interactive elements (becomes `var(--border)` if the accent is too bright).
+- `--secondary-accent`: Hue-shifted complementary accent used for ambient background gradients.
+
+### 5.5 Subject & Priority Semantics
+- **Subject Colors**:
+  - Physics: `var(--color-physics)` $\rightarrow$ `#6366f1` (Indigo)
+  - Chemistry: `var(--color-chemistry)` $\rightarrow$ `#10b981` (Emerald)
+  - Mathematics: `var(--color-maths)` $\rightarrow$ `#f59e0b` (Amber)
+- **Priority/Confidence Levels**:
+  - High Priority / Level 1 Confidence: `var(--color-priority-high)` $\rightarrow$ `#ef4444` (Red), BG: `var(--color-priority-high-bg)`
+  - Medium Priority / Level 2 Confidence: `var(--color-priority-medium)` $\rightarrow$ `#f59e0b` (Amber), BG: `var(--color-priority-medium-bg)`
+  - Low Priority / Level 3 Confidence: `var(--color-priority-low)` $\rightarrow$ `#22c55e` (Green), BG: `var(--color-priority-low-bg)`
+  - Level 4 Confidence (Purple): `var(--color-confidence-purple)` $\rightarrow$ `#8b5cf6`
+  - Level 5 Confidence (Green/Mastered): `var(--color-confidence-green)` $\rightarrow$ `#22c55e`
+
+---
+
+## 6. CSS Layer Architecture
 
 All styles are organized into Cascade Layers. This controls precedence and resolves specificity conflicts.
 
@@ -138,9 +171,9 @@ All styles are organized into Cascade Layers. This controls precedence and resol
 
 ---
 
-## 6. Component Conventions
+## 7. Component Conventions
 
-### 6.1 Buttons
+### 7.1 Buttons
 - **Primary Button (`.primary-btn`)**:
   - Background is `var(--accent)`, text is `var(--accent-text)`.
   - Border uses `var(--accent-border)` to guarantee high contrast.
@@ -154,7 +187,7 @@ All styles are organized into Cascade Layers. This controls precedence and resol
   - Border radius is strictly `var(--radius-xs)` (4px). *Do not write raw `4px`.*
   - Hover swaps background to `var(--accent)` and text color to white.
 
-### 6.2 Inputs & Custom Selects
+### 7.2 Inputs & Custom Selects
 - **Inputs and Textareas**:
   - Vertically sized using `padding: var(--space-3)` (`0.75rem`).
   - Dark mode backgrounds must be translucent: `background: rgba(0, 0, 0, 0.3)`.
@@ -164,7 +197,7 @@ All styles are organized into Cascade Layers. This controls precedence and resol
   - Options list implements glassmorphism in dark mode (`@layer components` via `.glass-panel`).
   - Highlight states map to priority classes (`.priority-high`, `.priority-medium`, etc.).
 
-### 6.3 Checkboxes
+### 7.3 Checkboxes
 - **Checkbox Container (`.checkbox-container`)**:
   - Custom span checkmark: `.checkmark` using `width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border);`.
   - Active checked style: `background: var(--accent); border-color: var(--accent);` rendering checkmark character `✓`.
@@ -172,7 +205,7 @@ All styles are organized into Cascade Layers. This controls precedence and resol
     - Input `indeterminate` attribute toggled in JS.
     - Checkmark symbol changes to a horizontal dash `-` or partial block.
 
-### 6.4 Cards & Surfaces
+### 7.4 Cards & Surfaces
 - **Aesthetic Definition**: Must apply `.glass-panel` or `.glass-card` classes.
 - **Glass Panel Structure**:
   - Background: `var(--panel-bg)`
@@ -180,7 +213,7 @@ All styles are organized into Cascade Layers. This controls precedence and resol
   - Highlight Ring: `box-shadow: var(--panel-inner-glow), var(--panel-shadow)`.
 - **Performance boundary**: Mobile layouts discard blur properties. Ensure cards fall back to opaque `var(--bg-secondary)` below the `48rem` media breakpoint.
 
-### 6.5 Chapter Workspace Drawer (`.chapter-drawer`)
+### 7.5 Chapter Workspace Drawer (`.chapter-drawer`)
 - Slides out from the right using an absolute modal overlay.
 - Contains:
   - Header with serial and chapter title.
@@ -191,22 +224,20 @@ All styles are organized into Cascade Layers. This controls precedence and resol
 
 ---
 
-## 7. Animation Contract
+## 8. Animation Contract
 
-We animate sparingly to preserve system performance, targeting only GPU-friendly composition properties.
-
-### 7.1 Allowed Animation Properties
+### 8.1 Allowed Animation Properties
 - `opacity`
 - `transform` (specifically `translateY`, `scale`)
 - `color`, `background-color`, `border-color`, `box-shadow` (for color morphing)
 - *Never animate `width`, `height`, `top`, `left`, `margin`, or `padding` as these trigger layout paint reflow.*
 
-### 7.2 Easing & Timings
+### 8.2 Easing & Timings
 - Fast interactions (hovers, checkboxes, menu items): `150ms ease` (`var(--transition-fast)`).
 - Normal transitions (drawers, modals, card list additions): `250ms ease` (`var(--transition-normal)`).
 - Ambient entry (background image loads, sync alerts): `400ms ease` (`var(--transition-slow)`).
 
-### 7.3 Reduced Motion Control
+### 8.3 Reduced Motion Control
 All animations and keyframes must respect system-level preferences. Always wrap custom transitions in a media query:
 
 ```css
@@ -227,24 +258,14 @@ All animations and keyframes must respect system-level preferences. Always wrap 
 
 ---
 
-## 8. Anti-Patterns (Banned Style Operations)
+## 9. Writing & Microcopy Rules
 
-The following items are strictly forbidden. Code reviews will reject these on sight:
-
-- **No CSS `@extend`**: `@extend` statements in standard CSS files are invalid and will cause compile errors or get dropped by Vite. You must apply multiple CSS classes in TSX (e.g. `className="modal-content glass-panel"`) or copy-paste style rules instead of using `@extend`.
-- **No Rogue Border Radii**: Do not use values like `10px` or `18px`. Use standard tokens: `--radius-xs` (4px), `--radius-sm` (8px), `--radius-md` (12px), or `--radius-lg` (16px).
-- **No transition: all**: Never declare `transition: all`. You must specify the exact properties being transitioned (e.g. `transition: background-color var(--transition-fast), border-color var(--transition-fast);`).
-- **No Hardcoded Hex Colors**: Do not specify values like `#ffffff` or `rgba(0,0,0,0.1)`. Use `var(--color-bg-secondary)` or `var(--panel-border)`. The only exception is google-branding guidelines for the Google Sign-in button.
-- **No Inline Layout Styles**: Do not use `<div style={{ padding: '12px', display: 'flex' }}>`. Move layout code to a class within the correct layer in the feature stylesheet.
-- **No `!important`**: If you need `!important` to override a style, the CSS Layer ordering or selector specificity is broken. Correct the layer priority or select path instead of forcing override flags.
-
----
-
-## 9. Copy & Microcopy Rules
-
-Consistency in copy preserves the clean utility of the tracker workspace.
-
-- **Case Convention**: Always use **Sentence case** for titles, headings, fields, and button labels (e.g., "Mark today", "Clear revision date", "Study materials"). Avoid Title Case ("Mark Today") or UPPERCASE ("DELETE") unless required by standard branding.
+Words are design material. Bring the same intentionality to copy that you would bring to spacing and color:
+- **Write from the End User's Side**: Name elements by what people recognize and control (e.g., "Manage notifications" rather than "Webhook configuration").
+- **Active Voice**: Default to action-oriented, clear verbs. Buttons should say exactly what happens when clicked (e.g., "Save changes", "Mark today", "Clear", "Delete", "Add task").
+- **Cohesion & Consistency**: Keep names and actions consistent across the application flow (e.g., a "Publish" action yields a "Published" toast).
+- **Sentence Case**: Always use sentence case for page titles, headings, inputs, and button labels (e.g., "Mark today", "Clear revision date", "Study materials"). Avoid Title Case or UPPERCASE unless required by brand guidelines.
+- **Failures & Emptiness as Navigation**: Explain errors clearly, detailing how the user can resolve them, in a clear and objective voice. Treat empty states as active invitations to act (e.g., direct calls-to-action).
 - **Confidence Rating Labels**:
   - Level 1: "1 - Need Help"
   - Level 2: "2 - Low"
@@ -254,14 +275,24 @@ Consistency in copy preserves the clean utility of the tracker workspace.
 - **Revision Relative Time**:
   - Show "Never" when `lastRevised` is null or undefined.
   - Show "Revised today" or relative dates like "Revised 3 days ago".
-- **Action Verbs**: Keep button labels short and active: "Mark Today", "Clear", "Delete", "Add task".
 
 ---
 
-## 10. Quality Checklist
+## 10. Anti-Patterns (Banned Style Operations)
+
+The following items are strictly forbidden:
+- **No CSS `@extend`**: `@extend` statements in standard CSS files are invalid and will cause compile errors or get dropped by Vite. You must apply multiple CSS classes in TSX (e.g. `className="modal-content glass-panel"`) or copy-paste style rules instead of using `@extend`.
+- **No Rogue Border Radii**: Do not use values like `10px` or `18px`. Use standard tokens: `--radius-xs` (4px), `--radius-sm` (8px), `--radius-md` (12px), or `--radius-lg` (16px).
+- **No transition: all**: Never declare `transition: all`. You must specify the exact properties being transitioned (e.g. `transition: background-color var(--transition-fast), border-color var(--transition-fast);`).
+- **No Hardcoded Hex Colors**: Do not specify values like `#ffffff` or `rgba(0,0,0,0.1)`. Use `var(--color-bg-secondary)` or `var(--panel-border)`. The only exception is Google-branding guidelines for the Google Sign-in button.
+- **No Inline Layout Styles**: Do not use `<div style={{ padding: '12px', display: 'flex' }}>`. Move layout code to a class within the correct layer in the feature stylesheet.
+- **No `!important`**: If you need `!important` to override a style, the CSS Layer ordering or selector specificity is broken. Correct the layer priority or select path instead of forcing override flags.
+
+---
+
+## 11. Quality Checklist
 
 Run this checklist before completing any frontend task:
-
 - [ ] **No Raw Hex Codes**: Ensure all colors match CSS variables (`var(--...)`) instead of raw hex values.
 - [ ] **No CSS Modules**: Ensure styles are placed in global CSS layers, importing them in `src/styles/index.css`.
 - [ ] **No `@extend`**: Double check that no `@extend` statements are present in CSS files.

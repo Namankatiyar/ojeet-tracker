@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('../features/dashboard/components/Dashboard'
 const SubjectPage = lazy(() => import('../features/subjects/components/SubjectPage').then(module => ({ default: module.SubjectPage })));
 const Planner = lazy(() => import('../features/planner/components/Planner').then(module => ({ default: module.Planner })));
 const StudyClock = lazy(() => import('../features/study-clock/components/StudyClock').then(module => ({ default: module.StudyClock })));
+const ReportsPage = lazy(() => import('../features/reports/components/ReportsPage').then(module => ({ default: module.ReportsPage })));
 const ImportSyncPage = lazy(() => import('../features/sync/ImportSyncPage').then(module => ({ default: module.ImportSyncPage })));
 const PrivacyPolicyPage = lazy(() => import('../features/legal/components/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
 const TermsOfServicePage = lazy(() => import('../features/legal/components/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
@@ -103,6 +104,8 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                         onToggleTask={handleTogglePlannerTask}
                     />
                 } />
+
+                <Route path="/reports" element={<ReportsPage />} />
 
                 {/* Subject Routes */}
                 {(['physics', 'chemistry', 'maths'] as Subject[]).map(subject => (

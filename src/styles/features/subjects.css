@@ -1677,7 +1677,8 @@ td.material-cell .checkbox-container {
 
 /* ===== V2 Status UI ===== */
 .status-cell-content {
-  display: flex;
+  display: grid;
+  grid-template-columns: 50px 80px;
   align-items: center;
   justify-content: center;
   gap: var(--space-4);
