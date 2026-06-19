@@ -258,6 +258,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .checkbox-container:hover .checkmark {
