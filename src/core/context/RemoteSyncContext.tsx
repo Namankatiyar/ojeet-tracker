@@ -32,7 +32,6 @@ import {
     applyDeltaLogs,
     computeLocalStudyAggregate,
     computeSessionDelta,
-    mergeBucketMaps,
     mergeRemoteVideoLogsIntoSessions,
 } from './remoteSyncHelpers';
 import type { StudySessionLogEntry, UserStudyAggregateRow } from './remoteSyncHelpers';
@@ -246,6 +245,16 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } = useUserProgress();
     const { subjectData, setSubjectData, customColumns, setCustomColumns, excludedColumns, setExcludedColumns, materialOrder, setMaterialOrder } = useSubjectData();
 
+    // Rescue lost study sessions: If local sessions are wiped but a sync cursor exists,
+    // clear the cursor to force a full re-fetch from Supabase.
+    useEffect(() => {
+        const cursor = readStorageValue(LAST_SESSION_DELTA_SYNCED_KEY);
+        if (studySessions.length === 0 && cursor) {
+            console.warn("Recovering lost study sessions: clearing sync cursor.");
+            window.localStorage.removeItem(LAST_SESSION_DELTA_SYNCED_KEY);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const [status, setStatus] = useState<SyncStatus>('idle');
     const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => readStorageValue(LAST_SYNCED_AT_KEY));
     const [lastError, setLastError] = useState<string | null>(null);
@@ -405,6 +414,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             let remoteAggregate: UserStudyAggregateRow | null = null;
             let videoMergeResult = { sessions: latestStudySessionsRef.current, changed: false };
+            let capturedVideoLogs: any[] = [];
 
             if (shouldLoadAggregate) {
                 if (remoteAggregateDirty || !remoteStudyAggregate) {
@@ -414,12 +424,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 } else {
                     remoteAggregate = remoteStudyAggregate;
                 }
-                const videoLogs = remoteAggregate?.video_watch_45d_json ?? [];
-                videoMergeResult = mergeRemoteVideoLogsIntoSessions(latestStudySessionsRef.current, videoLogs);
-                if (videoMergeResult.changed) {
-                    skipNextSessionsSyncRef.current = true;
-                    setStudySessions(videoMergeResult.sessions);
-                }
+                capturedVideoLogs = remoteAggregate?.video_watch_45d_json ?? [];
+                videoMergeResult = mergeRemoteVideoLogsIntoSessions(latestStudySessionsRef.current, capturedVideoLogs);
             }
 
             const mergedPayload = remotePayload ? mergePayloadDomainsWithPolicy(localPayload, remotePayload, {
@@ -479,7 +485,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             // --- Delta Strategy: Apply Pull and Push Study Session Logs ---
             let applyDeltaChanges = false;
-            let currentSessions = [...videoMergeResult.sessions];
+            let finalSessionsForAggregate = videoMergeResult.sessions;
 
             if (newLogs.length > 0) {
                 newLogs.forEach((log) => {
@@ -489,8 +495,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     }
                 });
 
-                const applied = applyDeltaLogs(currentSessions, newLogs, clientIdRef.current);
-                currentSessions = applied.sessions;
+                const applied = applyDeltaLogs(finalSessionsForAggregate, newLogs, clientIdRef.current);
+                finalSessionsForAggregate = applied.sessions;
                 applyDeltaChanges = applied.changed;
             }
 
@@ -525,25 +531,34 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             writeDeltaCursor(deltaCursor);
 
-            if (applyDeltaChanges) {
+            if (applyDeltaChanges || videoMergeResult.changed) {
                 skipNextSessionsSyncRef.current = true;
-                setStudySessions(currentSessions);
+                setStudySessions(prevSessions => {
+                    let updated = prevSessions;
+                    if (videoMergeResult.changed) {
+                        updated = mergeRemoteVideoLogsIntoSessions(updated, capturedVideoLogs).sessions;
+                    }
+                    if (newLogs.length > 0) {
+                        updated = applyDeltaLogs(updated, newLogs, clientIdRef.current).sessions;
+                    }
+                    return updated;
+                });
             }
 
             // --- Strategy 5 (cont.): Only compute aggregate for local state ---
             const pushHadEdits = pendingToPush.length > 0;
             if (pushHadEdits || applyDeltaChanges || videoMergeResult.changed) {
-                const localAggregate = computeLocalStudyAggregate(currentSessions);
+                const localAggregate = computeLocalStudyAggregate(finalSessionsForAggregate);
 
                 const mergedAggregateRow = {
                     user_id: user.id,
-                    total_seconds_overall: Math.max(localAggregate.total_seconds_overall, remoteAggregate?.total_seconds_overall ?? 0),
-                    total_seconds_physics: Math.max(localAggregate.total_seconds_physics, remoteAggregate?.total_seconds_physics ?? 0),
-                    total_seconds_chemistry: Math.max(localAggregate.total_seconds_chemistry, remoteAggregate?.total_seconds_chemistry ?? 0),
-                    total_seconds_maths: Math.max(localAggregate.total_seconds_maths, remoteAggregate?.total_seconds_maths ?? 0),
-                    buckets_daily_json: mergeBucketMaps(remoteAggregate?.buckets_daily_json ?? {}, localAggregate.buckets_daily_json),
-                    buckets_weekly_json: mergeBucketMaps(remoteAggregate?.buckets_weekly_json ?? {}, localAggregate.buckets_weekly_json),
-                    buckets_monthly_json: mergeBucketMaps(remoteAggregate?.buckets_monthly_json ?? {}, localAggregate.buckets_monthly_json),
+                    total_seconds_overall: localAggregate.total_seconds_overall,
+                    total_seconds_physics: localAggregate.total_seconds_physics,
+                    total_seconds_chemistry: localAggregate.total_seconds_chemistry,
+                    total_seconds_maths: localAggregate.total_seconds_maths,
+                    buckets_daily_json: localAggregate.buckets_daily_json,
+                    buckets_weekly_json: localAggregate.buckets_weekly_json,
+                    buckets_monthly_json: localAggregate.buckets_monthly_json,
                     video_watch_45d_json: remoteAggregate?.video_watch_45d_json ?? [],
                     updated_at: new Date().toISOString(),
                 };

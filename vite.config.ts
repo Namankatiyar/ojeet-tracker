@@ -31,6 +31,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,json,webmanifest}'],
       },
       manifest: {
         name: 'OJEE-Tracker',

@@ -87,20 +87,6 @@ export function buildBucketEntry(partial?: Partial<AggregateBucketEntry>): Aggre
     };
 }
 
-export function mergeBucketMaps(existing: AggregateBucketMap, incoming: AggregateBucketMap): AggregateBucketMap {
-    const merged: AggregateBucketMap = { ...existing };
-    Object.entries(incoming).forEach(([key, value]) => {
-        const current = buildBucketEntry(merged[key]);
-        const next = buildBucketEntry(value);
-        merged[key] = {
-            overall: Math.max(current.overall, next.overall),
-            physics: Math.max(current.physics, next.physics),
-            chemistry: Math.max(current.chemistry, next.chemistry),
-            maths: Math.max(current.maths, next.maths),
-        };
-    });
-    return merged;
-}
 
 export function addToBucket(map: AggregateBucketMap, key: string, subject: Subject | undefined, seconds: number) {
     const current = buildBucketEntry(map[key]);

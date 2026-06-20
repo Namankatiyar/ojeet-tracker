@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { PageLoader } from '../shared/components/ui/PageLoader';
 import { Subject } from '../shared/types';
 import { useSubjectData } from './context/SubjectDataContext';
@@ -24,6 +24,11 @@ interface AppRoutesProps {
     onQuickAddTask: () => void;
 }
 
+const RedirectWithHash = ({ to }: { to: string }) => {
+    const location = useLocation();
+    return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
+};
+
 export const AppRoutes: React.FC<AppRoutesProps> = ({
     onNavigate,
     plannerDateToOpen,
@@ -47,9 +52,9 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
         <Suspense fallback={<PageLoader />}>
             <Routes>
                 {/* Redirects from old paths to SEO paths */}
-                <Route path="/" element={<Navigate to="/jee-syllabus-tracker" replace />} />
-                <Route path="/planner" element={<Navigate to="/jee-study-planner" replace />} />
-                <Route path="/studyclock" element={<Navigate to="/jee-study-timer" replace />} />
+                <Route path="/" element={<RedirectWithHash to="/jee-syllabus-tracker" />} />
+                <Route path="/planner" element={<RedirectWithHash to="/jee-study-planner" />} />
+                <Route path="/studyclock" element={<RedirectWithHash to="/jee-study-timer" />} />
 
                 <Route path="/jee-syllabus-tracker" element={
                     <Dashboard

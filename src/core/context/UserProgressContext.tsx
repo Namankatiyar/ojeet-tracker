@@ -120,6 +120,51 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Migrate legacy chapter-level progress to new subtopics-level progress
+    useEffect(() => {
+        const needsMigration = localStorage.getItem('jee-needs-progress-migration') === 'true';
+        if (!needsMigration) return;
+
+        // Check if mergedSubjectData has actually loaded chapters
+        const isDataLoaded = (['physics', 'chemistry', 'maths'] as Subject[]).every(s => 
+            mergedSubjectData[s] && mergedSubjectData[s]!.chapters.length > 0
+        );
+        if (!isDataLoaded) return;
+
+        setProgress(prevProgress => {
+            const newProgress = JSON.parse(JSON.stringify(prevProgress)) as AppProgress;
+            (['physics', 'chemistry', 'maths'] as Subject[]).forEach(subject => {
+                const subjectProgress = newProgress[subject];
+                const subjectData = mergedSubjectData[subject];
+                if (!subjectData) return;
+
+                subjectData.chapters.forEach(chapter => {
+                    const chapterProgress = subjectProgress[chapter.serial];
+                    if (!chapterProgress) return;
+                    
+                    const subtopics = chapter.subtopics || [];
+                    if (subtopics.length > 0 && chapterProgress.completed) {
+                        const hasLegacyCompletion = Object.keys(chapterProgress.completed).length > 0;
+                        const hasNoSubtopicTracking = !chapterProgress.subtopics || Object.keys(chapterProgress.subtopics).length === 0;
+
+                        if (hasLegacyCompletion && hasNoSubtopicTracking) {
+                            chapterProgress.subtopics = {};
+                            subtopics.forEach(sub => {
+                                chapterProgress.subtopics![sub] = {
+                                    completed: { ...chapterProgress.completed }
+                                };
+                            });
+                        }
+                    }
+                });
+            });
+            return newProgress;
+        });
+
+        // Once migrated, clear the flag
+        localStorage.removeItem('jee-needs-progress-migration');
+    }, [mergedSubjectData, setProgress]);
+
     const primaryExamDate = examDates.find(e => e.isPrimary)?.date ?? examDates[0]?.date ?? '';
     const [disableAutoShift, setDisableAutoShift] = useLocalStorage<boolean>('jee-tracker-disable-auto-shift', false);
     const [progressCardSettings, setProgressCardSettings] = useLocalStorage<ProgressCardSettings>('jee-tracker-progress-card', {
