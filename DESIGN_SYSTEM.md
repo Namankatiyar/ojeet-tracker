@@ -15,11 +15,11 @@ The system utilizes a fluid typography scale (implementing `clamp()`) mapped to 
 
 - **Typeface**: `'Inter', -apple-system, system-ui, sans-serif`
 - **Scale (Fluid)**:
-  - `--text-xs`: `clamp(0.7rem, 0.65vw + 0.5rem, 0.75rem)` (Badges, Tags)
-  - `--text-sm`: `clamp(0.8rem, 0.75vw + 0.6rem, 0.875rem)` (Nav labels, minor text)
-  - `--text-base`: `clamp(0.9375rem, 1vw + 0.75rem, 1rem)` (Body Default, inputs)
-  - `--text-lg`: `clamp(1.125rem, 1.25vw + 0.8rem, 1.25rem)` (Small headers)
-  - `--text-xl`: `clamp(1.25rem, 1.5vw + 1rem, 1.5rem)` (Main headers)
+  - `--text-xs`: `0.75rem` (12px - Badges, labels, tags)
+  - `--text-sm`: `0.875rem` (14px - Sidebar items, secondary buttons, subtopic text)
+  - `--text-base`: `clamp(0.9375rem, 0.25vw + 0.875rem, 1rem)` (15px-16px - Base body text, input fields)
+  - `--text-lg`: `clamp(1.125rem, 0.8vw + 0.95rem, 1.25rem)` (18px-20px - Small headings, card titles)
+  - `--text-xl`: `clamp(1.375rem, 1.5vw + 1rem, 1.75rem)` (22px-28px - Primary headers, page titles)
 - **Weights**:
   - `400`: Base body text
   - `500`: Interactive (buttons, navigation)

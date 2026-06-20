@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { PageLoader } from '../shared/components/ui/PageLoader';
 import { Subject } from '../shared/types';
 import { useSubjectData } from './context/SubjectDataContext';
@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('../features/dashboard/components/Dashboard'
 const SubjectPage = lazy(() => import('../features/subjects/components/SubjectPage').then(module => ({ default: module.SubjectPage })));
 const Planner = lazy(() => import('../features/planner/components/Planner').then(module => ({ default: module.Planner })));
 const StudyClock = lazy(() => import('../features/study-clock/components/StudyClock').then(module => ({ default: module.StudyClock })));
+const ReportsPage = lazy(() => import('../features/reports/components/ReportsPage').then(module => ({ default: module.ReportsPage })));
 const ImportSyncPage = lazy(() => import('../features/sync/ImportSyncPage').then(module => ({ default: module.ImportSyncPage })));
 const PrivacyPolicyPage = lazy(() => import('../features/legal/components/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
 const TermsOfServicePage = lazy(() => import('../features/legal/components/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
@@ -22,6 +23,11 @@ interface AppRoutesProps {
     onConsumeInitialDate: () => void;
     onQuickAddTask: () => void;
 }
+
+const RedirectWithHash = ({ to }: { to: string }) => {
+    const location = useLocation();
+    return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
+};
 
 export const AppRoutes: React.FC<AppRoutesProps> = ({
     onNavigate,
@@ -46,9 +52,9 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
         <Suspense fallback={<PageLoader />}>
             <Routes>
                 {/* Redirects from old paths to SEO paths */}
-                <Route path="/" element={<Navigate to="/jee-syllabus-tracker" replace />} />
-                <Route path="/planner" element={<Navigate to="/jee-study-planner" replace />} />
-                <Route path="/studyclock" element={<Navigate to="/jee-study-timer" replace />} />
+                <Route path="/" element={<RedirectWithHash to="/jee-syllabus-tracker" />} />
+                <Route path="/planner" element={<RedirectWithHash to="/jee-study-planner" />} />
+                <Route path="/studyclock" element={<RedirectWithHash to="/jee-study-timer" />} />
 
                 <Route path="/jee-syllabus-tracker" element={
                     <Dashboard
@@ -103,6 +109,8 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                         onToggleTask={handleTogglePlannerTask}
                     />
                 } />
+
+                <Route path="/reports" element={<ReportsPage />} />
 
                 {/* Subject Routes */}
                 {(['physics', 'chemistry', 'maths'] as Subject[]).map(subject => (

@@ -31,16 +31,27 @@ export interface ChapterDetailProgress {
     lastRevised?: string;
     revisionCount?: number;
     notes?: string;
+    revisionHistory?: Array<{
+        date: string;
+        confidence: ConfidenceLevel;
+    }>;
+    lastActiveDate?: string;
 }
 
 export interface SubjectProgress {
     [chapterSerial: number]: ChapterProgress;
 }
 
+export interface SubjectStreak {
+    currentStreak: number;
+    lastStudiedDate?: string;
+}
+
 export interface AppProgress {
     physics: SubjectProgress;
     chemistry: SubjectProgress;
     maths: SubjectProgress;
+    streaks?: Record<Subject, SubjectStreak>;
 }
 
 export interface SubjectData {

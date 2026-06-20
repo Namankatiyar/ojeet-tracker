@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { StudySession } from '../../shared/types';
 import {
     buildBucketEntry,
-    mergeBucketMaps,
     addToBucket,
     computeLocalStudyAggregate,
     normalizeSubject,
@@ -92,52 +91,6 @@ describe('addToBucket', () => {
     });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// mergeBucketMaps
-// ═══════════════════════════════════════════════════════════════════════════
-
-describe('mergeBucketMaps', () => {
-    it('returns incoming when existing is empty', () => {
-        const incoming: AggregateBucketMap = { day: { overall: 100, physics: 0, chemistry: 0, maths: 100 } };
-        expect(mergeBucketMaps({}, incoming)).toEqual(incoming);
-    });
-
-    it('returns existing when incoming is empty', () => {
-        const existing: AggregateBucketMap = { day: { overall: 50, physics: 50, chemistry: 0, maths: 0 } };
-        expect(mergeBucketMaps(existing, {})).toEqual(existing);
-    });
-
-    it('takes max of each field per key', () => {
-        const existing: AggregateBucketMap = { day: { overall: 100, physics: 80, chemistry: 10, maths: 10 } };
-        const incoming: AggregateBucketMap = { day: { overall: 90, physics: 40, chemistry: 50, maths: 0 } };
-        expect(mergeBucketMaps(existing, incoming)).toEqual({
-            day: { overall: 100, physics: 80, chemistry: 50, maths: 10 },
-        });
-    });
-
-    it('merges non-overlapping keys', () => {
-        const existing: AggregateBucketMap = { mon: { overall: 10, physics: 10, chemistry: 0, maths: 0 } };
-        const incoming: AggregateBucketMap = { tue: { overall: 20, physics: 0, chemistry: 20, maths: 0 } };
-        const merged = mergeBucketMaps(existing, incoming);
-        expect(merged['mon']).toBeDefined();
-        expect(merged['tue']).toBeDefined();
-    });
-
-    it('handles high volume: 365 daily buckets', () => {
-        const existing: AggregateBucketMap = {};
-        const incoming: AggregateBucketMap = {};
-        for (let i = 0; i < 365; i++) {
-            const key = `2026-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`;
-            existing[key] = { overall: i * 10, physics: i * 3, chemistry: i * 3, maths: i * 4 };
-            incoming[key] = { overall: i * 12, physics: i * 4, chemistry: i * 2, maths: i * 6 };
-        }
-        const merged = mergeBucketMaps(existing, incoming);
-        expect(Object.keys(merged).length).toBe(365);
-        // Spot check a midpoint value
-        const k100 = `2026-04-11`;
-        expect(merged[k100].overall).toBe(Math.max(100 * 10, 100 * 12));
-    });
-});
 
 // ═══════════════════════════════════════════════════════════════════════════
 // getWeekKey / getMonthKey

@@ -44,3 +44,17 @@ The subtopics tracking and Chapter Workspace (V2) features have been fully imple
 4. **Revision Trackers & Stale Badges**: Revision counters and dates are trackable. Warning badges are automatically shown for subtopics not revised in more than 30 days. Includes unified `.icon-btn-reset` action buttons for clearing.
 5. **Design System & Styling Standards**: CSS rules in [subjects.css](file:///home/naman/Documents/ojee-tracker/src/styles/features/subjects.css) strictly utilize core design tokens (e.g., `var(--bg-tertiary)`, `var(--border)`, `var(--text-primary)`) rather than custom/undefined variables. Control heights (e.g., mark today, reset, stepper buttons) are standardized to 24px (`var(--space-6)`) or 28px (`1.75rem` for date buttons) for pixel-perfect alignment.
 
+---
+
+## 3. Recent Implementation: Daily Study Analytics & Density UI
+
+The Daily Study Analytics dashboard section has been added to the Reports page to provide an interactive, single-day view of study history and progress velocity.
+
+### Key Implementations & UI/UX Learnings
+1. **Glassmorphism Density**: To fit complex data sets (like timeline heatmaps, study histories, and chapter tables) without visual bloat, we strictly adhere to dense layout principles:
+   - Use `--text-xs` (approx. 11-12px) for secondary metadata, table bodies, and legend items.
+   - Use tight paddings (`var(--space-3) var(--space-4)`) inside `.glass-panel` cards.
+   - Limit card headers to `--text-sm` (`h3`) with tightly packed icon sizes (`size={14}`).
+2. **Unified Date Picker**: Migrated away from raw native `<input type="date">` to a unified `.dh-calendar-trigger` button that seamlessly integrates with the custom `DatePickerModal` component for a more premium, cross-browser reliable date selection experience.
+3. **Smart Duration Formatting**: Instead of decimal hours (e.g., "0.8 hrs"), duration values dynamically switch formatting: returning `"48m"` when under an hour, and `"1h 30m"` for values over an hour (`formatSmartDuration`).
+4. **Intelligent Badges & Layouts**: Auxiliary UI elements (like the "Peak focus window" badge) are embedded directly into card headers (via `space-between` flex layouts) rather than occupying dedicated vertical space, maximizing the screen real estate for the actual data visualizations.
