@@ -14,7 +14,7 @@ import {
     MinusCircle,
     TrendingDown,
     TrendingUp,
-    Minus
+    Flame
 } from 'lucide-react';
 
 /* ───────────────────────────────────────────── */
@@ -71,7 +71,6 @@ export const DailyAnalytics: React.FC = () => {
     } = useUserProgress();
 
     const todayStr = getLocalDateString(0);
-    const yesterdayStr = getLocalDateString(-1);
 
     const [selectedDate, setSelectedDate] = useState(todayStr);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -93,6 +92,12 @@ export const DailyAnalytics: React.FC = () => {
         () => studySessions.filter(s => getSessionDate(s) === prevDateStr),
         [studySessions, prevDateStr]
     );
+
+    const prevDayName = useMemo(() => {
+        const parts = prevDateStr.split('-').map(Number);
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString('en-IN', { weekday: 'short' });
+    }, [prevDateStr]);
 
     /* ── Hero Stats Calculations ── */
     const totalDurationSec = useMemo(
@@ -304,12 +309,15 @@ export const DailyAnalytics: React.FC = () => {
 
     /* ── Derived booleans ── */
     const isToday = selectedDate === todayStr;
-    const isYesterday = selectedDate === yesterdayStr;
     const hasSessions = daySessions.length > 0;
 
     /* ── Delta Badge ── */
     const renderDelta = () => {
         if (prevTotalSec === 0 && totalDurationSec === 0) return null;
+        if (isToday) {
+            const label = diffSec > 0 ? `+${formatSmartDuration(diffSec)}` : `-${formatSmartDuration(Math.abs(diffSec))}`;
+            return <span className="dh-badge stable" title="Day in progress">{label} (so far)</span>;
+        }
         if (diffSec > 0) {
             const label = formatSmartDuration(diffSec);
             return <span className="dh-badge success">+{label}</span>;
@@ -402,21 +410,7 @@ export const DailyAnalytics: React.FC = () => {
                         <ChevronLeft size={16} />
                     </button>
 
-                    {/* Pills: Yesterday → Today (chronological left-to-right) */}
-                    <div className="dh-pill-group">
-                        <button
-                            className={`dh-pill-btn${isYesterday ? ' active' : ''}`}
-                            onClick={() => setSelectedDate(yesterdayStr)}
-                        >
-                            Yesterday
-                        </button>
-                        <button
-                            className={`dh-pill-btn${isToday ? ' active' : ''}`}
-                            onClick={() => setSelectedDate(todayStr)}
-                        >
-                            Today
-                        </button>
-                    </div>
+
 
                     <button
                         className="dh-nav-arrow"
@@ -456,7 +450,7 @@ export const DailyAnalytics: React.FC = () => {
                                 </div>
                                 <div className="dh-hero-meta">
                                     {renderDelta()}
-                                    <span className="dh-hero-vs">vs yesterday</span>
+                                    <span className="dh-hero-vs">vs {prevDayName}</span>
                                 </div>
                                 <div className="dh-hero-velocity">
                                     <span>{daySessions.length} {daySessions.length === 1 ? 'session' : 'sessions'}</span>
@@ -467,7 +461,10 @@ export const DailyAnalytics: React.FC = () => {
                             
                             <div className="dh-hero-right">
                                 <div className="dh-hero-timeline-header">
-                                    <span className="dh-hero-timeline-title">Timeline</span>
+                                    <div className="dh-card-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                                        <Activity size={14} className="dh-card-header-icon" />
+                                        <h3>Timeline</h3>
+                                    </div>
                                     {peakHour >= 0 && (
                                         <div
                                             className="dh-peak-badge mini"
@@ -512,7 +509,7 @@ export const DailyAnalytics: React.FC = () => {
                                         <span>6a</span>
                                         <span>12p</span>
                                         <span>6p</span>
-                                        <span>11p</span>
+                                        <span>12a</span>
                                     </div>
                                 </div>
                             </div>
@@ -546,9 +543,6 @@ export const DailyAnalytics: React.FC = () => {
                                             })}
                                         </div>
                                         <span className="dh-weekly-day-label">{day.label}</span>
-                                        <span className="dh-weekly-dur">
-                                            {day.total > 0 ? formatSmartDuration(day.total) : '—'}
-                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -556,28 +550,42 @@ export const DailyAnalytics: React.FC = () => {
 
                         {/* ── Streak + Momentum ── */}
                         <div className="dh-bento-stats">
-                            <div className="dh-stat-card glass-panel">
-                                <span className="dh-stat-label">Current streak</span>
-                                <div className="dh-stat-value-row">
-                                    <span className="dh-stat-value">{streak}</span>
-                                    <span className="dh-stat-unit">{streak === 1 ? 'day' : 'days'}</span>
+                            <div className="dh-bento-unified-stats glass-panel">
+                                {/* Streak Section */}
+                                <div className="dh-stat-section">
+                                    <div className="dh-card-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                                        <Flame size={14} className="dh-card-header-icon" />
+                                        <h3>Current streak</h3>
+                                    </div>
+                                    <div className="dh-stat-value-row">
+                                        <span className="dh-stat-value">{streak}</span>
+                                        <span className="dh-stat-unit">{streak === 1 ? 'day' : 'days'}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        {streak > 0
+                                            ? <span className="dh-badge streak">🔥 Active</span>
+                                            : <span className="dh-badge stable">No streak</span>
+                                        }
+                                    </div>
                                 </div>
-                                {streak > 0
-                                    ? <span className="dh-badge streak">🔥 Active</span>
-                                    : <span className="dh-badge stable">No streak</span>
-                                }
-                            </div>
-                            <div className="dh-stat-card glass-panel">
-                                <span className="dh-stat-label">Momentum</span>
-                                <div className="dh-stat-value-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span className="dh-stat-value text-label">{trendLabel}</span>
-                                    {momentumTrend === 'declining' && <TrendingDown size={24} style={{ color: 'var(--priority-high)', opacity: 0.8 }} />}
-                                    {momentumTrend === 'improving' && <TrendingUp size={24} style={{ color: 'var(--priority-low)', opacity: 0.8 }} />}
-                                    {momentumTrend === 'stable' && <Minus size={24} style={{ color: 'var(--text-secondary)', opacity: 0.6 }} />}
+
+                                <div className="dh-stat-divider" />
+
+                                {/* Momentum Section */}
+                                <div className="dh-stat-section">
+                                    <div className="dh-card-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                                        {momentumTrend === 'improving' ? <TrendingUp size={14} className="dh-card-header-icon" /> : momentumTrend === 'declining' ? <TrendingDown size={14} className="dh-card-header-icon" /> : <Activity size={14} className="dh-card-header-icon" />}
+                                        <h3>Momentum</h3>
+                                    </div>
+                                    <div className="dh-stat-value-row">
+                                        <span className={`dh-stat-value text-label trend-${momentumTrend}`}>
+                                            {trendLabel}
+                                        </span>
+                                    </div>
+                                    <span className="dh-stat-sub">
+                                        3-day avg: {formatSmartDuration(avg3Day)}
+                                    </span>
                                 </div>
-                                <span className="dh-stat-sub">
-                                    3-day avg: {formatSmartDuration(avg3Day)}
-                                </span>
                             </div>
                         </div>
 
