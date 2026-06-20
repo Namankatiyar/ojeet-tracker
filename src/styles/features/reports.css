@@ -501,8 +501,9 @@
   }
 }
 
+
 /* ============================================= */
-/* Daily Study History & Analytics Dashboard     */
+/* Daily Study Analytics — Bento Dashboard       */
 /* ============================================= */
 
 .dh-section {
@@ -539,7 +540,7 @@
   margin: 0;
 }
 
-/* Date Navigation Bar */
+/* ── Date Navigation Bar ── */
 .dh-date-nav-bar {
   display: flex;
   align-items: center;
@@ -600,160 +601,6 @@
   color: var(--accent-text);
 }
 
-.dh-date-picker-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.dh-date-input {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  padding: 6px var(--space-3);
-  border-radius: var(--radius-sm);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: var(--text-sm);
-  outline: none;
-  cursor: pointer;
-  transition: border-color var(--transition-fast);
-}
-
-.dh-date-input:focus {
-  border-color: var(--accent);
-}
-
-/* Key Metrics Panel */
-.dh-metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-
-.dh-metric-card {
-  padding: var(--space-3) var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-secondary), transparent 60%);
-  border: 1px solid transparent;
-  transition: background var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
-  cursor: default;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.dh-metric-card:hover {
-  background: color-mix(in srgb, var(--bg-secondary), transparent 20%);
-  transform: translateY(-2px);
-  border-color: var(--border-hover);
-}
-
-.dh-metric-top,
-.dh-metric-value,
-.dh-metric-compare {
-  position: relative;
-  z-index: 2;
-}
-
-.dh-metric-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.dh-metric-label {
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-/* Background Watermark SVG Masks */
-.dh-metric-bg-mask {
-  position: absolute;
-  bottom: -15%;
-  right: 0;
-  width: 130px;
-  height: 130px;
-  background-color: var(--text-muted);
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: right bottom;
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: right bottom;
-  opacity: 0.08;
-  pointer-events: none;
-  z-index: 0;
-  transform: translateZ(0); /* Hardware accelerate base state */
-  will-change: transform, opacity, background-color;
-  transition: transform var(--transition-fast), opacity var(--transition-fast), background-color var(--transition-fast);
-}
-
-.dh-metric-bg-mask.mask-clock {
-  mask-image: url('/clock.svg');
-  -webkit-mask-image: url('/clock.svg');
-}
-.dh-metric-bg-mask.mask-arrowup {
-  mask-image: url('/arrowup.svg');
-  -webkit-mask-image: url('/arrowup.svg');
-}
-.dh-metric-bg-mask.mask-progressdown {
-  mask-image: url('/progressdown.svg');
-  -webkit-mask-image: url('/progressdown.svg');
-}
-.dh-metric-bg-mask.mask-progress {
-  mask-image: url('/progress.svg');
-  -webkit-mask-image: url('/progress.svg');
-}
-
-.dh-metric-card:hover .dh-metric-bg-mask {
-  transform: translateZ(0) scale(1.1) translateY(-4px) translateX(-4px);
-  opacity: 0.25;
-}
-
-.dh-metric-card:hover .dh-metric-bg-mask.subject-physics {
-  background-color: var(--physics);
-}
-.dh-metric-card:hover .dh-metric-bg-mask.subject-chemistry {
-  background-color: var(--chemistry);
-}
-.dh-metric-card:hover .dh-metric-bg-mask.subject-maths {
-  background-color: var(--maths);
-}
-
-
-.dh-metric-value {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--text-primary);
-  font-family: 'Montserrat', monospace;
-  line-height: 1.3;
-}
-
-.dh-metric-value.text-label {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 1.1rem;
-}
-
-.dh-metric-compare {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.dh-metric-compare span {
-  font-size: var(--text-xs);
-}
-
-/* Calendar trigger button for date picker */
 .dh-calendar-trigger {
   display: flex;
   align-items: center;
@@ -776,7 +623,7 @@
   color: var(--text-primary);
 }
 
-/* Delta and Trend Badges */
+/* ── Badges ── */
 .dh-badge {
   display: inline-flex;
   align-items: center;
@@ -786,6 +633,7 @@
   font-size: 0.7rem;
   font-weight: 600;
   white-space: nowrap;
+  align-self: flex-start;
 }
 
 .dh-badge.success {
@@ -808,21 +656,7 @@
   color: var(--maths);
 }
 
-/* 2-Column Analytics Grid */
-.dh-analytics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  gap: var(--space-6);
-}
-
-.dh-card {
-  padding: var(--space-3) var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  border-radius: var(--radius-md);
-}
-
+/* ── Shared Card Header ── */
 .dh-card-header {
   display: flex;
   align-items: center;
@@ -844,10 +678,6 @@
   flex-shrink: 0;
 }
 
-.dh-card-full-span {
-  grid-column: 1 / -1;
-}
-
 .dh-total-studied-badge {
   display: flex;
   align-items: center;
@@ -866,40 +696,230 @@
   color: var(--text-primary);
 }
 
-/* Subject Distribution Stacked Bar */
-.dh-subj-dist-container {
+/* ════════════════════════════════════════════════ */
+/* ═══ BENTO GRID — 12-Column Layout ══════════════ */
+/* ════════════════════════════════════════════════ */
+
+.dh-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-4);
+}
+
+/* ── Hero: Study Time ── */
+.dh-bento-hero {
+  grid-column: span 6;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+}
+
+/* Ambient accent glow */
+.dh-bento-hero::before {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent), transparent 82%) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dh-hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.dh-hero-value {
+  font-size: clamp(2.5rem, 5vw + 1rem, 3.5rem);
+  font-weight: 800;
+  font-family: 'Montserrat', monospace;
+  color: var(--text-primary);
+  line-height: 1.1;
+  position: relative;
+  z-index: 1;
+}
+
+.dh-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  position: relative;
+  z-index: 1;
+}
+
+.dh-hero-vs {
+  color: var(--text-muted);
+}
+
+.dh-hero-velocity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.dh-hero-dot {
+  color: var(--text-muted);
+}
+
+.dh-hero-left {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: 0;
-  flex: 1;
   justify-content: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
 }
 
-.dh-stacked-bar-track {
-  height: 12px;
-  border-radius: var(--radius-full);
-  background: var(--bg-tertiary);
-  overflow: hidden;
+.dh-hero-right {
   display: flex;
-}
-
-.dh-stacked-bar-fill {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
   height: 100%;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-left: var(--space-5);
+  border-left: 1px solid color-mix(in srgb, var(--border), transparent 50%);
+}
+
+.dh-hero-timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.dh-hero-timeline-title {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.dh-peak-badge.mini {
+  font-size: 0.65rem;
+  padding: 2px var(--space-2);
+  background: color-mix(in srgb, var(--accent), transparent 85%);
+  border-color: color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+/* ── Weekly Overview ── */
+.dh-bento-weekly {
+  grid-column: span 3;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.dh-weekly-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: var(--space-2);
+  flex: 1;
+  min-height: 90px;
+  padding-top: var(--space-2);
+}
+
+.dh-weekly-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+  cursor: pointer;
   position: relative;
-  border-right: 1.5px solid var(--bg-tertiary);
 }
 
-.dh-stacked-bar-fill:last-child {
-  border-right: none;
+.dh-weekly-bar-track {
+  width: 100%;
+  max-width: 28px;
+  height: 80px;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text-muted), transparent 92%);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  border: 1px solid transparent;
 }
 
-/* Tooltip for stacked bar segments */
-.dh-stacked-bar-fill::after {
+.dh-weekly-col.selected .dh-weekly-bar-track {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 50%);
+  border-color: color-mix(in srgb, var(--accent), transparent 50%);
+}
+
+.dh-weekly-bar-seg {
+  width: 100%;
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Round top corners of the topmost rendered segment */
+.dh-weekly-bar-seg:last-child {
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+}
+
+.dh-weekly-bar-seg.physics { background-color: var(--physics); }
+.dh-weekly-bar-seg.chemistry { background-color: var(--chemistry); }
+.dh-weekly-bar-seg.maths { background-color: var(--maths); }
+
+.dh-weekly-day-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: var(--space-1);
+}
+
+.dh-weekly-col.selected .dh-weekly-day-label {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.dh-weekly-dur {
+  font-size: 0.6rem;
+  font-family: 'Montserrat', monospace;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.dh-weekly-col.selected .dh-weekly-dur {
+  color: var(--text-primary);
+}
+
+/* Weekly column tooltip */
+.dh-weekly-col::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: 130%;
+  bottom: 110%;
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   background: color-mix(in srgb, var(--bg-secondary), transparent 5%);
@@ -919,111 +939,149 @@
   box-shadow: var(--panel-shadow);
 }
 
-.dh-stacked-bar-fill:hover::after {
+.dh-weekly-col:hover::after {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
   transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0s;
 }
 
-.dh-stacked-bar-fill.physics { background-color: var(--physics); }
-.dh-stacked-bar-fill.chemistry { background-color: var(--chemistry); }
-.dh-stacked-bar-fill.maths { background-color: var(--maths); }
-
-.dh-subj-legend {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: 0;
-  font-size:0.8rem;
-}
-
-.dh-legend-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-}
-
-.dh-legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dh-legend-dot.physics { background-color: var(--physics); }
-.dh-legend-dot.chemistry { background-color: var(--chemistry); }
-.dh-legend-dot.maths { background-color: var(--maths); }
-
-.dh-legend-val {
-  font-weight: 600;
-  font-family: 'Montserrat', monospace;
-}
-
-.dh-legend-pct {
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  margin-left: 2px;
-}
-
-/* Productivity Heatmap Timeline */
-.dh-timeline-container {
+/* ── Streak + Momentum Stats ── */
+.dh-bento-stats {
+  grid-column: span 3;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
-.dh-heatmap-grid {
-  display: grid;
-  grid-template-columns: repeat(24, 1fr);
-  gap: 2px;
-  background: var(--bg-tertiary);
-  padding: 6px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-
-.dh-heatmap-cell {
-  aspect-ratio: 1 / 2;
-  border-radius: 2px;
-  background-color: color-mix(in srgb, var(--text-muted), transparent 92%);
-  cursor: pointer;
+.dh-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  flex: 1;
   position: relative;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  overflow: hidden;
 }
 
-.dh-heatmap-cell:hover {
-  transform: scale(1.1);
-  z-index: 10;
+.dh-stat-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
-.dh-heatmap-cell.active-physics {
-  background-color: var(--physics);
-  box-shadow: 0 0 6px var(--physics);
+.dh-stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
 }
 
-.dh-heatmap-cell.active-chemistry {
-  background-color: var(--chemistry);
-  box-shadow: 0 0 6px var(--chemistry);
+.dh-stat-value {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  font-family: 'Montserrat', monospace;
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
-.dh-heatmap-cell.active-maths {
-  background-color: var(--maths);
-  box-shadow: 0 0 6px var(--maths);
+.dh-stat-value.text-label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.25rem;
 }
 
-.dh-heatmap-cell.active-mixed {
-  background-color: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
+.dh-stat-unit {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
-/* Heatmap Tooltip */
-.dh-heatmap-cell::after {
+.dh-stat-sub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ── Productivity Timeline (Histogram) ── */
+.dh-histogram-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dh-histogram-container.compact .dh-histogram-grid {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 56px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.dh-histogram-col {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dh-histogram-track {
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--bg-tertiary), transparent 30%);
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.dh-histogram-container.compact .dh-histogram-bar {
+  width: 100%;
+  border-radius: 0;
+  min-height: 0;
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity var(--transition-fast);
+}
+
+.dh-histogram-container.compact .dh-histogram-bar.empty {
+  background: transparent;
+  opacity: 1;
+}
+
+.dh-histogram-bar.physics {
+  background: linear-gradient(to top, color-mix(in srgb, var(--physics), transparent 20%), var(--physics));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--physics), transparent 50%);
+}
+
+.dh-histogram-bar.chemistry {
+  background: linear-gradient(to top, color-mix(in srgb, var(--chemistry), transparent 20%), var(--chemistry));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--chemistry), transparent 50%);
+}
+
+.dh-histogram-bar.maths {
+  background: linear-gradient(to top, color-mix(in srgb, var(--maths), transparent 20%), var(--maths));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--maths), transparent 50%);
+}
+
+.dh-histogram-bar.mixed {
+  background: linear-gradient(to top, color-mix(in srgb, var(--accent), transparent 20%), var(--accent));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent), transparent 50%);
+}
+
+.dh-histogram-col:hover .dh-histogram-bar:not(.empty) {
+  opacity: 0.85;
+}
+
+/* Histogram tooltip */
+.dh-histogram-col::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: 130%;
+  bottom: 110%;
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   background: color-mix(in srgb, var(--bg-secondary), transparent 5%);
@@ -1043,7 +1101,7 @@
   box-shadow: var(--panel-shadow);
 }
 
-.dh-heatmap-cell:hover::after {
+.dh-histogram-col:hover::after {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
@@ -1056,6 +1114,12 @@
   font-size: 0.7rem;
   color: var(--text-secondary);
   padding: 0 var(--space-1);
+}
+
+.dh-histogram-container.compact .dh-timeline-labels {
+  padding: 0;
+  margin-top: var(--space-1);
+  font-size: 0.65rem;
 }
 
 .dh-peak-badge {
@@ -1073,7 +1137,7 @@
   cursor: help;
 }
 
-/* Tooltip for peak badge */
+/* Peak badge tooltip */
 .dh-peak-badge::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -1104,93 +1168,182 @@
   transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0s;
 }
 
-/* Chapter Breakdown Table */
-.dh-table-container {
-  overflow-x: auto;
+/* ── Subject Focus & Chapters ── */
+.dh-bento-subjects {
+  grid-column: 1 / -1;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-radius: var(--radius-md);
 }
 
-.dh-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: var(--text-xs);
+/* Subject Cards Grid */
+.dh-subject-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-2);
 }
 
-.dh-table th {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
+.dh-subject-card {
+  background: color-mix(in srgb, var(--bg-tertiary), transparent 50%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dh-subject-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dh-subject-card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dh-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dh-legend-dot.physics { background-color: var(--physics); }
+.dh-legend-dot.chemistry { background-color: var(--chemistry); }
+.dh-legend-dot.maths { background-color: var(--maths); }
+
+.dh-subject-card-name {
+  font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: 0.5px;
-  padding: var(--space-1) var(--space-2);
-  border-bottom: 1px solid var(--border);
-}
-
-.dh-table td {
-  padding: var(--space-2);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-
-.dh-table tr:last-child td {
-  border-bottom: none;
-}
-
-.dh-chapter-name {
-  font-weight: 500;
-  font-size: 0.8rem;
   color: var(--text-primary);
 }
 
-.dh-subject-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: var(--radius-xs);
-  display: inline-block;
-  text-transform: capitalize;
+.dh-subject-card-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
 }
 
-.dh-subject-badge.physics {
-  background: color-mix(in srgb, var(--physics), transparent 85%);
-  color: var(--physics);
+.dh-subject-card-time {
+  font-family: 'Montserrat', monospace;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.dh-subject-badge.chemistry {
-  background: color-mix(in srgb, var(--chemistry), transparent 85%);
-  color: var(--chemistry);
+.dh-subject-card-pct {
+  color: var(--text-secondary);
 }
 
-.dh-subject-badge.maths {
-  background: color-mix(in srgb, var(--maths), transparent 85%);
-  color: var(--maths);
+.dh-subject-progress-track {
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
 }
 
-.dh-progress-dots {
+.dh-subject-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+.dh-subject-progress-fill.physics { background-color: var(--physics); }
+.dh-subject-progress-fill.chemistry { background-color: var(--chemistry); }
+.dh-subject-progress-fill.maths { background-color: var(--maths); }
+
+.dh-chapter-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.dh-chapter-card {
+  background: color-mix(in srgb, var(--bg-tertiary), transparent 70%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dh-chapter-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.dh-chapter-card-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.dh-chapter-card-time {
+  font-family: 'Montserrat', monospace;
+  font-weight: 600;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.dh-chapter-card-tags {
   display: flex;
   gap: var(--space-1);
 }
 
-.dh-dot-tag {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--border);
+.dh-material-tag {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px var(--space-1);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: transparent;
 }
 
-.dh-dot-tag.completed {
-  background: var(--accent);
+.dh-material-tag.completed {
+  border-color: transparent;
+  color: #ffffff;
+}
+.dh-material-tag.completed.physics { 
+  background-color: color-mix(in srgb, var(--physics), transparent 85%);
+  color: var(--physics);
+  border-color: color-mix(in srgb, var(--physics), transparent 50%);
+}
+.dh-material-tag.completed.chemistry { 
+  background-color: color-mix(in srgb, var(--chemistry), transparent 85%);
+  color: var(--chemistry);
+  border-color: color-mix(in srgb, var(--chemistry), transparent 50%);
+}
+.dh-material-tag.completed.maths { 
+  background-color: color-mix(in srgb, var(--maths), transparent 85%);
+  color: var(--maths);
+  border-color: color-mix(in srgb, var(--maths), transparent 50%);
 }
 
-.dh-time-mono {
-  font-family: 'Montserrat', monospace;
-  font-weight: 600;
-  font-size:0.8rem;
+/* ── Insights ── */
+.dh-bento-insights {
+  grid-column: 1 / -1;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-radius: var(--radius-md);
 }
 
-
-
-/* AI Insights Card */
 .dh-insights-list {
   display: flex;
   flex-direction: column;
@@ -1227,7 +1380,39 @@
   color: var(--text-primary);
 }
 
-/* Edit Session Modal */
+/* ── Empty State ── */
+.dh-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-10) var(--space-6);
+  gap: var(--space-3);
+  grid-column: 1 / -1;
+  border-radius: var(--radius-md);
+}
+
+.dh-empty-state svg {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.dh-empty-state h4 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.dh-empty-state p {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 280px;
+  margin: 0;
+}
+
+/* ── Legacy Modal (Edit Session) ── */
 .dh-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1315,42 +1500,28 @@
   margin-top: var(--space-6);
 }
 
-/* Empty State */
-.dh-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: var(--space-10) var(--space-6);
-  gap: var(--space-3);
-  grid-column: 1 / -1;
-  border-radius: var(--radius-md);
-}
-
-.dh-empty-state svg {
-  color: var(--text-muted);
-  opacity: 0.4;
-}
-
-.dh-empty-state h4 {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.dh-empty-state p {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  max-width: 280px;
-  margin: 0;
-}
-
-/* Responsive overrides for Daily Analytics */
+/* ── Responsive ── */
 @media (max-width: 768px) {
-  .dh-analytics-grid {
+  .dh-bento-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dh-bento-hero,
+  .dh-bento-weekly,
+  .dh-bento-stats,
+  .dh-bento-timeline,
+  .dh-bento-subjects,
+  .dh-bento-insights {
+    grid-column: span 1;
+  }
+
+  .dh-bento-stats {
+    flex-direction: row;
+  }
+
+  .dh-bento-hero {
+    min-height: auto;
+    padding: var(--space-4);
   }
 
   .dh-date-nav-bar {
@@ -1361,7 +1532,15 @@
 }
 
 @media (max-width: 480px) {
-  .dh-metrics-grid {
-    grid-template-columns: 1fr;
+  .dh-bento-stats {
+    flex-direction: column;
+  }
+
+  .dh-histogram-grid {
+    height: 56px;
+  }
+
+  .dh-weekly-bar-track {
+    height: 60px;
   }
 }

@@ -11,7 +11,10 @@ import {
     BookOpen,
     Activity,
     Zap,
-    MinusCircle
+    MinusCircle,
+    TrendingDown,
+    TrendingUp,
+    Minus
 } from 'lucide-react';
 
 /* ───────────────────────────────────────────── */
@@ -154,8 +157,6 @@ export const DailyAnalytics: React.FC = () => {
         [plannerTasks, selectedDate]
     );
 
-    const progressVelocity = tasksCompleted + daySessions.length;
-
     /* ── Subject Distribution ── */
     const subjectTotals = useMemo(() => {
         const totals: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0 };
@@ -169,60 +170,6 @@ export const DailyAnalytics: React.FC = () => {
         return { totals, total };
     }, [daySessions]);
 
-    const progressSegments = useMemo(() => {
-        if (subjectTotals.total === 0) return [];
-        
-        const segments: Array<{
-            subject: Subject;
-            chapterName: string;
-            duration: number;
-            percentage: number;
-            opacity: number;
-        }> = [];
-        
-        const activeSubjects: Subject[] = ['physics', 'chemistry', 'maths'];
-        
-        activeSubjects.forEach(sub => {
-            if (subjectTotals.totals[sub] <= 0) return;
-            
-            const chapterMap: Record<string, number> = {};
-            let uncategorizedDuration = 0;
-            
-            daySessions.forEach(s => {
-                if (s.subject !== sub) return;
-                if (s.chapterName) {
-                    chapterMap[s.chapterName] = (chapterMap[s.chapterName] || 0) + s.duration;
-                } else {
-                    uncategorizedDuration += s.duration;
-                }
-            });
-            
-            const chaptersList = Object.entries(chapterMap).map(([name, duration]) => ({
-                name,
-                duration
-            })).sort((a, b) => b.duration - a.duration);
-            
-            if (uncategorizedDuration > 0) {
-                chaptersList.push({
-                    name: 'General',
-                    duration: uncategorizedDuration
-                });
-            }
-            
-            chaptersList.forEach((ch, index) => {
-                const opacity = Math.max(0.4, 1 - index * 0.2);
-                segments.push({
-                    subject: sub,
-                    chapterName: ch.name,
-                    duration: ch.duration,
-                    percentage: (ch.duration / subjectTotals.total) * 100,
-                    opacity
-                });
-            });
-        });
-        
-        return segments;
-    }, [daySessions, subjectTotals]);
 
     /* ── Productivity Timeline (hourly buckets) ── */
     const hourlyBuckets = useMemo(() => {
@@ -374,11 +321,62 @@ export const DailyAnalytics: React.FC = () => {
         return <span className="dh-badge stable">Same as prev</span>;
     };
 
-
-
     const trendLabel =
         momentumTrend === 'improving' ? 'Improving' :
             momentumTrend === 'declining' ? 'Declining' : 'Stable';
+
+    /* ── Weekly Data (7 days ending on selected date) ── */
+    const weeklyData = useMemo(() => {
+        const days: Array<{
+            date: string;
+            label: string;
+            totals: Record<Subject, number>;
+            total: number;
+            isSelected: boolean;
+        }> = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(selectedDate + 'T00:00:00');
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toLocaleDateString('en-CA');
+            const dayLabel = d.toLocaleDateString('en-IN', { weekday: 'short' });
+            const daySess = studySessions.filter(s => getSessionDate(s) === dateStr);
+            const totals: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0 };
+            let total = 0;
+            daySess.forEach(s => {
+                if (s.subject && totals[s.subject] !== undefined) {
+                    totals[s.subject] += s.duration;
+                    total += s.duration;
+                }
+            });
+            days.push({ date: dateStr, label: dayLabel, totals, total, isSelected: dateStr === selectedDate });
+        }
+        return days;
+    }, [studySessions, selectedDate]);
+
+    const weeklyMax = useMemo(
+        () => Math.max(...weeklyData.map(d => d.total), 1),
+        [weeklyData]
+    );
+
+    /* ── Subject Chapters (grouped by subject) ── */
+    const subjectChapters = useMemo(() => {
+        const subjects: Subject[] = ['physics', 'chemistry', 'maths'];
+        return subjects
+            .filter(sub => subjectTotals.totals[sub] > 0)
+            .map(sub => {
+                const chapters = chapterBreakdown
+                    .filter(ch => ch.subject === sub)
+                    .sort((a, b) => b.duration - a.duration);
+                const pct = Math.round((subjectTotals.totals[sub] / subjectTotals.total) * 100);
+                return { subject: sub, duration: subjectTotals.totals[sub], pct, chapters };
+            });
+    }, [subjectTotals, chapterBreakdown]);
+
+    /* ── Histogram Max ── */
+    const histogramMax = useMemo(
+        () => Math.max(...hourlyBuckets.map(s => s.totalMin), 1),
+        [hourlyBuckets]
+    );
 
     /* ──────────────────── RENDER ──────────────────── */
     return (
@@ -442,15 +440,154 @@ export const DailyAnalytics: React.FC = () => {
                 </button>
             </div>
 
-            {/* Analytics Grid */}
-            <div className="dh-analytics-grid">
+            {/* ── Bento Analytics Grid ── */}
+            <div className="dh-bento-grid">
                 {hasSessions ? (
                     <>
-                        {/* Subject Focus & Distribution */}
-                        <div className="dh-card glass-panel">
+                        {/* ── Hero: Study Time & Timeline ── */}
+                        <div className="dh-bento-hero glass-panel">
+                            <div className="dh-hero-left">
+                                <div className="dh-card-header" style={{ position: 'relative', zIndex: 1, marginBottom: 'var(--space-1)' }}>
+                                    <Clock size={14} className="dh-card-header-icon" />
+                                    <h3>Study time</h3>
+                                </div>
+                                <div className="dh-hero-value">
+                                    {formatStatValue(totalDurationSec)}
+                                </div>
+                                <div className="dh-hero-meta">
+                                    {renderDelta()}
+                                    <span className="dh-hero-vs">vs yesterday</span>
+                                </div>
+                                <div className="dh-hero-velocity">
+                                    <span>{daySessions.length} {daySessions.length === 1 ? 'session' : 'sessions'}</span>
+                                    <span className="dh-hero-dot">·</span>
+                                    <span>{tasksCompleted} {tasksCompleted === 1 ? 'task' : 'tasks'}</span>
+                                </div>
+                            </div>
+                            
+                            <div className="dh-hero-right">
+                                <div className="dh-hero-timeline-header">
+                                    <span className="dh-hero-timeline-title">Timeline</span>
+                                    {peakHour >= 0 && (
+                                        <div
+                                            className="dh-peak-badge mini"
+                                            data-tooltip="Hour block with highest study duration"
+                                        >
+                                            <Zap size={10} />
+                                            <span>Peak: <strong>{formatHourLabel(peakHour)}</strong></span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="dh-histogram-container compact">
+                                    <div className="dh-histogram-grid">
+                                        {hourlyBuckets.map((slot, hr) => {
+                                            const heightPct = histogramMax > 0
+                                                ? (slot.totalMin / histogramMax) * 100
+                                                : 0;
+                                            const subArr = Array.from(slot.subjects);
+                                            const colorClass = slot.totalMin > 0
+                                                ? (subArr.length === 1 ? subArr[0] : 'mixed')
+                                                : 'empty';
+                                            const tooltip = slot.totalMin > 0
+                                                ? `${formatHourLabel(hr)} · ${slot.titles.join(', ')} (${slot.totalMin}m)`
+                                                : `${formatHourLabel(hr)} — no study`;
+                                            return (
+                                                <div
+                                                    key={hr}
+                                                    className="dh-histogram-col"
+                                                    data-tooltip={tooltip}
+                                                >
+                                                    <div className="dh-histogram-track">
+                                                        <div
+                                                            className={`dh-histogram-bar ${colorClass}`}
+                                                            style={{ height: `${Math.max(heightPct, 0)}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <div className="dh-timeline-labels">
+                                        <span>12a</span>
+                                        <span>6a</span>
+                                        <span>12p</span>
+                                        <span>6p</span>
+                                        <span>11p</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── Weekly Overview ── */}
+                        <div className="dh-bento-weekly glass-panel">
                             <div className="dh-card-header">
                                 <BarChart2 size={14} className="dh-card-header-icon" />
-                                <h3>Subject focus & distribution</h3>
+                                <h3>Weekly overview</h3>
+                            </div>
+                            <div className="dh-weekly-chart">
+                                {weeklyData.map((day) => (
+                                    <div
+                                        key={day.date}
+                                        className={`dh-weekly-col${day.isSelected ? ' selected' : ''}`}
+                                        data-tooltip={`${formatDateDisplay(day.date)}: ${formatSmartDuration(day.total)}`}
+                                    >
+                                        <div className="dh-weekly-bar-track">
+                                            {(['physics', 'chemistry', 'maths'] as Subject[]).map(sub => {
+                                                const heightPct = weeklyMax > 0
+                                                    ? (day.totals[sub] / weeklyMax) * 100
+                                                    : 0;
+                                                return heightPct > 0 ? (
+                                                    <div
+                                                        key={sub}
+                                                        className={`dh-weekly-bar-seg ${sub}`}
+                                                        style={{ height: `${heightPct}%` }}
+                                                    />
+                                                ) : null;
+                                            })}
+                                        </div>
+                                        <span className="dh-weekly-day-label">{day.label}</span>
+                                        <span className="dh-weekly-dur">
+                                            {day.total > 0 ? formatSmartDuration(day.total) : '—'}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* ── Streak + Momentum ── */}
+                        <div className="dh-bento-stats">
+                            <div className="dh-stat-card glass-panel">
+                                <span className="dh-stat-label">Current streak</span>
+                                <div className="dh-stat-value-row">
+                                    <span className="dh-stat-value">{streak}</span>
+                                    <span className="dh-stat-unit">{streak === 1 ? 'day' : 'days'}</span>
+                                </div>
+                                {streak > 0
+                                    ? <span className="dh-badge streak">🔥 Active</span>
+                                    : <span className="dh-badge stable">No streak</span>
+                                }
+                            </div>
+                            <div className="dh-stat-card glass-panel">
+                                <span className="dh-stat-label">Momentum</span>
+                                <div className="dh-stat-value-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span className="dh-stat-value text-label">{trendLabel}</span>
+                                    {momentumTrend === 'declining' && <TrendingDown size={24} style={{ color: 'var(--priority-high)', opacity: 0.8 }} />}
+                                    {momentumTrend === 'improving' && <TrendingUp size={24} style={{ color: 'var(--priority-low)', opacity: 0.8 }} />}
+                                    {momentumTrend === 'stable' && <Minus size={24} style={{ color: 'var(--text-secondary)', opacity: 0.6 }} />}
+                                </div>
+                                <span className="dh-stat-sub">
+                                    3-day avg: {formatSmartDuration(avg3Day)}
+                                </span>
+                            </div>
+                        </div>
+
+
+
+                        {/* ── Subject Focus & Chapters ── */}
+                        <div className="dh-bento-subjects glass-panel">
+                            <div className="dh-card-header">
+                                <BookOpen size={14} className="dh-card-header-icon" />
+                                <h3>Integrated subject & chapter breakdown</h3>
                                 {subjectTotals.total > 0 && (
                                     <div className="dh-total-studied-badge">
                                         <Clock size={10} />
@@ -458,208 +595,59 @@ export const DailyAnalytics: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className="dh-subj-dist-container">
-                                <div className="dh-stacked-bar-track">
-                                    {progressSegments.map((seg, idx) => (
-                                        <div
-                                            key={`${seg.subject}-${seg.chapterName}-${idx}`}
-                                            className={`dh-stacked-bar-fill ${seg.subject}`}
-                                            style={{ 
-                                                width: `${seg.percentage}%`,
-                                                opacity: seg.opacity
-                                            }}
-                                            data-tooltip={`${seg.subject.charAt(0).toUpperCase() + seg.subject.slice(1)} · ${seg.chapterName} (${formatSmartDuration(seg.duration)})`}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="dh-subj-legend">
-                                    {(['physics', 'chemistry', 'maths'] as Subject[])
-                                        .filter(sub => subjectTotals.totals[sub] > 0)
-                                        .map(sub => {
-                                        const pct = Math.round((subjectTotals.totals[sub] / subjectTotals.total) * 100);
-                                        return (
-                                            <div className="dh-legend-item" key={sub}>
-                                                <span className={`dh-legend-dot ${sub}`} />
-                                                <span>
-                                                    {sub.charAt(0).toUpperCase() + sub.slice(1)}:{' '}
-                                                    <span className="dh-legend-val">
-                                                        {formatSmartDuration(subjectTotals.totals[sub])}
-                                                    </span>
-                                                    {pct > 0 && <span className="dh-legend-pct"> {pct}%</span>}
+                            <div className="dh-subject-cards-grid">
+                                {subjectChapters.map(({ subject, duration, pct, chapters }) => (
+                                    <div className="dh-subject-card" key={subject}>
+                                        <div className="dh-subject-card-header">
+                                            <div className="dh-subject-card-title">
+                                                <span className={`dh-legend-dot ${subject}`} />
+                                                <span className="dh-subject-card-name">
+                                                    {subject.charAt(0).toUpperCase() + subject.slice(1)}
                                                 </span>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Productivity Timeline */}
-                        <div className="dh-card glass-panel">
-                            <div className="dh-card-header">
-                                <Clock size={14} className="dh-card-header-icon" />
-                                <h3>Productivity timeline</h3>
-                                {peakHour >= 0 && (
-                                    <div
-                                        className="dh-peak-badge"
-                                        data-tooltip="Calculated as the hourly block with the highest study duration."
-                                    >
-                                        <Zap size={10} />
-                                        <span>Peak: <strong>{formatHourLabel(peakHour)}</strong></span>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="dh-timeline-container">
-                                <div className="dh-heatmap-grid">
-                                    {hourlyBuckets.map((slot, hr) => {
-                                        let cellClass = '';
-                                        let tooltip = `${hr.toString().padStart(2, '0')}:00 — no study`;
-                                        if (slot.totalMin > 0) {
-                                            const subArr = Array.from(slot.subjects);
-                                            cellClass = subArr.length === 1
-                                                ? ` active-${subArr[0]}`
-                                                : ' active-mixed';
-                                            tooltip = `${formatHourLabel(hr)} · ${slot.titles.join(', ')} (${slot.totalMin}m)`;
-                                        }
-                                        return (
-                                            <span
-                                                key={hr}
-                                                className={`dh-heatmap-cell${cellClass}`}
-                                                data-tooltip={tooltip}
+                                            <div className="dh-subject-card-stats">
+                                                <span className="dh-subject-card-time">{formatSmartDuration(duration)}</span>
+                                                <span className="dh-subject-card-pct">({pct}%)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="dh-subject-progress-track">
+                                            <div 
+                                                className={`dh-subject-progress-fill ${subject}`} 
+                                                style={{ width: `${pct}%` }} 
                                             />
-                                        );
-                                    })}
-                                </div>
-                                <div className="dh-timeline-labels">
-                                    <span>12 AM</span>
-                                    <span>6 AM</span>
-                                    <span>12 PM</span>
-                                    <span>6 PM</span>
-                                    <span>11 PM</span>
-                                </div>
-                            </div>
-                        </div>
+                                        </div>
 
-                        {/* Chapter Breakdown */}
-                        <div className="dh-card glass-panel">
-                            <div className="dh-card-header">
-                                <BookOpen size={14} className="dh-card-header-icon" />
-                                <h3>Chapters studied</h3>
-                            </div>
-                            <div className="dh-table-container">
-                                <table className="dh-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Chapter</th>
-                                            <th>Subject</th>
-                                            <th>Time spent</th>
-                                            <th>Materials</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {chapterBreakdown.length > 0 ? chapterBreakdown.map(ch => (
-                                            <tr key={`${ch.subject}-${ch.name}`}>
-                                                <td>
-                                                    <div className="dh-chapter-name">{ch.name}</div>
-                                                </td>
-                                                <td>
-                                                    <span className={`dh-subject-badge ${ch.subject}`}>
-                                                        {ch.subject}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span className="dh-time-mono">
-                                                        {formatSmartDuration(ch.duration)}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div className="dh-progress-dots" title={Array.from(ch.materials).join(', ')}>
-                                                        {['NCERT', 'PYQs', 'Modules'].map(mat => (
-                                                            <span
-                                                                key={mat}
-                                                                className={`dh-dot-tag${ch.materials.has(mat) ? ' completed' : ''}`}
-                                                            />
-                                                        ))}
+                                        {chapters.length > 0 && (
+                                            <div className="dh-chapter-cards">
+                                                {chapters.map(ch => (
+                                                    <div className="dh-chapter-card" key={ch.name}>
+                                                        <div className="dh-chapter-card-top">
+                                                            <span className="dh-chapter-card-name">{ch.name}</span>
+                                                            <span className="dh-chapter-card-time">{formatSmartDuration(ch.duration)}</span>
+                                                        </div>
+                                                        <div className="dh-chapter-card-tags" title={Array.from(ch.materials).join(', ')}>
+                                                            {['NCERT', 'PYQs', 'Modules'].map(mat => (
+                                                                <span
+                                                                    key={mat}
+                                                                    className={`dh-material-tag ${ch.materials.has(mat) ? `completed ${subject}` : ''}`}
+                                                                >
+                                                                    {mat.toUpperCase()}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr>
-                                                <td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 'var(--space-4)' }}>
-                                                    Sessions have no chapter data
-                                                </td>
-                                            </tr>
+                                                ))}
+                                            </div>
                                         )}
-                                    </tbody>
-                                </table>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* Key Metrics Panel (Replaces Session History) */}
-                        <div className="dh-card glass-panel dh-key-metrics-panel">
-                            <div className="dh-card-header">
-                                <BarChart2 size={14} className="dh-card-header-icon" />
-                                <h3>Key performance metrics</h3>
-                            </div>
-                            
-                            <div className="dh-metrics-grid">
-                                {/* Study Time */}
-                                <div className="dh-metric-card">
-                                    <div className="dh-metric-bg-mask mask-clock subject-physics" />
-                                    <div className="dh-metric-top">
-                                        <span className="dh-metric-label">Study time</span>
-                                    </div>
-                                    <div className="dh-metric-value">{formatStatValue(totalDurationSec)}</div>
-                                    <div className="dh-metric-compare">
-                                        {renderDelta()}
-                                        <span>vs yesterday</span>
-                                    </div>
-                                </div>
-
-                                {/* Streak */}
-                                <div className="dh-metric-card">
-                                    <div className="dh-metric-bg-mask mask-arrowup subject-chemistry" />
-                                    <div className="dh-metric-top">
-                                        <span className="dh-metric-label">Current streak</span>
-                                    </div>
-                                    <div className="dh-metric-value">{streak} {streak === 1 ? 'day' : 'days'}</div>
-                                    <div className="dh-metric-compare">
-                                        {streak > 0
-                                            ? <span className="dh-badge streak">🔥 Active</span>
-                                            : <span className="dh-badge stable">No streak yet</span>
-                                        }
-                                    </div>
-                                </div>
-
-                                {/* Momentum */}
-                                <div className="dh-metric-card">
-                                    <div className="dh-metric-bg-mask mask-progressdown subject-maths" />
-                                    <div className="dh-metric-top">
-                                        <span className="dh-metric-label">Momentum</span>
-                                    </div>
-                                    <div className="dh-metric-value text-label">{trendLabel}</div>
-                                    <div className="dh-metric-compare">
-                                        <span>3-day avg: {formatSmartDuration(avg3Day)}</span>
-                                    </div>
-                                </div>
-
-                                {/* Progress velocity */}
-                                <div className="dh-metric-card">
-                                    <div className="dh-metric-bg-mask mask-progress subject-physics" />
-                                    <div className="dh-metric-top">
-                                        <span className="dh-metric-label">Progress velocity</span>
-                                    </div>
-                                    <div className="dh-metric-value">{progressVelocity} items</div>
-                                    <div className="dh-metric-compare">
-                                        <span>{daySessions.length} sessions · {tasksCompleted} tasks</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Key Insights */}
+                        {/* ── Key Insights ── */}
                         {insights.length > 0 && (
-                            <div className="dh-card glass-panel dh-card-full-span">
+                            <div className="dh-bento-insights glass-panel">
                                 <div className="dh-card-header">
                                     <Zap size={14} className="dh-card-header-icon" />
                                     <h3>Key study insights</h3>
