@@ -5,8 +5,10 @@ import { Download, Upload, X, AlertTriangle, Check, Image, Trash2, Cloud, LogOut
 import { Vibrant } from 'node-vibrant/browser';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
+import { supabase } from '../../../shared/lib/supabase';
 import { runPwaRecoveryAndReload } from '../../utils/pwaBridge';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { ConfirmationModal } from './ConfirmationModal';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -29,20 +31,46 @@ interface SettingsModalProps {
 }
 
 const STORAGE_KEYS = {
+    // Theme & Styling
     theme: 'jee-tracker-theme',
-    view: 'jee-tracker-view',
-    progress: 'jee-tracker-progress',
     accent: 'jee-tracker-accent',
-    customColumns: 'jee-tracker-custom-columns',
-    excludedColumns: 'jee-tracker-excluded-columns',
-    examDates: 'jee-exam-dates',
-    plannerTasks: 'jee-tracker-planner-tasks',
-    // New settings
-    disableAutoShift: 'jee-tracker-disable-auto-shift',
     backgroundUrl: 'jee-tracker-background-url',
     dimLevel: 'jee-tracker-dim-level',
     glassIntensity: 'jee-tracker-glass-intensity',
     glassRefraction: 'jee-tracker-glass-refraction',
+
+    // Core Progress
+    progress: 'jee-tracker-progress',
+    subjectData: 'jee-tracker-subject-data',
+    customColumns: 'jee-tracker-custom-columns',
+    excludedColumns: 'jee-tracker-excluded-columns',
+    materialOrder: 'jee-tracker-material-order',
+
+    // Planner & Schedule
+    plannerTasks: 'jee-tracker-planner-tasks',
+    plannerView: 'ojeet-planner-view',
+    disableAutoShift: 'jee-tracker-disable-auto-shift',
+    examDates: 'jee-exam-dates',
+    secondaryExamIndex: 'jee-secondary-exam-index',
+
+    // Analytics & Logs
+    studySessions: 'jee-tracker-study-sessions',
+    mockScores: 'jee-tracker-mock-scores',
+    mockPresets: 'jee-tracker-mock-presets',
+    progressCard: 'jee-tracker-progress-card',
+
+    // UI Workspace Preferences
+    copilotDismissedIds: 'jee-copilot-dismissed-ids',
+    dashboardNotificationMeta: 'ojeet-dashboard-notification-meta-v1',
+    studyClockTaskType: 'studyClock_taskType',
+    studyClockSelectedSubject: 'studyClock_selectedSubject',
+    studyClockSelectedChapter: 'studyClock_selectedChapter',
+    studyClockSelectedMaterial: 'studyClock_selectedMaterial',
+    studyClockCustomTitle: 'studyClock_customTitle',
+    studyClockSelectedTaskId: 'studyClock_selectedTaskId',
+    filterPhysics: 'jee-tracker-filter-physics',
+    filterChemistry: 'jee-tracker-filter-chemistry',
+    filterMaths: 'jee-tracker-filter-maths',
 };
 
 export function SettingsModal({
@@ -71,6 +99,63 @@ export function SettingsModal({
     const { user, isConfigured, signInWithGoogle, signOut, resetPrompt } = useRemoteAuth();
     const { status: syncStatus, lastSyncedAt, lastError: syncError, remoteStudyAggregate, syncNow } = useRemoteSync();
     const releaseChannel = import.meta.env.VITE_RELEASE_CHANNEL ?? 'stable';
+    const [isResetting, setIsResetting] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+    const handleResetData = () => {
+        setIsConfirmOpen(true);
+    };
+
+    const confirmResetData = async () => {
+        setIsConfirmOpen(false);
+        setIsResetting(true);
+        setStatusMessage('Resetting data...');
+        setImportStatus('idle');
+
+        try {
+            // 1. Wipe remote database backups if user is logged in
+            if (user && isConfigured && supabase) {
+                const { error: syncStateError } = await supabase.from('user_sync_state').delete().eq('user_id', user.id);
+                if (syncStateError) console.warn('Error deleting sync state:', syncStateError);
+
+                const { error: syncChunksError } = await supabase.from('user_sync_chunks').delete().eq('user_id', user.id);
+                if (syncChunksError) console.warn('Error deleting sync chunks:', syncChunksError);
+
+                const { error: studyAggregateError } = await supabase.from('user_study_aggregate').delete().eq('user_id', user.id);
+                if (studyAggregateError) console.warn('Error deleting study aggregate:', studyAggregateError);
+
+                const { error: sessionLogError } = await supabase.from('study_session_log').delete().eq('user_id', user.id);
+                if (sessionLogError) console.warn('Error deleting study session logs:', sessionLogError);
+            }
+
+            // 2. Wipe all local storage keys starting with app prefixes
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (
+                    key.startsWith('jee-') ||
+                    key.startsWith('ojeet-') ||
+                    key.startsWith('studyClock_')
+                )) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+
+            setImportStatus('success');
+            setStatusMessage('Data reset successfully! Reloading...');
+
+            // 3. Reload page to reinitialize all state with default local storage
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (error: any) {
+            console.error('Reset failed:', error);
+            setImportStatus('error');
+            setStatusMessage(error?.message || 'Failed to complete data reset.');
+            setIsResetting(false);
+        }
+    };
 
     const modalRoot = document.getElementById('modal-root');
 
@@ -128,7 +213,7 @@ export function SettingsModal({
                 for (const key in json.export) {
                     if (Object.values(STORAGE_KEYS).includes(key)) {
                         const value = json.export[key];
-                        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+                        localStorage.setItem(key, JSON.stringify(value));
                     }
                 }
 
@@ -436,6 +521,21 @@ export function SettingsModal({
                                 </button>
                             </div>
                         </div>
+
+                        <div className="settings-row">
+                            <div className="setting-info">
+                                <span className="setting-label">Reset All Data</span>
+                                <span className="setting-description">Permanently wipe all local progress and remote sync backups</span>
+                            </div>
+                            <button
+                                className="action-btn danger small"
+                                onClick={handleResetData}
+                                disabled={isResetting}
+                            >
+                                <Trash2 size={16} />
+                                {isResetting ? 'Resetting...' : 'Reset Data'}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="settings-section">
@@ -567,5 +667,16 @@ export function SettingsModal({
         </div>
     );
 
-    return ReactDOM.createPortal(modalContent, modalRoot);
+    return ReactDOM.createPortal(
+        <>
+            {modalContent}
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                title="Reset All Data"
+                message="Are you sure you want to reset all data? This will permanently delete your progress, planner tasks, study sessions, and mock scores locally and from the cloud. This action cannot be undone."
+                onConfirm={confirmResetData}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
+        </>
+    , modalRoot);
 }

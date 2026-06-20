@@ -12,7 +12,7 @@
 .reports-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--border);
   padding-bottom: var(--space-4);
@@ -29,15 +29,15 @@
 }
 
 .reports-title {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 0.2rem 0;
-  line-height: 1.1;
+  margin: 0 0 0.1rem 0;
+  line-height: 1.2;
 }
 
 .reports-subtitle {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--text-secondary);
   margin: 0;
 }
@@ -1284,13 +1284,14 @@
   padding: var(--space-3);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: var(--space-2);
 }
 
 .dh-chapter-card-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-3);
 }
 

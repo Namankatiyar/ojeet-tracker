@@ -255,14 +255,14 @@
     "semantic_hash": "d4bdbfdceb53108eb6e4f49b2681b043"
   },
   "src/features/reports/components/DailyAnalytics.tsx": {
-    "mtime": 1781960514.2355878,
-    "ast_hash": "4b5aa2d845853c73a817b3f0dc285f6e",
+    "mtime": 1781965207.1373153,
+    "ast_hash": "cf9a8a124e6f5c5fa74ab0ded139f0b2",
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
-    "mtime": 1781953138.3575222,
-    "ast_hash": "584d66f082fb4f87da255d5070a924da",
-    "semantic_hash": "584d66f082fb4f87da255d5070a924da"
+    "mtime": 1781973318.8664753,
+    "ast_hash": "f3167d0a99433b8d35d8210bbc988213",
+    "semantic_hash": ""
   },
   "src/features/study-clock/components/Presets/PresetManager.tsx": {
     "mtime": 1781010054.1758854,
@@ -530,9 +530,9 @@
     "semantic_hash": "5a593412e54b52ca498c8ea2eab940e0"
   },
   "src/shared/components/ui/SettingsModal.tsx": {
-    "mtime": 1781010054.1835737,
-    "ast_hash": "40c7f90476676a8ec55d07f00941a24f",
-    "semantic_hash": "40c7f90476676a8ec55d07f00941a24f"
+    "mtime": 1781974010.3273919,
+    "ast_hash": "43413c6236161ca28ab48fb9f3bae7f6",
+    "semantic_hash": ""
   },
   "src/shared/components/ui/TimePicker.tsx": {
     "mtime": 1781265561.6107073,
@@ -540,9 +540,9 @@
     "semantic_hash": "2b2bd3d1cf42334632c7d66c9bb85a85"
   },
   "src/shared/hooks/useLocalStorage.ts": {
-    "mtime": 1781010054.183831,
-    "ast_hash": "44fafa95bd429ab9925a921027697e23",
-    "semantic_hash": "44fafa95bd429ab9925a921027697e23"
+    "mtime": 1781974384.1240659,
+    "ast_hash": "ed771584bdbfea974bc5397c1c66f4d3",
+    "semantic_hash": ""
   },
   "src/shared/hooks/useProgress.ts": {
     "mtime": 1781844075.5348034,
@@ -690,9 +690,9 @@
     "semantic_hash": "447fef1ac59841c728076e6980e51a2d"
   },
   "AGENTS.md": {
-    "mtime": 1781953138.339296,
-    "ast_hash": "e7821522e286952fc55a1027a7aa815c",
-    "semantic_hash": "e7821522e286952fc55a1027a7aa815c"
+    "mtime": 1781964354.556676,
+    "ast_hash": "6fc98db51cffdcc93de0cbb60e35211b",
+    "semantic_hash": ""
   },
   "CHANGELOG.md": {
     "mtime": 1781010054.150431,
@@ -767,6 +767,11 @@
   ".agents/workflows/graphify.md": {
     "mtime": 1781953138.339296,
     "ast_hash": "0bc020d491fca99550c1ea3de0a5f862",
+    "semantic_hash": ""
+  },
+  "src/shared/hooks/useLocalStorage.test.tsx": {
+    "mtime": 1781974401.209586,
+    "ast_hash": "82082efe3a8442d0ff4cf6b4a37e5d2a",
     "semantic_hash": ""
   }
 }

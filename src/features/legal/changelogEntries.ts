@@ -7,6 +7,18 @@ export interface ChangelogEntry {
 
 // Update this list before each rollout. Keep newest entry first.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+    {
+        version: '1.1.0',
+        date: 'June 20, 2026',
+        title: 'New Reports page and Study Copilot',
+        changes: [
+            '-Entire daily report visible in one glance.',
+            '-Share the screenshot of report wherever you like.',
+            '-The study copilot reminds you of revising chapters.',
+            '-Sign in bug fixed, lost data also recovered.',
+            '-Please report any found bug in my Reddit DMs u/Big_Distribution_730 or in my discord server https://discord.gg/6dKrbVQU8W.',
+        ],
+    },
      {
         version: '1.0.6',
         date: 'June 18, 2026',

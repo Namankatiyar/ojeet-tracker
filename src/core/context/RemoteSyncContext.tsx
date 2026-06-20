@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useRemoteAuth } from './RemoteAuthContext';
-import { useUserProgress } from './UserProgressContext';
+import { useUserProgress, defaultMockExamPresets } from './UserProgressContext';
 import { useSubjectData } from './SubjectDataContext';
 import { supabase } from '../../shared/lib/supabase';
 import { buildSyncPayload } from '../../features/sync/syncPayload';
@@ -324,7 +324,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             userName: payload.domains.settings.progressCardSettings.userName,
             visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
         }));
-        setMockExamPresets(payload.domains.settings.mockExamPresets || []);
+        setMockExamPresets(
+            payload.domains.settings.mockExamPresets && payload.domains.settings.mockExamPresets.length > 0
+                ? payload.domains.settings.mockExamPresets
+                : defaultMockExamPresets
+        );
 
         if (payload.domains.subjects) {
             setSubjectData(payload.domains.subjects.subjectData);

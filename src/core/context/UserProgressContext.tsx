@@ -100,6 +100,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [examDates, setExamDates] = useLocalStorage<ExamEntry[]>('jee-exam-dates', []);
     const [mockExamPresets, setMockExamPresets] = useLocalStorage<MockExamPreset[]>('jee-tracker-mock-presets', defaultMockExamPresets);
 
+    // Ensure mockExamPresets is never empty
+    useEffect(() => {
+        if (!mockExamPresets || mockExamPresets.length === 0) {
+            setMockExamPresets(defaultMockExamPresets);
+        }
+    }, [mockExamPresets, setMockExamPresets]);
+
     // Migrate legacy single examDate to new examDates array
     useEffect(() => {
         const legacy = localStorage.getItem('jee-exam-date');

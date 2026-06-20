@@ -129,6 +129,8 @@ vi.mock('./UserProgressContext', () => ({
         setExamDates: vi.fn(),
         disableAutoShift: false,
         setDisableAutoShift: vi.fn(),
+        mockExamPresets: [],
+        setMockExamPresets: vi.fn(),
         progressCardSettings: {
             userName: '',
             customAvatarUrl: '',
@@ -148,6 +150,15 @@ vi.mock('./UserProgressContext', () => ({
         },
         setProgressCardSettings: vi.fn(),
     }),
+    defaultMockExamPresets: [
+        {
+            id: 'jm',
+            name: 'JEE Main',
+            shortName: 'JM',
+            paperCount: 1,
+            subjectMaxMarks: { physics: 100, chemistry: 100, maths: 100 }
+        }
+    ],
 }));
 vi.mock('./SubjectDataContext', () => ({
     useSubjectData: () => ({

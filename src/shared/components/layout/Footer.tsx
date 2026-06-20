@@ -1,126 +1,81 @@
 import { Link } from 'react-router-dom';
 import { DiscordIcon } from '../ui/DiscordInviteModal';
-import { Github, WifiOff, Code2, ShieldCheck } from 'lucide-react';
+import { Github, WifiOff, Code2, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export function Footer() {
     return (
         <footer className="footer" itemScope itemType="https://schema.org/WPFooter">
-            <div className="footer-content">
-                {/* Left Section: Brand, Trust Badges, & Version Meta */}
-                <div 
-                    className="footer-brand-section" 
-                    itemScope 
-                    itemType="https://schema.org/Organization"
+            <div className="footer-container">
+                {/* Slim Discord Banner */}
+                <a 
+                    href="https://discord.gg/6dKrbVQU8W" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="footer-discord-banner"
+                    title="Join Discord Server"
                 >
-                    <Link 
-                        to="/" 
-                        className="footer-logo" 
-                        title="OJEE Tracker - Study Companion for JEE Prep"
-                        itemProp="url"
-                    >
-                        <span className="logo-text" itemProp="name">OJEE Tracker</span>
-                    </Link>
-                    <p className="footer-description" itemProp="description">
-                        A high-performance, offline-first study companion optimized for competitive exam preparation.
-                    </p>
-                    
-                    <div className="footer-trust-indicators">
-                        <div className="trust-badge">
-                            <WifiOff size={14} className="trust-icon" />
-                            <span>Offline First</span>
-                        </div>
-                        <div className="trust-badge">
-                            <Code2 size={14} className="trust-icon" />
-                            <span>Open Source</span>
-                        </div>
-                        <div className="trust-badge">
-                            <ShieldCheck size={14} className="trust-icon" />
-                            <span>Privacy Friendly</span>
-                        </div>
+                    <div className="discord-banner-content">
+                        <DiscordIcon size={20} />
+                        <span className="discord-banner-title">Join Other Aspirants</span>
+                        <span className="discord-banner-text">Discuss strategies and connect with the community</span>
                     </div>
-                    
-                    <div className="footer-meta-badges">
-                        <span className="meta-badge roadmap-badge">
-                            <span className="badge-pulse"></span>
-                            Version 1.0.6
-                        </span>
-                        <a 
-                            href="https://github.com/Namankatiyar/ojeet-tracker" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="meta-badge github-badge"
-                            title="View source code on GitHub"
-                        >
-                            <Github size={14} />
-                            <span>GitHub Repo</span>
-                        </a>
-                    </div>
-                </div>
+                    <ArrowRight size={16} className="discord-banner-arrow" />
+                </a>
 
-                {/* Right Section: Premium Interactive Discord Card */}
-                <div className="footer-discord-card">
-                    <div className="discord-card-glow"></div>
-                    <div className="discord-card-content">
-                        <div className="discord-header">
-                            <DiscordIcon size={24} />
-                            <h4>Join Other Aspirants</h4>
-                        </div>
-                        <p className="discord-card-text">
-                            Discuss preparation strategies, share reference resources, and stay accountable with other aspirants.
+                <div className="footer-main-grid">
+                    {/* Brand & Trust */}
+                    <div className="footer-brand" itemScope itemType="https://schema.org/Organization">
+                        <Link to="/" className="footer-logo" title="OJEE Tracker" itemProp="url">
+                            <span className="logo-text" itemProp="name">OJEE Tracker</span>
+                        </Link>
+                        <p className="footer-description" itemProp="description">
+                            A high-performance, offline-first study companion optimized for competitive exam preparation.
                         </p>
-                        <a 
-                            href="https://discord.gg/6dKrbVQU8W" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="discord-card-btn"
-                            title="Join Discord Server"
-                        >
-                            <span>Join Discord Server</span>
-                            <span className="btn-arrow">→</span>
-                        </a>
+                        <div className="footer-trust-badges">
+                            <span className="trust-badge"><WifiOff size={14} /> Offline First</span>
+                            <span className="trust-badge"><Code2 size={14} /> Open Source</span>
+                            <span className="trust-badge"><ShieldCheck size={14} /> Privacy Friendly</span>
+                        </div>
+                    </div>
+
+                    {/* Nav Sections */}
+                    <div className="footer-nav-group">
+                        <h3 className="group-title">Product</h3>
+                        <nav aria-label="Footer Product Navigation" itemScope itemType="https://schema.org/SiteNavigationElement">
+                            <Link to="/jee-syllabus-tracker" className="bottom-link" itemProp="url">Dashboard</Link>
+                            <Link to="/jee-study-planner" className="bottom-link" itemProp="url">Planner</Link>
+                            <Link to="/jee-study-timer" className="bottom-link" itemProp="url">Study Clock</Link>
+                        </nav>
+                    </div>
+
+                    <div className="footer-nav-group">
+                        <h3 className="group-title">Resources</h3>
+                        <nav aria-label="Footer Resources Navigation" itemScope itemType="https://schema.org/SiteNavigationElement">
+                            <Link to="/changelog" className="bottom-link" itemProp="url">Changelog</Link>
+                            <a href="https://github.com/Namankatiyar/ojeet-tracker/issues" target="_blank" rel="noopener noreferrer" className="bottom-link" itemProp="url">Feedback</a>
+                            <a href="https://github.com/Namankatiyar/ojeet-tracker" target="_blank" rel="noopener noreferrer" className="bottom-link flex-align" itemProp="url">
+                                <Github size={14} className="inline-icon" /> GitHub Repo
+                            </a>
+                        </nav>
+                    </div>
+
+                    <div className="footer-nav-group">
+                        <h3 className="group-title">Legal</h3>
+                        <nav aria-label="Footer Legal Navigation" itemScope itemType="https://schema.org/SiteNavigationElement">
+                            <Link to="/privacy-policy" className="bottom-link" itemProp="url">Privacy Policy</Link>
+                            <Link to="/terms-of-service" className="bottom-link" itemProp="url">Terms of Service</Link>
+                        </nav>
                     </div>
                 </div>
-            </div>
 
-            {/* Bottom Row: Links Grid & Copyright Metas */}
-            <div className="footer-bottom-grid">
-                <nav 
-                    className="footer-bottom-links" 
-                    aria-label="Footer Navigation" 
-                    itemScope 
-                    itemType="https://schema.org/SiteNavigationElement"
-                >
-                    <div className="bottom-links-group">
-                        <h3 className="group-title">Product</h3>
-                        <ul>
-                            <li><Link to="/jee-syllabus-tracker" className="bottom-link" itemProp="url">Dashboard</Link></li>
-                            <li><Link to="/jee-study-planner" className="bottom-link" itemProp="url">Planner</Link></li>
-                            <li><Link to="/jee-study-timer" className="bottom-link" itemProp="url">Study Clock</Link></li>
-                        </ul>
+                <div className="footer-bottom">
+                    <div className="footer-meta">
+                        <span className="meta-version roadmap-badge">
+                            <span className="badge-pulse"></span> Version 1.1.0
+                        </span>
+                        <span className="copyright">&copy; {new Date().getFullYear()} OJEE Tracker. All rights reserved.</span>
                     </div>
-                    <div className="bottom-links-group">
-                        <h3 className="group-title">Resources</h3>
-                        <ul>
-                            <li><Link to="/changelog" className="bottom-link" itemProp="url">Changelog</Link></li>
-                            <li><a href="https://github.com/Namankatiyar/ojeet-tracker/issues" target="_blank" rel="noopener noreferrer" className="bottom-link" itemProp="url" title="Submit feedback or report an issue on GitHub">Feedback</a></li>
-                        </ul>
-                    </div>
-                    <div className="bottom-links-group">
-                        <h3 className="group-title">Legal</h3>
-                        <ul>
-                            <li><Link to="/privacy-policy" className="bottom-link" itemProp="url">Privacy Policy</Link></li>
-                            <li><Link to="/terms-of-service" className="bottom-link" itemProp="url">Terms of Service</Link></li>
-                        </ul>
-                    </div>
-                </nav>
-
-                <div className="footer-bottom-meta">
-                    <p className="copyright-text">
-                        &copy; {new Date().getFullYear()} OJEE Tracker. All rights reserved.
-                    </p>
-                    <p className="attribution-text">
-                        Made for and by a JEE Aspirant with <span className="heart-span">❤</span>
-                    </p>
+                    <p className="attribution">Made for and by a JEE Aspirant with <span className="heart-span">❤</span></p>
                 </div>
             </div>
         </footer>

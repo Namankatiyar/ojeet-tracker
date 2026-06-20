@@ -28,7 +28,7 @@ export const ReportsPage: React.FC = () => {
             
             <div className="reports-header">
                 <div className="reports-title-container">
-                    <BarChart2 className="reports-icon" size={28} />
+                    <BarChart2 className="reports-icon" size={20} />
                     <div>
                         <h2 className="reports-title">Smart Study Co-Pilot</h2>
                         <p className="reports-subtitle">AI-driven insights to optimize your preparation</p>
