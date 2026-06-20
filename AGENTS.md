@@ -46,15 +46,22 @@ The subtopics tracking and Chapter Workspace (V2) features have been fully imple
 
 ---
 
-## 3. Recent Implementation: Daily Study Analytics & Density UI
+## 3. Recent Implementation: Daily Study Analytics & Bento Dashboard
 
-The Daily Study Analytics dashboard section has been added to the Reports page to provide an interactive, single-day view of study history and progress velocity.
+The Daily Study Analytics section has been completely overhauled into a premium, screenshot-ready **12-column Bento Dashboard** for single-glance productivity tracking.
 
-### Key Implementations & UI/UX Learnings
-1. **Glassmorphism Density**: To fit complex data sets (like timeline heatmaps, study histories, and chapter tables) without visual bloat, we strictly adhere to dense layout principles:
-   - Use `--text-xs` (approx. 11-12px) for secondary metadata, table bodies, and legend items.
-   - Use tight paddings (`var(--space-3) var(--space-4)`) inside `.glass-panel` cards.
-   - Limit card headers to `--text-sm` (`h3`) with tightly packed icon sizes (`size={14}`).
-2. **Unified Date Picker**: Migrated away from raw native `<input type="date">` to a unified `.dh-calendar-trigger` button that seamlessly integrates with the custom `DatePickerModal` component for a more premium, cross-browser reliable date selection experience.
-3. **Smart Duration Formatting**: Instead of decimal hours (e.g., "0.8 hrs"), duration values dynamically switch formatting: returning `"48m"` when under an hour, and `"1h 30m"` for values over an hour (`formatSmartDuration`).
-4. **Intelligent Badges & Layouts**: Auxiliary UI elements (like the "Peak focus window" badge) are embedded directly into card headers (via `space-between` flex layouts) rather than occupying dedicated vertical space, maximizing the screen real estate for the actual data visualizations.
+### Layout & Architecture
+1. **Bento Grid Layout**: Structured using a 12-column grid (`.dh-bento-grid`) with explicit cell spans (Hero: `span 5`, Weekly Overview: `span 4`, Streak/Momentum Stack: `span 3`, Timeline & Subjects: `span 12`). It collapses gracefully to single-column layouts on mobile screens.
+2. **Integrated Subject & Chapter Breakdown**: Replaced the monolithic block and table view with independent `.dh-subject-card` items inside a responsive CSS Grid (`repeat(auto-fit, minmax(280px, 1fr))`).
+   - Each card features its own subject-colored horizontal progress tracker.
+   - Chapters are rendered as standalone `.dh-chapter-card` blocks containing name, duration, and status-colored NCERT/PYQ/MODULE completion badges.
+3. **7-Day Weekly Heatmap**: Renders a vertical stacked bar chart representing past days relative to the selected date. Each bar is segmented by subject (Physics, Chemistry, Maths) with a highlighted glow ring indicating the selected day.
+4. **Histogram Timeline**: A 24-hour timeline histogram utilizing vertical capsules with gradient fills and box-shadow glows. Empty hours are filled with minimal 4% height stubs to maintain structural rhythm.
+5. **Unified Navigation & Date Controls**: Removed the "Yesterday/Today" pill toggle to consolidate all date selections into `< >` buttons and the unified `.dh-calendar-trigger` (linking to `DatePickerModal`).
+
+### Visual Rules & UI Polish
+- **Dynamic Comparisons**: The delta comparison label dynamically renders relative previous day names (e.g., `vs Thu`). To avoid unfair comparisons, delta pills display "so far" for days currently in progress (e.g., today).
+- **Consistent Headers**: Bento cards use a unified header structure: a flex-row wrapping `<Icon size={14} /> <h3>Title</h3>`. Decorative icons use `var(--text-secondary)` to save `var(--accent)` solely for active states.
+- **Glassmorphism & Density**: We maintain strict high-density spacing (`var(--space-3) var(--space-4)` padding, `--text-xs` for metadata) with translucent background layers and standard design tokens (no utility classes, no custom variables).
+- **Negative & Warning States**: Drop standard indicators (like red flame icons for zero streak) in favor of the standardized `.dh-badge.danger` pill component to keep dashboard warnings cohesive.
+- **Overflow & Ambient Glow**: Ambient background glows use a bounded pseudo-element (`::before`) matching card borders to prevent visual bleeding. Cards containing absolute hover tooltips must omit `overflow: hidden`.

@@ -255,8 +255,8 @@
     "semantic_hash": "d4bdbfdceb53108eb6e4f49b2681b043"
   },
   "src/features/reports/components/DailyAnalytics.tsx": {
-    "mtime": 1781955005.6319845,
-    "ast_hash": "011573d5c2edea5baaf286aa5a44979d",
+    "mtime": 1781960514.2355878,
+    "ast_hash": "4b5aa2d845853c73a817b3f0dc285f6e",
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
@@ -714,11 +714,6 @@
     "ast_hash": "2902902b39b2e4fc5337fc359a9f2e55",
     "semantic_hash": "2902902b39b2e4fc5337fc359a9f2e55"
   },
-  "SupabaseQueryPerformanceStatements.md": {
-    "mtime": 1781010054.1574287,
-    "ast_hash": "d41621aa637c658000a68d5333339b68",
-    "semantic_hash": "d41621aa637c658000a68d5333339b68"
-  },
   "index.html": {
     "mtime": 1781342986.8509612,
     "ast_hash": "f9737c27b3798ddc4e480b17a29bdb16",
@@ -772,11 +767,6 @@
   ".agents/workflows/graphify.md": {
     "mtime": 1781953138.339296,
     "ast_hash": "0bc020d491fca99550c1ea3de0a5f862",
-    "semantic_hash": ""
-  },
-  "sample.html": {
-    "mtime": 1781952733.424504,
-    "ast_hash": "f7aeeef47e983e20b628176692e071ac",
     "semantic_hash": ""
   }
 }

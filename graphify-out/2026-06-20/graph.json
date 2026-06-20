@@ -2563,7 +2563,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_taskmodal",
-      "community": 41,
+      "community": 54,
       "norm_label": "taskmodal.tsx"
     },
     {
@@ -2583,7 +2583,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "components_taskmodal_taskmodal",
-      "community": 41,
+      "community": 54,
       "norm_label": "taskmodal()"
     },
     {
@@ -2593,7 +2593,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "components_taskmodal_tasktypetoggle",
-      "community": 41,
+      "community": 54,
       "norm_label": "tasktypetoggle()"
     },
     {
@@ -2603,7 +2603,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "components_taskmodal_customtaskfields",
-      "community": 41,
+      "community": 54,
       "norm_label": "customtaskfields()"
     },
     {
@@ -2613,7 +2613,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "components_taskmodal_chaptertaskfields",
-      "community": 41,
+      "community": 54,
       "norm_label": "chaptertaskfields()"
     },
     {
@@ -2753,7 +2753,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usetaskform",
-      "community": 41,
+      "community": 54,
       "norm_label": "usetaskform.ts"
     },
     {
@@ -2773,7 +2773,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "hooks_usetaskform_tasktype",
-      "community": 41,
+      "community": 54,
       "norm_label": "tasktype"
     },
     {
@@ -2783,7 +2783,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "hooks_usetaskform_usetaskform",
-      "community": 41,
+      "community": 54,
       "norm_label": "usetaskform()"
     },
     {
@@ -2830,7 +2830,7 @@
       "label": "getLocalDateString()",
       "file_type": "code",
       "source_file": "src/features/reports/components/DailyAnalytics.tsx",
-      "source_location": "L24",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "components_dailyanalytics_getlocaldatestring",
       "community": 14,
@@ -2840,7 +2840,7 @@
       "label": "getSessionDate()",
       "file_type": "code",
       "source_file": "src/features/reports/components/DailyAnalytics.tsx",
-      "source_location": "L30",
+      "source_location": "L29",
       "_origin": "ast",
       "id": "components_dailyanalytics_getsessiondate",
       "community": 14,
@@ -2850,7 +2850,7 @@
       "label": "formatSmartDuration()",
       "file_type": "code",
       "source_file": "src/features/reports/components/DailyAnalytics.tsx",
-      "source_location": "L34",
+      "source_location": "L33",
       "_origin": "ast",
       "id": "components_dailyanalytics_formatsmartduration",
       "community": 14,
@@ -2860,7 +2860,7 @@
       "label": "formatStatValue()",
       "file_type": "code",
       "source_file": "src/features/reports/components/DailyAnalytics.tsx",
-      "source_location": "L43",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "components_dailyanalytics_formatstatvalue",
       "community": 14,
@@ -2870,7 +2870,7 @@
       "label": "formatHourLabel()",
       "file_type": "code",
       "source_file": "src/features/reports/components/DailyAnalytics.tsx",
-      "source_location": "L52",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "components_dailyanalytics_formathourlabel",
       "community": 14,
@@ -2880,7 +2880,7 @@
       "label": "formatDateDisplay()",
       "file_type": "code",
       "source_file": "src/features/reports/components/DailyAnalytics.tsx",
-      "source_location": "L59",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "components_dailyanalytics_formatdatedisplay",
       "community": 14,
@@ -2890,7 +2890,7 @@
       "label": "DailyAnalytics()",
       "file_type": "code",
       "source_file": "src/features/reports/components/DailyAnalytics.tsx",
-      "source_location": "L68",
+      "source_location": "L67",
       "_origin": "ast",
       "id": "components_dailyanalytics_dailyanalytics",
       "community": 14,
@@ -9207,16 +9207,6 @@
       "norm_label": "\ud83d\udee0\ufe0f getting started"
     },
     {
-      "label": "SupabaseQueryPerformanceStatements.md",
-      "file_type": "document",
-      "source_file": "SupabaseQueryPerformanceStatements.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "supabasequeryperformancestatements",
-      "community": 71,
-      "norm_label": "supabasequeryperformancestatements.md"
-    },
-    {
       "label": "Component Specification Template",
       "file_type": "document",
       "source_file": ".agents/prompts/ui-component-design.md",
@@ -10722,9 +10712,9 @@
       "source_file": "src/core/AppRoutes.tsx",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "core_approutes",
-      "target": "core_approutes_redirectwithhash",
-      "confidence_score": 1.0
+      "target": "core_approutes_redirectwithhash"
     },
     {
       "relation": "contains",

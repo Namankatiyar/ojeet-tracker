@@ -1,11 +1,11 @@
 # Graph Report - ojee-tracker  (2026-06-20)
 
 ## Corpus Check
-- 146 files · ~94,366 words
+- 145 files · ~87,574 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 946 nodes · 1758 edges · 77 communities (64 shown, 13 thin omitted)
+- 945 nodes · 1758 edges · 76 communities (63 shown, 13 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 21 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
@@ -120,7 +120,7 @@
 - **Design System and Styling Architecture Framework** — ojee_tracker_design_skill_philosophy, design_system_tokens, design_system_glassmorphism, ojee_tracker_design_skill_layers [INFERRED 0.95]
 - **Project Documentation & Developer Context** — overview_technical, readme_project, agents_context [EXTRACTED 1.00]
 
-## Communities (77 total, 13 thin omitted)
+## Communities (76 total, 13 thin omitted)
 
 ### Community 0 - "Co-Pilot & Subject Reports"
 Cohesion: 0.07
@@ -227,8 +227,8 @@ Cohesion: 0.16
 Nodes (15): SessionHistory(), SessionHistoryProps, formatDuration(), SessionStatistics(), SessionStatisticsProps, CustomSelect(), CustomSelectProps, Option (+7 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.18
-Nodes (19): DashboardProps, PlannerProps, StudyClockProps, subjectConfig, SubjectHeaderProps, TaskModal(), TaskModalProps, SubjectDataContextType (+11 more)
+Cohesion: 0.27
+Nodes (16): DashboardProps, PlannerProps, StudyClockProps, subjectConfig, SubjectHeaderProps, TaskModalProps, SubjectDataContextType, UserProgressContextType (+8 more)
 
 ### Community 42 - "Community 42"
 Cohesion: 0.12
@@ -279,8 +279,8 @@ Cohesion: 0.17
 Nodes (13): ACCENT_COLORS, Header(), SyncedProgressCardSettings, ProgressCardSettings, generateColorsFromAccent(), UserAvatar(), UserAvatarProps, ColorPickerModal() (+5 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.39
-Nodes (4): Planner(), ViewMode, useDateNavigator(), usePlannerData()
+Cohesion: 0.19
+Nodes (7): Planner(), ViewMode, TaskModal(), useDateNavigator(), usePlannerData(), TaskType, useTaskForm()
 
 ### Community 55 - "Community 55"
 Cohesion: 0.25

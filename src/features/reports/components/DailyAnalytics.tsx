@@ -505,11 +505,11 @@ export const DailyAnalytics: React.FC = () => {
                                         })}
                                     </div>
                                     <div className="dh-timeline-labels">
-                                        <span>12a</span>
-                                        <span>6a</span>
-                                        <span>12p</span>
-                                        <span>6p</span>
-                                        <span>12a</span>
+                                        <span>12 AM</span>
+                                        <span>6 AM</span>
+                                        <span>12 PM</span>
+                                        <span>6 PM</span>
+                                        <span>12 AM</span>
                                     </div>
                                 </div>
                             </div>
@@ -634,16 +634,20 @@ export const DailyAnalytics: React.FC = () => {
                                                             <span className="dh-chapter-card-name">{ch.name}</span>
                                                             <span className="dh-chapter-card-time">{formatSmartDuration(ch.duration)}</span>
                                                         </div>
-                                                        <div className="dh-chapter-card-tags" title={Array.from(ch.materials).join(', ')}>
-                                                            {['NCERT', 'PYQs', 'Modules'].map(mat => (
-                                                                <span
-                                                                    key={mat}
-                                                                    className={`dh-material-tag ${ch.materials.has(mat) ? `completed ${subject}` : ''}`}
-                                                                >
-                                                                    {mat.toUpperCase()}
-                                                                </span>
-                                                            ))}
-                                                        </div>
+                                                        {ch.materials.size > 0 && (
+                                                            <div className="dh-chapter-card-tags" title={Array.from(ch.materials).join(', ')}>
+                                                                {['NCERT', 'PYQs', 'Modules']
+                                                                    .filter(mat => ch.materials.has(mat))
+                                                                    .map(mat => (
+                                                                    <span
+                                                                        key={mat}
+                                                                        className={`dh-material-tag completed ${subject}`}
+                                                                    >
+                                                                        {mat.toUpperCase()}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>

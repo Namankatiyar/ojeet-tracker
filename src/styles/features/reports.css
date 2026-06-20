@@ -708,7 +708,7 @@
 
 /* ── Hero: Study Time ── */
 .dh-bento-hero {
-  grid-column: span 5;
+  grid-column: span 6;
   padding: var(--space-4) var(--space-5);
   display: flex;
   flex-direction: row;
@@ -717,22 +717,10 @@
   gap: var(--space-6);
   border-radius: var(--radius-md);
   position: relative;
-  overflow: hidden;
   min-height: 160px;
 }
 
-/* Ambient accent glow */
-.dh-bento-hero::before {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent), transparent 82%) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
+
 
 .dh-hero-eyebrow {
   display: flex;
@@ -870,10 +858,6 @@
   background-color: color-mix(in srgb, var(--bg-tertiary), transparent 30%);
 }
 
-.dh-weekly-col.selected {
-  background-color: color-mix(in srgb, var(--accent), transparent 90%);
-}
-
 .dh-weekly-bar-track {
   width: 100%;
   max-width: 24px;
@@ -888,9 +872,7 @@
   border: 1px solid transparent;
 }
 
-.dh-weekly-col.selected .dh-weekly-bar-track {
-  border-color: color-mix(in srgb, var(--accent), transparent 50%);
-}
+
 
 .dh-weekly-bar-seg {
   width: 100%;
@@ -951,7 +933,7 @@
 
 /* ── Streak + Momentum Stats ── */
 .dh-bento-stats {
-  grid-column: span 3;
+  grid-column: span 2;
   display: flex;
   flex-direction: column;
 }
@@ -959,7 +941,7 @@
 .dh-bento-unified-stats {
   display: flex;
   flex-direction: column;
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-3);
   border-radius: var(--radius-md);
   height: 100%;
 }
@@ -1034,14 +1016,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  margin-top: auto;
+  flex: 1;
+  margin-top: var(--space-2);
 }
 
 .dh-histogram-container.compact .dh-histogram-grid {
   display: flex;
   align-items: flex-end;
   gap: 2px;
-  height: 48px;
+  flex: 1;
+  min-height: 80px;
   padding: 0;
   background: transparent;
   border: none;
@@ -1190,6 +1174,7 @@
 
 .dh-peak-badge:hover::after {
   opacity: 1;
+  z-index: 100;
   visibility: visible;
   transform: translateY(0);
   transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0s;
