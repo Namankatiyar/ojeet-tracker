@@ -73,7 +73,8 @@ export const subjectColors = {
 const subjectColorVars = {
     physics: '--color-physics',
     chemistry: '--color-chemistry',
-    maths: '--color-maths'
+    maths: '--color-maths',
+    custom: '--color-custom'
 };
 
 export const getSubjectColors = () => {
@@ -91,7 +92,8 @@ export const getSubjectColors = () => {
         ...subjectColors,
         physics: read(subjectColorVars.physics, subjectColors.physics),
         chemistry: read(subjectColorVars.chemistry, subjectColors.chemistry),
-        maths: read(subjectColorVars.maths, subjectColors.maths)
+        maths: read(subjectColorVars.maths, subjectColors.maths),
+        custom: read(subjectColorVars.custom, subjectColors.custom)
     };
 };
 

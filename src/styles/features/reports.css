@@ -706,6 +706,23 @@
   gap: var(--space-4);
 }
 
+/* Ensure bento panels establish stacking context to avoid tooltips rendering underneath adjacent cards */
+.dh-bento-hero,
+.dh-bento-weekly,
+.dh-bento-stats,
+.dh-bento-subjects,
+.dh-bento-insights {
+  position: relative;
+}
+
+.dh-bento-hero:hover,
+.dh-bento-weekly:hover,
+.dh-bento-stats:hover,
+.dh-bento-subjects:hover,
+.dh-bento-insights:hover {
+  z-index: 10;
+}
+
 /* ── Hero: Study Time ── */
 .dh-bento-hero {
   grid-column: span 6;
@@ -716,7 +733,6 @@
   justify-content: space-between;
   gap: var(--space-6);
   border-radius: var(--radius-md);
-  position: relative;
   min-height: 160px;
 }
 
@@ -887,6 +903,7 @@
 .dh-weekly-bar-seg.physics { background-color: var(--physics); }
 .dh-weekly-bar-seg.chemistry { background-color: var(--chemistry); }
 .dh-weekly-bar-seg.maths { background-color: var(--maths); }
+.dh-weekly-bar-seg.custom { background-color: var(--custom); }
 
 .dh-weekly-day-label {
   font-size: 0.65rem;
@@ -1077,6 +1094,11 @@
 .dh-histogram-bar.maths {
   background: linear-gradient(to top, color-mix(in srgb, var(--maths), transparent 20%), var(--maths));
   box-shadow: 0 0 10px color-mix(in srgb, var(--maths), transparent 50%);
+}
+
+.dh-histogram-bar.custom {
+  background: linear-gradient(to top, color-mix(in srgb, var(--custom), transparent 20%), var(--custom));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--custom), transparent 50%);
 }
 
 .dh-histogram-bar.mixed {

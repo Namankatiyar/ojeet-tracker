@@ -55,6 +55,7 @@
     --color-physics: #6366f1;
     --color-chemistry: #10b981;
     --color-maths: #f59e0b;
+    --color-custom: #ff57c7;
 
     /* Legacy aliases (for backward compatibility) */
     --bg-base: var(--color-bg-base);
@@ -81,6 +82,7 @@
     --physics: var(--color-physics);
     --chemistry: var(--color-chemistry);
     --maths: var(--color-maths);
+    --custom: var(--color-custom);
 
     /* ======================== */
     /* === Typography Sizes === */

@@ -2120,7 +2120,7 @@
       "label": "getSubjectColors()",
       "file_type": "code",
       "source_file": "src/features/dashboard/utils/analyticsUtils.ts",
-      "source_location": "L80",
+      "source_location": "L79",
       "_origin": "ast",
       "id": "utils_analyticsutils_getsubjectcolors",
       "community": 6,
@@ -2130,7 +2130,7 @@
       "label": "getChartOptions()",
       "file_type": "code",
       "source_file": "src/features/dashboard/utils/analyticsUtils.ts",
-      "source_location": "L103",
+      "source_location": "L101",
       "_origin": "ast",
       "id": "utils_analyticsutils_getchartoptions",
       "community": 6,
@@ -27592,9 +27592,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_design_system_md",
-      "target": "design_system_1_design_philosophy_grounded_in_the_subject"
+      "target": "design_system_1_design_philosophy_grounded_in_the_subject",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27632,9 +27632,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L167",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_design_system_md",
-      "target": "design_system_5_writing_microcopy_rules"
+      "target": "design_system_5_writing_microcopy_rules",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27642,9 +27642,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L187",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_design_system_md",
-      "target": "design_system_6_architectural_violations_prohibited_moving_forward_anti_patterns"
+      "target": "design_system_6_architectural_violations_prohibited_moving_forward_anti_patterns",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27692,9 +27692,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L95",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_design_tokens",
-      "target": "design_system_2_5_shadows_glassmorphism"
+      "target": "design_system_2_5_shadows_glassmorphism",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27712,9 +27712,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L24",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_1_typography",
-      "target": "design_system_fluid_font_sizes_clamped"
+      "target": "design_system_fluid_font_sizes_clamped",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27722,9 +27722,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_1_typography",
-      "target": "design_system_font_weight_conventions"
+      "target": "design_system_font_weight_conventions",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27732,9 +27732,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L52",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_3_semantic_color_system",
-      "target": "design_system_background_topology"
+      "target": "design_system_background_topology",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27742,9 +27742,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L63",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_3_semantic_color_system",
-      "target": "design_system_borders"
+      "target": "design_system_borders",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27752,9 +27752,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L67",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_3_semantic_color_system",
-      "target": "design_system_dynamic_accent_system"
+      "target": "design_system_dynamic_accent_system",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27762,9 +27762,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L76",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_3_semantic_color_system",
-      "target": "design_system_subject_priority_semantics"
+      "target": "design_system_subject_priority_semantics",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27772,9 +27772,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L58",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_2_3_semantic_color_system",
-      "target": "design_system_text_hierarchy"
+      "target": "design_system_text_hierarchy",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27782,9 +27782,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L112",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_3_component_standards",
-      "target": "design_system_3_1_buttons"
+      "target": "design_system_3_1_buttons",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27792,9 +27792,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L126",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_3_component_standards",
-      "target": "design_system_3_2_inputs_custom_selects"
+      "target": "design_system_3_2_inputs_custom_selects",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27802,9 +27802,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L136",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_3_component_standards",
-      "target": "design_system_3_3_checkboxes"
+      "target": "design_system_3_3_checkboxes",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27812,9 +27812,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L144",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_3_component_standards",
-      "target": "design_system_3_4_cards_surfaces"
+      "target": "design_system_3_4_cards_surfaces",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27822,9 +27822,9 @@
       "source_file": "DESIGN_SYSTEM.md",
       "source_location": "L148",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "design_system_3_component_standards",
-      "target": "design_system_3_5_chapter_workspace_drawer_chapter_drawer"
+      "target": "design_system_3_5_chapter_workspace_drawer_chapter_drawer",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",

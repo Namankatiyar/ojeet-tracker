@@ -150,13 +150,13 @@
     "semantic_hash": "cae8724cb5dd9c154cdfbe9f1d7b04a0"
   },
   "src/features/dashboard/utils/analyticsUtils.ts": {
-    "mtime": 1782012688.33734,
-    "ast_hash": "cf062d8f7a5744a10745225b39713946",
-    "semantic_hash": ""
+    "mtime": 1781266617.2772884,
+    "ast_hash": "a65e35ae4ee2dd4e640231d97031711f",
+    "semantic_hash": "a65e35ae4ee2dd4e640231d97031711f"
   },
   "src/features/legal/changelogEntries.ts": {
-    "mtime": 1782012780.0833979,
-    "ast_hash": "05dfb39c7745b35471eeb08a3ac65cd6",
+    "mtime": 1781976066.331258,
+    "ast_hash": "e9f7bf1428e5c348f8ae51da78d5ccbc",
     "semantic_hash": ""
   },
   "src/features/legal/components/ChangelogPage.tsx": {

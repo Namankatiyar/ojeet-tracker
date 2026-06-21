@@ -8,6 +8,18 @@ export interface ChangelogEntry {
 // Update this list before each rollout. Keep newest entry first.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        version: '1.1.1',
+        date: 'June 21, 2026',
+        title: 'Precision Study Timeline & Custom Subject Analytics',
+        changes: [
+            '-Distributed study session durations precisely across all overlapping hours instead of stacking everything in the starting hour.',
+            '-Capped hourly timeline bars to 60 minutes and polished hover tooltips to show rounded durations with support for <1m labels.',
+            '-Fixed stacking context z-index issue where tooltips rendered behind adjacent bento cards on hover.',
+            '-Added full support for custom subjects, including custom subject color (#ff57c7) and aggregations in both the daily timeline histogram and the weekly overview graphs.',
+            '-Please report any found bug in my Reddit DMs u/Big_Distribution_730 or in my discord server https://discord.gg/6dKrbVQU8W.',
+        ],
+    },
+    {
         version: '1.1.0',
         date: 'June 20, 2026',
         title: 'New Reports page and Study Copilot',

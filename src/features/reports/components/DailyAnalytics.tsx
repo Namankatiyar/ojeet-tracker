@@ -179,25 +179,58 @@ export const DailyAnalytics: React.FC = () => {
     /* ── Productivity Timeline (hourly buckets) ── */
     const hourlyBuckets = useMemo(() => {
         const slots: Array<{
-            subjects: Set<Subject>;
+            subjects: Set<Subject | 'custom'>;
             totalMin: number;
             titles: string[];
         }> = Array.from({ length: 24 }, () => ({
-            subjects: new Set<Subject>(),
+            subjects: new Set<Subject | 'custom'>(),
             totalMin: 0,
             titles: []
         }));
 
+        const [year, month, day] = selectedDate.split('-').map(Number);
+        const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0);
+        const dayEnd = new Date(year, month - 1, day, 23, 59, 59, 999);
+        const dayStartMs = dayStart.getTime();
+        const dayEndMs = dayEnd.getTime();
+
+        const hourStartMsArray = Array.from({ length: 24 }, (_, hr) => {
+            return new Date(year, month - 1, day, hr, 0, 0, 0).getTime();
+        });
+
         daySessions.forEach(s => {
-            const hour = new Date(s.startTime).getHours();
-            if (hour >= 0 && hour < 24) {
-                if (s.subject) slots[hour].subjects.add(s.subject);
-                slots[hour].totalMin += Math.round(s.duration / 60);
-                slots[hour].titles.push(s.title);
+            const sStart = new Date(s.startTime);
+            const sEnd = s.endTime ? new Date(s.endTime) : new Date(sStart.getTime() + s.duration * 1000);
+            
+            const overlapStartMs = Math.max(sStart.getTime(), dayStartMs);
+            const overlapEndMs = Math.min(sEnd.getTime(), dayEndMs);
+
+            if (overlapStartMs < overlapEndMs) {
+                for (let hr = 0; hr < 24; hr++) {
+                    const hourStartMs = hourStartMsArray[hr];
+                    const hourEndMs = hourStartMs + 60 * 60 * 1000;
+
+                    const hrOverlapStartMs = Math.max(overlapStartMs, hourStartMs);
+                    const hrOverlapEndMs = Math.min(overlapEndMs, hourEndMs);
+
+                    if (hrOverlapStartMs < hrOverlapEndMs) {
+                        const overlapSec = (hrOverlapEndMs - hrOverlapStartMs) / 1000;
+                        const overlapMin = overlapSec / 60;
+
+                        if (overlapMin > 0) {
+                            const sub = s.subject && ['physics', 'chemistry', 'maths'].includes(s.subject) ? s.subject : 'custom';
+                            slots[hr].subjects.add(sub);
+                            slots[hr].totalMin = Math.min(60, slots[hr].totalMin + overlapMin);
+                            if (!slots[hr].titles.includes(s.title)) {
+                                slots[hr].titles.push(s.title);
+                            }
+                        }
+                    }
+                }
             }
         });
         return slots;
-    }, [daySessions]);
+    }, [daySessions, selectedDate]);
 
     const peakHour = useMemo(() => {
         let peak = -1;
@@ -338,7 +371,7 @@ export const DailyAnalytics: React.FC = () => {
         const days: Array<{
             date: string;
             label: string;
-            totals: Record<Subject, number>;
+            totals: Record<Subject | 'custom', number>;
             total: number;
             isSelected: boolean;
         }> = [];
@@ -348,13 +381,12 @@ export const DailyAnalytics: React.FC = () => {
             const dateStr = d.toLocaleDateString('en-CA');
             const dayLabel = d.toLocaleDateString('en-IN', { weekday: 'short' });
             const daySess = studySessions.filter(s => getSessionDate(s) === dateStr);
-            const totals: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0 };
+            const totals: Record<Subject | 'custom', number> = { physics: 0, chemistry: 0, maths: 0, custom: 0 };
             let total = 0;
             daySess.forEach(s => {
-                if (s.subject && totals[s.subject] !== undefined) {
-                    totals[s.subject] += s.duration;
-                    total += s.duration;
-                }
+                const sub = s.subject && ['physics', 'chemistry', 'maths'].includes(s.subject) ? s.subject : 'custom';
+                totals[sub] += s.duration;
+                total += s.duration;
             });
             days.push({ date: dateStr, label: dayLabel, totals, total, isSelected: dateStr === selectedDate });
         }
@@ -485,8 +517,9 @@ export const DailyAnalytics: React.FC = () => {
                                             const colorClass = slot.totalMin > 0
                                                 ? (subArr.length === 1 ? subArr[0] : 'mixed')
                                                 : 'empty';
+                                            const displayMin = Math.round(slot.totalMin);
                                             const tooltip = slot.totalMin > 0
-                                                ? `${formatHourLabel(hr)} · ${slot.titles.join(', ')} (${slot.totalMin}m)`
+                                                ? `${formatHourLabel(hr)} · ${slot.titles.join(', ')} (${displayMin || '<1'}m)`
                                                 : `${formatHourLabel(hr)} — no study`;
                                             return (
                                                 <div
@@ -529,7 +562,7 @@ export const DailyAnalytics: React.FC = () => {
                                         data-tooltip={`${formatDateDisplay(day.date)}: ${formatSmartDuration(day.total)}`}
                                     >
                                         <div className="dh-weekly-bar-track">
-                                            {(['physics', 'chemistry', 'maths'] as Subject[]).map(sub => {
+                                            {(['physics', 'chemistry', 'maths', 'custom'] as Array<Subject | 'custom'>).map(sub => {
                                                 const heightPct = weeklyMax > 0
                                                     ? (day.totals[sub] / weeklyMax) * 100
                                                     : 0;
