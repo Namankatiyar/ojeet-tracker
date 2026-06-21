@@ -645,7 +645,7 @@ export const DailyAnalytics: React.FC = () => {
                                         <span className="dh-stat-value">{streak}</span>
                                         <span className="dh-stat-unit">{streak === 1 ? 'day' : 'days'}</span>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <div className="dh-stat-badge-row">
                                         {streak > 0
                                             ? <span className="dh-badge streak">🔥 Active</span>
                                             : <span className="dh-badge stable">No streak</span>

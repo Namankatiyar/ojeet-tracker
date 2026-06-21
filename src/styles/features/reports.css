@@ -679,7 +679,7 @@
 }
 
 .dh-card-header-icon {
-  color: var(--text-secondary);
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -752,8 +752,6 @@
 .dh-hero-unified-header {
   position: relative;
   z-index: 1;
-  border-bottom: none;
-  padding-bottom: 0;
 }
 
 .dh-metrics-grid {
@@ -1002,15 +1000,15 @@
   flex-direction: column;
   padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-md);
-  height: fit-content;
+  height: 100%;
 }
 
 .dh-stat-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  flex: 0 0 auto;
-  justify-content: flex-start;
+  flex: 1;
+  justify-content: center;
 }
 
 .dh-stat-divider {
@@ -1018,6 +1016,11 @@
   height: 1px;
   background-color: color-mix(in srgb, var(--border), transparent 50%);
   margin: var(--space-2) 0;
+}
+
+.dh-stat-badge-row {
+  display: flex;
+  align-items: center;
 }
 
 .dh-stat-label {
