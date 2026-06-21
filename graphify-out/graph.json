@@ -1300,7 +1300,7 @@
       "label": "UserProgressContext",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L60",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogresscontext",
       "community": 54,
@@ -1310,7 +1310,7 @@
       "label": "initialProgress",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L62",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "context_userprogresscontext_initialprogress",
       "community": 54,
@@ -1320,7 +1320,7 @@
       "label": "defaultMockExamPresets",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L68",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "context_userprogresscontext_defaultmockexampresets",
       "community": 53,
@@ -1330,7 +1330,7 @@
       "label": "UserProgressProvider()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L92",
+      "source_location": "L94",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogressprovider",
       "community": 54,
@@ -1340,7 +1340,7 @@
       "label": "useUserProgress()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L630",
+      "source_location": "L645",
       "_origin": "ast",
       "id": "context_userprogresscontext_useuserprogress",
       "community": 72,
@@ -28459,5 +28459,5 @@
       "source_file": "OVERVIEW.md"
     }
   ],
-  "built_at_commit": "2a7376e495ef14fef6ef04d135483814987cf950"
+  "built_at_commit": "94ee83719ef487da3346ea35e4af4f94870a02dd"
 }

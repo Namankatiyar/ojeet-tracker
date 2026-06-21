@@ -1,7 +1,7 @@
 {
   "package.json": {
-    "mtime": 1781976087.8859444,
-    "ast_hash": "e695eac2e9782c981430b9d6bf707fbc",
+    "mtime": 1782015769.7896934,
+    "ast_hash": "3bac8ba0233404db37fc6aee6384f466",
     "semantic_hash": ""
   },
   "public/data/chemistry.json": {
@@ -55,8 +55,8 @@
     "semantic_hash": "89a23ab1cc3daad88aff985b952940ba"
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1781974679.4312148,
-    "ast_hash": "4e59e702cda11cf595f3c4b580a41c85",
+    "mtime": 1782013245.5126696,
+    "ast_hash": "25982a0a316ec6f3309c4e602f634ace",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "src/features/legal/changelogEntries.ts": {
-    "mtime": 1782012780.0833979,
-    "ast_hash": "05dfb39c7745b35471eeb08a3ac65cd6",
+    "mtime": 1782015766.640591,
+    "ast_hash": "af418fecc60f758844f026a532591f73",
     "semantic_hash": ""
   },
   "src/features/legal/components/ChangelogPage.tsx": {
@@ -255,8 +255,8 @@
     "semantic_hash": "d4bdbfdceb53108eb6e4f49b2681b043"
   },
   "src/features/reports/components/DailyAnalytics.tsx": {
-    "mtime": 1782012538.8973901,
-    "ast_hash": "c753c1f6711f302c894004c411c00b89",
+    "mtime": 1782015331.2534351,
+    "ast_hash": "f69d5ed95373c079454234ecde188f06",
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
