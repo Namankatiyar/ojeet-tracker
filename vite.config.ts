@@ -37,7 +37,7 @@ export default defineConfig({
         name: 'OJEE-Tracker',
         short_name: 'OJEE-Tracker',
         description: 'Track your IIT JEE syllabus progress, daily planner, and study clock offline.',
-        theme_color: '#6366f1',
+        theme_color: '#06b6d4',
         background_color: '#f8fafc',
         display: 'standalone',
         icons: [

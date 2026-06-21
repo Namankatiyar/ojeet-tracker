@@ -1270,7 +1270,7 @@
       "label": "useTheme()",
       "file_type": "code",
       "source_file": "src/core/context/ThemeContext.tsx",
-      "source_location": "L146",
+      "source_location": "L149",
       "_origin": "ast",
       "id": "context_themecontext_usetheme",
       "community": 5,
@@ -8383,7 +8383,7 @@
       "source_location": "L375",
       "_origin": "ast",
       "id": "changelog_0_0_15_https_github_com_namankatiyar_pcm_tracker_compare_v0_0_14_v0_0_15_2026_02_03",
-      "community": 37,
+      "community": 73,
       "norm_label": "[0.0.15](https://github.com/namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)"
     },
     {
@@ -8393,7 +8393,7 @@
       "source_location": "L377",
       "_origin": "ast",
       "id": "changelog_features_377",
-      "community": 37,
+      "community": 73,
       "norm_label": "features"
     },
     {
@@ -8403,7 +8403,7 @@
       "source_location": "L389",
       "_origin": "ast",
       "id": "changelog_bug_fixes_389",
-      "community": 37,
+      "community": 73,
       "norm_label": "bug fixes"
     },
     {
@@ -28522,5 +28522,5 @@
       "source_file": "OVERVIEW.md"
     }
   ],
-  "built_at_commit": "d7f78e89b56ace7f317a47178449890919ee0cf6"
+  "built_at_commit": "0cdbc2e0978695d06988cb70a3d66d5253019c14"
 }

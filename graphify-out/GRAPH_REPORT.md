@@ -1,16 +1,16 @@
 # Graph Report - ojee-tracker  (2026-06-21)
 
 ## Corpus Check
-- 147 files · ~90,857 words
+- 147 files · ~90,853 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 959 nodes · 1779 edges · 73 communities (60 shown, 13 thin omitted)
+- 959 nodes · 1779 edges · 74 communities (61 shown, 13 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 21 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d7f78e89`
+- Built from commit: `0cdbc2e0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -84,6 +84,7 @@
 - [[_COMMUNITY_Community 70|Community 70]]
 - [[_COMMUNITY_Community 71|Community 71]]
 - [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 73|Community 73]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `StudySession` - 41 edges
@@ -117,7 +118,7 @@
 - **Design System and Styling Architecture Framework** — ojee_tracker_design_skill_philosophy, design_system_tokens, design_system_glassmorphism, ojee_tracker_design_skill_layers [INFERRED 0.95]
 - **Project Documentation & Developer Context** — overview_technical, readme_project, agents_context [EXTRACTED 1.00]
 
-## Communities (73 total, 13 thin omitted)
+## Communities (74 total, 13 thin omitted)
 
 ### Community 0 - "Co-Pilot & Subject Reports"
 Cohesion: 0.20
@@ -209,7 +210,7 @@ Nodes (32): 10. Anti-Patterns (Banned Style Operations), 11. Quality Checklist, 
 
 ### Community 37 - "Community 37"
 Cohesion: 0.07
-Nodes (29): [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22), [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22) (+21 more)
+Nodes (26): [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22), [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22), [0.0.22](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.22) (2026-02-26) (+18 more)
 
 ### Community 38 - "Community 38"
 Cohesion: 0.07
@@ -343,6 +344,10 @@ Nodes (8): defaultMockExamPresets, buildSyncPayloadFromLocalStorage(), defaultPr
 Cohesion: 0.33
 Nodes (5): SubjectDataContext, ChemistrySyllabus, JSONUnit, parseSubjectJSON(), SyllabusResponse
 
+### Community 73 - "Community 73"
+Cohesion: 0.67
+Nodes (3): [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03), Bug Fixes, Features
+
 ## Knowledge Gaps
 - **417 isolated node(s):** `name`, `version`, `type`, `bin`, `assets` (+412 more)
   These have ≤1 connection - possible missing edges or undocumented components.
@@ -355,7 +360,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.024) - this node is a cross-community bridge._
 - **Why does `Subject` connect `Community 39` to `Community 64`, `Calendar Planner & Grid`, `Session History & Study Clock`, `Co-Pilot & Subject Reports`, `Chapter Details Drawer`, `Task Modals & Headers`, `Mock Exams & Presets`, `Community 71`, `Community 72`, `Community 41`, `Study Time Analytics`, `Daily Study Analytics`, `Notification Center`?**
   _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **Why does `Changelog` connect `Community 37` to `Community 65`, `Community 66`, `Community 68`, `Community 40`, `Community 46`, `Community 48`, `Community 49`, `Community 50`, `Community 51`, `Community 52`, `Community 56`, `Community 57`, `Community 60`, `Community 61`, `Community 62`, `Community 63`?**
+- **Why does `Changelog` connect `Community 37` to `Community 65`, `Community 66`, `Community 68`, `Community 40`, `Community 73`, `Community 46`, `Community 48`, `Community 49`, `Community 50`, `Community 51`, `Community 52`, `Community 56`, `Community 57`, `Community 60`, `Community 61`, `Community 62`, `Community 63`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `type` to the rest of the system?**
   _418 weakly-connected nodes found - possible documentation gaps or missing edges._

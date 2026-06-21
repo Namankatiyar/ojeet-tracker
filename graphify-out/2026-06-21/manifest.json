@@ -55,8 +55,8 @@
     "semantic_hash": "89a23ab1cc3daad88aff985b952940ba"
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1782047406.2551,
-    "ast_hash": "d3097094d4f91f7032de2dd19b3e51f2",
+    "mtime": 1782048035.7729244,
+    "ast_hash": "2afecc9ac62cfb9cfc4e4a7912f6c648",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -255,8 +255,8 @@
     "semantic_hash": "d4bdbfdceb53108eb6e4f49b2681b043"
   },
   "src/features/reports/components/DailyAnalytics.tsx": {
-    "mtime": 1782047467.5285542,
-    "ast_hash": "19341458da4f87b3b09835dfdfe1b495",
+    "mtime": 1782048329.635653,
+    "ast_hash": "9b11cf5213ea39582d1288d61d2679b8",
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
@@ -775,8 +775,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.test.tsx": {
-    "mtime": 1782047793.521256,
-    "ast_hash": "4e934942831882b015c91c4def39f8ea",
+    "mtime": 1782048043.8474422,
+    "ast_hash": "4d7b364515474e6352dbf6364d6a22b8",
     "semantic_hash": ""
   }
 }

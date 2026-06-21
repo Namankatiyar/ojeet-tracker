@@ -29,9 +29,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             : 'light';
 
     const [theme, setTheme] = useLocalStorage<Theme>('jee-tracker-theme', defaultTheme);
-    const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#f59e0b');
-    const [backgroundUrl, setBackgroundUrl] = useLocalStorage<string>('jee-tracker-background-url', '');
-    const [dimLevel, setDimLevel] = useLocalStorage<number>('jee-tracker-dim-level', 0);
+    const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#06b6d4');
+    const [backgroundUrl, setBackgroundUrl] = useLocalStorage<string>(
+        'jee-tracker-background-url',
+        'https://images.unsplash.com/photo-1475070929565-c985b496cb9f?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+    );
+    const [dimLevel, setDimLevel] = useLocalStorage<number>('jee-tracker-dim-level', 30);
     const [glassIntensity, setGlassIntensity] = useLocalStorage<number>('jee-tracker-glass-intensity', 50);
     const [glassRefraction, setGlassRefraction] = useLocalStorage<number>('jee-tracker-glass-refraction', 50);
 

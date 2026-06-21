@@ -1,7 +1,7 @@
 # Graph Report - ojee-tracker  (2026-06-21)
 
 ## Corpus Check
-- 147 files · ~90,505 words
+- 147 files · ~90,857 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
