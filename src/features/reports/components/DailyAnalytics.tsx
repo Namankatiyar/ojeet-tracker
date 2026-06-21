@@ -67,7 +67,8 @@ const formatDateDisplay = (dateStr: string): string => {
 export const DailyAnalytics: React.FC = () => {
     const {
         studySessions,
-        plannerTasks
+        plannerTasks,
+        dailyQuestionLogs
     } = useUserProgress();
 
     const todayStr = getLocalDateString(0);
@@ -111,6 +112,10 @@ export const DailyAnalytics: React.FC = () => {
     );
 
     const diffSec = totalDurationSec - prevTotalSec;
+
+    const todayQuestions = dailyQuestionLogs[selectedDate] || 0;
+    const prevQuestions = dailyQuestionLogs[prevDateStr] || 0;
+    const diffQuestions = todayQuestions - prevQuestions;
 
     /* Streak count: consecutive active days ending on or before selected date */
     const streak = useMemo(() => {
@@ -362,6 +367,21 @@ export const DailyAnalytics: React.FC = () => {
         return <span className="dh-badge stable">Same as prev</span>;
     };
 
+    const renderQuestionDelta = () => {
+        if (prevQuestions === 0 && todayQuestions === 0) return null;
+        if (isToday) {
+            const label = diffQuestions > 0 ? `+${diffQuestions}` : `${diffQuestions}`;
+            return <span className="dh-badge stable" title="Day in progress">{label} (so far)</span>;
+        }
+        if (diffQuestions > 0) {
+            return <span className="dh-badge success">+{diffQuestions}</span>;
+        }
+        if (diffQuestions < 0) {
+            return <span className="dh-badge danger">{diffQuestions}</span>;
+        }
+        return <span className="dh-badge stable">Same as prev</span>;
+    };
+
     const trendLabel =
         momentumTrend === 'improving' ? 'Improving' :
             momentumTrend === 'declining' ? 'Declining' : 'Stable';
@@ -473,17 +493,36 @@ export const DailyAnalytics: React.FC = () => {
                         {/* ── Hero: Study Time & Timeline ── */}
                         <div className="dh-bento-hero glass-panel">
                             <div className="dh-hero-left">
-                                <div className="dh-card-header" style={{ position: 'relative', zIndex: 1, marginBottom: 'var(--space-1)' }}>
+                                <div className="dh-card-header dh-hero-unified-header">
                                     <Clock size={14} className="dh-card-header-icon" />
-                                    <h3>Study time</h3>
+                                    <h3>Daily Output</h3>
                                 </div>
-                                <div className="dh-hero-value">
-                                    {formatStatValue(totalDurationSec)}
+                                
+                                <div className="dh-metrics-grid">
+                                    {/* Metric 1: Study Time — Primary, large */}
+                                    <div className="dh-metric-block">
+                                        <div className="dh-metric-value">
+                                            {formatStatValue(totalDurationSec)}
+                                        </div>
+                                        <div className="dh-metric-meta">
+                                            {renderDelta()}
+                                            { (prevTotalSec !== 0 || totalDurationSec !== 0) && <span className="dh-metric-vs">vs {prevDayName}</span> }
+                                        </div>
+                                    </div>
+
+                                    {/* Metric 2: Questions — Secondary, compact */}
+                                    <div className="dh-metric-block dh-metric-block--secondary">
+                                        <div className="dh-metric-secondary-row">
+                                            <span className="dh-metric-secondary-value">{todayQuestions}</span>
+                                            <span className="dh-metric-secondary-unit">Qs solved</span>
+                                        </div>
+                                        <div className="dh-metric-meta">
+                                            {renderQuestionDelta()}
+                                            { (prevQuestions !== 0 || todayQuestions !== 0) && <span className="dh-metric-vs">vs {prevDayName}</span> }
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="dh-hero-meta">
-                                    {renderDelta()}
-                                    <span className="dh-hero-vs">vs {prevDayName}</span>
-                                </div>
+
                                 <div className="dh-hero-velocity">
                                     <span>{daySessions.length} {daySessions.length === 1 ? 'session' : 'sessions'}</span>
                                     <span className="dh-hero-dot">·</span>
@@ -493,7 +532,7 @@ export const DailyAnalytics: React.FC = () => {
                             
                             <div className="dh-hero-right">
                                 <div className="dh-hero-timeline-header">
-                                    <div className="dh-card-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                                    <div className="dh-card-header dh-card-header-flush">
                                         <Activity size={14} className="dh-card-header-icon" />
                                         <h3>Timeline</h3>
                                     </div>
@@ -537,12 +576,24 @@ export const DailyAnalytics: React.FC = () => {
                                             );
                                         })}
                                     </div>
-                                    <div className="dh-timeline-labels">
-                                        <span>12 AM</span>
-                                        <span>6 AM</span>
-                                        <span>12 PM</span>
-                                        <span>6 PM</span>
-                                        <span>12 AM</span>
+                                    <div className="dh-timeline-axis">
+                                        {/* Pinned at hour column centers: col_center = (hr + 0.5) / 24 * 100% */}
+                                        {([
+                                            { label: '12 AM', pct: ((0  + 0.5) / 24) * 100 },
+                                            { label: '6 AM',  pct: ((6  + 0.5) / 24) * 100 },
+                                            { label: '12 PM', pct: ((12 + 0.5) / 24) * 100 },
+                                            { label: '6 PM',  pct: ((18 + 0.5) / 24) * 100 },
+                                            { label: '12 AM', pct: ((23 + 0.5) / 24) * 100 },
+                                        ] as { label: string; pct: number }[]).map(({ label, pct }, i) => (
+                                            <div
+                                                key={i}
+                                                className="dh-timeline-axis-pin"
+                                                style={{ left: `${pct}%` }}
+                                            >
+                                                <div className="dh-timeline-axis-tick" />
+                                                <span className="dh-timeline-axis-label">{label}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -586,7 +637,7 @@ export const DailyAnalytics: React.FC = () => {
                             <div className="dh-bento-unified-stats glass-panel">
                                 {/* Streak Section */}
                                 <div className="dh-stat-section">
-                                    <div className="dh-card-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                                    <div className="dh-card-header dh-card-header-flush">
                                         <Flame size={14} className="dh-card-header-icon" />
                                         <h3>Current streak</h3>
                                     </div>
@@ -606,7 +657,7 @@ export const DailyAnalytics: React.FC = () => {
 
                                 {/* Momentum Section */}
                                 <div className="dh-stat-section">
-                                    <div className="dh-card-header" style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                                    <div className="dh-card-header dh-card-header-flush">
                                         {momentumTrend === 'improving' ? <TrendingUp size={14} className="dh-card-header-icon" /> : momentumTrend === 'declining' ? <TrendingDown size={14} className="dh-card-header-icon" /> : <Activity size={14} className="dh-card-header-icon" />}
                                         <h3>Momentum</h3>
                                     </div>

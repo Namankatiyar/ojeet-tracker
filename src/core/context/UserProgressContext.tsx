@@ -24,6 +24,8 @@ interface UserProgressContextType {
     setDisableAutoShift: (disable: boolean | ((prev: boolean) => boolean)) => void;
     progressCardSettings: ProgressCardSettings;
     setProgressCardSettings: (settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)) => void;
+    dailyQuestionLogs: Record<string, number>;
+    setDailyQuestionLogs: (logs: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>)) => void;
 
     // Derived Progress
     physicsProgress: number;
@@ -99,6 +101,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [mockScores, setMockScores] = useLocalStorage<MockScore[]>('jee-tracker-mock-scores', []);
     const [examDates, setExamDates] = useLocalStorage<ExamEntry[]>('jee-exam-dates', []);
     const [mockExamPresets, setMockExamPresets] = useLocalStorage<MockExamPreset[]>('jee-tracker-mock-presets', defaultMockExamPresets);
+    const [dailyQuestionLogs, setDailyQuestionLogs] = useLocalStorage<Record<string, number>>('jee-tracker-daily-questions', {});
 
     // Ensure mockExamPresets is never empty
     useEffect(() => {
@@ -338,6 +341,18 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }, [mergedSubjectData, setProgress, setPlannerTasks]);
 
     const handleUpdateSubtopicAttempted = useCallback((subject: Subject, chapterSerial: number, subtopicName: string, material: string, count: number) => {
+        const safeCount = Math.max(0, count);
+        const currentCount = progressRef.current[subject]?.[chapterSerial]?.subtopics?.[subtopicName]?.attemptedByMaterial?.[material] || 0;
+        const diff = safeCount - currentCount;
+
+        if (diff !== 0) {
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            setDailyQuestionLogs(prev => ({
+                ...prev,
+                [todayStr]: Math.max(0, (prev[todayStr] || 0) + diff)
+            }));
+        }
+
         setProgress(prev => {
             const subjectProgress = prev[subject];
             const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
@@ -349,7 +364,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 ...subState,
                 attemptedByMaterial: {
                     ...currentSubAttempted,
-                    [material]: Math.max(0, count)
+                    [material]: safeCount
                 }
             };
 
@@ -393,7 +408,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 }
             };
         });
-    }, [mergedSubjectData, setProgress]);
+    }, [mergedSubjectData, setProgress, setDailyQuestionLogs]);
 
     const handleSetSubtopicLastRevised = useCallback((subject: Subject, chapterSerial: number, subtopicName: string, date: string | undefined) => {
         setProgress(prev => {
@@ -613,7 +628,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         <UserProgressContext.Provider value={{
             progress, setProgress, plannerTasks, setPlannerTasks, studySessions, setStudySessions,
             mockScores, setMockScores, examDates, setExamDates, primaryExamDate, disableAutoShift, setDisableAutoShift,
-            progressCardSettings, setProgressCardSettings,
+            progressCardSettings, setProgressCardSettings, dailyQuestionLogs, setDailyQuestionLogs,
             physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress,
             handleToggleMaterial, handleSetPriority, handleUpdateChapterDetail, handleAddPlannerTask, handleTogglePlannerTask,
             handleToggleSubtopicMaterial, handleUpdateSubtopicAttempted, handleSetSubtopicLastRevised,

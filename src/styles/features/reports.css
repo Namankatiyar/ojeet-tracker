@@ -665,6 +665,11 @@
   padding-bottom: var(--space-2);
 }
 
+.dh-card-header-flush {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
 .dh-card-header h3 {
   font-size: var(--text-sm);
   font-weight: 600;
@@ -726,70 +731,13 @@
 /* ── Hero: Study Time ── */
 .dh-bento-hero {
   grid-column: span 6;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3);
   display: flex;
   flex-direction: row;
   align-items: stretch;
   justify-content: space-between;
-  gap: var(--space-6);
+  gap: var(--space-3);
   border-radius: var(--radius-md);
-  min-height: 160px;
-}
-
-
-
-.dh-hero-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-}
-
-.dh-hero-value {
-  font-size: clamp(2.5rem, 5vw + 1rem, 3.5rem);
-  font-weight: 800;
-  font-family: 'Montserrat', monospace;
-  color: var(--text-primary);
-  line-height: 1.1;
-  position: relative;
-  z-index: 1;
-}
-
-.dh-hero-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  position: relative;
-  z-index: 1;
-}
-
-.dh-hero-vs {
-  color: var(--text-secondary);
-}
-
-.dh-hero-velocity {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  margin-top: auto;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--border);
-  position: relative;
-  z-index: 1;
-}
-
-.dh-hero-dot {
-  color: var(--text-secondary);
 }
 
 .dh-hero-left {
@@ -801,6 +749,100 @@
   height: 100%;
 }
 
+.dh-hero-unified-header {
+  position: relative;
+  z-index: 1;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dh-metrics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: relative;
+  z-index: 1;
+}
+
+.dh-metric-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dh-metric-value {
+  font-size: clamp(1.75rem, 3vw + 0.875rem, 2.25rem);
+  font-weight: 800;
+  font-family: 'Montserrat', monospace;
+  color: var(--text-primary);
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.dh-metric-unit {
+  font-size: var(--text-base);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.dh-metric-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.dh-metric-vs {
+  color: var(--text-secondary);
+}
+
+/* Secondary (compact) metric — Qs solved */
+.dh-metric-block--secondary {
+  padding-top: var(--space-1);
+  border-top: 1px solid color-mix(in srgb, var(--border), transparent 60%);
+}
+
+.dh-metric-secondary-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.dh-metric-secondary-value {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-family: 'Montserrat', monospace;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.dh-metric-secondary-unit {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.dh-hero-velocity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  padding-top: var(--space-2);
+  border-top: 1px solid color-mix(in srgb, var(--border), transparent 50%);
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.dh-hero-dot {
+  color: var(--text-secondary);
+}
+
 .dh-hero-right {
   display: flex;
   flex-direction: column;
@@ -809,7 +851,7 @@
   flex: 1;
   min-width: 0;
   height: 100%;
-  padding-left: var(--space-5);
+  padding-left: var(--space-3);
   border-left: 1px solid color-mix(in srgb, var(--border), transparent 50%);
 }
 
@@ -838,7 +880,7 @@
 /* ── Weekly Overview ── */
 .dh-bento-weekly {
   grid-column: span 4;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -958,17 +1000,17 @@
 .dh-bento-unified-stats {
   display: flex;
   flex-direction: column;
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-md);
-  height: 100%;
+  height: fit-content;
 }
 
 .dh-stat-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  flex: 1;
-  justify-content: center;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+  justify-content: flex-start;
 }
 
 .dh-stat-divider {
@@ -993,7 +1035,7 @@
 }
 
 .dh-stat-value {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: 800;
   font-family: 'Montserrat', monospace;
   color: var(--text-primary);
@@ -1002,7 +1044,7 @@
 
 .dh-stat-value.text-label {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 .dh-stat-value.trend-improving {
@@ -1141,18 +1183,36 @@
   transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0s;
 }
 
-.dh-timeline-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  padding: 0 var(--space-1);
+/* Axis: replaces flat space-between label row with precisely-pinned ticks */
+.dh-timeline-axis {
+  position: relative;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
-.dh-histogram-container.compact .dh-timeline-labels {
-  padding: 0;
-  margin-top: var(--space-1);
-  font-size: 0.65rem;
+.dh-timeline-axis-pin {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  gap: 0;
+}
+
+.dh-timeline-axis-tick {
+  width: 1px;
+  height: 4px;
+  background: color-mix(in srgb, var(--text-secondary), transparent 40%);
+  border-radius: 1px;
+}
+
+.dh-timeline-axis-label {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  line-height: 1.2;
+  margin-top: 1px;
 }
 
 .dh-peak-badge {
