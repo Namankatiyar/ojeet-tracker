@@ -1,7 +1,7 @@
 {
   "package.json": {
-    "mtime": 1781976087.8859444,
-    "ast_hash": "e695eac2e9782c981430b9d6bf707fbc",
+    "mtime": 1782047322.812131,
+    "ast_hash": "3bac8ba0233404db37fc6aee6384f466",
     "semantic_hash": ""
   },
   "public/data/chemistry.json": {
@@ -20,12 +20,12 @@
     "semantic_hash": "890bea40457214f6a1bcfbd7c0d487a1"
   },
   "src/core/App.tsx": {
-    "mtime": 1781953138.3548033,
+    "mtime": 1782047322.8191314,
     "ast_hash": "029feb3188e5239af373685fd87dd871",
     "semantic_hash": "029feb3188e5239af373685fd87dd871"
   },
   "src/core/AppRoutes.tsx": {
-    "mtime": 1781953138.3548033,
+    "mtime": 1782047322.8221314,
     "ast_hash": "b9789bffaf0f8ca16dd26f3efcb152a1",
     "semantic_hash": ""
   },
@@ -40,7 +40,7 @@
     "semantic_hash": ""
   },
   "src/core/context/RemoteSyncContext.tsx": {
-    "mtime": 1781974685.6204093,
+    "mtime": 1782047322.8231316,
     "ast_hash": "a67ce3815d7a96e6a180655fb5ef8b09",
     "semantic_hash": ""
   },
@@ -55,8 +55,8 @@
     "semantic_hash": "89a23ab1cc3daad88aff985b952940ba"
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1781974679.4312148,
-    "ast_hash": "4e59e702cda11cf595f3c4b580a41c85",
+    "mtime": 1782047406.2551,
+    "ast_hash": "d3097094d4f91f7032de2dd19b3e51f2",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "src/features/legal/changelogEntries.ts": {
-    "mtime": 1782012780.0833979,
-    "ast_hash": "05dfb39c7745b35471eeb08a3ac65cd6",
+    "mtime": 1782015766.640591,
+    "ast_hash": "af418fecc60f758844f026a532591f73",
     "semantic_hash": ""
   },
   "src/features/legal/components/ChangelogPage.tsx": {
@@ -255,8 +255,8 @@
     "semantic_hash": "d4bdbfdceb53108eb6e4f49b2681b043"
   },
   "src/features/reports/components/DailyAnalytics.tsx": {
-    "mtime": 1782012538.8973901,
-    "ast_hash": "c753c1f6711f302c894004c411c00b89",
+    "mtime": 1782047467.5285542,
+    "ast_hash": "19341458da4f87b3b09835dfdfe1b495",
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
@@ -280,7 +280,7 @@
     "semantic_hash": "5e914194aa3e40de7aaf19b6f03c2a1e"
   },
   "src/features/study-clock/components/StudyClock.tsx": {
-    "mtime": 1781342964.2702053,
+    "mtime": 1782047322.8251317,
     "ast_hash": "ab9ad78a2922baf1dadd00465792fe42",
     "semantic_hash": "ab9ad78a2922baf1dadd00465792fe42"
   },
@@ -440,7 +440,7 @@
     "semantic_hash": ""
   },
   "src/shared/components/layout/Header.tsx": {
-    "mtime": 1781953138.3575222,
+    "mtime": 1782047322.8251317,
     "ast_hash": "41a2cac8820280ffebe6c63c66812565",
     "semantic_hash": "41a2cac8820280ffebe6c63c66812565"
   },
@@ -772,6 +772,11 @@
   "src/shared/hooks/useLocalStorage.test.tsx": {
     "mtime": 1781974401.209586,
     "ast_hash": "82082efe3a8442d0ff4cf6b4a37e5d2a",
+    "semantic_hash": ""
+  },
+  "src/core/context/UserProgressContext.test.tsx": {
+    "mtime": 1782047793.521256,
+    "ast_hash": "4e934942831882b015c91c4def39f8ea",
     "semantic_hash": ""
   }
 }

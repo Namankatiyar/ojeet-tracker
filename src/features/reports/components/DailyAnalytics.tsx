@@ -113,8 +113,8 @@ export const DailyAnalytics: React.FC = () => {
 
     const diffSec = totalDurationSec - prevTotalSec;
 
-    const todayQuestions = dailyQuestionLogs[selectedDate] || 0;
-    const prevQuestions = dailyQuestionLogs[prevDateStr] || 0;
+    const todayQuestions = Math.max(0, dailyQuestionLogs[selectedDate] || 0);
+    const prevQuestions = Math.max(0, dailyQuestionLogs[prevDateStr] || 0);
     const diffQuestions = todayQuestions - prevQuestions;
 
     /* Streak count: consecutive active days ending on or before selected date */
@@ -720,9 +720,7 @@ export const DailyAnalytics: React.FC = () => {
                                                         </div>
                                                         {ch.materials.size > 0 && (
                                                             <div className="dh-chapter-card-tags" title={Array.from(ch.materials).join(', ')}>
-                                                                {['NCERT', 'PYQs', 'Modules']
-                                                                    .filter(mat => ch.materials.has(mat))
-                                                                    .map(mat => (
+                                                                {Array.from(ch.materials).map(mat => (
                                                                     <span
                                                                         key={mat}
                                                                         className={`dh-material-tag completed ${subject}`}

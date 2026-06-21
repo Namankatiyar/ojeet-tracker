@@ -342,16 +342,6 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const handleUpdateSubtopicAttempted = useCallback((subject: Subject, chapterSerial: number, subtopicName: string, material: string, count: number) => {
         const safeCount = Math.max(0, count);
-        const currentCount = progressRef.current[subject]?.[chapterSerial]?.subtopics?.[subtopicName]?.attemptedByMaterial?.[material] || 0;
-        const diff = safeCount - currentCount;
-
-        if (diff !== 0) {
-            const todayStr = new Date().toLocaleDateString('en-CA');
-            setDailyQuestionLogs(prev => ({
-                ...prev,
-                [todayStr]: Math.max(0, (prev[todayStr] || 0) + diff)
-            }));
-        }
 
         setProgress(prev => {
             const subjectProgress = prev[subject];
@@ -359,7 +349,15 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const subtopicStates = chapterProgress.subtopics || {};
             const subState = subtopicStates[subtopicName] || { completed: {} };
             const currentSubAttempted = subState.attemptedByMaterial || {};
-
+            const currentCount = currentSubAttempted[material] || 0;
+            const diff = safeCount - currentCount;
+            if (diff !== 0) {
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                setDailyQuestionLogs(prevLogs => ({
+                    ...prevLogs,
+                    [todayStr]: (prevLogs[todayStr] || 0) + diff
+                }));
+            }
             const nextSubState = {
                 ...subState,
                 attemptedByMaterial: {
@@ -383,7 +381,9 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             activeMaterials.forEach(mat => {
                 let sum = 0;
                 chapterSubtopics.forEach(sub => {
-                    const c = sub === subtopicName ? Math.max(0, count) : nextSubtopics[sub]?.attemptedByMaterial?.[mat];
+                    const c = (sub === subtopicName && mat === material)
+                        ? Math.max(0, count)
+                        : nextSubtopics[sub]?.attemptedByMaterial?.[mat];
                     if (c !== undefined && Number.isFinite(c)) {
                         sum += c;
                     }
@@ -480,6 +480,24 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const subjectProgress = prev[subject];
             const chapterProgress = subjectProgress[chapterSerial] || { completed: {}, priority: 'none' as Priority };
             const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+            const currentAttempted = currentDetail.attemptedByMaterial || {};
+
+            if (patch.attemptedByMaterial) {
+                let diff = 0;
+                Object.entries(patch.attemptedByMaterial).forEach(([material, count]) => {
+                    const safeCount = Math.max(0, count ?? 0);
+                    const currentCount = currentAttempted[material] || 0;
+                    diff += (safeCount - currentCount);
+                });
+
+                if (diff !== 0) {
+                    const todayStr = new Date().toLocaleDateString('en-CA');
+                    setDailyQuestionLogs(prevLogs => ({
+                        ...prevLogs,
+                        [todayStr]: (prevLogs[todayStr] || 0) + diff
+                    }));
+                }
+            }
 
             return {
                 ...prev,
@@ -499,7 +517,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 },
             };
         });
-    }, [setProgress]);
+    }, [setProgress, setDailyQuestionLogs]);
 
     const handleAddPlannerTask = useCallback((task: PlannerTask) => {
         setPlannerTasks(prev => [...prev, task]);

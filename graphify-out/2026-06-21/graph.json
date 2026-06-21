@@ -1153,7 +1153,7 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "context_remotesynccontext_remotesyncprovider",
-      "community": 72,
+      "community": 3,
       "norm_label": "remotesyncprovider()"
     },
     {
@@ -1173,7 +1173,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "context_subjectdatacontext",
-      "community": 39,
+      "community": 72,
       "norm_label": "subjectdatacontext.tsx"
     },
     {
@@ -1193,7 +1193,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "context_subjectdatacontext_subjectdatacontext",
-      "community": 39,
+      "community": 72,
       "norm_label": "subjectdatacontext"
     },
     {
@@ -1213,7 +1213,7 @@
       "source_location": "L262",
       "_origin": "ast",
       "id": "context_subjectdatacontext_usesubjectdata",
-      "community": 54,
+      "community": 5,
       "norm_label": "usesubjectdata()"
     },
     {
@@ -1273,8 +1273,28 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "context_themecontext_usetheme",
-      "community": 54,
+      "community": 5,
       "norm_label": "usetheme()"
+    },
+    {
+      "label": "UserProgressContext.test.tsx",
+      "file_type": "code",
+      "source_file": "src/core/context/UserProgressContext.test.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "context_userprogresscontext_test",
+      "community": 5,
+      "norm_label": "userprogresscontext.test.tsx"
+    },
+    {
+      "label": "mockMergedSubjectData",
+      "file_type": "code",
+      "source_file": "src/core/context/UserProgressContext.test.tsx",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "context_userprogresscontext_test_mockmergedsubjectdata",
+      "community": 5,
+      "norm_label": "mockmergedsubjectdata"
     },
     {
       "label": "UserProgressContext.tsx",
@@ -1283,7 +1303,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "context_userprogresscontext",
-      "community": 54,
+      "community": 5,
       "norm_label": "userprogresscontext.tsx"
     },
     {
@@ -1293,57 +1313,57 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogresscontexttype",
-      "community": 11,
+      "community": 6,
       "norm_label": "userprogresscontexttype"
     },
     {
       "label": "UserProgressContext",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L60",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogresscontext",
-      "community": 54,
+      "community": 5,
       "norm_label": "userprogresscontext"
     },
     {
       "label": "initialProgress",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L62",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "context_userprogresscontext_initialprogress",
-      "community": 54,
+      "community": 5,
       "norm_label": "initialprogress"
     },
     {
       "label": "defaultMockExamPresets",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L68",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "context_userprogresscontext_defaultmockexampresets",
-      "community": 53,
+      "community": 71,
       "norm_label": "defaultmockexampresets"
     },
     {
       "label": "UserProgressProvider()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L92",
+      "source_location": "L94",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogressprovider",
-      "community": 54,
+      "community": 5,
       "norm_label": "userprogressprovider()"
     },
     {
       "label": "useUserProgress()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L630",
+      "source_location": "L643",
       "_origin": "ast",
       "id": "context_userprogresscontext_useuserprogress",
-      "community": 72,
+      "community": 6,
       "norm_label": "useuserprogress()"
     },
     {
@@ -1773,7 +1793,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "components_dashboard_dashboardprops",
-      "community": 15,
+      "community": 39,
       "norm_label": "dashboardprops"
     },
     {
@@ -1793,7 +1813,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_dashboardnotificationcenter",
-      "community": 71,
+      "community": 15,
       "norm_label": "dashboardnotificationcenter.tsx"
     },
     {
@@ -1803,7 +1823,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "components_dashboardnotificationcenter_dashboardnotificationaction",
-      "community": 71,
+      "community": 15,
       "norm_label": "dashboardnotificationaction"
     },
     {
@@ -1813,7 +1833,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "components_dashboardnotificationcenter_dashboardnotificationitem",
-      "community": 71,
+      "community": 15,
       "norm_label": "dashboardnotificationitem"
     },
     {
@@ -1823,7 +1843,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "components_dashboardnotificationcenter_dashboardnotificationcenterprops",
-      "community": 71,
+      "community": 15,
       "norm_label": "dashboardnotificationcenterprops"
     },
     {
@@ -1833,7 +1853,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "components_dashboardnotificationcenter_dashboardnotificationcenter",
-      "community": 71,
+      "community": 15,
       "norm_label": "dashboardnotificationcenter()"
     },
     {
@@ -1843,7 +1863,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_examcountdownmodal",
-      "community": 15,
+      "community": 1,
       "norm_label": "examcountdownmodal.tsx"
     },
     {
@@ -1853,7 +1873,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "components_examcountdownmodal_examcountdownmodalprops",
-      "community": 15,
+      "community": 1,
       "norm_label": "examcountdownmodalprops"
     },
     {
@@ -1863,7 +1883,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "components_examcountdownmodal_examcountdownmodal",
-      "community": 15,
+      "community": 1,
       "norm_label": "examcountdownmodal()"
     },
     {
@@ -1873,7 +1893,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_managemockpresetsmodal",
-      "community": 72,
+      "community": 6,
       "norm_label": "managemockpresetsmodal.tsx"
     },
     {
@@ -1883,7 +1903,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "components_managemockpresetsmodal_managemockpresetsmodalprops",
-      "community": 72,
+      "community": 6,
       "norm_label": "managemockpresetsmodalprops"
     },
     {
@@ -1893,7 +1913,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "components_managemockpresetsmodal_managemockpresetsmodal",
-      "community": 72,
+      "community": 6,
       "norm_label": "managemockpresetsmodal()"
     },
     {
@@ -1933,7 +1953,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_studytimepanel",
-      "community": 6,
+      "community": 1,
       "norm_label": "studytimepanel.tsx"
     },
     {
@@ -1943,7 +1963,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "components_studytimepanel_studytimepanelprops",
-      "community": 6,
+      "community": 1,
       "norm_label": "studytimepanelprops"
     },
     {
@@ -1953,7 +1973,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "components_studytimepanel_studyviewmode",
-      "community": 6,
+      "community": 1,
       "norm_label": "studyviewmode"
     },
     {
@@ -1963,7 +1983,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "components_studytimepanel_studytimepanel",
-      "community": 6,
+      "community": 1,
       "norm_label": "studytimepanel()"
     },
     {
@@ -2003,7 +2023,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usestudytimeanalytics_test",
-      "community": 6,
+      "community": 1,
       "norm_label": "usestudytimeanalytics.test.ts"
     },
     {
@@ -2013,7 +2033,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usestudytimeanalytics",
-      "community": 6,
+      "community": 1,
       "norm_label": "usestudytimeanalytics.ts"
     },
     {
@@ -2023,7 +2043,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "hooks_usestudytimeanalytics_remoteaggregatebucketentry",
-      "community": 6,
+      "community": 1,
       "norm_label": "remoteaggregatebucketentry"
     },
     {
@@ -2033,7 +2053,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "hooks_usestudytimeanalytics_iswithinhistory",
-      "community": 6,
+      "community": 1,
       "norm_label": "iswithinhistory()"
     },
     {
@@ -2043,7 +2063,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_usestudytimeanalytics_usestudytimeanalytics",
-      "community": 6,
+      "community": 1,
       "norm_label": "usestudytimeanalytics()"
     },
     {
@@ -2053,7 +2073,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_analyticsutils",
-      "community": 6,
+      "community": 1,
       "norm_label": "analyticsutils.ts"
     },
     {
@@ -2063,7 +2083,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "utils_analyticsutils_getweekdays",
-      "community": 6,
+      "community": 1,
       "norm_label": "getweekdays()"
     },
     {
@@ -2073,7 +2093,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "utils_analyticsutils_getmonthdays",
-      "community": 6,
+      "community": 1,
       "norm_label": "getmonthdays()"
     },
     {
@@ -2083,7 +2103,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "utils_analyticsutils_getsessionlocaldate",
-      "community": 6,
+      "community": 1,
       "norm_label": "getsessionlocaldate()"
     },
     {
@@ -2093,7 +2113,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "utils_analyticsutils_getstudytimebysubject",
-      "community": 6,
+      "community": 1,
       "norm_label": "getstudytimebysubject()"
     },
     {
@@ -2103,7 +2123,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "utils_analyticsutils_subjectcolors",
-      "community": 6,
+      "community": 1,
       "norm_label": "subjectcolors"
     },
     {
@@ -2113,7 +2133,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "utils_analyticsutils_subjectcolorvars",
-      "community": 6,
+      "community": 1,
       "norm_label": "subjectcolorvars"
     },
     {
@@ -2123,7 +2143,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "utils_analyticsutils_getsubjectcolors",
-      "community": 6,
+      "community": 1,
       "norm_label": "getsubjectcolors()"
     },
     {
@@ -2133,7 +2153,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "utils_analyticsutils_getchartoptions",
-      "community": 6,
+      "community": 1,
       "norm_label": "getchartoptions()"
     },
     {
@@ -2273,7 +2293,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_daycolumn",
-      "community": 39,
+      "community": 1,
       "norm_label": "daycolumn.tsx"
     },
     {
@@ -2283,7 +2303,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "components_daycolumn_daycolumnprops",
-      "community": 39,
+      "community": 1,
       "norm_label": "daycolumnprops"
     },
     {
@@ -2293,7 +2313,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "components_daycolumn_daycolumn",
-      "community": 39,
+      "community": 1,
       "norm_label": "daycolumn()"
     },
     {
@@ -2423,7 +2443,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_monthcell",
-      "community": 39,
+      "community": 1,
       "norm_label": "monthcell.tsx"
     },
     {
@@ -2433,7 +2453,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "components_monthcell_monthcellprops",
-      "community": 39,
+      "community": 1,
       "norm_label": "monthcellprops"
     },
     {
@@ -2443,7 +2463,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "components_monthcell_monthcellcomponent",
-      "community": 39,
+      "community": 1,
       "norm_label": "monthcellcomponent()"
     },
     {
@@ -2453,7 +2473,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "components_monthcell_monthcell",
-      "community": 39,
+      "community": 1,
       "norm_label": "monthcell"
     },
     {
@@ -2623,7 +2643,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_weeklyview",
-      "community": 39,
+      "community": 1,
       "norm_label": "weeklyview.tsx"
     },
     {
@@ -2633,7 +2653,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "components_weeklyview_weeklyviewprops",
-      "community": 39,
+      "community": 1,
       "norm_label": "weeklyviewprops"
     },
     {
@@ -2643,7 +2663,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "components_weeklyview_weeklyview",
-      "community": 39,
+      "community": 1,
       "norm_label": "weeklyview()"
     },
     {
@@ -2653,7 +2673,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usedatenavigator",
-      "community": 39,
+      "community": 1,
       "norm_label": "usedatenavigator.ts"
     },
     {
@@ -2663,7 +2683,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "hooks_usedatenavigator_getmonday",
-      "community": 39,
+      "community": 1,
       "norm_label": "getmonday()"
     },
     {
@@ -2823,7 +2843,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_dailyanalytics",
-      "community": 5,
+      "community": 1,
       "norm_label": "dailyanalytics.tsx"
     },
     {
@@ -2833,7 +2853,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "components_dailyanalytics_getlocaldatestring",
-      "community": 5,
+      "community": 1,
       "norm_label": "getlocaldatestring()"
     },
     {
@@ -2843,7 +2863,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "components_dailyanalytics_getsessiondate",
-      "community": 5,
+      "community": 1,
       "norm_label": "getsessiondate()"
     },
     {
@@ -2853,7 +2873,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "components_dailyanalytics_formatsmartduration",
-      "community": 5,
+      "community": 1,
       "norm_label": "formatsmartduration()"
     },
     {
@@ -2863,7 +2883,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "components_dailyanalytics_formatstatvalue",
-      "community": 5,
+      "community": 1,
       "norm_label": "formatstatvalue()"
     },
     {
@@ -2873,7 +2893,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "components_dailyanalytics_formathourlabel",
-      "community": 5,
+      "community": 1,
       "norm_label": "formathourlabel()"
     },
     {
@@ -2883,7 +2903,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "components_dailyanalytics_formatdatedisplay",
-      "community": 5,
+      "community": 1,
       "norm_label": "formatdatedisplay()"
     },
     {
@@ -2893,7 +2913,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "components_dailyanalytics_dailyanalytics",
-      "community": 5,
+      "community": 1,
       "norm_label": "dailyanalytics()"
     },
     {
@@ -2953,7 +2973,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_sessionhistory",
-      "community": 2,
+      "community": 39,
       "norm_label": "sessionhistory.tsx"
     },
     {
@@ -2973,7 +2993,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "components_sessionhistory_formatduration",
-      "community": 2,
+      "community": 39,
       "norm_label": "formatduration()"
     },
     {
@@ -2993,7 +3013,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_sessionstatistics",
-      "community": 39,
+      "community": 2,
       "norm_label": "sessionstatistics.tsx"
     },
     {
@@ -3013,7 +3033,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "components_sessionstatistics_formatduration",
-      "community": 39,
+      "community": 2,
       "norm_label": "formatduration()"
     },
     {
@@ -3023,7 +3043,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "components_sessionstatistics_getsessiondate",
-      "community": 39,
+      "community": 2,
       "norm_label": "getsessiondate()"
     },
     {
@@ -3033,7 +3053,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "components_sessionstatistics_sessionstatistics",
-      "community": 39,
+      "community": 2,
       "norm_label": "sessionstatistics()"
     },
     {
@@ -3993,7 +4013,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "sync_importsyncpage",
-      "community": 39,
+      "community": 6,
       "norm_label": "importsyncpage.tsx"
     },
     {
@@ -4003,7 +4023,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "sync_importsyncpage_ojeetsyncpayload",
-      "community": 39,
+      "community": 6,
       "norm_label": "ojeetsyncpayload"
     },
     {
@@ -4013,7 +4033,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "sync_importsyncpage_importsyncpageprops",
-      "community": 39,
+      "community": 6,
       "norm_label": "importsyncpageprops"
     },
     {
@@ -4023,7 +4043,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "sync_importsyncpage_valid_subjects",
-      "community": 39,
+      "community": 6,
       "norm_label": "valid_subjects"
     },
     {
@@ -4033,7 +4053,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "sync_importsyncpage_resolvesubject",
-      "community": 39,
+      "community": 6,
       "norm_label": "resolvesubject()"
     },
     {
@@ -4043,7 +4063,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "sync_importsyncpage_importsyncpage",
-      "community": 39,
+      "community": 6,
       "norm_label": "importsyncpage()"
     },
     {
@@ -4203,7 +4223,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "sync_synclocalstorage",
-      "community": 53,
+      "community": 71,
       "norm_label": "synclocalstorage.ts"
     },
     {
@@ -4213,7 +4233,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "sync_synclocalstorage_sync_local_keys",
-      "community": 53,
+      "community": 71,
       "norm_label": "sync_local_keys"
     },
     {
@@ -4223,7 +4243,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "sync_synclocalstorage_defaultprogress",
-      "community": 53,
+      "community": 71,
       "norm_label": "defaultprogress"
     },
     {
@@ -4233,7 +4253,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "sync_synclocalstorage_defaultprogresscardsettings",
-      "community": 53,
+      "community": 71,
       "norm_label": "defaultprogresscardsettings"
     },
     {
@@ -4243,7 +4263,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "sync_synclocalstorage_defaultsubjectdatarecord",
-      "community": 53,
+      "community": 71,
       "norm_label": "defaultsubjectdatarecord"
     },
     {
@@ -4253,7 +4273,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "sync_synclocalstorage_defaultsubjectstringmap",
-      "community": 53,
+      "community": 71,
       "norm_label": "defaultsubjectstringmap"
     },
     {
@@ -4263,7 +4283,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "sync_synclocalstorage_readjson",
-      "community": 53,
+      "community": 71,
       "norm_label": "readjson()"
     },
     {
@@ -4273,7 +4293,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "sync_synclocalstorage_buildsyncpayloadfromlocalstorage",
-      "community": 53,
+      "community": 71,
       "norm_label": "buildsyncpayloadfromlocalstorage()"
     },
     {
@@ -4473,7 +4493,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "sync_synctypes_syncpayloadinput",
-      "community": 11,
+      "community": 39,
       "norm_label": "syncpayloadinput"
     },
     {
@@ -4593,7 +4613,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "layout_header_header",
-      "community": 6,
+      "community": 0,
       "norm_label": "header()"
     },
     {
@@ -5333,7 +5353,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "hooks_useprogress_useprogress",
-      "community": 54,
+      "community": 5,
       "norm_label": "useprogress()"
     },
     {
@@ -5413,7 +5433,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_index",
-      "community": 6,
+      "community": 4,
       "norm_label": "index.ts"
     },
     {
@@ -5463,7 +5483,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "types_index_subtopicstate",
-      "community": 6,
+      "community": 4,
       "norm_label": "subtopicstate"
     },
     {
@@ -5513,7 +5533,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "types_index_subjectstreak",
-      "community": 6,
+      "community": 4,
       "norm_label": "subjectstreak"
     },
     {
@@ -5553,7 +5573,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "types_index_studysession",
-      "community": 39,
+      "community": 6,
       "norm_label": "studysession"
     },
     {
@@ -5593,7 +5613,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "types_index_examentry",
-      "community": 15,
+      "community": 39,
       "norm_label": "examentry"
     },
     {
@@ -5603,7 +5623,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "types_index_progresscardsettings",
-      "community": 11,
+      "community": 6,
       "norm_label": "progresscardsettings"
     },
     {
@@ -5663,7 +5683,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_date_formatdatelocal",
-      "community": 0,
+      "community": 1,
       "norm_label": "formatdatelocal()"
     },
     {
@@ -5713,7 +5733,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "utils_date_calculatedaysremaining",
-      "community": 15,
+      "community": 1,
       "norm_label": "calculatedaysremaining()"
     },
     {
@@ -5733,7 +5753,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_jsonparser",
-      "community": 39,
+      "community": 72,
       "norm_label": "jsonparser.ts"
     },
     {
@@ -5743,7 +5763,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "utils_jsonparser_jsonunit",
-      "community": 39,
+      "community": 72,
       "norm_label": "jsonunit"
     },
     {
@@ -5753,7 +5773,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utils_jsonparser_chemistrysyllabus",
-      "community": 39,
+      "community": 72,
       "norm_label": "chemistrysyllabus"
     },
     {
@@ -5763,7 +5783,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "utils_jsonparser_syllabusresponse",
-      "community": 39,
+      "community": 72,
       "norm_label": "syllabusresponse"
     },
     {
@@ -5773,7 +5793,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "utils_jsonparser_parsesubjectjson",
-      "community": 39,
+      "community": 72,
       "norm_label": "parsesubjectjson()"
     },
     {
@@ -8363,7 +8383,7 @@
       "source_location": "L375",
       "_origin": "ast",
       "id": "changelog_0_0_15_https_github_com_namankatiyar_pcm_tracker_compare_v0_0_14_v0_0_15_2026_02_03",
-      "community": 73,
+      "community": 37,
       "norm_label": "[0.0.15](https://github.com/namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)"
     },
     {
@@ -8373,7 +8393,7 @@
       "source_location": "L377",
       "_origin": "ast",
       "id": "changelog_features_377",
-      "community": 73,
+      "community": 37,
       "norm_label": "features"
     },
     {
@@ -8383,7 +8403,7 @@
       "source_location": "L389",
       "_origin": "ast",
       "id": "changelog_bug_fixes_389",
-      "community": 73,
+      "community": 37,
       "norm_label": "bug fixes"
     },
     {
@@ -9608,7 +9628,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 5,
+      "community": 1,
       "norm_label": "clock.svg",
       "id": "public_clock"
     },
@@ -12504,6 +12524,49 @@
       "weight": 1.0,
       "source": "context_userprogresscontext_userprogressprovider",
       "target": "context_themecontext_usetheme"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/context/UserProgressContext.test.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "context_userprogresscontext_test",
+      "target": "context_userprogresscontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/context/UserProgressContext.test.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "context_userprogresscontext_test",
+      "target": "context_userprogresscontext_test_mockmergedsubjectdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/context/UserProgressContext.test.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "context_userprogresscontext_test",
+      "target": "context_userprogresscontext_userprogressprovider",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/context/UserProgressContext.test.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "context_userprogresscontext_test",
+      "target": "context_userprogresscontext_useuserprogress",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -28459,5 +28522,5 @@
       "source_file": "OVERVIEW.md"
     }
   ],
-  "built_at_commit": "2a7376e495ef14fef6ef04d135483814987cf950"
+  "built_at_commit": "d7f78e89b56ace7f317a47178449890919ee0cf6"
 }
