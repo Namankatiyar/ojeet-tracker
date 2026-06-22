@@ -1,0 +1,796 @@
+/* CSS for Support Page - Premium Handwritten Aesthetic */
+
+/* ============================
+   1. Design Tokens
+   ============================ */
+.support-page-container {
+    --paper: #faf7f2;
+    --ink: #2c2c2c;
+    --red: #e63946;
+    --red-soft: #ef6b78;
+    --red-glow: rgba(230, 57, 70, 0.2);
+    --soft-rose: #fcd5ce;
+    --blush: #fff0ed;
+    --pencil-gray: #9e9e9e;
+    --line: #e8e0d0;
+    --warm-shadow: #e8ddd0;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-selected-bg: #fff5f5;
+    --card-hover-bg: rgba(255, 255, 255, 0.9);
+    --notebook-line-height: 32px;
+    --notebook-line-offset: 22px;
+
+    min-height: 100vh;
+    background-color: var(--paper);
+    background-image: repeating-linear-gradient(
+        transparent,
+        transparent calc(var(--notebook-line-height) - 1px),
+        var(--line) calc(var(--notebook-line-height) - 1px),
+        var(--line) var(--notebook-line-height)
+    );
+    background-position: 0 var(--notebook-line-offset);
+    background-attachment: local;
+    color: var(--ink);
+    font-family: 'Betania Patmos In', cursive, sans-serif;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    padding: var(--notebook-line-height) var(--space-4);
+    display: flex;
+    justify-content: center;
+    border-radius: 28px 24px 30px 26px;
+    overflow: hidden;
+    border: 1.5px solid var(--warm-shadow);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.04),
+        0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* ============================
+   2. Layout
+   ============================ */
+.support-content {
+    max-width: 760px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================
+   3. Typography
+   ============================ */
+.support-page-container h1,
+.support-page-container h2,
+.support-page-container h3 {
+    font-family: 'Cookie', cursive;
+    color: var(--ink);
+    font-weight: normal;
+    margin: 0;
+}
+
+.support-page-container h1 {
+    font-size: 2.8rem;
+    text-align: center;
+    line-height: calc(2 * var(--notebook-line-height));
+    margin-top: 0;
+    margin-bottom: var(--notebook-line-height);
+}
+
+.support-page-container h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.support-page-container h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* ============================
+   4. Header
+   ============================ */
+.support-header {
+    text-align: center;
+    height: calc(3 * var(--notebook-line-height));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.support-tiny-note {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.9rem;
+    color: var(--pencil-gray);
+    text-align: center;
+    margin: 0;
+}
+
+.header-doodle-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-2);
+}
+
+.header-doodle {
+    color: var(--red);
+    transform: rotate(-10deg);
+}
+
+/* ============================
+   5. Letter Section
+   ============================ */
+.letter-section {
+    text-align: left;
+    margin: 0;
+    padding: 0;
+}
+
+.letter-section p {
+    line-height: var(--notebook-line-height);
+    margin-top: 0;
+    margin-bottom: var(--notebook-line-height);
+}
+
+.hand-drawn-divider {
+    border: none;
+    height: var(--notebook-line-height);
+    margin: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hand-drawn-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 2px dashed var(--pencil-gray);
+    opacity: 0.3;
+}
+
+.divider-doodle {
+    color: var(--pencil-gray);
+    background: var(--paper);
+    padding: 0 var(--space-3);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    z-index: 1;
+}
+
+/* ============================
+   6. Donation Card — Container
+   ============================ */
+.donation-card-container {
+    position: relative;
+    margin-top: var(--notebook-line-height);
+    margin-bottom: calc(2 * var(--notebook-line-height));
+}
+
+.donation-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid var(--warm-shadow);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    box-shadow:
+        0 4px 24px rgba(230, 57, 70, 0.06),
+        0 1px 3px rgba(0, 0, 0, 0.04);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle gradient wash at top of card */
+.donation-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(180deg, var(--blush) 0%, transparent 100%);
+    border-radius: 24px 24px 0 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.donation-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================
+   7. Donation Card — Header
+   ============================ */
+.donation-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.donation-card-eyebrow {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.85rem;
+    color: var(--red-soft);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.donation-card-title {
+    font-family: 'Cookie', cursive;
+    font-size: 2rem;
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.donation-card-accent-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    border-radius: 2px;
+    margin-top: 0.25rem;
+    opacity: 0.6;
+}
+
+/* ============================
+   8. Amount Cards Grid
+   ============================ */
+.amount-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+.amount-card {
+    background: white;
+    border: 2px solid var(--warm-shadow);
+    border-radius: 16px;
+    padding: 1.25rem 0.75rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    position: relative;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.amount-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--red-soft);
+    box-shadow: 0 6px 20px var(--red-glow);
+}
+
+.amount-card.selected {
+    border-color: var(--red);
+    background: var(--card-selected-bg);
+    transform: scale(1.03);
+    box-shadow:
+        0 0 0 2px var(--red-glow),
+        0 8px 24px var(--red-glow);
+}
+
+.amount-card-emoji {
+    font-size: 1.75rem;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.amount-card:hover .amount-card-emoji {
+    transform: scale(1.2) rotate(-5deg);
+}
+
+.amount-card.selected .amount-card-emoji {
+    transform: scale(1.25);
+    animation: emojiPop 0.4s ease;
+}
+
+@keyframes emojiPop {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.4) rotate(5deg); }
+    100% { transform: scale(1.25); }
+}
+
+.amount-card-value {
+    font-family: 'Cookie', cursive;
+    font-size: 1.8rem;
+    color: var(--ink);
+    line-height: 1.1;
+}
+
+.amount-card.selected .amount-card-value {
+    color: var(--red);
+}
+
+.amount-card-label {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.7rem;
+    color: var(--pencil-gray);
+    line-height: 1.2;
+}
+
+.amount-card-check {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.7rem;
+    color: white;
+    background: var(--red);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    animation: checkPop 0.3s ease;
+}
+
+@keyframes checkPop {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* ============================
+   9. Custom Amount Toggle & Input
+   ============================ */
+.custom-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.88rem;
+    color: var(--pencil-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.custom-toggle:hover {
+    color: var(--red);
+    background: var(--blush);
+}
+
+.custom-toggle.active {
+    color: var(--red);
+    background: var(--blush);
+}
+
+.custom-toggle-icon {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.custom-toggle:hover .custom-toggle-icon {
+    transform: rotate(-15deg);
+}
+
+.custom-amount-reveal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    max-width: 280px;
+    animation: slideReveal 0.35s ease;
+}
+
+@keyframes slideReveal {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 200px;
+    }
+}
+
+.custom-input-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    width: 100%;
+}
+
+.currency-prefix {
+    font-family: 'Cookie', cursive;
+    font-size: 1.8rem;
+    color: var(--pencil-gray);
+    opacity: 0.7;
+}
+
+.custom-amount-input {
+    flex: 1;
+    text-align: left;
+    -moz-appearance: textfield;
+}
+
+.custom-amount-input::-webkit-outer-spin-button,
+.custom-amount-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* ============================
+   10. Wavy Divider
+   ============================ */
+.card-wavy-divider {
+    width: 80%;
+    color: var(--warm-shadow);
+    opacity: 0.6;
+}
+
+.card-wavy-divider svg {
+    width: 100%;
+    height: 12px;
+}
+
+/* ============================
+   11. Handwritten Inputs
+   ============================ */
+.handwritten-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--warm-shadow);
+    font-family: 'Cookie', cursive;
+    font-size: 1.6rem;
+    color: var(--ink);
+    padding: 0.25rem 0;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.handwritten-input:focus,
+.handwritten-input:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-bottom-color: var(--red-soft) !important;
+}
+
+.handwritten-input::placeholder {
+    color: var(--pencil-gray);
+    opacity: 0.5;
+}
+
+.note-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    max-width: 420px;
+}
+
+.note-input-wrapper label {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.88rem;
+    color: var(--pencil-gray);
+    text-align: center;
+}
+
+.note-input-wrapper .handwritten-input {
+    text-align: center;
+}
+
+.note-input-field-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.note-input-field-wrap .handwritten-input {
+    padding-right: 2rem;
+    padding-left: 2rem;
+}
+
+.note-pencil-icon {
+    position: absolute;
+    right: 0;
+    bottom: 6px;
+    font-size: 0.9rem;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ============================
+   12. CTA Button
+   ============================ */
+.cta-button {
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-soft) 100%);
+    color: white;
+    font-family: 'Cookie', cursive;
+    font-size: 1.8rem;
+    padding: 0.65rem 2.5rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+    box-shadow:
+        0 4px 16px var(--red-glow),
+        0 2px 4px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: ctaGlow 3s ease-in-out infinite;
+}
+
+@keyframes ctaGlow {
+    0%, 100% { box-shadow: 0 4px 16px var(--red-glow), 0 2px 4px rgba(0, 0, 0, 0.06); }
+    50% { box-shadow: 0 6px 28px rgba(230, 57, 70, 0.35), 0 2px 4px rgba(0, 0, 0, 0.06); }
+}
+
+.cta-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+        0 8px 32px rgba(230, 57, 70, 0.35),
+        0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.cta-button:active {
+    transform: translateY(1px) scale(0.99);
+    box-shadow:
+        0 2px 8px var(--red-glow),
+        0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.cta-button svg {
+    opacity: 0.9;
+}
+
+.cta-heart-beat {
+    display: inline-block;
+    animation: heartBeat 1.2s ease-in-out infinite;
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.25); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+    60% { transform: scale(1); }
+}
+
+/* ============================
+   13. Trust Badges
+   ============================ */
+.trust-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.78rem;
+    color: var(--pencil-gray);
+}
+
+.trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+}
+
+.trust-badge-icon {
+    font-size: 0.72rem;
+}
+
+.trust-badge-dot {
+    color: var(--line);
+    font-size: 0.6rem;
+}
+
+.donation-disclaimer {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.72rem;
+    color: var(--pencil-gray);
+    opacity: 0.6;
+    margin: 0;
+    max-width: 400px;
+    line-height: 1.4;
+}
+
+/* ============================
+   14. Floating Hearts Animation
+   ============================ */
+.floating-hearts {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.float-heart {
+    position: absolute;
+    bottom: -20px;
+    font-size: 1rem;
+    color: var(--red);
+    opacity: 0;
+    animation: floatUp 6s ease-in-out infinite;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 0;
+        transform: translateY(0) rotate(0deg);
+    }
+    10% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.25;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-320px) rotate(25deg);
+    }
+}
+
+/* ============================
+   15. Footer
+   ============================ */
+.support-footer {
+    text-align: center;
+    margin-top: 0;
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.footer-wave {
+    width: 200px;
+    height: var(--notebook-line-height);
+    color: var(--line);
+    margin-bottom: var(--notebook-line-height);
+}
+
+.footer-gratitude-title {
+    margin: 0;
+    font-family: 'Cookie', cursive;
+    font-size: 1.75rem;
+    line-height: var(--notebook-line-height);
+}
+
+.footer-signature {
+    margin: 0;
+    line-height: var(--notebook-line-height);
+    margin-bottom: var(--notebook-line-height);
+}
+
+.footer-hearts {
+    display: flex;
+    height: var(--notebook-line-height);
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--red);
+    margin-bottom: var(--notebook-line-height);
+}
+
+.footer-hearts svg:nth-child(1) { transform: rotate(-10deg); }
+.footer-hearts svg:nth-child(2) { transform: translateY(2px) scale(0.9); }
+.footer-hearts svg:nth-child(3) { transform: rotate(15deg); }
+
+.support-footer .support-tiny-note {
+    line-height: var(--notebook-line-height);
+    max-width: 500px;
+    margin-bottom: var(--notebook-line-height);
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--notebook-line-height);
+    line-height: var(--notebook-line-height);
+    gap: 0.25rem;
+    color: var(--pencil-gray);
+    text-decoration: none;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.github-link:hover {
+    color: var(--ink);
+}
+
+/* ============================
+   16. Decorative Doodles
+   ============================ */
+.doodle-overlay {
+    position: absolute;
+    color: var(--pencil-gray);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.doodle-overlay.red {
+    color: var(--red);
+}
+
+/* ============================
+   17. Mobile Responsive
+   ============================ */
+@media (max-width: 600px) {
+    .support-page-container {
+        padding: var(--space-6) var(--space-3);
+    }
+
+    .support-page-container h1 {
+        font-size: 2.2rem;
+    }
+
+    .donation-card {
+        padding: 1.75rem 1.25rem;
+        border-radius: 18px;
+    }
+
+    .amount-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+    }
+
+    .amount-card {
+        padding: 1rem 0.5rem;
+    }
+
+    .amount-card-emoji {
+        font-size: 1.4rem;
+    }
+
+    .amount-card-value {
+        font-size: 1.4rem;
+    }
+
+    .amount-card-label {
+        font-size: 0.6rem;
+    }
+
+    .cta-button {
+        font-size: 1.5rem;
+        padding: 0.55rem 1.75rem;
+    }
+
+    .trust-badges {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .trust-badge-dot {
+        display: none;
+    }
+}

@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Subject, StudySession, MockScore, ProgressCardSettings } from '../../types';
-import { LayoutDashboard, Atom, FlaskConical, Pi, Sun, Moon, Palette, Settings, Calendar, Clock, Menu, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, Atom, FlaskConical, Pi, Sun, Moon, Palette, Settings, Calendar, Clock, Menu, BarChart2, Heart } from 'lucide-react';
 import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
 import { UserAvatar } from '../ui/Avatar';
 import { ProgressCardModal } from '../ui/ProgressCardModal';
 
 interface HeaderProps {
-    currentView: 'dashboard' | 'planner' | 'studyclock' | 'reports' | Subject;
-    onNavigate: (view: 'dashboard' | 'planner' | 'studyclock' | 'reports' | Subject) => void;
+    currentView: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | Subject;
+    onNavigate: (view: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | Subject) => void;
     theme: 'light' | 'dark';
     onThemeToggle: () => void;
     accentColor: string;
@@ -207,6 +207,17 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
 
                         <button
                             className="theme-toggle"
+                            onClick={() => onNavigate('support')}
+                            aria-label="Support OJEE-Tracker"
+                            title="Support OJEE-Tracker"
+                        >
+                            <span className="theme-toggle-icon">
+                                <Heart size={20} color="#e63946" fill={currentView === 'support' ? '#e63946' : 'transparent'} />
+                            </span>
+                        </button>
+
+                        <button
+                            className="theme-toggle"
                             onClick={() => setIsSettingsOpen(true)}
                             aria-label="Open settings"
                             title="Settings & Data Backup"
@@ -238,6 +249,11 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                                 <div className="mobile-menu-item" onClick={() => { onThemeToggle(); setIsMobileMenuOpen(false); }}>
                                     <span>{theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}</span>
                                     {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                                </div>
+
+                                <div className="mobile-menu-item" onClick={() => { onNavigate('support'); setIsMobileMenuOpen(false); }}>
+                                    <span>Support Project</span>
+                                    <Heart size={18} color="#e63946" fill={currentView === 'support' ? '#e63946' : 'transparent'} />
                                 </div>
 
                                 <div className="mobile-menu-item" onClick={() => { setIsSettingsOpen(true); setIsMobileMenuOpen(false); }}>

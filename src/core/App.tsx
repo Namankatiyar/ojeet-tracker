@@ -17,7 +17,7 @@ import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 
 import { AppRoutes } from './AppRoutes';
 
-type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | Subject;
+type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | Subject;
 
 function AppContent() {
     const navigate = useNavigate();
@@ -42,6 +42,7 @@ function AppContent() {
         if (path === 'jee-study-planner') return 'planner';
         if (path === 'jee-study-timer') return 'studyclock';
         if (path === 'reports') return 'reports';
+        if (path === 'support') return 'support';
         return path as View;
     };
 
@@ -52,6 +53,7 @@ function AppContent() {
         else if (view === 'planner') navigate('/jee-study-planner');
         else if (view === 'studyclock') navigate('/jee-study-timer');
         else if (view === 'reports') navigate('/reports');
+        else if (view === 'support') navigate('/support');
         else navigate(`/${view}`);
     };
 

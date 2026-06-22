@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "src/core/context/ThemeContext.tsx": {
-    "mtime": 1782145240.076725,
-    "ast_hash": "ff1cd51fead5de8c9e850c0057620ecb",
+    "mtime": 1782061941.3674664,
+    "ast_hash": "19f6b617217a2a825bc0d9f2d4b4a515",
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "src/features/support/components/SupportPage.tsx": {
-    "mtime": 1782145258.6206539,
-    "ast_hash": "75d1d8165070303209a1fb40db04a142",
+    "mtime": 1782144363.962472,
+    "ast_hash": "75b1b95e7c86eaaef851f6e720762c5d",
     "semantic_hash": ""
   }
 }

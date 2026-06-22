@@ -53,6 +53,7 @@
 @import './features/reports.css' layer(features);
 @import './features/sync.css' layer(features);
 @import './features/legal.css' layer(features);
+@import './features/support.css' layer(features);
 
 /* ======================== */
 /* === Layer: Utilities === */

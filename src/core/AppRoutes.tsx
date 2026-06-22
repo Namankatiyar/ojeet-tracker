@@ -16,6 +16,7 @@ const ImportSyncPage = lazy(() => import('../features/sync/ImportSyncPage').then
 const PrivacyPolicyPage = lazy(() => import('../features/legal/components/PrivacyPolicyPage').then(module => ({ default: module.PrivacyPolicyPage })));
 const TermsOfServicePage = lazy(() => import('../features/legal/components/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
 const ChangelogPage = lazy(() => import('../features/legal/components/ChangelogPage').then(module => ({ default: module.ChangelogPage })));
+const SupportPage = lazy(() => import('../features/support/components/SupportPage').then(module => ({ default: module.SupportPage })));
 
 interface AppRoutesProps {
     onNavigate: (view: any) => void;
@@ -144,6 +145,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                 <Route path="/changelog" element={<ChangelogPage />} />
+                <Route path="/support" element={<SupportPage />} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

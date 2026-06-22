@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 
 type Theme = 'light' | 'dark';
@@ -17,6 +17,7 @@ interface ThemeContextType {
     glassRefraction: number;
     setGlassRefraction: (refraction: number | ((prev: number) => number)) => void;
     toggleTheme: () => void;
+    setSupportOverride: (active: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -38,6 +39,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [glassIntensity, setGlassIntensity] = useLocalStorage<number>('jee-tracker-glass-intensity', 50);
     const [glassRefraction, setGlassRefraction] = useLocalStorage<number>('jee-tracker-glass-refraction', 50);
 
+    const [supportOverride, setSupportOverride] = useState(false);
+
+    const effectiveAccentColor = supportOverride ? '#ff4d6d' : accentColor;
+    const effectiveBackgroundUrl = supportOverride
+        ? 'https://images.unsplash.com/photo-1755958681554-e0689f85eda0?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+        : backgroundUrl;
+
     const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
 
     // Apply theme
@@ -47,18 +55,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Apply accent color and derive secondary accent
     useEffect(() => {
-        document.documentElement.style.setProperty('--accent', accentColor);
-        document.documentElement.style.setProperty('--accent-light', `color-mix(in srgb, ${accentColor}, transparent 90%)`);
-        document.documentElement.style.setProperty('--accent-hover', `color-mix(in srgb, ${accentColor}, black 10%)`);
+        document.documentElement.style.setProperty('--accent', effectiveAccentColor);
+        document.documentElement.style.setProperty('--accent-light', `color-mix(in srgb, ${effectiveAccentColor}, transparent 90%)`);
+        document.documentElement.style.setProperty('--accent-hover', `color-mix(in srgb, ${effectiveAccentColor}, black 10%)`);
 
         // Calculate contrast text color
-        const hex = accentColor.replace('#', '');
+        const hex = effectiveAccentColor.replace('#', '');
         const r = parseInt(hex.substring(0, 2), 16);
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
         const textColor = brightness > 128 ? '#000000' : '#ffffff';
-        const borderColor = brightness > 200 ? 'var(--border)' : accentColor;
+        const borderColor = brightness > 200 ? 'var(--border)' : effectiveAccentColor;
         document.documentElement.style.setProperty('--accent-text', textColor);
         document.documentElement.style.setProperty('--accent-border', borderColor);
 
@@ -95,17 +103,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Update PWA theme color
         const metaThemeColor = document.querySelector("meta[name=theme-color]");
         if (metaThemeColor) {
-            metaThemeColor.setAttribute("content", accentColor);
+            metaThemeColor.setAttribute("content", effectiveAccentColor);
         }
-    }, [accentColor]);
+    }, [effectiveAccentColor]);
 
     // Apply custom background, dimming, and glassmorphism intensity
     useEffect(() => {
         // Clear direct background inline style from previous implementation
         document.body.style.backgroundImage = '';
 
-        if (backgroundUrl && theme === 'dark') {
-            document.documentElement.style.setProperty('--custom-bg-url', `url("${backgroundUrl}")`);
+        if (effectiveBackgroundUrl && theme === 'dark') {
+            document.documentElement.style.setProperty('--custom-bg-url', `url("${effectiveBackgroundUrl}")`);
             document.body.classList.add('has-custom-bg');
         } else {
             document.documentElement.style.setProperty('--custom-bg-url', 'none');
@@ -129,17 +137,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         document.documentElement.style.setProperty('--glass-border', `rgba(255, 255, 255, ${borderOpacity})`);
         document.documentElement.style.setProperty('--glass-border-light', `rgba(255, 255, 255, ${borderOpacity + 0.05})`);
         document.documentElement.style.setProperty('--glass-refraction', `saturate(${saturation}%) brightness(${brightness}%) hue-rotate(${hueRotate}deg)`);
-    }, [backgroundUrl, theme, dimLevel, glassIntensity, glassRefraction]);
+    }, [effectiveBackgroundUrl, theme, dimLevel, glassIntensity, glassRefraction]);
 
     return (
         <ThemeContext.Provider value={{
             theme, setTheme,
-            accentColor, setAccentColor,
-            backgroundUrl, setBackgroundUrl,
+            accentColor: effectiveAccentColor,
+            setAccentColor,
+            backgroundUrl: effectiveBackgroundUrl,
+            setBackgroundUrl,
             dimLevel, setDimLevel,
             glassIntensity, setGlassIntensity,
             glassRefraction, setGlassRefraction,
-            toggleTheme
+            toggleTheme,
+            setSupportOverride
         }}>
             {children}
         </ThemeContext.Provider>
