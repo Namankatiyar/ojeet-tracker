@@ -113,19 +113,16 @@ export function SettingsModal({
         setImportStatus('idle');
 
         try {
-            // 1. Wipe remote database backups if user is logged in
+            // 1. Wipe remote database backups and delete the user account if logged in
             if (user && isConfigured && supabase) {
-                const { error: syncStateError } = await supabase.from('user_sync_state').delete().eq('user_id', user.id);
-                if (syncStateError) console.warn('Error deleting sync state:', syncStateError);
-
-                const { error: syncChunksError } = await supabase.from('user_sync_chunks').delete().eq('user_id', user.id);
-                if (syncChunksError) console.warn('Error deleting sync chunks:', syncChunksError);
-
-                const { error: studyAggregateError } = await supabase.from('user_study_aggregate').delete().eq('user_id', user.id);
-                if (studyAggregateError) console.warn('Error deleting study aggregate:', studyAggregateError);
-
-                const { error: sessionLogError } = await supabase.from('study_session_log').delete().eq('user_id', user.id);
-                if (sessionLogError) console.warn('Error deleting study session logs:', sessionLogError);
+                const { error: deleteUserError } = await supabase.functions.invoke('delete-user-account');
+                if (deleteUserError) {
+                    console.error('Error invoking delete-user-account function:', deleteUserError);
+                    throw new Error('Failed to delete user account securely from the server.');
+                }
+                
+                // Clear local auth session state as well
+                await signOut();
             }
 
             // 2. Wipe all local storage keys starting with app prefixes

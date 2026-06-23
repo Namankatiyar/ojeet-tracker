@@ -22,12 +22,154 @@
 
     min-height: 100vh;
     background-color: var(--paper);
-    background-image: repeating-linear-gradient(
-        transparent,
-        transparent calc(var(--notebook-line-height) - 1px),
-        var(--line) calc(var(--notebook-line-height) - 1px),
-        var(--line) var(--notebook-line-height)
-    );
+
+    /*
+     * TEXTURED PAPER BACKGROUND
+     * ~12 composited gradient layers to simulate real paper.
+     * Order: top-most layer listed first (painter's model).
+     *
+     * Layer 1:    Notebook ruled lines (the blue/brown lines)
+     * Layer 2-3:  Horizontal micro-fiber streaks (two densities)
+     * Layer 4-5:  Diagonal fiber streaks at ±35°
+     * Layer 6-9:  Pseudo-noise grain (tiny radial-gradient dots at offset tiles)
+     * Layer 10:   Warm tonal patch (organic color variation)
+     * Layer 11:   Cool tonal patch (organic color variation)
+     * Layer 12:   Edge-darkening vignette
+     * Layer 13:   Subtle fold / crinkle mark
+     */
+    background-image:
+        /* 1 — Notebook ruled lines */
+        repeating-linear-gradient(
+            180deg,
+            transparent,
+            transparent calc(var(--notebook-line-height) - 1px),
+            var(--line) calc(var(--notebook-line-height) - 1px),
+            var(--line) var(--notebook-line-height)
+        ),
+
+        /* 2 — Fine horizontal fibers (dense) */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(210, 195, 170, 0.08) 2px,
+            rgba(210, 195, 170, 0.08) 3px,
+            transparent 3px,
+            transparent 7px
+        ),
+
+        /* 3 — Coarser horizontal fibers */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 11px,
+            rgba(190, 175, 150, 0.05) 11px,
+            rgba(190, 175, 150, 0.05) 12px,
+            transparent 12px,
+            transparent 19px
+        ),
+
+        /* 4 — Diagonal fibers at 35° */
+        repeating-linear-gradient(
+            35deg,
+            transparent,
+            transparent 29px,
+            rgba(200, 185, 160, 0.04) 29px,
+            rgba(200, 185, 160, 0.04) 30px,
+            transparent 30px,
+            transparent 53px
+        ),
+
+        /* 5 — Diagonal fibers at -40° */
+        repeating-linear-gradient(
+            -40deg,
+            transparent,
+            transparent 37px,
+            rgba(195, 180, 155, 0.035) 37px,
+            rgba(195, 180, 155, 0.035) 38px,
+            transparent 38px,
+            transparent 67px
+        ),
+
+        /* 6 — Grain dot layer A (tiny offset dots for noise) */
+        radial-gradient(
+            circle 0.7px at 30% 40%,
+            rgba(160, 140, 110, 0.07) 0%,
+            transparent 100%
+        ),
+
+        /* 7 — Grain dot layer B (shifted) */
+        radial-gradient(
+            circle 0.5px at 70% 20%,
+            rgba(140, 125, 100, 0.06) 0%,
+            transparent 100%
+        ),
+
+        /* 8 — Grain dot layer C */
+        radial-gradient(
+            circle 0.8px at 15% 75%,
+            rgba(175, 155, 125, 0.05) 0%,
+            transparent 100%
+        ),
+
+        /* 9 — Grain dot layer D */
+        radial-gradient(
+            circle 0.6px at 85% 60%,
+            rgba(155, 140, 115, 0.055) 0%,
+            transparent 100%
+        ),
+
+        /* 10 — Warm tonal patch (lower-right bias) */
+        radial-gradient(
+            ellipse 60% 50% at 70% 65%,
+            rgba(245, 225, 195, 0.18) 0%,
+            transparent 70%
+        ),
+
+        /* 11 — Cool tonal patch (upper-left bias) */
+        radial-gradient(
+            ellipse 55% 45% at 25% 30%,
+            rgba(220, 225, 235, 0.12) 0%,
+            transparent 70%
+        ),
+
+        /* 12 — Edge-darkening vignette */
+        radial-gradient(
+            ellipse 80% 80% at 50% 50%,
+            transparent 50%,
+            rgba(200, 185, 160, 0.10) 100%
+        ),
+
+        /* 13 — Subtle diagonal crinkle/fold mark */
+        linear-gradient(
+            155deg,
+            transparent 42%,
+            rgba(220, 205, 180, 0.06) 42.5%,
+            rgba(220, 205, 180, 0.06) 43%,
+            transparent 43.5%,
+            transparent 57%,
+            rgba(220, 205, 180, 0.04) 57.5%,
+            rgba(220, 205, 180, 0.04) 58%,
+            transparent 58.5%
+        );
+
+    /* Each layer gets its own size tile to break repetition and
+       create the organic randomness of real paper */
+    background-size:
+        /* 1  ruled lines    */ 100% auto,
+        /* 2  fine fibers    */ 100% 7px,
+        /* 3  coarse fibers  */ 100% 19px,
+        /* 4  diag fibers +  */ 53px 53px,
+        /* 5  diag fibers -  */ 67px 67px,
+        /* 6  grain A        */ 4px 5px,
+        /* 7  grain B        */ 5px 4px,
+        /* 8  grain C        */ 6px 7px,
+        /* 9  grain D        */ 7px 5px,
+        /* 10 warm patch     */ 100% 100%,
+        /* 11 cool patch     */ 100% 100%,
+        /* 12 vignette       */ 100% 100%,
+        /* 13 crinkle        */ 100% 100%;
+
     background-position: 0 var(--notebook-line-offset);
     background-attachment: local;
     color: var(--ink);
@@ -575,6 +717,248 @@
     30% { transform: scale(1); }
     45% { transform: scale(1.15); }
     60% { transform: scale(1); }
+}
+
+/* ============================
+   12b. CTA Buttons Group
+   ============================ */
+.cta-buttons-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cta-secondary-button {
+    background: none;
+    border: 1.5px dashed var(--pencil-gray);
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.82rem;
+    color: var(--pencil-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1.25rem;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.cta-secondary-button:hover {
+    color: var(--red-soft);
+    border-color: var(--red-soft);
+    background: var(--blush);
+}
+
+.cta-secondary-button svg {
+    opacity: 0.7;
+}
+
+.cta-secondary-button:hover svg {
+    opacity: 1;
+}
+
+/* ============================
+   12c. Spread Awareness Modal
+   ============================ */
+.spread-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(44, 44, 44, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    animation: modalOverlayIn 0.25s ease;
+}
+
+@keyframes modalOverlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.spread-modal {
+    background: var(--paper);
+    border: 1.5px solid var(--warm-shadow);
+    border-radius: 24px;
+    padding: 2.25rem 2rem 1.75rem;
+    max-width: 480px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.1),
+        0 4px 12px rgba(230, 57, 70, 0.06);
+    animation: modalSlideIn 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.spread-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--pencil-gray);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.spread-modal-close:hover {
+    color: var(--red);
+    background: var(--blush);
+}
+
+.spread-modal-emoji {
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    animation: emojiPop 0.5s ease 0.2s both;
+}
+
+.spread-modal-title {
+    font-family: 'Cookie', cursive !important;
+    font-size: 2.2rem !important;
+    color: var(--ink) !important;
+    margin: 0 0 1rem 0 !important;
+    line-height: 1.2 !important;
+}
+
+.spread-modal-body {
+    text-align: left;
+    width: 100%;
+}
+
+.spread-modal-body > p {
+    font-family: 'Betania Patmos In', cursive, sans-serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    line-height: 1.6;
+    margin: 0 0 0.75rem 0;
+}
+
+.spread-modal-body > p strong {
+    color: var(--red);
+}
+
+.spread-modal-action-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--warm-shadow);
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.65rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.spread-modal-action-card:hover {
+    border-color: var(--red-soft);
+    box-shadow: 0 2px 12px var(--red-glow);
+}
+
+.spread-modal-action-emoji {
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.spread-modal-action-card strong {
+    font-family: 'Cookie', cursive;
+    font-size: 1.3rem;
+    color: var(--ink);
+    font-weight: normal;
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.spread-modal-action-card p {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size: 0.78rem;
+    color: var(--pencil-gray);
+    line-height: 1.45;
+    margin: 0;
+}
+
+.spread-modal-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1.5px dashed var(--warm-shadow);
+    width: 100%;
+    text-align: center;
+}
+
+.spread-modal-footer p {
+    font-family: 'Betania Patmos In', cursive, sans-serif;
+    font-size: 1rem;
+    color: var(--pencil-gray);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.spread-modal-got-it {
+    margin-top: 1rem;
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-soft) 100%);
+    color: white;
+    font-family: 'Cookie', cursive;
+    font-size: 1.4rem;
+    padding: 0.5rem 2rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 3px 12px var(--red-glow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.spread-modal-got-it:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.3);
+}
+
+.spread-modal-got-it:active {
+    transform: translateY(1px);
+}
+
+/* Mobile modal adjustments */
+@media (max-width: 600px) {
+    .spread-modal {
+        padding: 1.75rem 1.25rem 1.5rem;
+        border-radius: 18px;
+    }
+
+    .spread-modal-title {
+        font-size: 1.8rem !important;
+    }
+
+    .spread-modal-action-card {
+        padding: 0.7rem 0.8rem;
+    }
 }
 
 /* ============================

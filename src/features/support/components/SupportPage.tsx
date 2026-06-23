@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { triggerConfetti } from '../../../shared/utils/confetti';
 import { useTheme } from '../../../core/context/ThemeContext';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { GoogleSignInButton } from '../../../shared/components/ui/GoogleSignInButton';
 
 // --- Doodles & Icons ---
 const DoodleHeart = ({ className = '', style = {} }: { className?: string; style?: React.CSSProperties }) => (
@@ -28,14 +31,41 @@ const SparkleIcon = () => (
     </svg>
 );
 
+// Share / Megaphone icon for the secondary button
+const ShareIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"/>
+        <circle cx="6" cy="12" r="3"/>
+        <circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+);
+
 const AMOUNTS = [
-    { value: '₹49', label: 'A cup of chai ☕', emoji: '☕' },
-    { value: '₹99', label: 'A study snack 🍪', emoji: '🍪' },
-    { value: '₹199', label: "A week's fuel 🚀", emoji: '🚀' },
+    { value: '₹49',  emoji: '☕' },
+    { value: '₹99',  emoji: '🍪' },
+    { value: '₹199', emoji: '🚀' },
 ];
+
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        if ((window as any).Razorpay) {
+            resolve(true);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 export const SupportPage: React.FC = () => {
     const { setSupportOverride } = useTheme();
+    const { user, signInWithGoogle } = useRemoteAuth();
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         setSupportOverride(true);
@@ -48,6 +78,57 @@ export const SupportPage: React.FC = () => {
     const [customAmount, setCustomAmount] = useState('');
     const [note, setNote] = useState('');
     const [isCustom, setIsCustom] = useState(false);
+    const [showSpreadModal, setShowSpreadModal] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    // Auth & Prefill state
+    const [isAuthBusy, setIsAuthBusy] = useState(false);
+    const [authStatus, setAuthStatus] = useState<string>('');
+    const [prefillName, setPrefillName] = useState('');
+    const [prefillEmail, setPrefillEmail] = useState('');
+
+    const handleGoogleSignIn = async () => {
+        setIsAuthBusy(true);
+        setAuthStatus('Redirecting to Google...');
+        const { error } = await signInWithGoogle();
+        if (error) {
+            setAuthStatus('Sign in failed');
+            setIsAuthBusy(false);
+        }
+    };
+
+    // Parse query parameters and prefill states on mount
+    useEffect(() => {
+        const urlAmount = searchParams.get('amount');
+        const urlNote = searchParams.get('note');
+
+        // 1. Amount prefilling
+        if (urlAmount) {
+            const numericAmt = parseInt(urlAmount, 10);
+            if (!isNaN(numericAmt) && numericAmt > 0) {
+                const matchingPredefined = AMOUNTS.find(
+                    (a) => parseInt(a.value.replace('₹', ''), 10) === numericAmt
+                );
+                if (matchingPredefined) {
+                    setSelectedAmount(matchingPredefined.value);
+                    setIsCustom(false);
+                } else {
+                    setSelectedAmount(null);
+                    setIsCustom(true);
+                    setCustomAmount(numericAmt.toString());
+                }
+            }
+        }
+
+        // 2. Personal info prefilling from user metadata
+        setPrefillEmail(user?.email || '');
+        setPrefillName(user?.user_metadata?.full_name || user?.user_metadata?.name || '');
+
+        // 3. Note prefilling
+        if (urlNote) {
+            setNote(urlNote);
+        }
+    }, [searchParams, user]);
 
     const handleAmountSelect = (value: string) => {
         setSelectedAmount(value);
@@ -59,8 +140,100 @@ export const SupportPage: React.FC = () => {
         setSelectedAmount(null);
     };
 
-    const handleSupportClick = () => {
-        triggerConfetti('#e63946');
+    const handleSupportClick = async () => {
+        let amountInRupees = 0;
+        if (isCustom) {
+            amountInRupees = parseInt(customAmount, 10);
+        } else if (selectedAmount) {
+            amountInRupees = parseInt(selectedAmount.replace('₹', ''), 10);
+        }
+
+        if (!amountInRupees || amountInRupees < 1) {
+            alert('Please select or enter a valid amount.');
+            return;
+        }
+
+        const amountInPaise = amountInRupees * 100;
+
+        setIsProcessing(true);
+        try {
+            const isScriptLoaded = await loadRazorpayScript();
+            if (!isScriptLoaded) {
+                alert('Failed to load Razorpay SDK. Please check your connection.');
+                return;
+            }
+
+            // 1. Create order
+            const response = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: amountInPaise })
+            });
+
+            const order = await response.json();
+
+            if (!response.ok) {
+                throw new Error(order.error || 'Failed to create order');
+            }
+
+            // 2. Open Razorpay Checkout
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: order.currency,
+                name: "OJEE-Tracker",
+                description: "Support for OJEE-Tracker",
+                order_id: order.id,
+                prefill: {
+                    name: prefillName || undefined,
+                    email: prefillEmail || undefined,
+                },
+                notes: {
+                    user_note: note
+                },
+                theme: {
+                    color: "#e63946"
+                },
+                handler: async function (response: any) {
+                    try {
+                        const verifyRes = await fetch('/api/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        });
+
+                        const verifyData = await verifyRes.json();
+                        if (verifyData.success) {
+                            triggerConfetti('#e63946');
+                            alert('Thank you so much for your support! ❤️');
+                            setSelectedAmount(null);
+                            setCustomAmount('');
+                            setNote('');
+                        } else {
+                            alert('Payment verification failed.');
+                        }
+                    } catch (err) {
+                        console.error('Verification error:', err);
+                        alert('Payment verified but failed to confirm with server.');
+                    }
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on('payment.failed', function (response: any) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+        } catch (error: any) {
+            console.error('Checkout error:', error);
+            alert('Error initiating checkout: ' + error.message);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -107,104 +280,130 @@ export const SupportPage: React.FC = () => {
                     <div className="donation-card">
                         {/* Card header with decorative accent */}
                         <div className="donation-card-header">
-                            <span className="donation-card-eyebrow">Choose what feels right</span>
-                            <h2 className="donation-card-title">Even a small contribution means a lot.</h2>
+                            <span className="donation-card-eyebrow">{user ? "Choose what feels right" : "Sign in required"}</span>
+                            <h2 className="donation-card-title">{user ? "Even a small contribution means a lot." : "Join to support OJEE-Tracker"}</h2>
                             <div className="donation-card-accent-line" aria-hidden="true" />
                         </div>
 
-                        {/* Amount cards grid */}
-                        <div className="amount-cards-grid">
-                            {AMOUNTS.map(({ value, label, emoji }) => (
-                                <button
-                                    key={value}
-                                    className={`amount-card ${selectedAmount === value ? 'selected' : ''}`}
-                                    onClick={() => handleAmountSelect(value)}
-                                >
-                                    <span className="amount-card-emoji">{emoji}</span>
-                                    <span className="amount-card-value">{value}</span>
-                                    <span className="amount-card-label">{label}</span>
-                                    {selectedAmount === value && (
-                                        <span className="amount-card-check" aria-label="Selected">✓</span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Custom amount toggle */}
-                        <button
-                            className={`custom-toggle ${isCustom ? 'active' : ''}`}
-                            onClick={handleCustomToggle}
-                        >
-                            <span className="custom-toggle-icon">✎</span>
-                            <span>or enter your own amount</span>
-                        </button>
-
-                        {/* Custom amount input */}
-                        {isCustom && (
-                            <div className="custom-amount-reveal">
-                                <div className="custom-input-row">
-                                    <span className="currency-prefix">₹</span>
-                                    <input
-                                        type="number"
-                                        className="handwritten-input custom-amount-input"
-                                        placeholder="any amount"
-                                        value={customAmount}
-                                        onChange={e => setCustomAmount(e.target.value)}
-                                        min="1"
-                                        autoFocus
-                                    />
-                                </div>
-                                <span className="support-tiny-note" style={{ marginTop: '0.25rem' }}>
-                                    Whatever feels comfortable — no pressure at all.
-                                </span>
+                        {!user ? (
+                            <div className="support-login-prompt" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', maxWidth: '400px', marginTop: '1rem' }}>
+                                <p style={{ fontSize: '1rem', color: 'var(--pencil-gray)', lineHeight: '1.5' }}>
+                                    To make a contribution, please sign in with Google first. This helps us secure the checkout process and pre-fill your receipt details.
+                                </p>
+                                <GoogleSignInButton onClick={handleGoogleSignIn} disabled={isAuthBusy} />
+                                {authStatus && <p className="support-tiny-note" style={{ color: 'var(--red-soft)' }}>{authStatus}</p>}
                             </div>
+                        ) : (
+                            <>
+                                {/* Amount cards grid */}
+                                <div className="amount-cards-grid">
+                                    {AMOUNTS.map(({ value, emoji }) => (
+                                        <button
+                                            key={value}
+                                            className={`amount-card ${selectedAmount === value ? 'selected' : ''}`}
+                                            onClick={() => handleAmountSelect(value)}
+                                        >
+                                            <span className="amount-card-emoji">{emoji}</span>
+                                            <span className="amount-card-value">{value}</span>
+                                            {selectedAmount === value && (
+                                                <span className="amount-card-check" aria-label="Selected">✓</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Custom amount toggle */}
+                                <button
+                                    className={`custom-toggle ${isCustom ? 'active' : ''}`}
+                                    onClick={handleCustomToggle}
+                                >
+                                    <span className="custom-toggle-icon">✎</span>
+                                    <span>or enter your own amount</span>
+                                </button>
+
+                                {/* Custom amount input */}
+                                {isCustom && (
+                                    <div className="custom-amount-reveal">
+                                        <div className="custom-input-row">
+                                            <span className="currency-prefix">₹</span>
+                                            <input
+                                                type="number"
+                                                className="handwritten-input custom-amount-input"
+                                                placeholder="any amount"
+                                                value={customAmount}
+                                                onChange={e => setCustomAmount(e.target.value)}
+                                                min="1"
+                                                autoFocus
+                                            />
+                                        </div>
+                                        <span className="support-tiny-note" style={{ marginTop: '0.25rem' }}>
+                                            Whatever feels comfortable — no pressure at all.
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Wavy divider */}
+                                <div className="card-wavy-divider" aria-hidden="true">
+                                    <svg viewBox="0 0 400 12" preserveAspectRatio="none">
+                                        <path d="M0 6 Q 25 0, 50 6 T 100 6 T 150 6 T 200 6 T 250 6 T 300 6 T 350 6 T 400 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                    </svg>
+                                </div>
+
+                                {/* Note input */}
+                                <div className="note-input-wrapper">
+                                    <label>Leave a tiny note, if you'd like</label>
+                                    <div className="note-input-field-wrap">
+                                        <input
+                                            type="text"
+                                            className="handwritten-input"
+                                            placeholder={'"This helped me stay on track. Thank you!"'}
+                                            value={note}
+                                            onChange={e => setNote(e.target.value)}
+                                        />
+                                        <span className="note-pencil-icon" aria-hidden="true">✏️</span>
+                                    </div>
+                                </div>
+
+                                {/* CTA Buttons */}
+                                <div className="cta-buttons-group">
+                                    <button className="cta-button" onClick={handleSupportClick} disabled={isProcessing}>
+                                        <SparkleIcon />
+                                        <span>{isProcessing ? 'Processing...' : 'Support OJEE-Tracker'}</span>
+                                        {!isProcessing && <span className="cta-heart-beat">❤️</span>}
+                                    </button>
+                                </div>
+                            </>
                         )}
 
-                        {/* Wavy divider */}
-                        <div className="card-wavy-divider" aria-hidden="true">
-                            <svg viewBox="0 0 400 12" preserveAspectRatio="none">
-                                <path d="M0 6 Q 25 0, 50 6 T 100 6 T 150 6 T 200 6 T 250 6 T 300 6 T 350 6 T 400 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                            </svg>
-                        </div>
-
-                        {/* Note input */}
-                        <div className="note-input-wrapper">
-                            <label>Leave a tiny note, if you'd like</label>
-                            <div className="note-input-field-wrap">
-                                <input
-                                    type="text"
-                                    className="handwritten-input"
-                                    placeholder={'"This helped me stay on track. Thank you!"'}
-                                    value={note}
-                                    onChange={e => setNote(e.target.value)}
-                                />
-                                <span className="note-pencil-icon" aria-hidden="true">✏️</span>
+                        {/* Secondary Button - Always available */}
+                        {!user && (
+                            <div className="card-wavy-divider" aria-hidden="true" style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                                <svg viewBox="0 0 400 12" preserveAspectRatio="none">
+                                    <path d="M0 6 Q 25 0, 50 6 T 100 6 T 150 6 T 200 6 T 250 6 T 300 6 T 350 6 T 400 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                </svg>
                             </div>
-                        </div>
-
-                        {/* CTA Button */}
-                        <button className="cta-button" onClick={handleSupportClick}>
-                            <SparkleIcon />
-                            <span>Support OJEE-Tracker</span>
-                            <span className="cta-heart-beat">❤️</span>
+                        )}
+                        <button className="cta-secondary-button" onClick={() => setShowSpreadModal(true)} style={user ? { marginTop: '-0.5rem' } : {}}>
+                            <ShareIcon />
+                            <span>I can't support financially</span>
                         </button>
 
-                        {/* Trust badges row */}
-                        <div className="trust-badges">
-                            <span className="trust-badge">
-                                <span className="trust-badge-icon">🔒</span>
-                                Secure payment
-                            </span>
-                            <span className="trust-badge-dot">·</span>
-                            <span className="trust-badge">
-                                <span className="trust-badge-icon">👤</span>
-                                No account needed
-                            </span>
-                            <span className="trust-badge-dot">·</span>
-                            <span className="trust-badge">
-                                <span className="trust-badge-icon">💚</span>
-                                100% to the project
-                            </span>
+                        <p className="support-tiny-note" style={{ textAlign: 'center', marginTop: '1rem', marginBottom: '-0.5rem', opacity: 0.75 }}>
+                            Note: The secure checkout gateway may take a few seconds to initialize.
+                        </p>
+
+                        {/* Razorpay Branding Badge */}
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.25rem', marginBottom: '0.25rem', opacity: 0.9, transition: 'opacity 0.2s ease' }}
+                             onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                             onMouseLeave={(e) => e.currentTarget.style.opacity = '0.9'}>
+                            <a href="https://razorpay.com/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block' }}>
+                                <img 
+                                    referrerPolicy="origin" 
+                                    src="https://badges.razorpay.com/badge-light.png" 
+                                    style={{ height: '45px', width: '113px', display: 'block' }} 
+                                    alt="Razorpay | Payment Gateway | Neobank" 
+                                />
+                            </a>
                         </div>
 
                         <p className="donation-disclaimer">
@@ -233,6 +432,62 @@ export const SupportPage: React.FC = () => {
                     </a>
                 </footer>
             </main>
+
+            {/* Spread Awareness Modal */}
+            {showSpreadModal && (
+                <div className="spread-modal-overlay" onClick={() => setShowSpreadModal(false)}>
+                    <div className="spread-modal" onClick={e => e.stopPropagation()}>
+                        <button className="spread-modal-close" onClick={() => setShowSpreadModal(false)} aria-label="Close">
+                            ✕
+                        </button>
+
+                        <div className="spread-modal-emoji">🤗</div>
+
+                        <h2 className="spread-modal-title">You're already amazing!</h2>
+
+                        <div className="spread-modal-body">
+                            <p>
+                                Hey, don't worry at all! OJEE-Tracker is <strong>free for everyone</strong> and it'll stay that way. You don't need to spend a single rupee.
+                            </p>
+                            <p>
+                                If you'd still like to help, here's the best thing you can do:
+                            </p>
+
+                            <div className="spread-modal-action-card">
+                                <span className="spread-modal-action-emoji">📢</span>
+                                <div>
+                                    <strong>Spread the word!</strong>
+                                    <p>Tell your friends, classmates, or study groups about OJEE-Tracker. Share it on Reddit, WhatsApp, Instagram, or just mention it to someone who's preparing for JEE.</p>
+                                </div>
+                            </div>
+
+                            <div className="spread-modal-action-card">
+                                <span className="spread-modal-action-emoji">⭐</span>
+                                <div>
+                                    <strong>Star us on GitHub</strong>
+                                    <p>A star on the repo helps more students discover this tool.</p>
+                                </div>
+                            </div>
+
+                            <div className="spread-modal-action-card">
+                                <span className="spread-modal-action-emoji">💬</span>
+                                <div>
+                                    <strong>Give feedback</strong>
+                                    <p>Report bugs, suggest features, or just tell us what you liked. Every bit of feedback makes OJEE-Tracker better for everyone.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="spread-modal-footer">
+                            <p>Your support doesn't have to be financial.<br/>Every student who benefits from this tool is support enough. ♡</p>
+                        </div>
+
+                        <button className="spread-modal-got-it" onClick={() => setShowSpreadModal(false)}>
+                            Got it, thank you! 🌟
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

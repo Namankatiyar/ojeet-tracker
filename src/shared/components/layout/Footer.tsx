@@ -32,9 +32,9 @@ export function Footer() {
                             A high-performance, offline-first study companion optimized for competitive exam preparation.
                         </p>
                         <div className="footer-trust-badges">
-                            <span className="trust-badge"><WifiOff size={14} /> Offline First</span>
-                            <span className="trust-badge"><Code2 size={14} /> Open Source</span>
-                            <span className="trust-badge"><ShieldCheck size={14} /> Privacy Friendly</span>
+                            <span className="footer-trust-badge"><WifiOff size={14} /> Offline First</span>
+                            <span className="footer-trust-badge"><Code2 size={14} /> Open Source</span>
+                            <span className="footer-trust-badge"><ShieldCheck size={14} /> Privacy Friendly</span>
                         </div>
                     </div>
 
