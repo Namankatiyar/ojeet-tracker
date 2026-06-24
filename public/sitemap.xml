@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://tracker.ojeet.tech/</loc>
+    <loc>https://tracker.ojeet.tech/jee-syllabus-tracker</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -21,12 +21,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tracker.ojeet.tech/planner</loc>
+    <loc>https://tracker.ojeet.tech/jee-study-planner</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tracker.ojeet.tech/studyclock</loc>
+    <loc>https://tracker.ojeet.tech/jee-study-timer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
