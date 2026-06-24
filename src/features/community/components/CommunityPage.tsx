@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { UserProfileCard } from './UserProfileCard';
 import { InviteSection } from './InviteSection';
 import { ProfileEditModal } from './ProfileEditModal';
+import { InviteFriendModal } from './InviteFriendModal';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { User, Users, Trophy } from 'lucide-react';
 
@@ -10,6 +11,7 @@ type CommunityTab = 'profile' | 'friends' | 'leaderboard';
 export function CommunityPage() {
     const [activeTab, setActiveTab] = useState<CommunityTab>('profile');
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
     const { progressCardSettings, setProgressCardSettings } = useUserProgress();
 
     const tabs: { key: CommunityTab; label: string; icon: React.ReactNode; disabled?: boolean }[] = [
@@ -29,7 +31,10 @@ export function CommunityPage() {
                     <p className="community-page-subtitle">Connect with friends, track rankings, and study together.</p>
                 </div>
                 <div className="community-header-actions">
-                    <InviteSection inviteCode={progressCardSettings.inviteCode || ''} />
+                    <InviteSection 
+                        inviteCode={progressCardSettings.inviteCode || ''} 
+                        onInviteFriendClick={() => setIsInviteOpen(true)}
+                    />
                 </div>
             </div>
 
@@ -73,6 +78,11 @@ export function CommunityPage() {
                 onClose={() => setIsEditOpen(false)}
                 settings={progressCardSettings}
                 onSave={setProgressCardSettings}
+            />
+
+            <InviteFriendModal
+                isOpen={isInviteOpen}
+                onClose={() => setIsInviteOpen(false)}
             />
         </div>
     );

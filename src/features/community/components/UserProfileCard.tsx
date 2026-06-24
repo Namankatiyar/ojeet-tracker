@@ -46,14 +46,16 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
     const todayStr = formatDateLocal(new Date());
 
     /* ── Live Indicator: Read timer engine state from localStorage ── */
-    const isStudying = useMemo(() => {
+    const timerState = useMemo<'running' | 'paused' | 'other'>(() => {
         try {
             const raw = localStorage.getItem('jee-timer-engine');
-            if (!raw) return false;
+            if (!raw) return 'other';
             const state = JSON.parse(raw);
-            return state.engineState === 'running';
+            if (state.engineState === 'running') return 'running';
+            if (state.engineState === 'paused') return 'paused';
+            return 'other';
         } catch {
-            return false;
+            return 'other';
         }
     }, []);
 
@@ -85,15 +87,42 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
         return count;
     }, [studySessions]);
 
+    /* ── Active Task ID from Study Clock ── */
+    const activeTaskId = useMemo<string | null>(() => {
+        try {
+            const rawTimer = localStorage.getItem('jee-timer-engine');
+            if (!rawTimer) return null;
+            const timerState = JSON.parse(rawTimer);
+            if (timerState.engineState !== 'running' && timerState.engineState !== 'paused') {
+                return null;
+            }
+            const rawType = localStorage.getItem('studyClock_taskType');
+            const rawTaskId = localStorage.getItem('studyClock_selectedTaskId');
+            if (!rawType || !rawTaskId) return null;
+
+            const taskType = JSON.parse(rawType);
+            const taskId = JSON.parse(rawTaskId);
+            return taskType === 'task' && taskId ? taskId : null;
+        } catch {
+            return null;
+        }
+    }, []);
+
     /* ── Today's tasks ── */
     const todayTasks = useMemo<PlannerTask[]>(
-        () => plannerTasks
-            .filter(t => t.date === todayStr)
-            .sort((a, b) => {
+        () => {
+            const filtered = plannerTasks.filter(t => t.date === todayStr);
+            return [...filtered].sort((a, b) => {
+                const aIsActive = a.id === activeTaskId;
+                const bIsActive = b.id === activeTaskId;
+                if (aIsActive && !bIsActive) return -1;
+                if (!aIsActive && bIsActive) return 1;
+
                 if (a.completed !== b.completed) return a.completed ? 1 : -1;
                 return a.time.localeCompare(b.time);
-            }),
-        [plannerTasks, todayStr]
+            });
+        },
+        [plannerTasks, todayStr, activeTaskId]
     );
 
     /* ── 7-day momentum heatmap ── */
@@ -160,10 +189,15 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                 </div>
                 {/* Status Badge */}
                 <div className="profile-card-status-badge-container">
-                    {isStudying ? (
+                    {timerState === 'running' ? (
                         <span className="profile-card-status-badge studying">
                             <span className="profile-card-status-dot" />
                             Studying
+                        </span>
+                    ) : timerState === 'paused' ? (
+                        <span className="profile-card-status-badge idle">
+                            <span className="profile-card-status-dot" />
+                            Idle
                         </span>
                     ) : activeSettings.mockIsOnline ? (
                         <span className="profile-card-status-badge online">
@@ -259,20 +293,23 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                         <p className="profile-card-section-label">Today's agenda</p>
                         {todayTasks.length > 0 ? (
                             <div className="profile-card-tasks-list">
-                                {todayTasks.map((task) => (
-                                    <div
-                                        key={task.id}
-                                        className={`profile-card-task-item ${task.completed ? 'completed' : ''}`}
-                                    >
-                                        <span
-                                            className={`profile-card-task-dot ${task.subject || 'custom'}`}
-                                        />
-                                        <span className="profile-card-task-title">{task.title}</span>
-                                        <span className="profile-card-task-time">
-                                            {formatTime12Hour(task.time)}
-                                        </span>
-                                    </div>
-                                ))}
+                                {todayTasks.map((task) => {
+                                    const isLinked = task.id === activeTaskId;
+                                    return (
+                                        <div
+                                            key={task.id}
+                                            className={`profile-card-task-item ${task.completed ? 'completed' : ''} ${isLinked ? 'linked-task' : ''}`}
+                                        >
+                                            <span
+                                                className={`profile-card-task-dot ${task.subject || 'custom'} ${isLinked ? 'pulsate' : ''}`}
+                                            />
+                                            <span className="profile-card-task-title">{task.title}</span>
+                                            <span className="profile-card-task-time">
+                                                {formatTime12Hour(task.time)}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <p className="profile-card-tasks-empty">No tasks for today</p>

@@ -168,7 +168,9 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
                                         value={draft.customStatus || ''}
                                         onChange={(e) => handleChange('customStatus', e.target.value)}
                                         placeholder="e.g. Focusing on Organic Chemistry"
+                                        maxLength={88}
                                     />
+                                    <span className="field-hint">Max 88 characters ({draft.customStatus?.length || 0}/88)</span>
                                 </div>
 
                                 <div className="profile-edit-row">

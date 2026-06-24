@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, UserPlus } from 'lucide-react';
 import { DiscordIcon } from '../../../shared/components/ui/DiscordInviteModal';
 
 interface InviteSectionProps {
     inviteCode: string;
+    onInviteFriendClick?: () => void;
 }
 
-export function InviteSection({ inviteCode }: InviteSectionProps) {
+export function InviteSection({ inviteCode, onInviteFriendClick }: InviteSectionProps) {
     const [copied, setCopied] = useState(false);
 
     const inviteUrl = inviteCode
@@ -38,6 +39,15 @@ export function InviteSection({ inviteCode }: InviteSectionProps) {
                     </button>
                 </div>
             </div>
+
+            <button 
+                type="button" 
+                className="invite-friend-btn"
+                onClick={onInviteFriendClick}
+            >
+                <UserPlus size={14} />
+                <span>Invite friend</span>
+            </button>
             
             <a 
                 href="https://discord.gg/6dKrbVQU8W" 
