@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { triggerConfetti } from '../../../shared/utils/confetti';
+import { triggerMassiveConfetti } from '../../../shared/utils/confetti';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { GoogleSignInButton } from '../../../shared/components/ui/GoogleSignInButton';
@@ -79,7 +79,22 @@ export const SupportPage: React.FC = () => {
     const [note, setNote] = useState('');
     const [isCustom, setIsCustom] = useState(false);
     const [showSpreadModal, setShowSpreadModal] = useState(false);
+    const [showThankYouModal, setShowThankYouModal] = useState(false);
+    const [showValidationModal, setShowValidationModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // TODO: TEMPORARY TESTING CODE - REMOVE BEFORE PRODUCTION
+    // Exposes the thank you modal trigger to the global window object for testing.
+    // Run `window.triggerThankYouModal()` in the browser console to test.
+    useEffect(() => {
+        (window as any).triggerThankYouModal = () => {
+            triggerMassiveConfetti();
+            setShowThankYouModal(true);
+        };
+        return () => {
+            delete (window as any).triggerThankYouModal;
+        };
+    }, []);
 
     // Auth & Prefill state
     const [isAuthBusy, setIsAuthBusy] = useState(false);
@@ -149,7 +164,7 @@ export const SupportPage: React.FC = () => {
         }
 
         if (!amountInRupees || amountInRupees < 1) {
-            alert('Please select or enter a valid amount.');
+            setShowValidationModal(true);
             return;
         }
 
@@ -208,8 +223,8 @@ export const SupportPage: React.FC = () => {
 
                         const verifyData = await verifyRes.json();
                         if (verifyData.success) {
-                            triggerConfetti('#e63946');
-                            alert('Thank you so much for your support! ❤️');
+                            triggerMassiveConfetti();
+                            setShowThankYouModal(true);
                             setSelectedAmount(null);
                             setCustomAmount('');
                             setNote('');
@@ -484,6 +499,62 @@ export const SupportPage: React.FC = () => {
 
                         <button className="spread-modal-got-it" onClick={() => setShowSpreadModal(false)}>
                             Got it, thank you! 🌟
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Thank You Modal */}
+            {showThankYouModal && (
+                <div className="spread-modal-overlay" onClick={() => setShowThankYouModal(false)}>
+                    <div className="spread-modal" onClick={e => e.stopPropagation()}>
+                        <button className="spread-modal-close" onClick={() => setShowThankYouModal(false)} aria-label="Close">
+                            ✕
+                        </button>
+
+                        <div className="spread-modal-emoji">🎉</div>
+
+                        <h2 className="spread-modal-title">Thank you so much! ❤️</h2>
+
+                        <div className="spread-modal-body">
+                            <p>
+                                Your support means the world to me. It directly helps in keeping OJEE-Tracker alive, maintaining the servers, and improving the experience for every aspirant.
+                            </p>
+                            <p>
+                                Wishing you the absolute best for your JEE preparation! Keep tracking, keep studying, and you'll do great.
+                            </p>
+                        </div>
+
+                        <div className="spread-modal-footer">
+                            <p>With immense gratitude,<br/>Naman 🌸</p>
+                        </div>
+
+                        <button className="spread-modal-got-it" onClick={() => setShowThankYouModal(false)}>
+                            Continue tracking 🚀
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Validation Modal */}
+            {showValidationModal && (
+                <div className="spread-modal-overlay" onClick={() => setShowValidationModal(false)}>
+                    <div className="spread-modal" onClick={e => e.stopPropagation()}>
+                        <button className="spread-modal-close" onClick={() => setShowValidationModal(false)} aria-label="Close">
+                            ✕
+                        </button>
+
+                        <div className="spread-modal-emoji">🤔</div>
+
+                        <h2 className="spread-modal-title">Oops! Missing Amount</h2>
+
+                        <div className="spread-modal-body" style={{ textAlign: 'center' }}>
+                            <p>
+                                Please select a valid amount or enter a custom amount before proceeding.
+                            </p>
+                        </div>
+
+                        <button className="spread-modal-got-it" onClick={() => setShowValidationModal(false)}>
+                            Got it
                         </button>
                     </div>
                 </div>
