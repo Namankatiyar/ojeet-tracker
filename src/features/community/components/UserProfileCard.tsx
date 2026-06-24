@@ -1,0 +1,289 @@
+import { useMemo } from 'react';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { useTheme } from '../../../core/context/ThemeContext';
+import { UserAvatar } from '../../../shared/components/ui/Avatar';
+import { StudySession, PlannerTask, ProgressCardSettings } from '../../../shared/types';
+import { formatDateLocal } from '../../../shared/utils/date';
+import { Pencil, GraduationCap, Target } from 'lucide-react';
+
+interface UserProfileCardProps {
+    onEditClick?: () => void;
+    previewSettings?: ProgressCardSettings;
+    previewMode?: boolean;
+}
+
+/* ── Helpers ── */
+const getSessionDate = (s: StudySession): string =>
+    s.localDate ?? s.startTime.slice(0, 10);
+
+const formatSmartDuration = (seconds: number): string => {
+    if (seconds <= 0) return '0m';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.round((seconds % 3600) / 60);
+    if (h === 0) return `${m}m`;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+};
+
+const formatTime12Hour = (time: string): string => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const amPm = hours >= 12 ? 'PM' : 'AM';
+    const h12 = hours % 12 || 12;
+    return `${h12}:${minutes.toString().padStart(2, '0')} ${amPm}`;
+};
+
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+export function UserProfileCard({ onEditClick, previewSettings, previewMode = false }: UserProfileCardProps) {
+    const {
+        progressCardSettings,
+        studySessions,
+        plannerTasks,
+        dailyQuestionLogs,
+    } = useUserProgress();
+
+    const { accentColor } = useTheme();
+
+    const todayStr = formatDateLocal(new Date());
+
+    /* ── Live Indicator: Read timer engine state from localStorage ── */
+    const isStudying = useMemo(() => {
+        try {
+            const raw = localStorage.getItem('jee-timer-engine');
+            if (!raw) return false;
+            const state = JSON.parse(raw);
+            return state.engineState === 'running';
+        } catch {
+            return false;
+        }
+    }, []);
+
+    /* ── Today's sessions → total study time ── */
+    const todayStudyTimeSec = useMemo(
+        () => studySessions
+            .filter(s => getSessionDate(s) === todayStr)
+            .reduce((acc, s) => acc + s.duration, 0),
+        [studySessions, todayStr]
+    );
+
+    /* ── Today's questions ── */
+    const todayQuestions = Math.max(0, dailyQuestionLogs[todayStr] || 0);
+
+    /* ── Study streak ── */
+    const streak = useMemo(() => {
+        let count = 0;
+        const checkDate = new Date();
+        while (true) {
+            const dateStr = checkDate.toLocaleDateString('en-CA');
+            const hasSession = studySessions.some(s => getSessionDate(s) === dateStr);
+            if (hasSession) {
+                count++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        return count;
+    }, [studySessions]);
+
+    /* ── Today's tasks ── */
+    const todayTasks = useMemo<PlannerTask[]>(
+        () => plannerTasks
+            .filter(t => t.date === todayStr)
+            .sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                return a.time.localeCompare(b.time);
+            }),
+        [plannerTasks, todayStr]
+    );
+
+    /* ── 7-day momentum heatmap ── */
+    const heatmapData = useMemo(() => {
+        const result: { dayLabel: string; seconds: number; level: number }[] = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toLocaleDateString('en-CA');
+            const dayOfWeek = d.getDay();
+            const seconds = studySessions
+                .filter(s => getSessionDate(s) === dateStr)
+                .reduce((acc, s) => acc + s.duration, 0);
+            const hours = seconds / 3600;
+            let level = 0;
+            if (hours >= 5) level = 4;
+            else if (hours >= 3) level = 3;
+            else if (hours >= 1) level = 2;
+            else if (hours > 0) level = 1;
+            result.push({ dayLabel: DAY_LABELS[dayOfWeek], seconds, level });
+        }
+        return result;
+    }, [studySessions]);
+
+    const activeSettings = previewSettings || progressCardSettings;
+
+    const {
+        userName,
+        customAvatarUrl,
+        bannerUrl,
+        customStatus,
+        gradeStatus,
+        targetExam,
+        discordSpecialTag,
+    } = activeSettings;
+
+    const displayName = userName || 'Student';
+
+    return (
+        <div className="profile-card">
+            {/* Banner */}
+            <div
+                className="profile-card-banner"
+                style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
+            >
+                {bannerUrl && <img src={bannerUrl} alt="" />}
+                {onEditClick && (
+                    <button className="profile-card-edit-btn" onClick={onEditClick}>
+                        <Pencil size={12} />
+                        Edit
+                    </button>
+                )}
+            </div>
+
+            {/* Avatar */}
+            <div className="profile-card-avatar-wrap">
+                <div className="profile-card-avatar">
+                    <UserAvatar
+                        name={displayName}
+                        size={78}
+                        customImageUrl={customAvatarUrl || undefined}
+                        accentColor={accentColor}
+                    />
+                </div>
+            </div>
+
+            {/* Identity */}
+            <div className={`profile-card-identity ${previewMode ? 'preview-mode' : ''}`}>
+                <div className="profile-card-name-row">
+                    <h2 className="profile-card-name">{displayName}</h2>
+                    {typeof discordSpecialTag === 'string' && discordSpecialTag.trim() !== '' && (
+                        <span
+                            className="profile-card-special-tag"
+                            data-tooltip="Join the Discord server to get a custom tag"
+                        >
+                            <span 
+                                className="profile-card-special-tag-inner"
+                                style={{ backgroundColor: '#ffffff', color: '#0f1012' }}
+                            >
+                                {discordSpecialTag}
+                                <svg
+                                    viewBox="0 0 127.14 96.36"
+                                    className="discord-icon"
+                                    aria-hidden="true"
+                                    fill="currentColor"
+                                    style={{ color: '#5865F2', fill: '#5865F2' }}
+                                >
+                                    <path 
+                                        d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,52.88,6.83,77.19,77.19,0,0,0,49.58,0,105.15,105.15,0,0,0,19.14,8.07C2.85,32.22-1.72,55.79,1,79.08A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5A52.26,52.26,0,0,0,30.88,78,74.76,74.76,0,0,0,96,78a52.26,52.26,0,0,0,2.78,2.5,68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,30.9-17.28C129.56,50.7,124.57,27.35,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" 
+                                        fill="currentColor"
+                                    />
+                                </svg>
+                            </span>
+                        </span>
+                    )}
+                    {isStudying && (
+                        <span className="profile-card-live-badge">
+                            <span className="profile-card-live-dot" />
+                            Studying
+                        </span>
+                    )}
+                </div>
+                {customStatus && (
+                    <p className="profile-card-status">{customStatus}</p>
+                )}
+                <div className="profile-card-meta-row">
+                    {gradeStatus && (
+                        <span className="profile-card-meta-pill">
+                            <GraduationCap size={10} />
+                            {gradeStatus}
+                        </span>
+                    )}
+                    {targetExam && (
+                        <span className="profile-card-meta-pill">
+                            <Target size={10} />
+                            {targetExam}
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {!previewMode && (
+                <>
+                    <div className="profile-card-divider" />
+
+                    {/* Today's Tasks — the "bio" of the card */}
+                    <div className="profile-card-tasks-section">
+                        <p className="profile-card-section-label">Today's agenda</p>
+                        {todayTasks.length > 0 ? (
+                            <div className="profile-card-tasks-list">
+                                {todayTasks.map((task) => (
+                                    <div
+                                        key={task.id}
+                                        className={`profile-card-task-item ${task.completed ? 'completed' : ''}`}
+                                    >
+                                        <span
+                                            className={`profile-card-task-dot ${task.subject || 'custom'}`}
+                                        />
+                                        <span className="profile-card-task-title">{task.title}</span>
+                                        <span className="profile-card-task-time">
+                                            {formatTime12Hour(task.time)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="profile-card-tasks-empty">No tasks for today</p>
+                        )}
+                    </div>
+
+                    <div className="profile-card-divider" />
+
+                    {/* Stats Grid */}
+                    <div className="profile-card-stats">
+                        <div className="profile-card-stat">
+                            <span className="profile-card-stat-value">{formatSmartDuration(todayStudyTimeSec)}</span>
+                            <span className="profile-card-stat-label">Studied</span>
+                        </div>
+                        <div className="profile-card-stat">
+                            <span className="profile-card-stat-value">{todayQuestions}</span>
+                            <span className="profile-card-stat-label">Questions</span>
+                        </div>
+                        <div className="profile-card-stat">
+                            <span className="profile-card-stat-value">{streak}d</span>
+                            <span className="profile-card-stat-label">Streak</span>
+                        </div>
+                    </div>
+
+                    <div className="profile-card-divider" />
+
+                    {/* 7-Day Heatmap */}
+                    <div className="profile-card-heatmap-section">
+                        <p className="profile-card-section-label">7-day momentum</p>
+                        <div className="profile-card-heatmap-row">
+                            {heatmapData.map((day, i) => (
+                                <div
+                                    key={i}
+                                    className={`profile-card-heatmap-box level-${day.level}`}
+                                    title={`${day.dayLabel}: ${formatSmartDuration(day.seconds)}`}
+                                />
+                            ))}
+                        </div>
+                        <div className="profile-card-heatmap-labels">
+                            {heatmapData.map((day, i) => (
+                                <span key={i} className="profile-card-heatmap-day-label">{day.dayLabel}</span>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}

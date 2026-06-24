@@ -192,7 +192,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             chemistryProgress: true,
             mathsProgress: true,
             examCountdown: true,
-        }
+        },
+        bannerUrl: '',
+        customStatus: '',
+        gradeStatus: 'Class 12',
+        targetExam: 'JEE 2026',
+        discordSpecialTag: '',
+        inviteCode: '',
     });
 
     const { physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress } = useProgress(progress, mergedSubjectData);

@@ -111,7 +111,7 @@ export function CustomSelect({
                     border: 1px solid var(--border);
                     border-radius: 8px;
                     cursor: pointer;
-                    transition: all 0.2s;
+                    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
                     user-select: none;
                     min-height: 36px;
                 }
@@ -177,7 +177,11 @@ export function CustomSelect({
                 }
 
                 [data-theme="dark"] .custom-select-options {
-                    background: rgba(18, 18, 26, 0.9);
+                    background: var(--panel-bg);
+                    backdrop-filter: var(--panel-blur);
+                    -webkit-backdrop-filter: var(--panel-blur);
+                    border: 1px solid var(--panel-border);
+                    box-shadow: var(--panel-inner-glow), var(--panel-shadow);
                 }
 
                 .custom-select-option {

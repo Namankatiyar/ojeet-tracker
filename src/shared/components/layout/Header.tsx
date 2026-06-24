@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Subject, StudySession, MockScore, ProgressCardSettings } from '../../types';
-import { LayoutDashboard, Atom, FlaskConical, Pi, Sun, Moon, Palette, Settings, Calendar, Clock, Menu, BarChart2, Heart } from 'lucide-react';
+import { LayoutDashboard, Atom, FlaskConical, Pi, Sun, Moon, Palette, Settings, Calendar, Clock, Menu, BarChart2, Heart, Users } from 'lucide-react';
 import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
 import { UserAvatar } from '../ui/Avatar';
 import { ProgressCardModal } from '../ui/ProgressCardModal';
 
 interface HeaderProps {
-    currentView: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | Subject;
-    onNavigate: (view: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | Subject) => void;
+    currentView: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject;
+    onNavigate: (view: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject) => void;
     theme: 'light' | 'dark';
     onThemeToggle: () => void;
     accentColor: string;
@@ -98,7 +98,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
         };
     }, [isMobileMenuOpen]);
 
-    const navItems: { key: 'dashboard' | 'planner' | 'studyclock' | 'reports' | Subject; label: string; icon: React.ReactNode }[] = [
+    const navItems: { key: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'community' | Subject; label: string; icon: React.ReactNode }[] = [
         { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
         { key: 'physics', label: 'Physics', icon: <Atom size={20} /> },
         { key: 'chemistry', label: 'Chemistry', icon: <FlaskConical size={20} /> },
@@ -106,6 +106,7 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
         { key: 'planner', label: 'Planner', icon: <Calendar size={20} /> },
         { key: 'studyclock', label: 'Study Clock', icon: <Clock size={20} /> },
         { key: 'reports', label: 'Reports', icon: <BarChart2 size={20} /> },
+        { key: 'community', label: 'Community', icon: <Users size={20} /> },
     ];
 
     const isCustomColor = !ACCENT_COLORS.some(c => c.value === accentColor);

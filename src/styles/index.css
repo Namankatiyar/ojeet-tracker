@@ -54,6 +54,7 @@
 @import './features/sync.css' layer(features);
 @import './features/legal.css' layer(features);
 @import './features/support.css' layer(features);
+@import './features/community.css' layer(features);
 
 /* ======================== */
 /* === Layer: Utilities === */

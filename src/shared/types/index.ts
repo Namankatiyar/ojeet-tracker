@@ -147,4 +147,10 @@ export interface ProgressCardSettings {
         mathsProgress: boolean;
         examCountdown: boolean;
     };
+    bannerUrl?: string;
+    customStatus?: string;
+    gradeStatus?: string;
+    targetExam?: string;
+    discordSpecialTag?: string;
+    inviteCode?: string;
 }
