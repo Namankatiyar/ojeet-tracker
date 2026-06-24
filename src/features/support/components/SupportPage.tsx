@@ -83,19 +83,6 @@ export const SupportPage: React.FC = () => {
     const [showValidationModal, setShowValidationModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // TODO: TEMPORARY TESTING CODE - REMOVE BEFORE PRODUCTION
-    // Exposes the thank you modal trigger to the global window object for testing.
-    // Run `window.triggerThankYouModal()` in the browser console to test.
-    useEffect(() => {
-        (window as any).triggerThankYouModal = () => {
-            triggerMassiveConfetti();
-            setShowThankYouModal(true);
-        };
-        return () => {
-            delete (window as any).triggerThankYouModal;
-        };
-    }, []);
-
     // Auth & Prefill state
     const [isAuthBusy, setIsAuthBusy] = useState(false);
     const [authStatus, setAuthStatus] = useState<string>('');
