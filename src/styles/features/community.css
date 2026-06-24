@@ -5,24 +5,41 @@
 
     /* ── Page Layout ── */
     .community-page {
-        max-width: var(--content-max-width);
-        margin: 0 auto;
-        padding: var(--space-8);
+        display: flex;
+        flex-direction: column;
     }
 
     .community-page-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: var(--space-6);
+        margin-bottom: var(--space-4);
         gap: var(--space-4);
         flex-wrap: wrap;
     }
 
-    .community-page-header h1 {
+    .community-page-title-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: 2px;
+    }
+
+    .community-title-icon {
+        color: var(--accent);
+    }
+
+    .community-page-title-group h1 {
         font-size: var(--text-xl);
         font-weight: 700;
         color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .community-page-subtitle {
+        font-size: var(--text-sm);
+        color: var(--text-secondary);
         margin: 0;
     }
 
@@ -32,14 +49,8 @@
         align-items: center;
         gap: var(--space-2);
         border-bottom: 1px solid var(--border);
-        padding-bottom: var(--space-2);
-        margin-bottom: var(--space-6);
-    }
-
-    .community-tab-bar-left {
-        display: flex;
-        gap: var(--space-2);
-        flex: 1;
+        padding-bottom: 0;
+        margin-bottom: var(--space-4);
     }
 
     .community-tab-btn {
@@ -54,7 +65,8 @@
         font-weight: 500;
         cursor: pointer;
         border-radius: var(--radius-sm);
-        transition: color var(--transition-fast), background-color var(--transition-fast);
+        transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+        position: relative;
     }
 
     .community-tab-btn:hover {
@@ -63,9 +75,20 @@
     }
 
     .community-tab-btn.active {
-        color: var(--accent);
-        background: var(--accent-light);
+        color: var(--text-primary);
         font-weight: 600;
+        background: transparent;
+    }
+
+    .community-tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: var(--space-2);
+        right: var(--space-2);
+        height: 2px;
+        background: var(--accent);
+        border-radius: var(--radius-full);
     }
 
     .community-tab-btn.disabled {
@@ -74,58 +97,119 @@
         pointer-events: none;
     }
 
-    /* ── Invite Section (inside tab bar right side) ── */
+    /* ── Invite Section & Actions ── */
     .community-invite-section {
         display: flex;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--space-4);
         flex-shrink: 0;
     }
 
-    .community-invite-input-group {
+    .invite-badge-wrapper {
         display: flex;
         align-items: center;
-        background: var(--bg-tertiary);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        overflow: hidden;
-        height: 2rem;
     }
 
-    .community-invite-url {
-        padding: 0 var(--space-3);
+    .invite-badge-label-inside {
         font-size: var(--text-xs);
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+        margin-right: var(--space-1);
+    }
+    
+    html.dark .invite-badge-label-inside {
         color: var(--text-secondary);
-        white-space: nowrap;
-        user-select: all;
-        font-family: 'Montserrat', monospace;
-        max-width: 240px;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .community-invite-copy-btn {
+    .invite-code-badge {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 2px solid var(--accent);
+        border-radius: var(--radius-full);
+        padding: 4px 4px 4px var(--space-4);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        gap: var(--space-2);
+    }
+    
+    html.dark .invite-code-badge {
+        background: var(--bg-secondary);
+        border-color: var(--accent);
+    }
+
+    .invite-code-badge:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .invite-code-text {
+        font-family: 'Montserrat', monospace;
+        font-size: var(--text-base);
+        font-weight: 700;
+        color: #000000;
+        letter-spacing: 0.05em;
+        margin-right: var(--space-1);
+    }
+    
+    html.dark .invite-code-text {
+        color: #ffffff;
+    }
+
+    .invite-copy-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 2rem;
-        height: 2rem;
+        width: 28px;
+        height: 28px;
         border: none;
-        border-left: 1px solid var(--border);
-        background: transparent;
-        color: var(--text-secondary);
+        background: var(--accent);
+        color: var(--accent-text);
+        border-radius: var(--radius-full);
         cursor: pointer;
-        transition: background-color var(--transition-fast), color var(--transition-fast);
+        transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
     }
-
-    .community-invite-copy-btn:hover {
+    
+    html.dark .invite-copy-btn {
         background: var(--accent);
         color: var(--accent-text);
     }
 
-    .community-invite-copy-btn.copied {
+    .invite-copy-btn:hover {
+        transform: scale(1.05);
+        background: var(--accent-hover);
+    }
+
+    .invite-copy-btn.copied {
         background: var(--color-priority-low);
         color: var(--accent-text);
+    }
+
+    .discord-server-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: 0 var(--space-4);
+        height: 32px;
+        background: #5865F2; /* Discord blurple */
+        color: #ffffff;
+        border-radius: var(--radius-full);
+        text-decoration: none;
+        font-size: var(--text-sm);
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(88, 101, 242, 0.25);
+        transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .discord-server-btn:hover {
+        background: #4752C4;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(88, 101, 242, 0.35);
+        color: #ffffff;
+    }
+    
+    .discord-server-btn:active {
+        transform: translateY(0);
     }
 
     /* ── Profile Card Container ── */
@@ -364,31 +448,79 @@
         filter: drop-shadow(0 1px 2px rgba(88, 101, 242, 0.3));
     }
 
-    /* Live Indicator */
-    .profile-card-live-badge {
+    /* ── Status Badge ── */
+    .profile-card-status-badge-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-bottom: var(--space-2); /* align nicely next to avatar */
+        z-index: 2;
+    }
+
+    .profile-card-status-badge {
         display: inline-flex;
         align-items: center;
         gap: var(--space-1);
         padding: var(--space-1) var(--space-2);
         font-size: var(--text-xs);
         font-weight: 600;
-        color: var(--color-priority-low);
         border-radius: var(--radius-xs);
-        background: var(--color-priority-low-bg);
         line-height: 1;
+        transition: background-color var(--transition-fast), color var(--transition-fast);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 1px solid transparent;
+        background: var(--bg-secondary);
     }
 
-    .profile-card-live-dot {
+    /* Studying State (Red) */
+    .profile-card-status-badge.studying {
+        color: var(--priority-high);
+        background: var(--priority-high-bg);
+        border-color: color-mix(in srgb, var(--priority-high), transparent 80%);
+    }
+
+    /* Online State (Green) */
+    .profile-card-status-badge.online {
+        color: var(--priority-low);
+        background: var(--priority-low-bg);
+        border-color: color-mix(in srgb, var(--priority-low), transparent 80%);
+    }
+
+    /* Offline State (Gray) */
+    .profile-card-status-badge.offline {
+        color: var(--text-secondary);
+        background: var(--bg-tertiary);
+        border-color: var(--border);
+    }
+
+    .profile-card-status-dot {
         width: 6px;
         height: 6px;
         border-radius: var(--radius-full);
-        background: var(--color-priority-low);
-        animation: live-pulse 1.5s ease-in-out infinite;
     }
 
-    @keyframes live-pulse {
+    .profile-card-status-badge.studying .profile-card-status-dot {
+        background: var(--priority-high);
+        animation: status-pulse 1.5s ease-in-out infinite;
+    }
+
+    .profile-card-status-badge.offline .profile-card-status-dot {
+        background: var(--text-muted);
+    }
+
+    .profile-card-status-wifi {
+        animation: wifi-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes status-pulse {
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    @keyframes wifi-pulse {
+        0% { opacity: 0.4; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.1); }
+        100% { opacity: 0.4; transform: scale(0.9); }
     }
 
     .profile-card-status {

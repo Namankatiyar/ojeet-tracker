@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Copy, Check } from 'lucide-react';
+import { DiscordIcon } from '../../../shared/components/ui/DiscordInviteModal';
 
 interface InviteSectionProps {
     inviteCode: string;
@@ -9,7 +10,7 @@ export function InviteSection({ inviteCode }: InviteSectionProps) {
     const [copied, setCopied] = useState(false);
 
     const inviteUrl = inviteCode
-        ? `https://ojee-tracker.web.app/invite/${inviteCode}`
+        ? `https://tracker.ojeet.tech/invite/${inviteCode}`
         : '';
 
     const handleCopy = useCallback(() => {
@@ -24,16 +25,29 @@ export function InviteSection({ inviteCode }: InviteSectionProps) {
 
     return (
         <div className="community-invite-section">
-            <div className="community-invite-input-group">
-                <span className="community-invite-url">{inviteUrl}</span>
-                <button
-                    className={`community-invite-copy-btn ${copied ? 'copied' : ''}`}
-                    onClick={handleCopy}
-                    title={copied ? 'Copied!' : 'Copy invite link'}
-                >
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
-                </button>
+            <div className="invite-badge-wrapper">
+                <div className="invite-code-badge">
+                    <span className="invite-badge-label-inside">INVITE CODE:</span>
+                    <span className="invite-code-text">{inviteCode}</span>
+                    <button
+                        className={`invite-copy-btn ${copied ? 'copied' : ''}`}
+                        onClick={handleCopy}
+                        title={copied ? 'Copied link!' : 'Copy invite link'}
+                    >
+                        {copied ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                </div>
             </div>
+            
+            <a 
+                href="https://discord.gg/6dKrbVQU8W" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="discord-server-btn"
+            >
+                <DiscordIcon size={16} />
+                <span className="discord-btn-text">Join Discord</span>
+            </a>
         </div>
     );
 }

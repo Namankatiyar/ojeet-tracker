@@ -195,6 +195,31 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
                                     </div>
                                 </div>
                             </div>
+
+                            <div className="profile-edit-section">
+                                <h3 className="profile-edit-section-title">Mock Status (For Testing)</h3>
+                                <div className="profile-edit-row" style={{ alignItems: 'center' }}>
+                                    <div className="profile-edit-field checkbox-field" style={{ flexDirection: 'row', gap: '8px' }}>
+                                        <input
+                                            type="checkbox"
+                                            id="pe-isonline"
+                                            checked={draft.mockIsOnline || false}
+                                            onChange={(e) => handleChange('mockIsOnline', e.target.checked)}
+                                        />
+                                        <label htmlFor="pe-isonline" style={{ margin: 0 }}>Is Online</label>
+                                    </div>
+                                    <div className="profile-edit-field">
+                                        <label htmlFor="pe-lastseen">Last Seen Text</label>
+                                        <input
+                                            id="pe-lastseen"
+                                            type="text"
+                                            value={draft.mockLastSeenText || ''}
+                                            onChange={(e) => handleChange('mockLastSeenText', e.target.value)}
+                                            placeholder="e.g. 2h ago"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="profile-edit-actions">

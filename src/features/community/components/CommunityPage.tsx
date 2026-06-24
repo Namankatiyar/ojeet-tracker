@@ -21,23 +21,29 @@ export function CommunityPage() {
     return (
         <div className="community-page">
             <div className="community-page-header">
-                <h1>Community</h1>
+                <div className="community-page-title-group">
+                    <div className="community-page-title-header">
+                        <Users className="community-title-icon" size={24} />
+                        <h1>Community</h1>
+                    </div>
+                    <p className="community-page-subtitle">Connect with friends, track rankings, and study together.</p>
+                </div>
+                <div className="community-header-actions">
+                    <InviteSection inviteCode={progressCardSettings.inviteCode || ''} />
+                </div>
             </div>
 
             <div className="community-tab-bar">
-                <div className="community-tab-bar-left">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.key}
-                            className={`community-tab-btn ${activeTab === tab.key ? 'active' : ''} ${tab.disabled ? 'disabled' : ''}`}
-                            onClick={() => !tab.disabled && setActiveTab(tab.key)}
-                        >
-                            {tab.icon}
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
-                <InviteSection inviteCode={progressCardSettings.inviteCode || ''} />
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.key}
+                        className={`community-tab-btn ${activeTab === tab.key ? 'active' : ''} ${tab.disabled ? 'disabled' : ''}`}
+                        onClick={() => !tab.disabled && setActiveTab(tab.key)}
+                    >
+                        {tab.icon}
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {activeTab === 'profile' && (

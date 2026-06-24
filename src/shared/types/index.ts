@@ -153,4 +153,6 @@ export interface ProgressCardSettings {
     targetExam?: string;
     discordSpecialTag?: string;
     inviteCode?: string;
+    mockIsOnline?: boolean;
+    mockLastSeenText?: string;
 }

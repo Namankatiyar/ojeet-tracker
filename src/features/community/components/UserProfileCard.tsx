@@ -4,7 +4,7 @@ import { useTheme } from '../../../core/context/ThemeContext';
 import { UserAvatar } from '../../../shared/components/ui/Avatar';
 import { StudySession, PlannerTask, ProgressCardSettings } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
-import { Pencil, GraduationCap, Target, Clock, Flame } from 'lucide-react';
+import { Pencil, GraduationCap, Target, Clock, Flame, Wifi } from 'lucide-react';
 
 interface UserProfileCardProps {
     onEditClick?: () => void;
@@ -158,6 +158,25 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                         accentColor={accentColor}
                     />
                 </div>
+                {/* Status Badge */}
+                <div className="profile-card-status-badge-container">
+                    {isStudying ? (
+                        <span className="profile-card-status-badge studying">
+                            <span className="profile-card-status-dot" />
+                            Studying
+                        </span>
+                    ) : activeSettings.mockIsOnline ? (
+                        <span className="profile-card-status-badge online">
+                            <Wifi size={12} className="profile-card-status-wifi" />
+                            Online
+                        </span>
+                    ) : (
+                        <span className="profile-card-status-badge offline">
+                            <span className="profile-card-status-dot" />
+                            Last seen {activeSettings.mockLastSeenText || 'recently'}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Identity */}
@@ -182,12 +201,6 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                                 </svg>
                                 <span>Join the Discord server to get a custom tag</span>
                             </span>
-                        </span>
-                    )}
-                    {isStudying && (
-                        <span className="profile-card-live-badge">
-                            <span className="profile-card-live-dot" />
-                            Studying
                         </span>
                     )}
                 </div>
