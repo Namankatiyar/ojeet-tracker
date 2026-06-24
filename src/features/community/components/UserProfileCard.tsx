@@ -4,7 +4,7 @@ import { useTheme } from '../../../core/context/ThemeContext';
 import { UserAvatar } from '../../../shared/components/ui/Avatar';
 import { StudySession, PlannerTask, ProgressCardSettings } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
-import { Pencil, GraduationCap, Target } from 'lucide-react';
+import { Pencil, GraduationCap, Target, Clock, Flame } from 'lucide-react';
 
 interface UserProfileCardProps {
     onEditClick?: () => void;
@@ -213,6 +213,33 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                         </span>
                     )}
                 </div>
+
+                <div className="profile-card-compact-metrics">
+                    <div className="compact-metric" data-tooltip="Studied Today">
+                        <Clock size={10} />
+                        <span>{formatSmartDuration(todayStudyTimeSec)}</span>
+                    </div>
+                    <div className="compact-metric" data-tooltip="Questions Today">
+                        <span>{todayQuestions}</span>
+                        <span className="compact-metric-lbl">Qs</span>
+                    </div>
+                    <div className="compact-metric" data-tooltip="Current Streak">
+                        <Flame size={10} className="compact-metric-flame" />
+                        <span>{streak}d</span>
+                    </div>
+                    <div className="compact-metric-divider" />
+                    <div className="compact-heatmap">
+                        {heatmapData.map((day, i) => (
+                            <div key={i} className="compact-heatmap-col">
+                                <div
+                                    className={`compact-heatmap-box level-${day.level}`}
+                                    data-tooltip={`${day.dayLabel}: ${formatSmartDuration(day.seconds)}`}
+                                />
+                                <span className="compact-heatmap-day-label">{day.dayLabel.charAt(0)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {!previewMode && (
@@ -242,45 +269,6 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                         ) : (
                             <p className="profile-card-tasks-empty">No tasks for today</p>
                         )}
-                    </div>
-
-                    <div className="profile-card-divider" />
-
-                    {/* Stats Grid */}
-                    <div className="profile-card-stats">
-                        <div className="profile-card-stat">
-                            <span className="profile-card-stat-value">{formatSmartDuration(todayStudyTimeSec)}</span>
-                            <span className="profile-card-stat-label">Studied</span>
-                        </div>
-                        <div className="profile-card-stat">
-                            <span className="profile-card-stat-value">{todayQuestions}</span>
-                            <span className="profile-card-stat-label">Questions</span>
-                        </div>
-                        <div className="profile-card-stat">
-                            <span className="profile-card-stat-value">{streak}d</span>
-                            <span className="profile-card-stat-label">Streak</span>
-                        </div>
-                    </div>
-
-                    <div className="profile-card-divider" />
-
-                    {/* 7-Day Heatmap */}
-                    <div className="profile-card-heatmap-section">
-                        <p className="profile-card-section-label">7-day momentum</p>
-                        <div className="profile-card-heatmap-row">
-                            {heatmapData.map((day, i) => (
-                                <div
-                                    key={i}
-                                    className={`profile-card-heatmap-box level-${day.level}`}
-                                    title={`${day.dayLabel}: ${formatSmartDuration(day.seconds)}`}
-                                />
-                            ))}
-                        </div>
-                        <div className="profile-card-heatmap-labels">
-                            {heatmapData.map((day, i) => (
-                                <span key={i} className="profile-card-heatmap-day-label">{day.dayLabel}</span>
-                            ))}
-                        </div>
                     </div>
                 </>
             )}
