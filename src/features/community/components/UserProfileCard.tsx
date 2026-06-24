@@ -165,27 +165,22 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                 <div className="profile-card-name-row">
                     <h2 className="profile-card-name">{displayName}</h2>
                     {typeof discordSpecialTag === 'string' && discordSpecialTag.trim() !== '' && (
-                        <span
-                            className="profile-card-special-tag"
-                            data-tooltip="Join the Discord server to get a custom tag"
-                        >
-                            <span 
-                                className="profile-card-special-tag-inner"
-                                style={{ backgroundColor: '#ffffff', color: '#0f1012' }}
-                            >
-                                {discordSpecialTag}
+                        <span className="profile-card-special-tag">
+                            <span className="profile-card-special-tag-inner">
+                                <span className="tag-text">{discordSpecialTag}</span>
+                            </span>
+                            <span className="profile-card-special-tag-tooltip">
                                 <svg
                                     viewBox="0 0 127.14 96.36"
                                     className="discord-icon"
                                     aria-hidden="true"
                                     fill="currentColor"
-                                    style={{ color: '#5865F2', fill: '#5865F2' }}
                                 >
                                     <path 
                                         d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,52.88,6.83,77.19,77.19,0,0,0,49.58,0,105.15,105.15,0,0,0,19.14,8.07C2.85,32.22-1.72,55.79,1,79.08A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5A52.26,52.26,0,0,0,30.88,78,74.76,74.76,0,0,0,96,78a52.26,52.26,0,0,0,2.78,2.5,68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,30.9-17.28C129.56,50.7,124.57,27.35,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" 
-                                        fill="currentColor"
                                     />
                                 </svg>
+                                <span>Join the Discord server to get a custom tag</span>
                             </span>
                         </span>
                     )}
@@ -202,13 +197,13 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                 <div className="profile-card-meta-row">
                     {gradeStatus && (
                         <span className="profile-card-meta-pill">
-                            <GraduationCap size={10} />
+                            <GraduationCap size={14} />
                             {gradeStatus}
                         </span>
                     )}
                     {targetExam && (
                         <span className="profile-card-meta-pill">
-                            <Target size={10} />
+                            <Target size={14} />
                             {targetExam}
                         </span>
                     )}
