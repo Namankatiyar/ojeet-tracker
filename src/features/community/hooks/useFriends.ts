@@ -144,6 +144,8 @@ export function useFriends() {
         }
     }, [user, isConfigured]);
 
+    const lastPollTimeRef = useRef<number>(0);
+
     const pollLiveActivity = useCallback(async () => {
         const friendIds = friendIdsRef.current;
         if (!isConfigured || !supabase || friendIds.length === 0) return;
@@ -165,6 +167,7 @@ export function useFriends() {
                 localStorage.setItem('jee-community-friends-cache', JSON.stringify(updated));
                 return updated;
             });
+            lastPollTimeRef.current = Date.now();
         } catch (err) {
             console.warn('Failed to poll live activity', err);
         }
@@ -175,9 +178,44 @@ export function useFriends() {
     }, [fetchFriends]);
 
     useEffect(() => {
-        // Poll every 30 seconds for live activity updates to save egress
-        const interval = setInterval(pollLiveActivity, 30000);
-        return () => clearInterval(interval);
+        let interval: ReturnType<typeof setInterval> | null = null;
+
+        const startPolling = () => {
+            if (interval) clearInterval(interval);
+            interval = setInterval(pollLiveActivity, 30000);
+        };
+
+        const stopPolling = () => {
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                const now = Date.now();
+                // Throttle immediate re-fetch to once every 5 seconds
+                if (now - lastPollTimeRef.current > 5000) {
+                    pollLiveActivity();
+                }
+                startPolling();
+            } else {
+                stopPolling();
+            }
+        };
+
+        // Initial setup
+        if (document.visibilityState === 'visible') {
+            startPolling();
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            stopPolling();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [pollLiveActivity]);
 
     const disconnectFriend = useCallback(async (friendId: string) => {
