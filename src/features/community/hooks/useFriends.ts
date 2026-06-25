@@ -10,8 +10,22 @@ export type FriendProfile = RemoteProfile & {
 
 export function useFriends() {
     const { user, isConfigured } = useRemoteAuth();
-    const [friends, setFriends] = useState<FriendProfile[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [friends, setFriends] = useState<FriendProfile[]>(() => {
+        try {
+            const cached = localStorage.getItem('jee-community-friends-cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch {
+            return [];
+        }
+    });
+    const [isLoading, setIsLoading] = useState(() => {
+        try {
+            const cached = localStorage.getItem('jee-community-friends-cache');
+            return !cached || JSON.parse(cached).length === 0;
+        } catch {
+            return true;
+        }
+    });
     const [error, setError] = useState<string | null>(null);
 
     // Keep friend IDs in a ref so the polling interval can access them without recreating
@@ -23,7 +37,6 @@ export function useFriends() {
             return;
         }
 
-        setIsLoading(true);
         setError(null);
 
         try {
@@ -41,27 +54,79 @@ export function useFriends() {
 
             if (friendIds.length === 0) {
                 setFriends([]);
+                localStorage.removeItem('jee-community-friends-cache');
                 setIsLoading(false);
                 return;
             }
 
-            // 2. Fetch Base Profile Data & Privacy Settings (Heavy payloads)
-            const [profilesRes, visibilityRes] = await Promise.all([
-                supabase.from('profiles').select('*').in('id', friendIds),
-                supabase.from('peer_visibility_settings').select('user_id, show_agenda').in('user_id', friendIds)
+            // Load existing cache
+            let cachedFriends: FriendProfile[] = [];
+            try {
+                const cached = localStorage.getItem('jee-community-friends-cache');
+                if (cached) {
+                    cachedFriends = JSON.parse(cached);
+                }
+            } catch (e) {
+                console.warn('Failed to parse cached friends', e);
+            }
+
+            // Filter cache to keep only actual accepted friends
+            const filteredCache = cachedFriends.filter(f => friendIds.includes(f.id));
+
+            // 2. Fetch Lightweight Metadata & Timestamps in Parallel
+            const [profilesTimestampsRes, visibilityRes, liveRes] = await Promise.all([
+                supabase.from('profiles').select('id, updated_at').in('id', friendIds),
+                supabase.from('peer_visibility_settings').select('user_id, show_agenda').in('user_id', friendIds),
+                supabase.from('live_activity').select('*').in('user_id', friendIds)
             ]);
 
-            if (profilesRes.error) throw profilesRes.error;
+            if (profilesTimestampsRes.error) throw profilesTimestampsRes.error;
             if (visibilityRes.error) throw visibilityRes.error;
-
-            // 3. Fetch Live Activity (Lightweight)
-            const liveRes = await supabase.from('live_activity').select('*').in('user_id', friendIds);
             if (liveRes.error) throw liveRes.error;
 
-            // 4. Merge
-            const merged: FriendProfile[] = profilesRes.data.map(profile => {
-                const live = liveRes.data.find(l => l.user_id === profile.id);
-                const vis = visibilityRes.data.find(v => v.user_id === profile.id);
+            // Determine which profile IDs we need to fetch fully
+            const idsToFetch: string[] = [];
+            for (const id of friendIds) {
+                const cachedItem = filteredCache.find(f => f.id === id);
+                const remoteItem = profilesTimestampsRes.data.find(r => r.id === id);
+
+                if (!cachedItem || !remoteItem) {
+                    idsToFetch.push(id);
+                } else {
+                    const cachedUpdated = cachedItem.updated_at ? new Date(cachedItem.updated_at).getTime() : 0;
+                    const remoteUpdated = remoteItem.updated_at ? new Date(remoteItem.updated_at).getTime() : 0;
+                    if (cachedUpdated !== remoteUpdated) {
+                        idsToFetch.push(id);
+                    }
+                }
+            }
+
+            let freshProfiles: any[] = [];
+            if (idsToFetch.length > 0) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .in('id', idsToFetch);
+
+                if (error) throw error;
+                freshProfiles = data;
+            }
+
+            // 3. Merge profiles
+            const merged: FriendProfile[] = friendIds.map(id => {
+                let profile = freshProfiles.find(p => p.id === id);
+                if (!profile) {
+                    profile = filteredCache.find(f => f.id === id);
+                }
+
+                // If somehow it's not in either (e.g. initial load failed), build a minimal stub
+                if (!profile) {
+                    profile = { id, streak_count: 0, today_study_seconds: 0, today_questions: 0, momentum_heatmap: [], todays_tasks: [] };
+                }
+
+                const live = liveRes.data.find(l => l.user_id === id);
+                const vis = visibilityRes.data.find(v => v.user_id === id);
+
                 return {
                     ...profile,
                     live_activity: live || null,
@@ -70,6 +135,7 @@ export function useFriends() {
             });
 
             setFriends(merged);
+            localStorage.setItem('jee-community-friends-cache', JSON.stringify(merged));
         } catch (err: any) {
             console.error('Failed to fetch friends', err);
             setError(err.message || 'Failed to fetch friends');
@@ -90,11 +156,15 @@ export function useFriends() {
 
             if (error) throw error;
 
-            setFriends(prev => prev.map(f => {
-                const updatedLive = data.find(l => l.user_id === f.id);
-                // Return a new object so React detects the state change
-                return updatedLive ? { ...f, live_activity: updatedLive } : f;
-            }));
+            setFriends(prev => {
+                const updated = prev.map(f => {
+                    const updatedLive = data.find(l => l.user_id === f.id);
+                    return updatedLive ? { ...f, live_activity: updatedLive } : f;
+                });
+                
+                localStorage.setItem('jee-community-friends-cache', JSON.stringify(updated));
+                return updated;
+            });
         } catch (err) {
             console.warn('Failed to poll live activity', err);
         }

@@ -1,8 +1,8 @@
 {
   "package.json": {
-    "mtime": 1782234638.2304149,
-    "ast_hash": "93d56e39ec67cf7299e54a8472ed7aec",
-    "semantic_hash": "93d56e39ec67cf7299e54a8472ed7aec"
+    "mtime": 1782395202.855345,
+    "ast_hash": "0ff915ba281ca8473a913d6db2d650fb",
+    "semantic_hash": ""
   },
   "public/data/chemistry.json": {
     "mtime": 1781841591.0751584,
@@ -635,8 +635,8 @@
     "semantic_hash": "e2cd277012bce584bd2f1923ff80bd9b"
   },
   "vercel.json": {
-    "mtime": 1782290722.9019854,
-    "ast_hash": "c88878a499a3471090105952254ced13",
+    "mtime": 1782395627.7193651,
+    "ast_hash": "292b861b9d8ca60b86672c0ccffb5abb",
     "semantic_hash": ""
   },
   "vite.config.ts": {
@@ -885,8 +885,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/InviteHandler.tsx": {
-    "mtime": 1782393492.5223353,
-    "ast_hash": "b42b04257c68497319ab104b4592bec0",
+    "mtime": 1782393570.383283,
+    "ast_hash": "64b5105b8e290ee2e04ebca10da51018",
     "semantic_hash": ""
   },
   "supabase/migrations/20260625070000_add_get_profile_by_invite_code_rpc.sql": {
@@ -897,6 +897,26 @@
   "supabase/migrations/20260625131000_add_disconnect_peer_rpc.sql": {
     "mtime": 1782393113.226659,
     "ast_hash": "ecf6b153f14bbb58d3b1fb755664ed33",
+    "semantic_hash": ""
+  },
+  "api/invite-image.jsx": {
+    "mtime": 1782395223.215403,
+    "ast_hash": "c03e21c463aa8f9eec4f35a44bdbc3fd",
+    "semantic_hash": ""
+  },
+  "api/invite-page.js": {
+    "mtime": 1782396555.1748037,
+    "ast_hash": "c4b2006df0a7e7ffc726c9af115eb823",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260625191500_add_banner_url_to_invite_rpc.sql": {
+    "mtime": 1782394899.0054073,
+    "ast_hash": "ec063201e34c1234aca32ee3787ba626",
+    "semantic_hash": ""
+  },
+  "sample.html": {
+    "mtime": 1782394670.6694603,
+    "ast_hash": "7c170c40af5e0cf0291687009db8fdef",
     "semantic_hash": ""
   }
 }

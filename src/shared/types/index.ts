@@ -172,6 +172,7 @@ export interface RemoteProfile {
     today_questions: number;
     momentum_heatmap: any[];
     todays_tasks: any[];
+    updated_at?: string;
 }
 
 export interface LiveActivity {
