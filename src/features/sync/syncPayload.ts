@@ -38,6 +38,7 @@ export function toSyncedProgressCardSettings(settings: SyncPayloadInput['progres
             mathsProgress: true,
             examCountdown: true,
         },
+        showTasks: settings?.showTasks ?? true,
     };
 }
 

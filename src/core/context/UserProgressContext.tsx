@@ -199,6 +199,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         targetExam: 'JEE 2026',
         discordSpecialTag: '',
         inviteCode: '',
+        showTasks: true,
     });
 
     const { physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress } = useProgress(progress, mergedSubjectData);

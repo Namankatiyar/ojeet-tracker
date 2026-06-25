@@ -292,6 +292,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             progressCardSettings: {
                 userName: progressCardSettings.userName,
                 visibleStats: progressCardSettings.visibleStats,
+                showTasks: progressCardSettings.showTasks,
             },
             mockExamPresets,
         }),
@@ -323,6 +324,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             ...prev,
             userName: payload.domains.settings.progressCardSettings.userName,
             visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
+            showTasks: payload.domains.settings.progressCardSettings.showTasks ?? true,
         }));
         setMockExamPresets(
             payload.domains.settings.mockExamPresets && payload.domains.settings.mockExamPresets.length > 0

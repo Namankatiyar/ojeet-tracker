@@ -1,22 +1,24 @@
 import { useState } from 'react';
 import { UserProfileCard } from './UserProfileCard';
+import { SkeletonFriendCard } from './SkeletonFriendCard';
 import { InviteSection } from './InviteSection';
 import { ProfileEditModal } from './ProfileEditModal';
 import { InviteFriendModal } from './InviteFriendModal';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
-import { User, Users, Trophy } from 'lucide-react';
+import { useFriends } from '../hooks/useFriends';
+import { Users, Trophy } from 'lucide-react';
 
-type CommunityTab = 'profile' | 'friends' | 'leaderboard';
+type CommunityTab = 'friends' | 'leaderboard';
 
 export function CommunityPage() {
-    const [activeTab, setActiveTab] = useState<CommunityTab>('profile');
+    const [activeTab, setActiveTab] = useState<CommunityTab>('friends');
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const { progressCardSettings, setProgressCardSettings } = useUserProgress();
+    const { friends, refresh: refreshFriends } = useFriends();
 
     const tabs: { key: CommunityTab; label: string; icon: React.ReactNode; disabled?: boolean }[] = [
-        { key: 'profile', label: 'My Profile', icon: <User size={14} /> },
-        { key: 'friends', label: 'Friends', icon: <Users size={14} />, disabled: true },
+        { key: 'friends', label: 'Friends', icon: <Users size={14} /> },
         { key: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={14} />, disabled: true },
     ];
 
@@ -51,17 +53,19 @@ export function CommunityPage() {
                 ))}
             </div>
 
-            {activeTab === 'profile' && (
+            {activeTab === 'friends' && (
                 <div className="community-profile-area">
                     <UserProfileCard onEditClick={() => setIsEditOpen(true)} />
-                </div>
-            )}
+                    
+                    {friends.map(friend => (
+                        <UserProfileCard 
+                            key={friend.id} 
+                            remoteProfileData={friend} 
+                            previewMode={true} 
+                        />
+                    ))}
 
-            {activeTab === 'friends' && (
-                <div className="community-coming-soon">
-                    <Users size={48} />
-                    <h2>Friends</h2>
-                    <p>Share your invite code to connect with study partners. Coming soon.</p>
+                    <SkeletonFriendCard onAddFriendClick={() => setIsInviteOpen(true)} />
                 </div>
             )}
 
@@ -83,6 +87,7 @@ export function CommunityPage() {
             <InviteFriendModal
                 isOpen={isInviteOpen}
                 onClose={() => setIsInviteOpen(false)}
+                onSuccess={refreshFriends}
             />
         </div>
     );

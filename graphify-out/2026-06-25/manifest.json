@@ -20,8 +20,8 @@
     "semantic_hash": "890bea40457214f6a1bcfbd7c0d487a1"
   },
   "src/core/App.tsx": {
-    "mtime": 1782316599.3475943,
-    "ast_hash": "f1e78f47aff608e8869a57d1097e54ad",
+    "mtime": 1782363850.0062077,
+    "ast_hash": "b7ca642278bfcaf57c90d75da24671ce",
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -40,9 +40,9 @@
     "semantic_hash": "f8477f7fd6c66c20405668ca3f45a815"
   },
   "src/core/context/RemoteSyncContext.tsx": {
-    "mtime": 1782049668.759822,
-    "ast_hash": "a67ce3815d7a96e6a180655fb5ef8b09",
-    "semantic_hash": "a67ce3815d7a96e6a180655fb5ef8b09"
+    "mtime": 1782363972.7621312,
+    "ast_hash": "c538ab8675100d61aed4b88caa72d757",
+    "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
     "mtime": 1781953138.3552969,
@@ -55,8 +55,8 @@
     "semantic_hash": "ff1cd51fead5de8c9e850c0057620ecb"
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1782316586.8958905,
-    "ast_hash": "63a38fe540d384556896562926564792",
+    "mtime": 1782363964.0006292,
+    "ast_hash": "caf96aa2e2e38785a702017dfa41a25d",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -410,14 +410,14 @@
     "semantic_hash": "33ece65d0cb9366218f329340f7e4d81"
   },
   "src/features/sync/syncPayload.ts": {
-    "mtime": 1781243355.6586504,
-    "ast_hash": "e721695dddda84302934213067ead192",
-    "semantic_hash": "e721695dddda84302934213067ead192"
+    "mtime": 1782363969.530946,
+    "ast_hash": "db1567117fcdc7e58efd02f6ea42a0eb",
+    "semantic_hash": ""
   },
   "src/features/sync/syncTypes.ts": {
-    "mtime": 1781243338.728842,
-    "ast_hash": "df50ae53d6da3605c05bab76aef99355",
-    "semantic_hash": "df50ae53d6da3605c05bab76aef99355"
+    "mtime": 1782363966.232757,
+    "ast_hash": "23744e398fdfe3d1750ea1482cd53f2e",
+    "semantic_hash": ""
   },
   "src/main.tsx": {
     "mtime": 1781010054.1808147,
@@ -560,8 +560,8 @@
     "semantic_hash": "64be8a4bdf0e62f40f7b99769fc9977c"
   },
   "src/shared/types/index.ts": {
-    "mtime": 1782323090.1648266,
-    "ast_hash": "38385922f3f534781d344b3af966d283",
+    "mtime": 1782363960.9844568,
+    "ast_hash": "fce121d21ba7ee95ecde064d0d56fa5f",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {
@@ -715,7 +715,7 @@
     "semantic_hash": "2902902b39b2e4fc5337fc359a9f2e55"
   },
   "index.html": {
-    "mtime": 1782275949.3467164,
+    "mtime": 1782330574.3988326,
     "ast_hash": "4144331e7d74dc946f2bb747ef8f2e81",
     "semantic_hash": ""
   },
@@ -820,28 +820,53 @@
     "semantic_hash": "7ee7015ca2486fff5d2fd6fb2922085b"
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1782324615.8739777,
-    "ast_hash": "f038daf6bd27e0492dc1622e96376380",
+    "mtime": 1782366601.0455441,
+    "ast_hash": "b511588ed0d8c1603e5435f3836b2c21",
     "semantic_hash": ""
   },
   "src/features/community/components/InviteSection.tsx": {
-    "mtime": 1782324557.864902,
-    "ast_hash": "68c033028ea02491b2ea0294f400820f",
+    "mtime": 1782365927.6360052,
+    "ast_hash": "75ba8af0a9791248246227706385f766",
     "semantic_hash": ""
   },
   "src/features/community/components/ProfileEditModal.tsx": {
-    "mtime": 1782323104.3194194,
-    "ast_hash": "bd5956c8580a8c8f9e4412a571915aae",
+    "mtime": 1782365920.8365662,
+    "ast_hash": "bbb136232703709358f4164fcefc08c5",
     "semantic_hash": ""
   },
   "src/features/community/components/UserProfileCard.tsx": {
-    "mtime": 1782327697.026602,
-    "ast_hash": "555f7bf4e5594bd2676aec25d68ab8d4",
+    "mtime": 1782363982.48969,
+    "ast_hash": "cc96693fb7ff7a1a1919c987d32befd5",
     "semantic_hash": ""
   },
   "SCHEMA.md": {
     "mtime": 1782276789.3499365,
     "ast_hash": "34aa92b32559a15292432da7cef1ef53",
+    "semantic_hash": ""
+  },
+  "src/features/community/components/InviteFriendModal.tsx": {
+    "mtime": 1782328425.2024624,
+    "ast_hash": "0da939088a77d67866a860a44a87e6f7",
+    "semantic_hash": ""
+  },
+  "src/features/community/hooks/useProfileSync.ts": {
+    "mtime": 1782365912.1590056,
+    "ast_hash": "3f20c1c12c7946c91384c75c55c919b5",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260625050051_add_community_profile_snapshot.sql": {
+    "mtime": 1782363715.9519668,
+    "ast_hash": "cdc0324a1c16655333395c6efb06cf7c",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260625052546_fix_peer_rls_policies.sql": {
+    "mtime": 1782365177.3087015,
+    "ast_hash": "07c54e8a974b3f4946fbd49f02e06651",
+    "semantic_hash": ""
+  },
+  "src/features/community/components/SkeletonFriendCard.tsx": {
+    "mtime": 1782366590.6488717,
+    "ast_hash": "8ae8862526963846030af26f5206ab9a",
     "semantic_hash": ""
   }
 }

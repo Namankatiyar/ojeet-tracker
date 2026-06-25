@@ -3,15 +3,18 @@ import { createPortal } from 'react-dom';
 import { X, CheckCircle, Loader2, UserPlus } from 'lucide-react';
 import { triggerSmallConfetti } from '../../../shared/utils/confetti';
 import { useTheme } from '../../../core/context/ThemeContext';
+import { supabase } from '../../../shared/lib/supabase';
 
 interface InviteFriendModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
 }
 
-export function InviteFriendModal({ isOpen, onClose }: InviteFriendModalProps) {
+export function InviteFriendModal({ isOpen, onClose, onSuccess }: InviteFriendModalProps) {
     const [code, setCode] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { accentColor } = useTheme();
 
     // Reset states when the modal is opened
@@ -19,6 +22,7 @@ export function InviteFriendModal({ isOpen, onClose }: InviteFriendModalProps) {
         if (isOpen) {
             setCode('');
             setStatus('idle');
+            setErrorMessage(null);
         }
     }, [isOpen]);
 
@@ -33,13 +37,23 @@ export function InviteFriendModal({ isOpen, onClose }: InviteFriendModalProps) {
         if (code.length !== 4 || status === 'submitting') return;
 
         setStatus('submitting');
+        setErrorMessage(null);
         
-        // Simulate a network request
-        setTimeout(() => {
+        try {
+            if (!supabase) throw new Error('Not connected to server');
+            
+            const { error } = await supabase.rpc('add_friend_by_code', { friend_code: code });
+            if (error) throw error;
+            
             setStatus('success');
             triggerSmallConfetti(accentColor);
-        }, 1000);
-    }, [code, status, accentColor]);
+            if (onSuccess) onSuccess();
+        } catch (err: any) {
+            console.error('Failed to add friend:', err);
+            setErrorMessage(err.message || 'Failed to add friend. Please check the code.');
+            setStatus('idle');
+        }
+    }, [code, status, accentColor, onSuccess]);
 
     if (!isOpen) return null;
 
@@ -78,6 +92,11 @@ export function InviteFriendModal({ isOpen, onClose }: InviteFriendModalProps) {
                             />
                             <span className="invite-code-input-hint">4 characters, alphanumeric</span>
                         </div>
+                        {errorMessage && (
+                            <p className="invite-modal-error" style={{ color: 'var(--danger)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
+                                {errorMessage}
+                            </p>
+                        )}
 
                         <div className="invite-modal-actions">
                             <button

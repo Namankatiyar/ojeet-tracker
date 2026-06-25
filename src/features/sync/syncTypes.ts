@@ -9,6 +9,7 @@ export type SyncStorageMode = 'inline' | 'chunked';
 export interface SyncedProgressCardSettings {
     userName: ProgressCardSettings['userName'];
     visibleStats: ProgressCardSettings['visibleStats'];
+    showTasks?: ProgressCardSettings['showTasks'];
 }
 
 export interface SyncPayloadV1 {

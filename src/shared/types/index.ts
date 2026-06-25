@@ -155,4 +155,29 @@ export interface ProgressCardSettings {
     inviteCode?: string;
     mockIsOnline?: boolean;
     mockLastSeenText?: string;
+    showTasks?: boolean;
+}
+
+export interface RemoteProfile {
+    id: string;
+    display_name?: string;
+    username?: string;
+    avatar_url?: string;
+    banner_url?: string;
+    custom_status?: string;
+    invite_code?: string;
+    streak_count: number;
+    discord_tag?: string;
+    grade_status?: string;
+    target_exam?: string;
+    today_study_seconds: number;
+    today_questions: number;
+    momentum_heatmap: any[];
+    todays_tasks: any[];
+}
+
+export interface LiveActivity {
+    user_id: string;
+    is_active: boolean;
+    updated_at: string;
 }

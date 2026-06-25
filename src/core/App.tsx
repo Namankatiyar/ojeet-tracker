@@ -14,6 +14,7 @@ import { RemoteSyncProvider } from './context/RemoteSyncContext';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { useDocumentMetadata } from './hooks/useDocumentMetadata';
 import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
+import { useProfileSync } from '../features/community/hooks/useProfileSync';
 
 import { AppRoutes } from './AppRoutes';
 
@@ -84,6 +85,7 @@ function AppContent() {
     useGlobalShortcuts(handleQuickAddTask);
     useAutoShiftTasks(setPlannerTasks, disableAutoShift);
     useDocumentMetadata();
+    useProfileSync();
 
     return (
         <div className="app">

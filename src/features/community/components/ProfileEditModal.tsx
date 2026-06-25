@@ -41,18 +41,6 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
         setDraft(prev => ({ ...prev, [field]: value }));
     }, []);
 
-    const handleInviteCodeChange = useCallback((raw: string) => {
-        // Force uppercase alphanumeric, max 4 characters
-        const cleaned = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4);
-        setDraft(prev => ({ ...prev, inviteCode: cleaned }));
-    }, []);
-
-    const handleTagChange = useCallback((raw: string) => {
-        // Max 5 characters, alphanumeric
-        const cleaned = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 5);
-        setDraft(prev => ({ ...prev, discordSpecialTag: cleaned }));
-    }, []);
-
     const handleSubmit = useCallback(() => {
         onSave({ ...draft });
         onClose();
@@ -104,33 +92,6 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
                                     />
                                 </div>
 
-                                <div className="profile-edit-row">
-                                    <div className="profile-edit-field">
-                                        <label htmlFor="pe-tag">Special tag</label>
-                                        <input
-                                            id="pe-tag"
-                                            type="text"
-                                            value={draft.discordSpecialTag || ''}
-                                            onChange={(e) => handleTagChange(e.target.value)}
-                                            placeholder="e.g. PRO"
-                                            maxLength={5}
-                                        />
-                                        <span className="field-hint">4-5 letters, granted by developer</span>
-                                    </div>
-
-                                    <div className="profile-edit-field">
-                                        <label htmlFor="pe-invite">Invite code</label>
-                                        <input
-                                            id="pe-invite"
-                                            type="text"
-                                            value={draft.inviteCode || ''}
-                                            onChange={(e) => handleInviteCodeChange(e.target.value)}
-                                            placeholder="e.g. ABCD"
-                                            maxLength={4}
-                                        />
-                                        <span className="field-hint">4 chars, alphanumeric</span>
-                                    </div>
-                                </div>
                             </div>
 
                             <div className="profile-edit-section">
@@ -195,6 +156,24 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
                                             size="small"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="profile-edit-section">
+                                <h3 className="profile-edit-section-title">Privacy</h3>
+                                <div className="profile-edit-row" style={{ alignItems: 'center', justifyContent: 'space-between', gridTemplateColumns: '1fr auto' }}>
+                                    <div className="profile-edit-field" style={{ gap: '2px' }}>
+                                        <label style={{ margin: 0 }}>Show tasks on profile</label>
+                                        <span className="field-hint">Display today's study agenda on your public profile card</span>
+                                    </div>
+                                    <label className="toggle-switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={draft.showTasks !== false}
+                                            onChange={(e) => handleChange('showTasks', e.target.checked)}
+                                        />
+                                        <span className="toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
 

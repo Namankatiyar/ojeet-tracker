@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { UserAvatar } from '../../../shared/components/ui/Avatar';
-import { StudySession, PlannerTask, ProgressCardSettings } from '../../../shared/types';
+import { StudySession, PlannerTask, ProgressCardSettings, RemoteProfile, LiveActivity } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
 import { Pencil, GraduationCap, Target, Clock, Flame, Wifi } from 'lucide-react';
 
@@ -10,6 +10,10 @@ interface UserProfileCardProps {
     onEditClick?: () => void;
     previewSettings?: ProgressCardSettings;
     previewMode?: boolean;
+    remoteProfileData?: RemoteProfile & { 
+        live_activity?: LiveActivity | null;
+        peer_visibility_settings?: { show_agenda: boolean } | null;
+    };
 }
 
 /* ── Helpers ── */
@@ -33,7 +37,7 @@ const formatTime12Hour = (time: string): string => {
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-export function UserProfileCard({ onEditClick, previewSettings, previewMode = false }: UserProfileCardProps) {
+export function UserProfileCard({ onEditClick, previewSettings, previewMode = false, remoteProfileData }: UserProfileCardProps) {
     const {
         progressCardSettings,
         studySessions,
@@ -46,7 +50,15 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
     const todayStr = formatDateLocal(new Date());
 
     /* ── Live Indicator: Read timer engine state from localStorage ── */
-    const timerState = useMemo<'running' | 'paused' | 'other'>(() => {
+    const timerState = useMemo<'running' | 'paused' | 'online' | 'other'>(() => {
+        if (remoteProfileData) {
+            const act = remoteProfileData.live_activity;
+            if (!act) return 'other';
+            const isFresh = (new Date().getTime() - new Date(act.updated_at).getTime()) < 60000;
+            if (act.is_active && isFresh) return 'running';
+            return isFresh ? 'online' : 'other';
+        }
+
         try {
             const raw = localStorage.getItem('jee-timer-engine');
             if (!raw) return 'other';
@@ -57,21 +69,24 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
         } catch {
             return 'other';
         }
-    }, []);
+    }, [remoteProfileData]);
 
     /* ── Today's sessions → total study time ── */
-    const todayStudyTimeSec = useMemo(
-        () => studySessions
+    const todayStudyTimeSec = useMemo(() => {
+        if (remoteProfileData) return remoteProfileData.today_study_seconds || 0;
+        return studySessions
             .filter(s => getSessionDate(s) === todayStr)
-            .reduce((acc, s) => acc + s.duration, 0),
-        [studySessions, todayStr]
-    );
+            .reduce((acc, s) => acc + s.duration, 0);
+    }, [remoteProfileData, studySessions, todayStr]);
 
     /* ── Today's questions ── */
-    const todayQuestions = Math.max(0, dailyQuestionLogs[todayStr] || 0);
+    const todayQuestions = remoteProfileData 
+        ? (remoteProfileData.today_questions || 0) 
+        : Math.max(0, dailyQuestionLogs[todayStr] || 0);
 
     /* ── Study streak ── */
     const streak = useMemo(() => {
+        if (remoteProfileData) return remoteProfileData.streak_count || 0;
         let count = 0;
         const checkDate = new Date();
         while (true) {
@@ -85,7 +100,7 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
             }
         }
         return count;
-    }, [studySessions]);
+    }, [remoteProfileData, studySessions]);
 
     /* ── Active Task ID from Study Clock ── */
     const activeTaskId = useMemo<string | null>(() => {
@@ -111,6 +126,10 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
     /* ── Today's tasks ── */
     const todayTasks = useMemo<PlannerTask[]>(
         () => {
+            if (remoteProfileData) {
+                if (remoteProfileData.peer_visibility_settings?.show_agenda === false) return [];
+                return remoteProfileData.todays_tasks || [];
+            }
             const filtered = plannerTasks.filter(t => t.date === todayStr);
             return [...filtered].sort((a, b) => {
                 const aIsActive = a.id === activeTaskId;
@@ -122,11 +141,12 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                 return a.time.localeCompare(b.time);
             });
         },
-        [plannerTasks, todayStr, activeTaskId]
+        [remoteProfileData, plannerTasks, todayStr, activeTaskId]
     );
 
     /* ── 7-day momentum heatmap ── */
     const heatmapData = useMemo(() => {
+        if (remoteProfileData) return remoteProfileData.momentum_heatmap || [];
         const result: { dayLabel: string; seconds: number; level: number }[] = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
@@ -145,19 +165,19 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
             result.push({ dayLabel: DAY_LABELS[dayOfWeek], seconds, level });
         }
         return result;
-    }, [studySessions]);
+    }, [remoteProfileData, studySessions]);
 
     const activeSettings = previewSettings || progressCardSettings;
 
-    const {
-        userName,
-        customAvatarUrl,
-        bannerUrl,
-        customStatus,
-        gradeStatus,
-        targetExam,
-        discordSpecialTag,
-    } = activeSettings;
+    const userName = remoteProfileData?.display_name || remoteProfileData?.username || activeSettings.userName;
+    const customAvatarUrl = remoteProfileData ? remoteProfileData.avatar_url : activeSettings.customAvatarUrl;
+    const bannerUrl = remoteProfileData ? remoteProfileData.banner_url : activeSettings.bannerUrl;
+    const customStatus = remoteProfileData ? remoteProfileData.custom_status : activeSettings.customStatus;
+    const gradeStatus = remoteProfileData ? remoteProfileData.grade_status : activeSettings.gradeStatus;
+    const targetExam = remoteProfileData ? remoteProfileData.target_exam : activeSettings.targetExam;
+    const discordSpecialTag = remoteProfileData ? remoteProfileData.discord_tag : activeSettings.discordSpecialTag;
+    let isOnlineMock = activeSettings.mockIsOnline;
+    if (timerState === 'online') isOnlineMock = true;
 
     const displayName = userName || 'Student';
 
@@ -199,7 +219,7 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                             <span className="profile-card-status-dot" />
                             Idle
                         </span>
-                    ) : activeSettings.mockIsOnline ? (
+                    ) : timerState === 'online' || isOnlineMock ? (
                         <span className="profile-card-status-badge online">
                             <Wifi size={12} className="profile-card-status-wifi" />
                             Online
@@ -284,7 +304,7 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                 </div>
             </div>
 
-            {!previewMode && (
+            {activeSettings.showTasks !== false && (
                 <>
                     <div className="profile-card-divider" />
 
@@ -298,10 +318,10 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                                     return (
                                         <div
                                             key={task.id}
-                                            className={`profile-card-task-item ${task.completed ? 'completed' : ''} ${isLinked ? 'linked-task' : ''}`}
+                                            className={`profile-card-task-item ${task.completed ? 'completed' : ''} ${isLinked || (task as any).isActive ? 'linked-task' : ''}`}
                                         >
                                             <span
-                                                className={`profile-card-task-dot ${task.subject || 'custom'} ${isLinked ? 'pulsate' : ''}`}
+                                                className={`profile-card-task-dot ${task.subject || 'custom'} ${isLinked || (task as any).isActive ? 'pulsate' : ''}`}
                                             />
                                             <span className="profile-card-task-title">{task.title}</span>
                                             <span className="profile-card-task-time">
