@@ -9,7 +9,7 @@ export type FriendProfile = RemoteProfile & {
 };
 
 export function useFriends() {
-    const { user, isConfigured } = useRemoteAuth();
+    const { user, isConfigured, isLoading: isAuthLoading } = useRemoteAuth();
     const [friends, setFriends] = useState<FriendProfile[]>(() => {
         try {
             const cached = localStorage.getItem('jee-community-friends-cache');
@@ -27,6 +27,14 @@ export function useFriends() {
         }
     });
     const [error, setError] = useState<string | null>(null);
+
+    // Handle logout cleanup
+    useEffect(() => {
+        if (!isAuthLoading && !user) {
+            setFriends([]);
+            localStorage.removeItem('jee-community-friends-cache');
+        }
+    }, [user, isAuthLoading]);
 
     // Keep friend IDs in a ref so the polling interval can access them without recreating
     const friendIdsRef = useRef<string[]>([]);

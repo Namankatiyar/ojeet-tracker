@@ -120,6 +120,15 @@
         -webkit-backdrop-filter: var(--panel-blur);
         gap: var(--space-2);
         white-space: nowrap;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .invite-signin-hint:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--accent);
+        color: var(--text-primary);
     }
 
     .invite-badge-wrapper {
@@ -387,6 +396,9 @@
         background: var(--bg-tertiary);
         flex-shrink: 0;
         transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .profile-card-avatar img {
@@ -637,7 +649,7 @@
         font-size: var(--text-xs);
         font-weight: 600;
         border-radius: var(--radius-xs);
-        line-height: 1;
+        line-height: normal;
         transition: background-color var(--transition-fast), color var(--transition-fast);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         border: 1px solid transparent;
@@ -673,9 +685,13 @@
     }
 
     .profile-card-status-dot {
+        display: block;
         width: 6px;
         height: 6px;
         border-radius: var(--radius-full);
+        flex-shrink: 0;
+        position: relative;
+        top: -0.5px;
     }
 
     .profile-card-status-badge.studying .profile-card-status-dot {
@@ -692,6 +708,10 @@
     }
 
     .profile-card-status-wifi {
+        display: block;
+        flex-shrink: 0;
+        position: relative;
+        top: -0.5px;
         animation: wifi-pulse 2s ease-in-out infinite;
     }
 
@@ -1784,5 +1804,49 @@
         .invite-handler-page {
             min-height: calc(100vh - 180px);
         }
+    }
+
+    /* ── Signed Out User Overlay ── */
+    .profile-card-signedout-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65); /* Strong dark dimming */
+        backdrop-filter: blur(4px) grayscale(100%); /* Blur & Grayscale */
+        -webkit-backdrop-filter: blur(4px) grayscale(100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+        border-radius: var(--radius-md);
+        padding: var(--space-6);
+        box-sizing: border-box;
+        border: 1px solid var(--border);
+    }
+
+    .signedout-overlay-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-4);
+        text-align: center;
+        max-width: 260px;
+    }
+
+    .signedout-overlay-title {
+        font-size: var(--text-sm);
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.5;
+    }
+
+    .signedout-overlay-btn {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        transform: scale(1.02);
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast) !important;
+    }
+
+    .signedout-overlay-btn:hover {
+        transform: scale(1.06);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
     }
 }

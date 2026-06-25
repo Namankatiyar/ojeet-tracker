@@ -29,7 +29,7 @@ const clearRemoteSyncMetadata = () => {
 
     for (let i = 0; i < localStorage.length; i += 1) {
         const key = localStorage.key(i);
-        if (key && key.startsWith(REMOTE_SYNC_META_PREFIX)) {
+        if (key && (key.startsWith(REMOTE_SYNC_META_PREFIX) || key === 'jee-community-friends-cache')) {
             keysToRemove.push(key);
         }
     }

@@ -4,6 +4,7 @@ import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { UserAvatar } from '../../../shared/components/ui/Avatar';
+import { GoogleSignInButton } from '../../../shared/components/ui/GoogleSignInButton';
 import { StudySession, PlannerTask, ProgressCardSettings, RemoteProfile, LiveActivity } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
 import { Pencil, GraduationCap, Target, Clock, Flame, Wifi, Plus, EyeOff, UserMinus } from 'lucide-react';
@@ -64,9 +65,21 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
         dailyQuestionLogs,
     } = useUserProgress();
 
-    const { user } = useRemoteAuth();
+    const { user, signInWithGoogle } = useRemoteAuth();
     const { accentColor } = useTheme();
     const navigate = useNavigate();
+    const [isAuthBusy, setIsAuthBusy] = useState(false);
+
+    const isSignedOutCurrentUser = !remoteProfileData && !user && !previewMode;
+
+    const handleGoogleSignIn = async () => {
+        setIsAuthBusy(true);
+        const { error } = await signInWithGoogle();
+        if (error) {
+            console.error('Google sign in error:', error);
+            setIsAuthBusy(false);
+        }
+    };
 
     const todayStr = formatDateLocal(new Date());
 
@@ -97,6 +110,7 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
 
     /* ── Live Indicator: Read timer engine state from localStorage ── */
     const timerState = useMemo<'running' | 'paused' | 'online' | 'offline'>(() => {
+        if (isSignedOutCurrentUser) return 'offline';
         if (remoteProfileData) {
             const act = remoteProfileData.live_activity;
             if (!act) return 'offline';
@@ -114,23 +128,27 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
         if (localTimerState.engineState === 'running') return 'running';
         if (localTimerState.engineState === 'paused') return 'paused';
         return 'online';
-    }, [remoteProfileData, localTimerState]);
+    }, [remoteProfileData, localTimerState, isSignedOutCurrentUser]);
 
     /* ── Today's sessions → total study time ── */
     const todayStudyTimeSec = useMemo(() => {
+        if (isSignedOutCurrentUser) return 0;
         if (remoteProfileData) return remoteProfileData.today_study_seconds || 0;
         return studySessions
             .filter(s => getSessionDate(s) === todayStr)
             .reduce((acc, s) => acc + s.duration, 0);
-    }, [remoteProfileData, studySessions, todayStr]);
+    }, [remoteProfileData, studySessions, todayStr, isSignedOutCurrentUser]);
 
     /* ── Today's questions ── */
-    const todayQuestions = remoteProfileData 
-        ? (remoteProfileData.today_questions || 0) 
-        : Math.max(0, dailyQuestionLogs[todayStr] || 0);
+    const todayQuestions = isSignedOutCurrentUser
+        ? 0
+        : (remoteProfileData 
+            ? (remoteProfileData.today_questions || 0) 
+            : Math.max(0, dailyQuestionLogs[todayStr] || 0));
 
     /* ── Study streak ── */
     const streak = useMemo(() => {
+        if (isSignedOutCurrentUser) return 0;
         if (remoteProfileData) return remoteProfileData.streak_count || 0;
         let count = 0;
         const checkDate = new Date();
@@ -145,7 +163,7 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
             }
         }
         return count;
-    }, [remoteProfileData, studySessions]);
+    }, [remoteProfileData, studySessions, isSignedOutCurrentUser]);
 
     /* ── Active Task ID from Study Clock ── */
     const activeTaskId = useMemo<string | null>(() => {
@@ -208,6 +226,9 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
 
     /* ── 7-day momentum heatmap ── */
     const heatmapData = useMemo(() => {
+        if (isSignedOutCurrentUser) {
+            return DAY_LABELS.map(dayLabel => ({ dayLabel, seconds: 0, level: 0 }));
+        }
         if (remoteProfileData) return remoteProfileData.momentum_heatmap || [];
         const result: { dayLabel: string; seconds: number; level: number }[] = [];
         for (let i = 6; i >= 0; i--) {
@@ -227,25 +248,25 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
             result.push({ dayLabel: DAY_LABELS[dayOfWeek], seconds, level });
         }
         return result;
-    }, [remoteProfileData, studySessions]);
+    }, [remoteProfileData, studySessions, isSignedOutCurrentUser]);
 
     const activeSettings = previewSettings || progressCardSettings;
 
     const googleName = !remoteProfileData ? (user?.user_metadata?.full_name || user?.user_metadata?.name) : undefined;
     const googleAvatar = !remoteProfileData ? (user?.user_metadata?.avatar_url || user?.user_metadata?.picture) : undefined;
 
-    const userName = remoteProfileData?.display_name || remoteProfileData?.username || activeSettings.userName || googleName;
-    const customAvatarUrl = remoteProfileData ? remoteProfileData.avatar_url : (activeSettings.customAvatarUrl || googleAvatar);
-    const bannerUrl = remoteProfileData ? remoteProfileData.banner_url : activeSettings.bannerUrl;
-    const customStatus = remoteProfileData ? remoteProfileData.custom_status : activeSettings.customStatus;
-    const gradeStatus = remoteProfileData ? remoteProfileData.grade_status : activeSettings.gradeStatus;
-    const targetExam = remoteProfileData ? remoteProfileData.target_exam : activeSettings.targetExam;
-    const discordSpecialTag = remoteProfileData ? remoteProfileData.discord_tag : activeSettings.discordSpecialTag;
+    const userName = isSignedOutCurrentUser ? '' : (remoteProfileData?.display_name || remoteProfileData?.username || activeSettings.userName || googleName);
+    const customAvatarUrl = isSignedOutCurrentUser ? '' : (remoteProfileData ? remoteProfileData.avatar_url : (activeSettings.customAvatarUrl || googleAvatar));
+    const bannerUrl = isSignedOutCurrentUser ? '' : (remoteProfileData ? remoteProfileData.banner_url : activeSettings.bannerUrl);
+    const customStatus = isSignedOutCurrentUser ? '' : (remoteProfileData ? remoteProfileData.custom_status : activeSettings.customStatus);
+    const gradeStatus = isSignedOutCurrentUser ? '' : (remoteProfileData ? remoteProfileData.grade_status : activeSettings.gradeStatus);
+    const targetExam = isSignedOutCurrentUser ? '' : (remoteProfileData ? remoteProfileData.target_exam : activeSettings.targetExam);
+    const discordSpecialTag = isSignedOutCurrentUser ? '' : (remoteProfileData ? remoteProfileData.discord_tag : activeSettings.discordSpecialTag);
     const displayName = userName || 'Student';
 
-    const showTasksSection = remoteProfileData 
+    const showTasksSection = isSignedOutCurrentUser ? false : (remoteProfileData 
         ? remoteProfileData.peer_visibility_settings?.show_agenda !== false
-        : activeSettings.showTasks !== false;
+        : activeSettings.showTasks !== false);
 
     return (
         <div className="profile-card">
@@ -255,7 +276,7 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                 style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
             >
                 {bannerUrl && <img src={bannerUrl} alt="" />}
-                {onEditClick && (
+                {onEditClick && !isSignedOutCurrentUser && (
                     <button className="profile-card-edit-btn" onClick={onEditClick}>
                         <Pencil size={12} />
                         Edit
@@ -450,6 +471,15 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                     </div>
                 </>
             ))}
+
+            {isSignedOutCurrentUser && (
+                <div className="profile-card-signedout-overlay">
+                    <div className="signedout-overlay-content">
+                        <span className="signedout-overlay-title">Sign in to customize your profile card & connect with friends</span>
+                        <GoogleSignInButton onClick={handleGoogleSignIn} disabled={isAuthBusy} className="signedout-overlay-btn" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

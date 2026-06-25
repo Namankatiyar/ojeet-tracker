@@ -8,6 +8,8 @@ import { DisconnectModal } from './DisconnectModal';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useFriends, FriendProfile } from '../hooks/useFriends';
 import { useTheme } from '../../../core/context/ThemeContext';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
 import { triggerSmallConfetti } from '../../../shared/utils/confetti';
 import { Users, Trophy, CheckCircle, AlertCircle, X } from 'lucide-react';
 
@@ -21,6 +23,18 @@ export function CommunityPage() {
     const [isDisconnecting, setIsDisconnecting] = useState(false);
     const { progressCardSettings, setProgressCardSettings } = useUserProgress();
     const { friends, refresh: refreshFriends, disconnectFriend } = useFriends();
+    const { signInWithGoogle, user } = useRemoteAuth();
+    const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
+    const [isAuthBusy, setIsAuthBusy] = useState(false);
+
+    const handleGoogleSignIn = async () => {
+        setIsAuthBusy(true);
+        const { error } = await signInWithGoogle();
+        if (error) {
+            console.error('Google sign in error:', error);
+            setIsAuthBusy(false);
+        }
+    };
 
     const handleDisconnect = async () => {
         if (!selectedFriendForDisconnect) return;
@@ -75,6 +89,7 @@ export function CommunityPage() {
                     <InviteSection 
                         inviteCode={progressCardSettings.inviteCode || ''} 
                         onInviteFriendClick={() => setIsInviteOpen(true)}
+                        onSignInClick={() => setIsSyncPromptOpen(true)}
                     />
                 </div>
             </div>
@@ -139,7 +154,9 @@ export function CommunityPage() {
                         />
                     ))}
 
-                    <SkeletonFriendCard onAddFriendClick={() => setIsInviteOpen(true)} />
+                    {user && (
+                        <SkeletonFriendCard onAddFriendClick={() => setIsInviteOpen(true)} />
+                    )}
                 </div>
             )}
 
@@ -170,6 +187,13 @@ export function CommunityPage() {
                 onConfirm={handleDisconnect}
                 friendName={selectedFriendForDisconnect?.display_name || selectedFriendForDisconnect?.username || 'Friend'}
                 isSubmitting={isDisconnecting}
+            />
+
+            <CloudSyncPromptModal
+                isOpen={isSyncPromptOpen}
+                onClose={() => setIsSyncPromptOpen(false)}
+                onSignIn={handleGoogleSignIn}
+                isBusy={isAuthBusy}
             />
         </div>
     );

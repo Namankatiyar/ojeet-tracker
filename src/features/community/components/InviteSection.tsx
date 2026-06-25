@@ -6,9 +6,10 @@ import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 interface InviteSectionProps {
     inviteCode: string;
     onInviteFriendClick?: () => void;
+    onSignInClick?: () => void;
 }
 
-export function InviteSection({ inviteCode, onInviteFriendClick }: InviteSectionProps) {
+export function InviteSection({ inviteCode, onInviteFriendClick, onSignInClick }: InviteSectionProps) {
     const [copied, setCopied] = useState(false);
     const { user } = useRemoteAuth();
 
@@ -54,9 +55,13 @@ export function InviteSection({ inviteCode, onInviteFriendClick }: InviteSection
                     </button>
                 </>
             ) : (
-                <div className="invite-signin-hint">
+                <button 
+                    type="button"
+                    className="invite-signin-hint"
+                    onClick={onSignInClick}
+                >
                     <span>Sign in to get a personal invite code</span>
-                </div>
+                </button>
             )}
             
             <a 

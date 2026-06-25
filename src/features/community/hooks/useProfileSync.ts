@@ -11,7 +11,7 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const getSessionDate = (s: StudySession): string => s.localDate ?? s.startTime.slice(0, 10);
 
 export function useProfileSync() {
-    const { user, isConfigured } = useRemoteAuth();
+    const { user, isConfigured, isLoading } = useRemoteAuth();
     const navigate = useNavigate();
     const {
         progressCardSettings,
@@ -21,6 +21,26 @@ export function useProfileSync() {
         dailyQuestionLogs,
     } = useUserProgress();
     const { subjectData } = useSubjectData();
+
+    // Handle logout cleanup
+    const prevUserRef = useRef<typeof user>(null);
+    useEffect(() => {
+        // If we transitioned from a logged-in user to null (logout)
+        if (prevUserRef.current && !user && !isLoading) {
+            setProgressCardSettings(prev => ({
+                ...prev,
+                inviteCode: '',
+                discordSpecialTag: '',
+                userName: '',
+                customAvatarUrl: '',
+                bannerUrl: '',
+                customStatus: '',
+            }));
+        }
+        if (!isLoading) {
+            prevUserRef.current = user;
+        }
+    }, [user, isLoading, setProgressCardSettings]);
 
     // Post-login check for pending invite code
     useEffect(() => {

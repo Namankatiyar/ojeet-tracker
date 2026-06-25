@@ -1,0 +1,9 @@
+node_modules
+dist
+graphify-out
+pnpm-lock.yaml
+.agents
+.vercel
+api/dist
+build
+public/data/*.json

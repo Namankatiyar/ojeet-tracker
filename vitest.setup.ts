@@ -14,7 +14,7 @@ class MockLocalStorage {
   }
 
   getItem(key: string): string | null {
-    return this.store.hasOwnProperty(key) ? this.store[key] : null;
+    return Object.prototype.hasOwnProperty.call(this.store, key) ? this.store[key] : null;
   }
 
   setItem(key: string, value: any) {

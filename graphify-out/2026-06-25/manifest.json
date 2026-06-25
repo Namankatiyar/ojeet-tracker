@@ -1,7 +1,7 @@
 {
   "package.json": {
-    "mtime": 1782395202.855345,
-    "ast_hash": "0ff915ba281ca8473a913d6db2d650fb",
+    "mtime": 1782406192.3451502,
+    "ast_hash": "766602aa51c12e3f135878cb9139d80b",
     "semantic_hash": ""
   },
   "public/data/chemistry.json": {
@@ -30,9 +30,9 @@
     "semantic_hash": ""
   },
   "src/core/context/RemoteAuthContext.tsx": {
-    "mtime": 1781010054.1660411,
-    "ast_hash": "06c8ac1f8be70d0c9f171527f804bb0d",
-    "semantic_hash": "06c8ac1f8be70d0c9f171527f804bb0d"
+    "mtime": 1782406379.4833107,
+    "ast_hash": "e2ed70fe951a10d67c0dc1895404332f",
+    "semantic_hash": ""
   },
   "src/core/context/RemoteSyncContext.test.tsx": {
     "mtime": 1781974700.4578753,
@@ -560,8 +560,8 @@
     "semantic_hash": "64be8a4bdf0e62f40f7b99769fc9977c"
   },
   "src/shared/types/index.ts": {
-    "mtime": 1782372938.860178,
-    "ast_hash": "f556a6a55e6d575ba2d7071d8e894a3c",
+    "mtime": 1782401569.6072617,
+    "ast_hash": "7c79e537210f60c651d22bed53032724",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {
@@ -705,9 +705,9 @@
     "semantic_hash": ""
   },
   "pnpm-workspace.yaml": {
-    "mtime": 1781803922.9809864,
-    "ast_hash": "7bb23c19c0343fac40d375bacca550d0",
-    "semantic_hash": "7bb23c19c0343fac40d375bacca550d0"
+    "mtime": 1782406195.110271,
+    "ast_hash": "7ae63d12b7e91daf4ab05bffdf1f659a",
+    "semantic_hash": ""
   },
   "public/robots.txt": {
     "mtime": 1781323263.80217,
@@ -795,13 +795,13 @@
     "semantic_hash": "03ba052613c6fc984635c34022bcd2f3"
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1782393172.226724,
-    "ast_hash": "30da6587c3190860f39f2818b7e51266",
+    "mtime": 1782406126.4652724,
+    "ast_hash": "dcc4706c505f7e8eba431ee4d2c1e533",
     "semantic_hash": ""
   },
   "src/features/community/components/InviteSection.tsx": {
-    "mtime": 1782385236.1411598,
-    "ast_hash": "e14869754612caece0cb5f89a48d0a03",
+    "mtime": 1782406114.2217374,
+    "ast_hash": "9f1f217771839e5a99c69cc88b56d323",
     "semantic_hash": ""
   },
   "src/features/community/components/ProfileEditModal.tsx": {
@@ -825,8 +825,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
-    "mtime": 1782393242.4013186,
-    "ast_hash": "4259f7cb987eed49278ca578083a086d",
+    "mtime": 1782406391.2628236,
+    "ast_hash": "e122ebba3103f69fba379a76de077162",
     "semantic_hash": ""
   },
   "supabase/migrations/20260625050051_add_community_profile_snapshot.sql": {
@@ -845,8 +845,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useFriends.ts": {
-    "mtime": 1782393135.0907454,
-    "ast_hash": "40f640b45115492cedd0bfd1cde09187",
+    "mtime": 1782406386.5006163,
+    "ast_hash": "96b85bdbb6df70bb7d8ab675f3a05262",
     "semantic_hash": ""
   },
   "supabase/migrations/20260625061500_fix_add_friend_rpc_ordering.sql": {
@@ -899,11 +899,6 @@
     "ast_hash": "ecf6b153f14bbb58d3b1fb755664ed33",
     "semantic_hash": ""
   },
-  "api/invite-image.jsx": {
-    "mtime": 1782395223.215403,
-    "ast_hash": "c03e21c463aa8f9eec4f35a44bdbc3fd",
-    "semantic_hash": ""
-  },
   "api/invite-page.js": {
     "mtime": 1782396555.1748037,
     "ast_hash": "c4b2006df0a7e7ffc726c9af115eb823",
@@ -917,6 +912,11 @@
   "sample.html": {
     "mtime": 1782394670.6694603,
     "ast_hash": "7c170c40af5e0cf0291687009db8fdef",
+    "semantic_hash": ""
+  },
+  "api/invite-image.js": {
+    "mtime": 1782402788.9341118,
+    "ast_hash": "10f036035e17cb30c2e31a6ec22d244c",
     "semantic_hash": ""
   }
 }
