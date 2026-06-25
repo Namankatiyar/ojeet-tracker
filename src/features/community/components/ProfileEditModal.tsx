@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { ProgressCardSettings } from '../../../shared/types';
 import { UserProfileCard } from './UserProfileCard';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
@@ -29,13 +30,26 @@ interface ProfileEditModalProps {
 }
 
 export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileEditModalProps) {
-    const [draft, setDraft] = useState({ ...settings });
+    const { user } = useRemoteAuth();
+    const googleName = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
+    const googleAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '';
+
+    const [draft, setDraft] = useState({
+        ...settings,
+        userName: settings.userName || googleName,
+        customAvatarUrl: settings.customAvatarUrl || googleAvatar,
+    });
 
     // Sync draft when modal opens
-    const prevOpen = useState(isOpen)[0];
-    if (isOpen && !prevOpen) {
-        // Re-sync handled by key below
-    }
+    useEffect(() => {
+        if (isOpen) {
+            setDraft({
+                ...settings,
+                userName: settings.userName || googleName,
+                customAvatarUrl: settings.customAvatarUrl || googleAvatar,
+            });
+        }
+    }, [isOpen, settings, googleName, googleAvatar]);
 
     const handleChange = useCallback((field: keyof ProgressCardSettings, value: string | boolean) => {
         setDraft(prev => ({ ...prev, [field]: value }));

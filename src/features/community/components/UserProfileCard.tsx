@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useTheme } from '../../../core/context/ThemeContext';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { UserAvatar } from '../../../shared/components/ui/Avatar';
 import { StudySession, PlannerTask, ProgressCardSettings, RemoteProfile, LiveActivity } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
@@ -45,6 +46,7 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
         dailyQuestionLogs,
     } = useUserProgress();
 
+    const { user } = useRemoteAuth();
     const { accentColor } = useTheme();
 
     const todayStr = formatDateLocal(new Date());
@@ -169,8 +171,11 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
 
     const activeSettings = previewSettings || progressCardSettings;
 
-    const userName = remoteProfileData?.display_name || remoteProfileData?.username || activeSettings.userName;
-    const customAvatarUrl = remoteProfileData ? remoteProfileData.avatar_url : activeSettings.customAvatarUrl;
+    const googleName = !remoteProfileData ? (user?.user_metadata?.full_name || user?.user_metadata?.name) : undefined;
+    const googleAvatar = !remoteProfileData ? (user?.user_metadata?.avatar_url || user?.user_metadata?.picture) : undefined;
+
+    const userName = remoteProfileData?.display_name || remoteProfileData?.username || activeSettings.userName || googleName;
+    const customAvatarUrl = remoteProfileData ? remoteProfileData.avatar_url : (activeSettings.customAvatarUrl || googleAvatar);
     const bannerUrl = remoteProfileData ? remoteProfileData.banner_url : activeSettings.bannerUrl;
     const customStatus = remoteProfileData ? remoteProfileData.custom_status : activeSettings.customStatus;
     const gradeStatus = remoteProfileData ? remoteProfileData.grade_status : activeSettings.gradeStatus;

@@ -18,7 +18,7 @@ export function useProfileSync() {
         dailyQuestionLogs,
     } = useUserProgress();
 
-    // 0. Fetch invite_code and discord_tag from backend on authentication
+    // 0. Fetch invite_code, discord_tag, display_name, and avatar_url from backend on authentication
     useEffect(() => {
         const client = supabase;
         if (!user || !isConfigured || !client) return;
@@ -27,9 +27,12 @@ export function useProfileSync() {
             try {
                 const { data, error } = await client
                     .from('profiles')
-                    .select('invite_code, discord_tag')
+                    .select('invite_code, discord_tag, display_name, avatar_url')
                     .eq('id', user.id)
                     .single();
+
+                const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+                const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
 
                 if (!error && data) {
                     setProgressCardSettings(prev => {
@@ -39,6 +42,35 @@ export function useProfileSync() {
                         }
                         if (data.discord_tag && prev.discordSpecialTag !== data.discord_tag) {
                             updates.discordSpecialTag = data.discord_tag;
+                        }
+                        
+                        // Prefill display name if currently empty
+                        if (!prev.userName) {
+                            const nameToUse = data.display_name || googleName;
+                            if (nameToUse) {
+                                updates.userName = nameToUse;
+                            }
+                        }
+                        
+                        // Prefill avatar URL if currently empty
+                        if (!prev.customAvatarUrl) {
+                            const avatarToUse = data.avatar_url || googleAvatar;
+                            if (avatarToUse) {
+                                updates.customAvatarUrl = avatarToUse;
+                            }
+                        }
+
+                        return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+                    });
+                } else {
+                    // Fallback to Google metadata if profile row isn't found or error occurs
+                    setProgressCardSettings(prev => {
+                        const updates: Partial<typeof prev> = {};
+                        if (!prev.userName && googleName) {
+                            updates.userName = googleName;
+                        }
+                        if (!prev.customAvatarUrl && googleAvatar) {
+                            updates.customAvatarUrl = googleAvatar;
                         }
                         return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
                     });
@@ -146,6 +178,10 @@ export function useProfileSync() {
         const snapshot = {
             grade_status: progressCardSettings.gradeStatus || null,
             target_exam: progressCardSettings.targetExam || null,
+            display_name: progressCardSettings.userName || null,
+            avatar_url: progressCardSettings.customAvatarUrl || null,
+            banner_url: progressCardSettings.bannerUrl || null,
+            custom_status: progressCardSettings.customStatus || null,
             today_study_seconds: todayStudyTimeSec,
             today_questions: todayQuestions,
             momentum_heatmap: heatmapData,

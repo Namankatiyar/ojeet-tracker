@@ -18,6 +18,13 @@
 | `lifetime_hours` | `numeric` |  |
 | `weekly_hours` | `numeric` |  |
 | `focus_score` | `int4` |  |
+| `discord_tag` | `text` |  Nullable |
+| `grade_status` | `text` |  Nullable |
+| `target_exam` | `text` |  Nullable |
+| `today_study_seconds` | `int4` |  Nullable |
+| `today_questions` | `int4` |  Nullable |
+| `momentum_heatmap` | `jsonb` |  Nullable |
+| `todays_tasks` | `jsonb` |  Nullable |
 
 ## Table `subjects`
 
@@ -153,6 +160,7 @@
 | `show_backlog_snapshot` | `bool` |  |
 | `show_completed_tasks` | `bool` |  |
 | `updated_at` | `timestamptz` |  |
+| `show_agenda` | `bool` |  Nullable |
 
 ## Table `live_activity`
 
