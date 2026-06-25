@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { supabase } from '../../../shared/lib/supabase';
-import { StudySession } from '../../../shared/types';
+import { StudySession, Subject } from '../../../shared/types';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -17,6 +18,7 @@ export function useProfileSync() {
         plannerTasks,
         dailyQuestionLogs,
     } = useUserProgress();
+    const { subjectData } = useSubjectData();
 
     // 0. Fetch invite_code, discord_tag, display_name, and avatar_url from backend on authentication
     useEffect(() => {
@@ -91,14 +93,79 @@ export function useProfileSync() {
         const sendHeartbeat = async () => {
             try {
                 let isActive = false;
-                const raw = localStorage.getItem('jee-timer-engine');
-                if (raw) {
-                    const state = JSON.parse(raw);
-                    if (state.engineState === 'running') isActive = true;
+                let subject: string | null = null;
+                let chapterName: string | null = null;
+                let chapterSerial: number | null = null;
+                let material: string | null = null;
+                let startedAt: string | null = null;
+
+                const rawTimer = localStorage.getItem('jee-timer-engine');
+                if (rawTimer) {
+                    const timerState = JSON.parse(rawTimer);
+                    const engineState = timerState.engineState;
+                    
+                    if (engineState === 'running' || engineState === 'paused') {
+                        if (engineState === 'running') {
+                            isActive = true;
+                        }
+                        
+                        const startMs = timerState.runStartedAtMs || timerState.startTimestamp || null;
+                        if (startMs) {
+                            startedAt = new Date(startMs).toISOString();
+                        }
+
+                        const rawType = localStorage.getItem('studyClock_taskType');
+                        const taskType = rawType ? JSON.parse(rawType) : 'chapter';
+
+                        if (taskType === 'chapter') {
+                            const rawSubj = localStorage.getItem('studyClock_selectedSubject');
+                            const rawChap = localStorage.getItem('studyClock_selectedChapter');
+                            const rawMat = localStorage.getItem('studyClock_selectedMaterial');
+
+                            const subjVal = rawSubj ? JSON.parse(rawSubj) : null;
+                            const chapVal = rawChap ? JSON.parse(rawChap) : null;
+                            const matVal = rawMat ? JSON.parse(rawMat) : null;
+
+                            subject = subjVal || null;
+                            chapterSerial = typeof chapVal === 'number' ? chapVal : null;
+                            material = matVal || null;
+
+                            if (subject && chapterSerial) {
+                                const typedSubject = subject as Subject;
+                                const subData = subjectData[typedSubject];
+                                if (subData) {
+                                    const chapter = subData.chapters.find(c => c.serial === chapterSerial);
+                                    if (chapter) {
+                                        chapterName = chapter.name;
+                                    }
+                                }
+                            }
+                        } else if (taskType === 'task') {
+                            const rawTaskId = localStorage.getItem('studyClock_selectedTaskId');
+                            const taskId = rawTaskId ? JSON.parse(rawTaskId) : null;
+                            if (taskId) {
+                                const task = plannerTasks.find(t => t.id === taskId);
+                                if (task) {
+                                    subject = task.subject || null;
+                                    chapterName = task.title;
+                                    material = task.subtitle || null;
+                                }
+                            }
+                        } else if (taskType === 'custom') {
+                            const rawTitle = localStorage.getItem('studyClock_customTitle');
+                            chapterName = rawTitle ? JSON.parse(rawTitle) : 'Untitled Session';
+                        }
+                    }
                 }
+
                 await client.from('live_activity').upsert({
                     user_id: user.id,
                     is_active: isActive,
+                    subject,
+                    chapter_name: chapterName,
+                    chapter_serial: chapterSerial,
+                    material,
+                    started_at: startedAt,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id' });
             } catch (err) {
@@ -107,9 +174,23 @@ export function useProfileSync() {
         };
 
         sendHeartbeat();
+
+        const handleTimerChange = () => {
+            sendHeartbeat();
+        };
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('jee-timer-state-change', handleTimerChange);
+        }
+
         const intervalId = setInterval(sendHeartbeat, 30000);
-        return () => clearInterval(intervalId);
-    }, [user, isConfigured]);
+        return () => {
+            clearInterval(intervalId);
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('jee-timer-state-change', handleTimerChange);
+            }
+        };
+    }, [user, isConfigured, subjectData, plannerTasks]);
 
     // 2. Debounced Profile Snapshot Sync
     const lastSnapshotRef = useRef<string | null>(null);

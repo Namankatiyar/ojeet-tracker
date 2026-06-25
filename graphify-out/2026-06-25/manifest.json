@@ -300,9 +300,9 @@
     "semantic_hash": "05038d05271aafba530fa6d2103988fa"
   },
   "src/features/study-clock/hooks/useTimerEngine.ts": {
-    "mtime": 1781010054.1775374,
-    "ast_hash": "3c589c31a9018fadc9c7eb562baebe3e",
-    "semantic_hash": "3c589c31a9018fadc9c7eb562baebe3e"
+    "mtime": 1782371858.1518285,
+    "ast_hash": "cf1f912f2b9f83bcdc3f6d1848375278",
+    "semantic_hash": ""
   },
   "src/features/study-clock/utils/timerAudio.ts": {
     "mtime": 1781010054.1775374,
@@ -560,8 +560,8 @@
     "semantic_hash": "64be8a4bdf0e62f40f7b99769fc9977c"
   },
   "src/shared/types/index.ts": {
-    "mtime": 1782363960.9844568,
-    "ast_hash": "fce121d21ba7ee95ecde064d0d56fa5f",
+    "mtime": 1782372938.860178,
+    "ast_hash": "f556a6a55e6d575ba2d7071d8e894a3c",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {
@@ -628,21 +628,6 @@
     "mtime": 1781010054.1899204,
     "ast_hash": "8e5238cbc3be8a6d4ba55e44ffa7d537",
     "semantic_hash": "8e5238cbc3be8a6d4ba55e44ffa7d537"
-  },
-  "supabase_migrations/20260310_automated_retention_policies.sql": {
-    "mtime": 1781010054.1899204,
-    "ast_hash": "cc3bad104b05ad9c948e4e853603dc3e",
-    "semantic_hash": "cc3bad104b05ad9c948e4e853603dc3e"
-  },
-  "supabase_migrations/20260311_optimize_rls_and_indexes.sql": {
-    "mtime": 1781010054.190227,
-    "ast_hash": "fc048c0d41fdcbc2209239f6cce802cd",
-    "semantic_hash": "fc048c0d41fdcbc2209239f6cce802cd"
-  },
-  "supabase_migrations/add_study_session_log.sql": {
-    "mtime": 1781010054.190349,
-    "ast_hash": "02e0e0d0053e409988e2bbd21cc8e97f",
-    "semantic_hash": "02e0e0d0053e409988e2bbd21cc8e97f"
   },
   "tsconfig.json": {
     "mtime": 1781010054.190349,
@@ -809,19 +794,9 @@
     "ast_hash": "03ba052613c6fc984635c34022bcd2f3",
     "semantic_hash": "03ba052613c6fc984635c34022bcd2f3"
   },
-  "supabase_migrations/20260312_cascade_deletes.sql": {
-    "mtime": 1782235054.91258,
-    "ast_hash": "89e966b9d1cc83ea153bb2e4e54fc239",
-    "semantic_hash": "89e966b9d1cc83ea153bb2e4e54fc239"
-  },
-  "supabase_migrations/20260313_p1_backend_fixes.sql": {
-    "mtime": 1782236144.9612632,
-    "ast_hash": "7ee7015ca2486fff5d2fd6fb2922085b",
-    "semantic_hash": "7ee7015ca2486fff5d2fd6fb2922085b"
-  },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1782366601.0455441,
-    "ast_hash": "b511588ed0d8c1603e5435f3836b2c21",
+    "mtime": 1782373357.873079,
+    "ast_hash": "0a1478e27426857dafb8750a273b85f7",
     "semantic_hash": ""
   },
   "src/features/community/components/InviteSection.tsx": {
@@ -830,28 +805,28 @@
     "semantic_hash": ""
   },
   "src/features/community/components/ProfileEditModal.tsx": {
-    "mtime": 1782365920.8365662,
-    "ast_hash": "bbb136232703709358f4164fcefc08c5",
+    "mtime": 1782372913.6180031,
+    "ast_hash": "c81cf7f0409636b65e5f0f42f3631a40",
     "semantic_hash": ""
   },
   "src/features/community/components/UserProfileCard.tsx": {
-    "mtime": 1782363982.48969,
-    "ast_hash": "cc96693fb7ff7a1a1919c987d32befd5",
+    "mtime": 1782383363.8436368,
+    "ast_hash": "8e0c0aec5fc2bf16cfdc6b0daba428cc",
     "semantic_hash": ""
   },
   "SCHEMA.md": {
-    "mtime": 1782276789.3499365,
-    "ast_hash": "34aa92b32559a15292432da7cef1ef53",
+    "mtime": 1782368571.4205048,
+    "ast_hash": "e5e480e0fdadb25e0395ae72589d82a2",
     "semantic_hash": ""
   },
   "src/features/community/components/InviteFriendModal.tsx": {
-    "mtime": 1782328425.2024624,
-    "ast_hash": "0da939088a77d67866a860a44a87e6f7",
+    "mtime": 1782367444.7723794,
+    "ast_hash": "ad9e3fd125084c6970e9532e205ea607",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
-    "mtime": 1782365912.1590056,
-    "ast_hash": "3f20c1c12c7946c91384c75c55c919b5",
+    "mtime": 1782372961.6792352,
+    "ast_hash": "4d00f67da13e967f85a1789f395e4351",
     "semantic_hash": ""
   },
   "supabase/migrations/20260625050051_add_community_profile_snapshot.sql": {
@@ -867,6 +842,41 @@
   "src/features/community/components/SkeletonFriendCard.tsx": {
     "mtime": 1782366590.6488717,
     "ast_hash": "8ae8862526963846030af26f5206ab9a",
+    "semantic_hash": ""
+  },
+  "src/features/community/hooks/useFriends.ts": {
+    "mtime": 1782367905.9486787,
+    "ast_hash": "a87224f3f373f15ac646af388bde4404",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260625061500_fix_add_friend_rpc_ordering.sql": {
+    "mtime": 1782367913.6716964,
+    "ast_hash": "3a12304ae8a6e2c6a5f203741bba729d",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260310_automated_retention_policies.sql": {
+    "mtime": 1781010054.1899204,
+    "ast_hash": "cc3bad104b05ad9c948e4e853603dc3e",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260311_optimize_rls_and_indexes.sql": {
+    "mtime": 1781010054.190227,
+    "ast_hash": "fc048c0d41fdcbc2209239f6cce802cd",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260312_cascade_deletes.sql": {
+    "mtime": 1782235054.91258,
+    "ast_hash": "89e966b9d1cc83ea153bb2e4e54fc239",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260313_p1_backend_fixes.sql": {
+    "mtime": 1782236144.9612632,
+    "ast_hash": "7ee7015ca2486fff5d2fd6fb2922085b",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/add_study_session_log.sql": {
+    "mtime": 1781010054.190349,
+    "ast_hash": "02e0e0d0053e409988e2bbd21cc8e97f",
     "semantic_hash": ""
   }
 }

@@ -10,16 +10,11 @@ const GRADE_OPTIONS = [
     { value: 'Class 11', label: 'Class 11' },
     { value: 'Class 12', label: 'Class 12' },
     { value: 'Dropper', label: 'Dropper' },
-    { value: 'Other', label: 'Other' },
 ];
 
 const EXAM_OPTIONS = [
-    { value: 'JEE 2025', label: 'JEE 2025' },
-    { value: 'JEE 2026', label: 'JEE 2026' },
     { value: 'JEE 2027', label: 'JEE 2027' },
-    { value: 'OJEE 2025', label: 'OJEE 2025' },
-    { value: 'OJEE 2026', label: 'OJEE 2026' },
-    { value: 'Other', label: 'Other' },
+    { value: 'JEE 2028', label: 'JEE 2028' },
 ];
 
 interface ProfileEditModalProps {
@@ -93,133 +88,95 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
                 <div className="profile-edit-content-grid">
                     <div className="profile-edit-form-container">
                         <div className="profile-edit-form-scroll">
-                            <div className="profile-edit-section">
-                                <h3 className="profile-edit-section-title">Identity</h3>
+                            <div className="profile-edit-field">
+                                <label htmlFor="pe-name">Display name</label>
+                                <input
+                                    id="pe-name"
+                                    type="text"
+                                    value={draft.userName}
+                                    onChange={(e) => handleChange('userName', e.target.value)}
+                                    placeholder="Your name"
+                                />
+                            </div>
+
+                            <div className="profile-edit-field">
+                                <label htmlFor="pe-avatar">Avatar URL</label>
+                                <input
+                                    id="pe-avatar"
+                                    type="url"
+                                    value={draft.customAvatarUrl}
+                                    onChange={(e) => handleChange('customAvatarUrl', e.target.value)}
+                                    placeholder="https://..."
+                                />
+                            </div>
+
+                            <div className="profile-edit-field">
+                                <label htmlFor="pe-banner">Banner URL</label>
+                                <input
+                                    id="pe-banner"
+                                    type="url"
+                                    value={draft.bannerUrl || ''}
+                                    onChange={(e) => handleChange('bannerUrl', e.target.value)}
+                                    placeholder="https://..."
+                                />
+                            </div>
+
+                            <div className="profile-edit-field">
+                                <label htmlFor="pe-status">Custom status</label>
+                                <input
+                                    id="pe-status"
+                                    type="text"
+                                    value={draft.customStatus || ''}
+                                    onChange={(e) => handleChange('customStatus', e.target.value)}
+                                    placeholder="e.g. Focusing on Organic Chemistry"
+                                    maxLength={88}
+                                />
+                                <span className="field-hint">Max 88 characters ({draft.customStatus?.length || 0}/88)</span>
+                            </div>
+
+                            <div className="profile-edit-row">
                                 <div className="profile-edit-field">
-                                    <label htmlFor="pe-name">Display name</label>
-                                    <input
-                                        id="pe-name"
-                                        type="text"
-                                        value={draft.userName}
-                                        onChange={(e) => handleChange('userName', e.target.value)}
-                                        placeholder="Your name"
+                                    <label>Grade status</label>
+                                    <CustomSelect
+                                        value={draft.gradeStatus || ''}
+                                        options={gradeOptions}
+                                        onChange={(val) => handleChange('gradeStatus', val)}
+                                        placeholder="Select Grade"
+                                        size="small"
                                     />
                                 </div>
 
-                            </div>
-
-                            <div className="profile-edit-section">
-                                <h3 className="profile-edit-section-title">Visuals</h3>
                                 <div className="profile-edit-field">
-                                    <label htmlFor="pe-avatar">Avatar URL</label>
-                                    <input
-                                        id="pe-avatar"
-                                        type="url"
-                                        value={draft.customAvatarUrl}
-                                        onChange={(e) => handleChange('customAvatarUrl', e.target.value)}
-                                        placeholder="https://..."
-                                    />
-                                </div>
-
-                                <div className="profile-edit-field">
-                                    <label htmlFor="pe-banner">Banner URL</label>
-                                    <input
-                                        id="pe-banner"
-                                        type="url"
-                                        value={draft.bannerUrl || ''}
-                                        onChange={(e) => handleChange('bannerUrl', e.target.value)}
-                                        placeholder="https://..."
+                                    <label>Target exam</label>
+                                    <CustomSelect
+                                        value={draft.targetExam || ''}
+                                        options={examOptions}
+                                        onChange={(val) => handleChange('targetExam', val)}
+                                        placeholder="Select Exam"
+                                        size="small"
                                     />
                                 </div>
                             </div>
 
-                            <div className="profile-edit-section">
-                                <h3 className="profile-edit-section-title">Status</h3>
-                                <div className="profile-edit-field">
-                                    <label htmlFor="pe-status">Custom status</label>
+                            <div className="profile-edit-row" style={{ alignItems: 'center', justifyContent: 'space-between', gridTemplateColumns: '1fr auto', marginTop: 'var(--space-2)' }}>
+                                <div className="profile-edit-field" style={{ gap: '2px' }}>
+                                    <label style={{ margin: 0 }}>Show tasks on profile</label>
+                                    <span className="field-hint">Display today's study agenda on your public profile card</span>
+                                </div>
+                                <label className="toggle-switch">
                                     <input
-                                        id="pe-status"
-                                        type="text"
-                                        value={draft.customStatus || ''}
-                                        onChange={(e) => handleChange('customStatus', e.target.value)}
-                                        placeholder="e.g. Focusing on Organic Chemistry"
-                                        maxLength={88}
+                                        type="checkbox"
+                                        checked={draft.showTasks !== false}
+                                        onChange={(e) => handleChange('showTasks', e.target.checked)}
                                     />
-                                    <span className="field-hint">Max 88 characters ({draft.customStatus?.length || 0}/88)</span>
-                                </div>
-
-                                <div className="profile-edit-row">
-                                    <div className="profile-edit-field">
-                                        <label>Grade status</label>
-                                        <CustomSelect
-                                            value={draft.gradeStatus || ''}
-                                            options={gradeOptions}
-                                            onChange={(val) => handleChange('gradeStatus', val)}
-                                            placeholder="Select Grade"
-                                            size="small"
-                                        />
-                                    </div>
-
-                                    <div className="profile-edit-field">
-                                        <label>Target exam</label>
-                                        <CustomSelect
-                                            value={draft.targetExam || ''}
-                                            options={examOptions}
-                                            onChange={(val) => handleChange('targetExam', val)}
-                                            placeholder="Select Exam"
-                                            size="small"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="profile-edit-section">
-                                <h3 className="profile-edit-section-title">Privacy</h3>
-                                <div className="profile-edit-row" style={{ alignItems: 'center', justifyContent: 'space-between', gridTemplateColumns: '1fr auto' }}>
-                                    <div className="profile-edit-field" style={{ gap: '2px' }}>
-                                        <label style={{ margin: 0 }}>Show tasks on profile</label>
-                                        <span className="field-hint">Display today's study agenda on your public profile card</span>
-                                    </div>
-                                    <label className="toggle-switch">
-                                        <input
-                                            type="checkbox"
-                                            checked={draft.showTasks !== false}
-                                            onChange={(e) => handleChange('showTasks', e.target.checked)}
-                                        />
-                                        <span className="toggle-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="profile-edit-section">
-                                <h3 className="profile-edit-section-title">Mock Status (For Testing)</h3>
-                                <div className="profile-edit-row" style={{ alignItems: 'center' }}>
-                                    <div className="profile-edit-field checkbox-field" style={{ flexDirection: 'row', gap: '8px' }}>
-                                        <input
-                                            type="checkbox"
-                                            id="pe-isonline"
-                                            checked={draft.mockIsOnline || false}
-                                            onChange={(e) => handleChange('mockIsOnline', e.target.checked)}
-                                        />
-                                        <label htmlFor="pe-isonline" style={{ margin: 0 }}>Is Online</label>
-                                    </div>
-                                    <div className="profile-edit-field">
-                                        <label htmlFor="pe-lastseen">Last Seen Text</label>
-                                        <input
-                                            id="pe-lastseen"
-                                            type="text"
-                                            value={draft.mockLastSeenText || ''}
-                                            onChange={(e) => handleChange('mockLastSeenText', e.target.value)}
-                                            placeholder="e.g. 2h ago"
-                                        />
-                                    </div>
-                                </div>
+                                    <span className="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
 
                         <div className="profile-edit-actions">
-                            <button className="secondary-btn" onClick={onClose}>Cancel</button>
                             <button className="primary-btn" onClick={handleSubmit}>Save changes</button>
+                            <button className="secondary-btn" onClick={onClose}>Cancel</button>
                         </div>
                     </div>
 

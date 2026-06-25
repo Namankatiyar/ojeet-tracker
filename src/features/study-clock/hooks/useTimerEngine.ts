@@ -187,10 +187,16 @@ function loadState(): PersistedTimerState | null {
 
 function saveState(state: PersistedTimerState) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('jee-timer-state-change'));
+    }
 }
 
 function clearState() {
     localStorage.removeItem(STORAGE_KEY);
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('jee-timer-state-change'));
+    }
 }
 
 function getElapsedMsAt(state: PersistedTimerState, now: number): number {

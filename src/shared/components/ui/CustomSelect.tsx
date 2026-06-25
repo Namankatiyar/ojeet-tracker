@@ -163,7 +163,7 @@ export function CustomSelect({
                     top: calc(100% + 4px);
                     left: 0;
                     right: 0;
-                    background: rgba(255, 255, 255, 0.9);
+                    background: var(--bg-secondary);
                     backdrop-filter: blur(40px);
                     -webkit-backdrop-filter: blur(40px);
                     border: 1px solid var(--border);
@@ -177,7 +177,7 @@ export function CustomSelect({
                 }
 
                 [data-theme="dark"] .custom-select-options {
-                    background: var(--panel-bg);
+                    background: var(--bg-secondary);
                     backdrop-filter: var(--panel-blur);
                     -webkit-backdrop-filter: var(--panel-blur);
                     border: 1px solid var(--panel-border);

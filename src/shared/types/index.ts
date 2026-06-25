@@ -153,8 +153,6 @@ export interface ProgressCardSettings {
     targetExam?: string;
     discordSpecialTag?: string;
     inviteCode?: string;
-    mockIsOnline?: boolean;
-    mockLastSeenText?: string;
     showTasks?: boolean;
 }
 
@@ -179,5 +177,10 @@ export interface RemoteProfile {
 export interface LiveActivity {
     user_id: string;
     is_active: boolean;
+    subject?: string | null;
+    chapter_name?: string | null;
+    chapter_serial?: number | null;
+    material?: string | null;
+    started_at?: string | null;
     updated_at: string;
 }

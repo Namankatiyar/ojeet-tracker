@@ -61,7 +61,6 @@ export function CommunityPage() {
                         <UserProfileCard 
                             key={friend.id} 
                             remoteProfileData={friend} 
-                            previewMode={true} 
                         />
                     ))}
 

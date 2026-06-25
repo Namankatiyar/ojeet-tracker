@@ -50,7 +50,7 @@ export function InviteSection({ inviteCode, onInviteFriendClick }: InviteSection
                         onClick={onInviteFriendClick}
                     >
                         <UserPlus size={14} />
-                        <span>Invite friend</span>
+                        <span>Add friend</span>
                     </button>
                 </>
             ) : (

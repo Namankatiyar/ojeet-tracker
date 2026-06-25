@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle, Loader2, UserPlus } from 'lucide-react';
+import { X, CheckCircle, Loader2, UserPlus, AlertCircle } from 'lucide-react';
 import { triggerSmallConfetti } from '../../../shared/utils/confetti';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { supabase } from '../../../shared/lib/supabase';
@@ -30,6 +30,8 @@ export function InviteFriendModal({ isOpen, onClose, onSuccess }: InviteFriendMo
         // Force uppercase alphanumeric, max 4 characters
         const cleaned = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4);
         setCode(cleaned);
+        // Clear error when user changes the code
+        setErrorMessage(null);
     }, []);
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -50,7 +52,16 @@ export function InviteFriendModal({ isOpen, onClose, onSuccess }: InviteFriendMo
             if (onSuccess) onSuccess();
         } catch (err: any) {
             console.error('Failed to add friend:', err);
-            setErrorMessage(err.message || 'Failed to add friend. Please check the code.');
+            let msg = err.message || 'Failed to add friend. Please check the code.';
+            // Clean up RPC error messages to be user-friendly
+            if (msg.toLowerCase().includes('cannot add yourself') || msg.toLowerCase().includes('self')) {
+                msg = 'You cannot add yourself as a friend.';
+            } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('invalid code') || msg.toLowerCase().includes('no profile')) {
+                msg = 'Invalid invite code. No user matches this code.';
+            } else if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('duplicate')) {
+                msg = 'You are already friends with this user.';
+            }
+            setErrorMessage(msg);
             setStatus('idle');
         }
     }, [code, status, accentColor, onSuccess]);
@@ -64,7 +75,7 @@ export function InviteFriendModal({ isOpen, onClose, onSuccess }: InviteFriendMo
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="profile-edit-header">
-                    <h2>Invite friend</h2>
+                    <h2>Add friend</h2>
                     <button className="profile-edit-close" onClick={onClose} aria-label="Close modal">
                         <X size={20} />
                     </button>
@@ -93,9 +104,10 @@ export function InviteFriendModal({ isOpen, onClose, onSuccess }: InviteFriendMo
                             <span className="invite-code-input-hint">4 characters, alphanumeric</span>
                         </div>
                         {errorMessage && (
-                            <p className="invite-modal-error" style={{ color: 'var(--danger)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
-                                {errorMessage}
-                            </p>
+                            <div className="invite-error-container">
+                                <AlertCircle size={16} className="error-icon" />
+                                <span className="error-text">{errorMessage}</span>
+                            </div>
                         )}
 
                         <div className="invite-modal-actions">
@@ -115,12 +127,12 @@ export function InviteFriendModal({ isOpen, onClose, onSuccess }: InviteFriendMo
                                 {status === 'submitting' ? (
                                     <>
                                         <Loader2 size={16} className="spinner-icon" />
-                                        <span>Inviting...</span>
+                                        <span>Adding...</span>
                                     </>
                                 ) : (
                                     <>
                                         <UserPlus size={16} />
-                                        <span>Invite</span>
+                                        <span>Add</span>
                                     </>
                                 )}
                             </button>
