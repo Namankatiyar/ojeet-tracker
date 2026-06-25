@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserProfileCard } from './UserProfileCard';
 import { SkeletonFriendCard } from './SkeletonFriendCard';
 import { InviteSection } from './InviteSection';
 import { ProfileEditModal } from './ProfileEditModal';
 import { InviteFriendModal } from './InviteFriendModal';
+import { DisconnectModal } from './DisconnectModal';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
-import { useFriends } from '../hooks/useFriends';
-import { Users, Trophy } from 'lucide-react';
+import { useFriends, FriendProfile } from '../hooks/useFriends';
+import { useTheme } from '../../../core/context/ThemeContext';
+import { triggerSmallConfetti } from '../../../shared/utils/confetti';
+import { Users, Trophy, CheckCircle, AlertCircle, X } from 'lucide-react';
 
 type CommunityTab = 'friends' | 'leaderboard';
 
@@ -14,8 +17,44 @@ export function CommunityPage() {
     const [activeTab, setActiveTab] = useState<CommunityTab>('friends');
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isInviteOpen, setIsInviteOpen] = useState(false);
+    const [selectedFriendForDisconnect, setSelectedFriendForDisconnect] = useState<FriendProfile | null>(null);
+    const [isDisconnecting, setIsDisconnecting] = useState(false);
     const { progressCardSettings, setProgressCardSettings } = useUserProgress();
-    const { friends, refresh: refreshFriends } = useFriends();
+    const { friends, refresh: refreshFriends, disconnectFriend } = useFriends();
+
+    const handleDisconnect = async () => {
+        if (!selectedFriendForDisconnect) return;
+        setIsDisconnecting(true);
+        try {
+            await disconnectFriend(selectedFriendForDisconnect.id);
+            setSelectedFriendForDisconnect(null);
+        } catch (err) {
+            console.error('Failed to disconnect friend:', err);
+        } finally {
+            setIsDisconnecting(false);
+        }
+    };
+    const { accentColor } = useTheme();
+    const [bannerMessage, setBannerMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+    useEffect(() => {
+        const celebrate = sessionStorage.getItem('invite_success_celebrate');
+        const successMsg = sessionStorage.getItem('invite_success_message');
+        const errorMsg = sessionStorage.getItem('invite_error_message');
+
+        if (celebrate === '1') {
+            triggerSmallConfetti(accentColor);
+            sessionStorage.removeItem('invite_success_celebrate');
+        }
+
+        if (successMsg) {
+            setBannerMessage({ type: 'success', text: successMsg });
+            sessionStorage.removeItem('invite_success_message');
+        } else if (errorMsg) {
+            setBannerMessage({ type: 'error', text: errorMsg });
+            sessionStorage.removeItem('invite_error_message');
+        }
+    }, [accentColor]);
 
     const tabs: { key: CommunityTab; label: string; icon: React.ReactNode; disabled?: boolean }[] = [
         { key: 'friends', label: 'Friends', icon: <Users size={14} /> },
@@ -40,6 +79,41 @@ export function CommunityPage() {
                 </div>
             </div>
 
+            {bannerMessage && (
+                <div className={`community-banner ${bannerMessage.type}`} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 'var(--space-3) var(--space-4)',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: 'var(--space-4)',
+                    background: bannerMessage.type === 'success' ? 'var(--color-priority-low-bg)' : 'var(--priority-high-bg)',
+                    border: `1px solid ${bannerMessage.type === 'success' ? 'color-mix(in srgb, var(--color-priority-low), transparent 75%)' : 'color-mix(in srgb, var(--priority-high), transparent 75%)'}`,
+                    color: bannerMessage.type === 'success' ? 'var(--color-priority-low)' : 'var(--priority-high)',
+                    boxSizing: 'border-box'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', fontWeight: 500 }}>
+                        {bannerMessage.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                        <span>{bannerMessage.text}</span>
+                    </div>
+                    <button 
+                        onClick={() => setBannerMessage(null)} 
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'inherit',
+                            cursor: 'pointer',
+                            padding: 'var(--space-1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            opacity: 0.7
+                        }}
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
+
             <div className="community-tab-bar">
                 {tabs.map((tab) => (
                     <button
@@ -61,6 +135,7 @@ export function CommunityPage() {
                         <UserProfileCard 
                             key={friend.id} 
                             remoteProfileData={friend} 
+                            onDisconnectClick={() => setSelectedFriendForDisconnect(friend)}
                         />
                     ))}
 
@@ -87,6 +162,14 @@ export function CommunityPage() {
                 isOpen={isInviteOpen}
                 onClose={() => setIsInviteOpen(false)}
                 onSuccess={refreshFriends}
+            />
+
+            <DisconnectModal
+                isOpen={selectedFriendForDisconnect !== null}
+                onClose={() => setSelectedFriendForDisconnect(null)}
+                onConfirm={handleDisconnect}
+                friendName={selectedFriendForDisconnect?.display_name || selectedFriendForDisconnect?.username || 'Friend'}
+                isSubmitting={isDisconnecting}
             />
         </div>
     );

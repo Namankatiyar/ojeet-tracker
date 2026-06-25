@@ -6,7 +6,7 @@ import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { UserAvatar } from '../../../shared/components/ui/Avatar';
 import { StudySession, PlannerTask, ProgressCardSettings, RemoteProfile, LiveActivity } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
-import { Pencil, GraduationCap, Target, Clock, Flame, Wifi, Plus, EyeOff } from 'lucide-react';
+import { Pencil, GraduationCap, Target, Clock, Flame, Wifi, Plus, EyeOff, UserMinus } from 'lucide-react';
 
 interface UserProfileCardProps {
     onEditClick?: () => void;
@@ -16,6 +16,7 @@ interface UserProfileCardProps {
         live_activity?: LiveActivity | null;
         peer_visibility_settings?: { show_agenda: boolean } | null;
     };
+    onDisconnectClick?: () => void;
 }
 
 /* ── Helpers ── */
@@ -55,7 +56,7 @@ const formatLastSeen = (updatedAtStr?: string): string => {
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-export function UserProfileCard({ onEditClick, previewSettings, previewMode = false, remoteProfileData }: UserProfileCardProps) {
+export function UserProfileCard({ onEditClick, previewSettings, previewMode = false, remoteProfileData, onDisconnectClick }: UserProfileCardProps) {
     const {
         progressCardSettings,
         studySessions,
@@ -258,6 +259,18 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                     <button className="profile-card-edit-btn" onClick={onEditClick}>
                         <Pencil size={12} />
                         Edit
+                    </button>
+                )}
+                {remoteProfileData && onDisconnectClick && (
+                    <button 
+                        className="profile-card-disconnect-btn" 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDisconnectClick();
+                        }}
+                        title="Disconnect Friend"
+                    >
+                        <UserMinus size={14} />
                     </button>
                 )}
             </div>

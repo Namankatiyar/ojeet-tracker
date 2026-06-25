@@ -1,7 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/invite/:inviteCode",
+      "destination": "/api/invite-page?inviteCode=:inviteCode"
+    },
+    {
+      "source": "/((?!api/|assets/|data/|@|.*\\.[a-zA-Z0-9]+$).*)",
       "destination": "/index.html"
     }
   ],

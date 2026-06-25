@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useSubjectData } from '../../../core/context/SubjectDataContext';
@@ -11,6 +12,7 @@ const getSessionDate = (s: StudySession): string => s.localDate ?? s.startTime.s
 
 export function useProfileSync() {
     const { user, isConfigured } = useRemoteAuth();
+    const navigate = useNavigate();
     const {
         progressCardSettings,
         setProgressCardSettings,
@@ -19,6 +21,45 @@ export function useProfileSync() {
         dailyQuestionLogs,
     } = useUserProgress();
     const { subjectData } = useSubjectData();
+
+    // Post-login check for pending invite code
+    useEffect(() => {
+        const client = supabase;
+        if (!user || !isConfigured || !client) return;
+
+        const handlePendingInvite = async () => {
+            const pendingCode = localStorage.getItem('pending_invite_code');
+            if (!pendingCode) return;
+
+            try {
+                const { error } = await client.rpc('add_friend_by_code', { friend_code: pendingCode });
+                if (error) {
+                    console.warn('Could not auto-add friend from pending invite:', error.message);
+                    let msg = error.message || 'Failed to connect. Please check the code.';
+                    if (msg.toLowerCase().includes('cannot add yourself') || msg.toLowerCase().includes('self')) {
+                        msg = 'You cannot add yourself as a friend.';
+                    } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('invalid code') || msg.toLowerCase().includes('no profile')) {
+                        msg = 'Invalid invite code.';
+                    } else if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('duplicate')) {
+                        msg = 'You are already friends with this user.';
+                    }
+                    sessionStorage.setItem('invite_error_message', msg);
+                } else {
+                    console.log('Successfully auto-added friend from pending invite code:', pendingCode);
+                    sessionStorage.setItem('invite_success_celebrate', '1');
+                    sessionStorage.setItem('invite_success_message', 'Successfully connected with your friend!');
+                }
+            } catch (err: any) {
+                console.error('Failed to process pending invite:', err);
+                sessionStorage.setItem('invite_error_message', 'Failed to connect from pending invitation.');
+            } finally {
+                localStorage.removeItem('pending_invite_code');
+                navigate('/community');
+            }
+        };
+
+        handlePendingInvite();
+    }, [user, isConfigured, navigate]);
 
     // 0. Fetch invite_code, discord_tag, display_name, and avatar_url from backend on authentication
     useEffect(() => {

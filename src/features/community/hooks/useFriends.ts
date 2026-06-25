@@ -110,10 +110,26 @@ export function useFriends() {
         return () => clearInterval(interval);
     }, [pollLiveActivity]);
 
+    const disconnectFriend = useCallback(async (friendId: string) => {
+        if (!user || !isConfigured || !supabase) {
+            throw new Error('Not authenticated');
+        }
+
+        const { error } = await supabase.rpc('disconnect_peer', { friend_id: friendId });
+        if (error) {
+            console.error('Failed to disconnect peer:', error);
+            throw error;
+        }
+
+        // Refresh list
+        await fetchFriends();
+    }, [user, isConfigured, fetchFriends]);
+
     return {
         friends,
         isLoading,
         error,
-        refresh: fetchFriends
+        refresh: fetchFriends,
+        disconnectFriend
     };
 }

@@ -18,6 +18,7 @@ const TermsOfServicePage = lazy(() => import('../features/legal/components/Terms
 const ChangelogPage = lazy(() => import('../features/legal/components/ChangelogPage').then(module => ({ default: module.ChangelogPage })));
 const SupportPage = lazy(() => import('../features/support/components/SupportPage').then(module => ({ default: module.SupportPage })));
 const CommunityPage = lazy(() => import('../features/community/components/CommunityPage').then(module => ({ default: module.CommunityPage })));
+const InviteHandler = lazy(() => import('../features/community/components/InviteHandler').then(module => ({ default: module.InviteHandler })));
 
 interface AppRoutesProps {
     onNavigate: (view: any) => void;
@@ -148,6 +149,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                 <Route path="/changelog" element={<ChangelogPage />} />
                 <Route path="/support" element={<SupportPage />} />
                 <Route path="/community" element={<CommunityPage />} />
+                <Route path="/invite/:inviteCode" element={<InviteHandler />} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
