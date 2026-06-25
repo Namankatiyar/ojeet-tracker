@@ -173,18 +173,19 @@ export default async function handler(req, res) {
           }),
 
       // ─── Dark gradient overlay for text legibility (darker for high contrast) ───
-      h('div', {
-        style: {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: validBannerUrl
-            ? 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.7) 100%)' // Thicker, darker overlay
-            : 'none',
-        },
-      }),
+      validBannerUrl
+        ? h('div', {
+            style: {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background:
+                'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.7) 100%)', // Thicker, darker overlay
+            },
+          })
+        : null,
 
       // ─── Ambient glow orbs ───
       h('div', {
