@@ -130,20 +130,13 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
         () => {
             if (remoteProfileData) {
                 if (remoteProfileData.peer_visibility_settings?.show_agenda === false) return [];
-                return remoteProfileData.todays_tasks || [];
+                const tasks = remoteProfileData.todays_tasks || [];
+                return [...tasks].sort((a, b) => a.time.localeCompare(b.time));
             }
             const filtered = plannerTasks.filter(t => t.date === todayStr);
-            return [...filtered].sort((a, b) => {
-                const aIsActive = a.id === activeTaskId;
-                const bIsActive = b.id === activeTaskId;
-                if (aIsActive && !bIsActive) return -1;
-                if (!aIsActive && bIsActive) return 1;
-
-                if (a.completed !== b.completed) return a.completed ? 1 : -1;
-                return a.time.localeCompare(b.time);
-            });
+            return [...filtered].sort((a, b) => a.time.localeCompare(b.time));
         },
-        [remoteProfileData, plannerTasks, todayStr, activeTaskId]
+        [remoteProfileData, plannerTasks, todayStr]
     );
 
     /* ── 7-day momentum heatmap ── */
