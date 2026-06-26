@@ -71,7 +71,7 @@ export function Footer() {
                 <div className="footer-bottom">
                     <div className="footer-meta">
                         <span className="meta-version roadmap-badge">
-                            <span className="badge-pulse"></span> Version 1.1.0
+                            <span className="badge-pulse"></span> Version 2.0.0
                         </span>
                         <span className="copyright">&copy; {new Date().getFullYear()} OJEE Tracker. All rights reserved.</span>
                     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
@@ -21,6 +21,13 @@ export function useProfileSync() {
         dailyQuestionLogs,
     } = useUserProgress();
     const { subjectData } = useSubjectData();
+
+    const [timerTick, setTimerTick] = useState(0);
+    const subjectDataRef = useRef(subjectData);
+    const plannerTasksRef = useRef(plannerTasks);
+    
+    useEffect(() => { subjectDataRef.current = subjectData; }, [subjectData]);
+    useEffect(() => { plannerTasksRef.current = plannerTasks; }, [plannerTasks]);
 
     // Handle logout cleanup
     const prevUserRef = useRef<typeof user>(null);
@@ -147,12 +154,21 @@ export function useProfileSync() {
     }, [user, isConfigured, setProgressCardSettings]);
 
     // 1. Live Activity Heartbeat
+    const lastHeartbeatPayloadRef = useRef<string | null>(null);
+    const lastHeartbeatSentAtRef = useRef<number>(0);
+
     useEffect(() => {
         const client = supabase;
         if (!user || !isConfigured || !client) return;
 
-        const sendHeartbeat = async () => {
+        const sendHeartbeat = async (force: boolean = false) => {
             try {
+                const now = Date.now();
+                // Throttle to 5 seconds unless forced by interval
+                if (!force && now - lastHeartbeatSentAtRef.current < 5000) {
+                    return;
+                }
+
                 let isActive = false;
                 let subject: string | null = null;
                 let chapterName: string | null = null;
@@ -193,7 +209,7 @@ export function useProfileSync() {
 
                             if (subject && chapterSerial) {
                                 const typedSubject = subject as Subject;
-                                const subData = subjectData[typedSubject];
+                                const subData = subjectDataRef.current[typedSubject];
                                 if (subData) {
                                     const chapter = subData.chapters.find(c => c.serial === chapterSerial);
                                     if (chapter) {
@@ -205,7 +221,7 @@ export function useProfileSync() {
                             const rawTaskId = localStorage.getItem('studyClock_selectedTaskId');
                             const taskId = rawTaskId ? JSON.parse(rawTaskId) : null;
                             if (taskId) {
-                                const task = plannerTasks.find(t => t.id === taskId);
+                                const task = plannerTasksRef.current.find(t => t.id === taskId);
                                 if (task) {
                                     subject = task.subject || null;
                                     chapterName = task.title;
@@ -219,7 +235,7 @@ export function useProfileSync() {
                     }
                 }
 
-                await client.from('live_activity').upsert({
+                const payload = {
                     user_id: user.id,
                     is_active: isActive,
                     subject,
@@ -228,34 +244,49 @@ export function useProfileSync() {
                     material,
                     started_at: startedAt,
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id' });
+                };
+
+                const comparePayload = { ...payload, updated_at: null };
+                const payloadStr = JSON.stringify(comparePayload);
+
+                if (payloadStr === lastHeartbeatPayloadRef.current) {
+                    return;
+                }
+
+                lastHeartbeatSentAtRef.current = now;
+                lastHeartbeatPayloadRef.current = payloadStr;
+
+                await client.from('live_activity').upsert(payload, { onConflict: 'user_id' });
             } catch (err) {
                 console.warn('Failed to send heartbeat', err);
             }
         };
 
-        sendHeartbeat();
+        sendHeartbeat(true);
 
         const handleTimerChange = () => {
-            sendHeartbeat();
+            setTimerTick(t => t + 1);
+            sendHeartbeat(false);
         };
 
         if (typeof window !== 'undefined') {
             window.addEventListener('jee-timer-state-change', handleTimerChange);
         }
 
-        const intervalId = setInterval(sendHeartbeat, 30000);
+        const intervalId = setInterval(() => sendHeartbeat(true), 30000);
         return () => {
             clearInterval(intervalId);
             if (typeof window !== 'undefined') {
                 window.removeEventListener('jee-timer-state-change', handleTimerChange);
             }
         };
-    }, [user, isConfigured, subjectData, plannerTasks]);
+    }, [user, isConfigured]);
 
     // 2. Debounced Profile Snapshot Sync
     const lastSnapshotRef = useRef<string | null>(null);
+    const lastShowAgendaRef = useRef<boolean | null>(null);
     const debounceTimeoutRef = useRef<number | null>(null);
+    const retryTimeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
         const client = supabase;
@@ -333,32 +364,62 @@ export function useProfileSync() {
         const snapshotStr = JSON.stringify(snapshot);
         if (lastSnapshotRef.current === snapshotStr) return;
 
+        const lastSnapshot = lastSnapshotRef.current ? JSON.parse(lastSnapshotRef.current) : null;
+        let diff: any = snapshot;
+        
+        if (lastSnapshot) {
+            diff = {};
+            for (const key in snapshot) {
+                if (JSON.stringify(snapshot[key as keyof typeof snapshot]) !== JSON.stringify(lastSnapshot[key])) {
+                    diff[key] = snapshot[key as keyof typeof snapshot];
+                }
+            }
+        }
+
+        if (Object.keys(diff).length === 0) return;
+
+        const currentShowAgenda = progressCardSettings.showTasks !== false;
+
         if (debounceTimeoutRef.current) {
             window.clearTimeout(debounceTimeoutRef.current);
         }
 
+        if (retryTimeoutRef.current) {
+            window.clearTimeout(retryTimeoutRef.current);
+        }
+
         debounceTimeoutRef.current = window.setTimeout(async () => {
-            try {
-                const { error } = await client.from('profiles').update(snapshot).eq('id', user.id);
-                if (!error) {
+            const executeSync = async () => {
+                try {
+                    const { error } = await client.from('profiles').update(diff).eq('id', user.id);
+                    if (error) throw error;
                     lastSnapshotRef.current = snapshotStr;
+                    
+                    if (lastShowAgendaRef.current !== currentShowAgenda) {
+                        await client.from('peer_visibility_settings').upsert({
+                            user_id: user.id,
+                            show_agenda: currentShowAgenda,
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_id' });
+                        lastShowAgendaRef.current = currentShowAgenda;
+                    }
+                } catch (err) {
+                    console.warn('Failed to sync profile snapshot/privacy settings', err);
+                    retryTimeoutRef.current = window.setTimeout(() => {
+                        executeSync();
+                    }, 10000); // 10 second retry on failure
                 }
-                
-                // Also upsert peer_visibility_settings.show_agenda to match
-                await client.from('peer_visibility_settings').upsert({
-                    user_id: user.id,
-                    show_agenda: progressCardSettings.showTasks !== false,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id' });
-            } catch (err) {
-                console.warn('Failed to sync profile snapshot/privacy settings', err);
-            }
+            };
+            executeSync();
         }, 5000); // 5-second debounce
 
         return () => {
             if (debounceTimeoutRef.current) {
                 window.clearTimeout(debounceTimeoutRef.current);
             }
+            if (retryTimeoutRef.current) {
+                window.clearTimeout(retryTimeoutRef.current);
+            }
         };
-    }, [user, isConfigured, progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs]);
+    }, [user, isConfigured, progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs, timerTick]);
 }

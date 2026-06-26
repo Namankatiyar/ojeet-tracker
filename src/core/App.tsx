@@ -72,8 +72,19 @@ function AppContent() {
     const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false);
 
     useEffect(() => {
+        // Track the number of user visits (sessions) to the site
+        const isNewSession = !sessionStorage.getItem('ojee_session_active');
+        let currentVisits = parseInt(localStorage.getItem('ojee_visit_count') || '0', 10);
+
+        if (isNewSession) {
+            sessionStorage.setItem('ojee_session_active', 'true');
+            currentVisits += 1;
+            localStorage.setItem('ojee_visit_count', currentVisits.toString());
+        }
+
         const dismissed = localStorage.getItem('ojee_discord_dismissed');
-        if (!dismissed) {
+        // Only show the modal on the second visit (or subsequent visits if not dismissed)
+        if (!dismissed && currentVisits >= 2) {
             const timer = setTimeout(() => {
                 setIsDiscordModalOpen(true);
             }, 3000); // 3 seconds delay

@@ -8,6 +8,18 @@ export interface ChangelogEntry {
 // Update this list before each rollout. Keep newest entry first.
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     {
+        version: '2.0.0',
+        date: 'June 25, 2026',
+        title: 'New community tab with friend system.',
+        changes: [
+            '-Added a new community tab to connect with friends and share your progress.',
+            '-Added a friend system to add and manage friends within the app.',
+            '-Leaderboard is non functional for now.',
+            '-Edit your profile with images/GIFs URL support.',  
+            '-Please report any found bug in my Reddit DMs u/Big_Distribution_730 or in my discord server https://discord.gg/6dKrbVQU8W.',
+        ],
+    },
+    {
         version: '1.1.1',
         date: 'June 21, 2026',
         title: 'Precision Study Timeline & Custom Subject Analytics',
