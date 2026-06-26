@@ -1,7 +1,7 @@
 {
   "package.json": {
-    "mtime": 1782453894.8998857,
-    "ast_hash": "d50be311de2a7a69ae2a5e396a53a9c2",
+    "mtime": 1782406749.5594053,
+    "ast_hash": "05ea093545ed3b3f85d669aa5d2c0b6d",
     "semantic_hash": ""
   },
   "public/data/chemistry.json": {
@@ -20,8 +20,8 @@
     "semantic_hash": "890bea40457214f6a1bcfbd7c0d487a1"
   },
   "src/core/App.tsx": {
-    "mtime": 1782453438.6610973,
-    "ast_hash": "d5276325c2c76e2a64e468620744eb88",
+    "mtime": 1782363850.0062077,
+    "ast_hash": "b7ca642278bfcaf57c90d75da24671ce",
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -155,9 +155,9 @@
     "semantic_hash": "cf062d8f7a5744a10745225b39713946"
   },
   "src/features/legal/changelogEntries.ts": {
-    "mtime": 1782453851.8299139,
-    "ast_hash": "62e7af1be5e26d5c3b6653a8dd0eb0ef",
-    "semantic_hash": ""
+    "mtime": 1782015766.640591,
+    "ast_hash": "af418fecc60f758844f026a532591f73",
+    "semantic_hash": "af418fecc60f758844f026a532591f73"
   },
   "src/features/legal/components/ChangelogPage.tsx": {
     "mtime": 1781010054.1723683,
@@ -435,8 +435,8 @@
     "semantic_hash": "4b03a74741f7e19bb3d90a075c07a661"
   },
   "src/shared/components/layout/Footer.tsx": {
-    "mtime": 1782453875.697922,
-    "ast_hash": "9850977556bc5a8385a12ce95aaa4412",
+    "mtime": 1782238942.966762,
+    "ast_hash": "ab657ff060e57c351235cd219e56dd24",
     "semantic_hash": ""
   },
   "src/shared/components/layout/Header.tsx": {
@@ -695,9 +695,9 @@
     "semantic_hash": "9ab6ab4ca2e2f1225805a11a29b4ca97"
   },
   "README.md": {
-    "mtime": 1782467010.2119102,
-    "ast_hash": "101747bcded91fe24077cbae417db8fa",
-    "semantic_hash": ""
+    "mtime": 1781010054.1544297,
+    "ast_hash": "2902902b39b2e4fc5337fc359a9f2e55",
+    "semantic_hash": "2902902b39b2e4fc5337fc359a9f2e55"
   },
   "index.html": {
     "mtime": 1782330574.3988326,
@@ -825,8 +825,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
-    "mtime": 1782463494.7503066,
-    "ast_hash": "e3847f2309eb8026464d5f6526596f0d",
+    "mtime": 1782406391.2628236,
+    "ast_hash": "e122ebba3103f69fba379a76de077162",
     "semantic_hash": ""
   },
   "supabase/migrations/20260625050051_add_community_profile_snapshot.sql": {
@@ -922,11 +922,6 @@
   "eslint.config.js": {
     "mtime": 1782406742.4760978,
     "ast_hash": "8fecd1075a8782a9e5ea8a3fbf6f67ff",
-    "semantic_hash": ""
-  },
-  "supabase/migrations/20260626114500_add_profiles_updated_at_trigger.sql": {
-    "mtime": 1782454321.4581144,
-    "ast_hash": "84a8fd68216b22514a19514ebc466441",
     "semantic_hash": ""
   }
 }

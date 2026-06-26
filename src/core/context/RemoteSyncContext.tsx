@@ -465,8 +465,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                 const { error: manifestError } = await supabase
                     .from('user_sync_state')
-                    .upsert(manifestRow, { onConflict: 'user_id' })
-                    .select();  // Suppress RETURNING * — we already have the data locally
+                    .upsert(manifestRow, { onConflict: 'user_id' }); // Removing .select() completely suppresses RETURNING * in supabase-js v2
                 if (manifestError) throw new Error(manifestError.message);
 
                 if (encoded.storage === 'chunked') {
@@ -479,8 +478,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                     const { error: chunkError } = await supabase
                         .from('user_sync_chunks')
-                        .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' })
-                        .select();  // Suppress RETURNING * — chunks can be large
+                        .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' }); // Removing .select() suppresses RETURNING *
                     if (chunkError) throw new Error(chunkError.message);
                 }
                 // Database triggers automatically prune old chunks when the user_sync_state is updated.
@@ -746,8 +744,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             try {
                 const { error } = await supabaseClient
                     .from('user_study_aggregate')
-                    .upsert(remoteStudyAggregate, { onConflict: 'user_id' })
-                    .select();  // Suppress RETURNING * — avoid echoing JSONB bucket maps
+                    .upsert(remoteStudyAggregate, { onConflict: 'user_id' }); // Removing .select() suppresses RETURNING *
                 if (!error) {
                     lastPushedAggregateRef.current = currentStr;
                 }
