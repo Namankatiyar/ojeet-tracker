@@ -97,7 +97,7 @@ export function useProfileSync() {
             try {
                 const { data, error } = await client
                     .from('profiles')
-                    .select('invite_code, discord_tag, display_name, avatar_url')
+                    .select('invite_code, discord_tag, display_name, avatar_url, banner_url, custom_status, grade_status, target_exam')
                     .eq('id', user.id)
                     .single();
 
@@ -128,6 +128,20 @@ export function useProfileSync() {
                             if (avatarToUse) {
                                 updates.customAvatarUrl = avatarToUse;
                             }
+                        }
+
+                        // Prefill other profile fields if missing locally or different
+                        if (!prev.bannerUrl && data.banner_url) {
+                            updates.bannerUrl = data.banner_url;
+                        }
+                        if (!prev.customStatus && data.custom_status) {
+                            updates.customStatus = data.custom_status;
+                        }
+                        if (data.grade_status && prev.gradeStatus !== data.grade_status) {
+                            updates.gradeStatus = data.grade_status;
+                        }
+                        if (data.target_exam && prev.targetExam !== data.target_exam) {
+                            updates.targetExam = data.target_exam;
                         }
 
                         return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
