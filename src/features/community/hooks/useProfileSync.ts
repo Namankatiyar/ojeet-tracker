@@ -200,7 +200,9 @@ export function useProfileSync() {
                             isActive = true;
                         }
                         
-                        const startMs = timerState.runStartedAtMs || timerState.startTimestamp || null;
+                        const startMs = timerState.runStartedAtMs 
+                            ? timerState.runStartedAtMs - (timerState.accumulatedActiveMs || 0)
+                            : (timerState.startTimestamp || null);
                         if (startMs) {
                             startedAt = new Date(startMs).toISOString();
                         }
