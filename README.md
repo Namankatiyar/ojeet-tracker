@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=6C63FF&height=200&section=header&text=OJEE-Tracker&fontSize=72&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Your%20Premium%20JEE%20%26%20OJEE%20Study%20Command%20Centre&descAlignY=60&descSize=18" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=6C63FF&amp;height=200&amp;section=header&amp;text=OJEE-Tracker&amp;fontSize=72&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Your%20Premium%20JEE%20%26%20OJEE%20Study%20Command%20Centre&amp;descAlignY=60&amp;descSize=18" width="100%"/>
 
 <br/>
 
@@ -12,7 +12,7 @@
 <br/>
 
 [![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&logo=users&logoColor=white)](#)
-[![Discord](https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Discord](https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/6dKrbVQU8W)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>
@@ -235,7 +235,7 @@ Join the community, share progress, and study together!
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=6C63FF&height=120&section=footer" width="100%"/>
 
-**Made with ❤️ for JEE & OJEE aspirants**
+**Made with ❤️ for JEE aspirants**
 
 *Good luck with your preparation. You've got this. 🚀*
 
