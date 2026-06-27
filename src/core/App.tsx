@@ -17,6 +17,7 @@ import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 import { useProfileSync } from '../features/community/hooks/useProfileSync';
 
 import { AppRoutes } from './AppRoutes';
+import { ChatDrawer } from '../features/chat/components/ChatDrawer';
 
 type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject;
 
@@ -139,6 +140,7 @@ function AppContent() {
                 isOpen={isDiscordModalOpen}
                 onClose={() => setIsDiscordModalOpen(false)}
             />
+            <ChatDrawer />
         </div>
     );
 }

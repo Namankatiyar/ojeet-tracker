@@ -24,6 +24,7 @@
     "release:dry": "commit-and-tag-version --dry-run"
   },
   "dependencies": {
+    "@google/genai": "^2.10.0",
     "@supabase/supabase-js": "^2.49.8",
     "@vercel/analytics": "^1.6.1",
     "@vercel/og": "^0.6.2",
