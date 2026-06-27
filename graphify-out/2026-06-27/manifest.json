@@ -40,8 +40,8 @@
     "semantic_hash": "f8477f7fd6c66c20405668ca3f45a815"
   },
   "src/core/context/RemoteSyncContext.tsx": {
-    "mtime": 1782494430.684193,
-    "ast_hash": "9eb8735264a0b71b157fbdc649f86e4b",
+    "mtime": 1782363972.7621312,
+    "ast_hash": "c538ab8675100d61aed4b88caa72d757",
     "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
@@ -695,8 +695,8 @@
     "semantic_hash": "9ab6ab4ca2e2f1225805a11a29b4ca97"
   },
   "README.md": {
-    "mtime": 1782546069.1337183,
-    "ast_hash": "81f0680f7f2c2a74bdf8e9586e570b7e",
+    "mtime": 1782467010.2119102,
+    "ast_hash": "101747bcded91fe24077cbae417db8fa",
     "semantic_hash": ""
   },
   "index.html": {
@@ -810,8 +810,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/UserProfileCard.tsx": {
-    "mtime": 1782550857.49582,
-    "ast_hash": "3d5dfcae8234c5a4a22e450855121d3a",
+    "mtime": 1782406784.6299286,
+    "ast_hash": "909769da7ecfbf04b851c41e7e6350ef",
     "semantic_hash": ""
   },
   "SCHEMA.md": {
@@ -825,8 +825,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
-    "mtime": 1782550846.235354,
-    "ast_hash": "bce7ed14fc5275a13813932ebb5f00a7",
+    "mtime": 1782463494.7503066,
+    "ast_hash": "e3847f2309eb8026464d5f6526596f0d",
     "semantic_hash": ""
   },
   "supabase/migrations/20260625050051_add_community_profile_snapshot.sql": {
@@ -927,11 +927,6 @@
   "supabase/migrations/20260626114500_add_profiles_updated_at_trigger.sql": {
     "mtime": 1782454321.4581144,
     "ast_hash": "84a8fd68216b22514a19514ebc466441",
-    "semantic_hash": ""
-  },
-  "supabase/migrations/20260626171500_optimize_performance.sql": {
-    "mtime": 1782494141.3071363,
-    "ast_hash": "15b194f143abb6d2a8c03e5b18aeceee",
     "semantic_hash": ""
   }
 }

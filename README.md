@@ -4,15 +4,15 @@
 
 <br/>
 
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&amp;logo=vite&amp;logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&amp;logo=react&amp;logoColor=61DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&amp;logo=typescript&amp;logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&amp;logo=supabase&amp;logoColor=white)](https://supabase.com/)
 
 <br/>
 
-[![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&logo=users&logoColor=white)](#)
-[![Discord](https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/6dKrbVQU8W)
+[![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&amp;logoColor=white)](#)
+[![Discord](https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white)](https://discord.gg/6dKrbVQU8W)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>

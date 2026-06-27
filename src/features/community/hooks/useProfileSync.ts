@@ -265,7 +265,7 @@ export function useProfileSync() {
                 const comparePayload = { ...payload, updated_at: null };
                 const payloadStr = JSON.stringify(comparePayload);
 
-                if (payloadStr === lastHeartbeatPayloadRef.current) {
+                if (!force && payloadStr === lastHeartbeatPayloadRef.current) {
                     return;
                 }
 

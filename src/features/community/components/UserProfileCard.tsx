@@ -42,7 +42,11 @@ const formatTime12Hour = (time: string): string => {
 const formatLastSeen = (updatedAtStr?: string): string => {
     if (!updatedAtStr) return 'recently';
     try {
-        const diffMs = new Date().getTime() - new Date(updatedAtStr).getTime();
+        const parsedDate = new Date(updatedAtStr);
+        const timeMs = parsedDate.getTime();
+        if (isNaN(timeMs)) return 'recently';
+
+        const diffMs = Date.now() - timeMs;
         const diffMins = Math.floor(diffMs / 60000);
         if (diffMins < 1) return 'just now';
         if (diffMins < 60) return `${diffMins}m ago`;
@@ -114,7 +118,8 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
         if (remoteProfileData) {
             const act = remoteProfileData.live_activity;
             if (!act) return 'offline';
-            const isFresh = (new Date().getTime() - new Date(act.updated_at).getTime()) < 60000;
+            const actTime = new Date(act.updated_at).getTime();
+            const isFresh = !isNaN(actTime) && (Date.now() - actTime) < 60000;
             if (act.is_active && isFresh) return 'running';
             if (isFresh) {
                 // If they have an active task/subject, it means the timer is paused (Idle)
