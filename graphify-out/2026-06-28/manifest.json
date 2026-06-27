@@ -1,7 +1,7 @@
 {
   "package.json": {
-    "mtime": 1782568698.5900757,
-    "ast_hash": "d50be311de2a7a69ae2a5e396a53a9c2",
+    "mtime": 1782570664.3363366,
+    "ast_hash": "50c115cbf6d1bcb9bc2184f4bd768d0f",
     "semantic_hash": ""
   },
   "public/data/chemistry.json": {
@@ -20,8 +20,8 @@
     "semantic_hash": "890bea40457214f6a1bcfbd7c0d487a1"
   },
   "src/core/App.tsx": {
-    "mtime": 1782568698.5910757,
-    "ast_hash": "d5276325c2c76e2a64e468620744eb88",
+    "mtime": 1782571026.5833845,
+    "ast_hash": "a952838668f0cae1e8deb2607d0647bc",
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -705,8 +705,8 @@
     "semantic_hash": ""
   },
   "pnpm-workspace.yaml": {
-    "mtime": 1782406195.110271,
-    "ast_hash": "7ae63d12b7e91daf4ab05bffdf1f659a",
+    "mtime": 1782570721.0705369,
+    "ast_hash": "ef81858baeee74bcdd27910a444d3b64",
     "semantic_hash": ""
   },
   "public/robots.txt": {
@@ -937,6 +937,31 @@
   "supabase/migrations/20260627000000_fix_live_activity_rls.sql": {
     "mtime": 1782568698.5990758,
     "ast_hash": "6d4010ce5e457c445d8286d74f3bbc7a",
+    "semantic_hash": ""
+  },
+  "src/features/chat/components/ChatDrawer.tsx": {
+    "mtime": 1782592552.6748056,
+    "ast_hash": "c4ddbd613d1902e56627ee6591bb4be6",
+    "semantic_hash": ""
+  },
+  "src/features/chat/hooks/useAgentChat.ts": {
+    "mtime": 1782592500.4031923,
+    "ast_hash": "6336ddccd29c3fb17a41a878d9641f4c",
+    "semantic_hash": ""
+  },
+  "src/features/chat/hooks/useAgentTools.ts": {
+    "mtime": 1782571916.6409066,
+    "ast_hash": "6b08dde31a3c958e1de3f2c040a3b527",
+    "semantic_hash": ""
+  },
+  "src/features/chat/utils/agentPromptBuilder.ts": {
+    "mtime": 1782573232.6438046,
+    "ast_hash": "6f855dec3f1c2d367d743056003d84ab",
+    "semantic_hash": ""
+  },
+  "src/shared/lib/gemini.ts": {
+    "mtime": 1782572962.5822945,
+    "ast_hash": "cf259777cfd3f6051406e5344d114e8b",
     "semantic_hash": ""
   }
 }

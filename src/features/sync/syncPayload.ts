@@ -58,6 +58,7 @@ export function buildSyncPayload(input: SyncPayloadInput): SyncPayloadV1 {
             examDates: input.examDates,
             settings: {
                 disableAutoShift: input.disableAutoShift,
+                enableAIAgent: input.enableAIAgent,
                 // customAvatarUrl is intentionally excluded from sync.
                 progressCardSettings: toSyncedProgressCardSettings(input.progressCardSettings),
                 mockExamPresets: input.mockExamPresets || [],

@@ -241,7 +241,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const { user, isConfigured } = useRemoteAuth();
     const {
         progress, setProgress, plannerTasks, setPlannerTasks, studySessions, setStudySessions, mockScores, setMockScores,
-        examDates, setExamDates, disableAutoShift, setDisableAutoShift, progressCardSettings, setProgressCardSettings, mockExamPresets, setMockExamPresets
+        examDates, setExamDates, disableAutoShift, setDisableAutoShift, enableAIAgent, setEnableAIAgent, progressCardSettings, setProgressCardSettings, mockExamPresets, setMockExamPresets
     } = useUserProgress();
     const { subjectData, setSubjectData, customColumns, setCustomColumns, excludedColumns, setExcludedColumns, materialOrder, setMaterialOrder } = useSubjectData();
 
@@ -289,6 +289,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         examDates: JSON.stringify(examDates),
         settings: JSON.stringify({
             disableAutoShift,
+            enableAIAgent,
             progressCardSettings: {
                 userName: progressCardSettings.userName,
                 visibleStats: progressCardSettings.visibleStats,
@@ -302,7 +303,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             excludedColumns,
             materialOrder,
         }),
-    }), [progress, plannerTasks, mockScores, examDates, disableAutoShift, progressCardSettings.userName, progressCardSettings.visibleStats, mockExamPresets, subjectData, customColumns, excludedColumns, materialOrder]);
+    }), [progress, plannerTasks, mockScores, examDates, disableAutoShift, enableAIAgent, progressCardSettings.userName, progressCardSettings.visibleStats, mockExamPresets, subjectData, customColumns, excludedColumns, materialOrder]);
 
     const clearScheduledSync = useCallback(() => {
         if (scheduledTimerRef.current !== null) {
@@ -320,6 +321,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setMockScores(payload.domains.mockScores);
         setExamDates(payload.domains.examDates);
         setDisableAutoShift(payload.domains.settings.disableAutoShift);
+        if (payload.domains.settings.enableAIAgent !== undefined) {
+            setEnableAIAgent(payload.domains.settings.enableAIAgent);
+        }
         setProgressCardSettings((prev) => ({
             ...prev,
             userName: payload.domains.settings.progressCardSettings.userName,
@@ -342,7 +346,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         window.setTimeout(() => {
             isApplyingRemoteRef.current = false;
         }, 0);
-    }, [setCustomColumns, setDisableAutoShift, setExamDates, setExcludedColumns, setMaterialOrder, setMockScores, setPlannerTasks, setProgress, setProgressCardSettings, setMockExamPresets, setSubjectData]);
+    }, [setCustomColumns, setDisableAutoShift, setEnableAIAgent, setExamDates, setExcludedColumns, setMaterialOrder, setMockScores, setPlannerTasks, setProgress, setProgressCardSettings, setMockExamPresets, setSubjectData]);
 
     const runSync = useCallback(async () => {
         if (!user || !isConfigured || !supabase) return;

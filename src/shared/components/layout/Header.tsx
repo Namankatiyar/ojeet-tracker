@@ -17,6 +17,8 @@ interface HeaderProps {
     // New Settings Props
     disableAutoShift: boolean;
     onDisableAutoShiftChange: (value: boolean) => void;
+    enableAIAgent: boolean;
+    onEnableAIAgentChange: (value: boolean) => void;
     backgroundUrl: string;
     onBackgroundUrlChange: (url: string) => void;
     dimLevel: number;
@@ -50,7 +52,7 @@ const ACCENT_COLORS = [
     { name: 'Fuchsia', value: '#d946ef' },
 ];
 
-export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange, disableAutoShift, onDisableAutoShiftChange, backgroundUrl, onBackgroundUrlChange, dimLevel, onDimLevelChange, glassIntensity, onGlassIntensityChange, glassRefraction, onGlassRefractionChange, studySessions, mockScores, physicsProgress, chemistryProgress, mathsProgress, examDate, progressCardSettings, onProgressCardSettingsChange }: HeaderProps) {
+export function Header({ currentView, onNavigate, theme, onThemeToggle, accentColor, onAccentChange, disableAutoShift, onDisableAutoShiftChange, enableAIAgent, onEnableAIAgentChange, backgroundUrl, onBackgroundUrlChange, dimLevel, onDimLevelChange, glassIntensity, onGlassIntensityChange, glassRefraction, onGlassRefractionChange, studySessions, mockScores, physicsProgress, chemistryProgress, mathsProgress, examDate, progressCardSettings, onProgressCardSettingsChange }: HeaderProps) {
     const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomColorModalOpen, setIsCustomColorModalOpen] = useState(false);
@@ -302,6 +304,8 @@ export function Header({ currentView, onNavigate, theme, onThemeToggle, accentCo
                 onClose={() => setIsSettingsOpen(false)}
                 disableAutoShift={disableAutoShift}
                 onDisableAutoShiftChange={onDisableAutoShiftChange}
+                enableAIAgent={enableAIAgent}
+                onEnableAIAgentChange={onEnableAIAgentChange}
                 backgroundUrl={backgroundUrl}
                 onBackgroundUrlChange={onBackgroundUrlChange}
                 dimLevel={dimLevel}
