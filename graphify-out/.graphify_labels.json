@@ -8,6 +8,12 @@
   "6": "Supabase Database & Peer Tables",
   "7": "Remote Sync & Context API",
   "8": "CSS Animation Walkthrough Skill",
+<<<<<<< Updated upstream
+  "9": "Sync Payload & Compression",
+||||||| Stash base
+=======
+  "9": "Community 9",
+>>>>>>> Stashed changes
   "10": "Design System Philosophy",
   "11": "Technical Overview & Core Contexts",
   "12": "Build and Linting Dependencies",
@@ -74,7 +80,6 @@
   "79": "Community 79",
   "80": "Community 80",
   "81": "Community 81",
-  "82": "Community 82",
   "83": "Community 83",
   "84": "Community 84",
   "85": "Community 85",

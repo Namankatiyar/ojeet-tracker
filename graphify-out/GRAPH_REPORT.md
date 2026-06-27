@@ -1,7 +1,13 @@
 # Graph Report - ojee-tracker  (2026-06-28)
 
 ## Corpus Check
+<<<<<<< Updated upstream
+- 177 files · ~107,966 words
+||||||| Stash base
 - 183 files · ~118,746 words
+=======
+- 183 files · ~116,799 words
+>>>>>>> Stashed changes
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +16,13 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
+<<<<<<< Updated upstream
+- Built from commit: `c9753787`
+||||||| Stash base
 - Built from commit: `2cf0433c`
+=======
+- Built from commit: `508deec0`
+>>>>>>> Stashed changes
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -24,6 +36,12 @@
 - [[_COMMUNITY_Supabase Database & Peer Tables|Supabase Database & Peer Tables]]
 - [[_COMMUNITY_Remote Sync & Context API|Remote Sync & Context API]]
 - [[_COMMUNITY_CSS Animation Walkthrough Skill|CSS Animation Walkthrough Skill]]
+<<<<<<< Updated upstream
+- [[_COMMUNITY_Sync Payload & Compression|Sync Payload & Compression]]
+||||||| Stash base
+=======
+- [[_COMMUNITY_Community 9|Community 9]]
+>>>>>>> Stashed changes
 - [[_COMMUNITY_Design System Philosophy|Design System Philosophy]]
 - [[_COMMUNITY_Technical Overview & Core Contexts|Technical Overview & Core Contexts]]
 - [[_COMMUNITY_Build and Linting Dependencies|Build and Linting Dependencies]]
@@ -83,7 +101,6 @@
 - [[_COMMUNITY_Community 79|Community 79]]
 - [[_COMMUNITY_Community 80|Community 80]]
 - [[_COMMUNITY_Community 81|Community 81]]
-- [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 83|Community 83]]
 - [[_COMMUNITY_Community 84|Community 84]]
 - [[_COMMUNITY_Community 85|Community 85]]
@@ -141,7 +158,7 @@ Nodes (33): AddMockModal(), AddMockModalProps, createEmptySubjectMarks(), Analyt
 
 ### Community 4 - "Dashboard Feature Page"
 Cohesion: 0.13
-Nodes (16): [0.0.23] - 2026-02-28 13:40, [0.0.26](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.25...v0.0.26) (2026-03-01), AI Maintenance Run, Architectural Changes, Architectural Changes, Bug Fixes, Dependency Graph Changes, Dependency Graph Changes (+8 more)
+Nodes (16): [0.0.22] - 2026-02-27 00:30, [0.0.26](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.25...v0.0.26) (2026-03-01), AI Maintenance Run, Architectural Changes, Architectural Changes, Bug Fixes, Dependency Graph Changes, Dependency Graph Changes (+8 more)
 
 ### Community 5 - "Changelog and Releases"
 Cohesion: 0.10
@@ -159,6 +176,18 @@ Nodes (53): AGGREGATE_SELECT_COLUMNS, DEFAULT_DELTA_CURSOR, DeltaCursor, domainK
 Cohesion: 0.05
 Nodes (38): 3a: Generate the Brief, 3b: Generate the HTML/CSS Animation, Carousel-Specific Rules, CSS Animation Walkthrough Skill, Error Handling, Feature-Demo-Specific Rules, File Structure, Key states to inspect (+30 more)
 
+<<<<<<< Updated upstream
+### Community 9 - "Sync Payload & Compression"
+Cohesion: 0.24
+Nodes (8): DAY_LABELS, formatLastSeen(), formatSmartDuration(), UserProfileCard(), UserProfileCardProps, FriendProfile, LiveActivity, RemoteProfile
+
+||||||| Stash base
+=======
+### Community 9 - "Community 9"
+Cohesion: 0.25
+Nodes (8): [0.0.21] - 2026-02-27 00:15, AI Maintenance Run, Architectural Changes, Dependency Graph Changes, Feature-Level Changes, Risk Notes, State Changes, Suggested ADR Entries
+
+>>>>>>> Stashed changes
 ### Community 10 - "Design System Philosophy"
 Cohesion: 0.06
 Nodes (32): 10. Anti-Patterns (Banned Style Operations), 11. Quality Checklist, 1. Design Philosophy: Grounded in the Subject, 2.1 The Hero is a Thesis, 2.2 Typography with Personality, 2.3 Structure is Information, 2.4 Leverage Motion Deliberately, 2.5 Restraint: Spend Boldness in One Place (+24 more)
@@ -237,7 +266,7 @@ Nodes (33): 10. Risks, Gaps, and Recommendations, 11. Backend Change Checklist, 
 
 ### Community 52 - "Database User Data Blobs Store"
 Cohesion: 0.11
-Nodes (25): [0.0.20] - 2026-02-26 20:30, [0.0.21] - 2026-02-27 00:15, [0.0.27] – 2026-03-02 15:57, [1.0.4] – 2026-03-10, AI Maintenance Run, AI Maintenance Run, AI Maintenance Run, AI Maintenance Run: Egress Optimization & Delta Sync Integration (+17 more)
+Nodes (25): [0.0.20] - 2026-02-26 20:30, [0.0.23] - 2026-02-28 13:40, [0.0.27] – 2026-03-02 15:57, [1.0.4] – 2026-03-10, AI Maintenance Run, AI Maintenance Run, AI Maintenance Run, AI Maintenance Run: Egress Optimization & Delta Sync Integration (+17 more)
 
 ### Community 54 - "Design System Dynamic Accent Spec"
 Cohesion: 0.08
@@ -283,6 +312,15 @@ Nodes (8): [0.0.25] - 2026-03-01 22:50, AI Maintenance Run, Architectural Change
 Cohesion: 0.40
 Nodes (5): [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22), [0.0.19](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-23), Performance & Refactoring, Performance & Refactoring, UI & Styling
 
+<<<<<<< Updated upstream
+### Community 82 - "Community 82"
+Cohesion: 0.25
+Nodes (8): [0.0.22] - 2026-02-27 00:30, AI Maintenance Run, Architectural Changes, Dependency Graph Changes, Feature-Level Changes, Risk Notes, State Changes, Suggested ADR Entries
+
+### Community 87 - "Community 87"
+Cohesion: 0.25
+Nodes (8): [0.0.24] - 2026-02-28 15:30, AI Maintenance Run, Architectural Changes, Dependency Graph Changes, Feature-Level Changes, Risk Notes, State Changes, Suggested ADR Entries
+||||||| Stash base
 ### Community 82 - "Community 82"
 Cohesion: 0.25
 Nodes (8): [0.0.22] - 2026-02-27 00:30, AI Maintenance Run, Architectural Changes, Dependency Graph Changes, Feature-Level Changes, Risk Notes, State Changes, Suggested ADR Entries
@@ -290,6 +328,11 @@ Nodes (8): [0.0.22] - 2026-02-27 00:30, AI Maintenance Run, Architectural Change
 ### Community 85 - "Community 85"
 Cohesion: 0.12
 Nodes (21): CommunityPage(), CommunityTab, DisconnectModal(), DisconnectModalProps, InviteSection(), InviteSectionProps, EXAM_OPTIONS, GRADE_OPTIONS (+13 more)
+=======
+### Community 85 - "Community 85"
+Cohesion: 0.12
+Nodes (21): CommunityPage(), CommunityTab, DisconnectModal(), DisconnectModalProps, InviteSection(), InviteSectionProps, EXAM_OPTIONS, GRADE_OPTIONS (+13 more)
+>>>>>>> Stashed changes
 
 ### Community 88 - "Community 88"
 Cohesion: 0.05

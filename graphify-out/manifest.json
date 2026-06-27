@@ -20,8 +20,16 @@
     "semantic_hash": "890bea40457214f6a1bcfbd7c0d487a1"
   },
   "src/core/App.tsx": {
+<<<<<<< Updated upstream
+    "mtime": 1782453438.6610973,
+    "ast_hash": "d5276325c2c76e2a64e468620744eb88",
+||||||| Stash base
     "mtime": 1782571026.5833845,
     "ast_hash": "a952838668f0cae1e8deb2607d0647bc",
+=======
+    "mtime": 1782595245.023176,
+    "ast_hash": "888233f4aa09abe969eab4dfc613f2d6",
+>>>>>>> Stashed changes
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -40,8 +48,16 @@
     "semantic_hash": "f8477f7fd6c66c20405668ca3f45a815"
   },
   "src/core/context/RemoteSyncContext.tsx": {
+<<<<<<< Updated upstream
+    "mtime": 1782494430.684193,
+    "ast_hash": "9eb8735264a0b71b157fbdc649f86e4b",
+||||||| Stash base
     "mtime": 1782568698.5920758,
     "ast_hash": "9eb8735264a0b71b157fbdc649f86e4b",
+=======
+    "mtime": 1782595213.7382848,
+    "ast_hash": "6de68f6bdb29d3672bbbd9603c3e7358",
+>>>>>>> Stashed changes
     "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
@@ -55,8 +71,8 @@
     "semantic_hash": "ff1cd51fead5de8c9e850c0057620ecb"
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1782363964.0006292,
-    "ast_hash": "caf96aa2e2e38785a702017dfa41a25d",
+    "mtime": 1782595198.8293972,
+    "ast_hash": "ac360135557a7037c169390c03ee0771",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -390,9 +406,9 @@
     "semantic_hash": "db506c06c9f04ef684472687ded8cd3b"
   },
   "src/features/sync/syncLocalStorage.ts": {
-    "mtime": 1781245177.4185047,
-    "ast_hash": "52fef1e66e9a9396b1e288ae43dccc7a",
-    "semantic_hash": "52fef1e66e9a9396b1e288ae43dccc7a"
+    "mtime": 1782595348.1556356,
+    "ast_hash": "d10fe4ffc9afd8df08c2f9096245c576",
+    "semantic_hash": ""
   },
   "src/features/sync/syncMerge.test.ts": {
     "mtime": 1781245184.6097977,
@@ -410,13 +426,13 @@
     "semantic_hash": "33ece65d0cb9366218f329340f7e4d81"
   },
   "src/features/sync/syncPayload.ts": {
-    "mtime": 1782363969.530946,
-    "ast_hash": "db1567117fcdc7e58efd02f6ea42a0eb",
+    "mtime": 1782595345.7044787,
+    "ast_hash": "64ad47f4054bf77305e00f4e2d96d73f",
     "semantic_hash": ""
   },
   "src/features/sync/syncTypes.ts": {
-    "mtime": 1782363966.232757,
-    "ast_hash": "23744e398fdfe3d1750ea1482cd53f2e",
+    "mtime": 1782595343.2143195,
+    "ast_hash": "ca738cacdb46ef4012977356c1df4fb5",
     "semantic_hash": ""
   },
   "src/main.tsx": {
@@ -440,8 +456,8 @@
     "semantic_hash": ""
   },
   "src/shared/components/layout/Header.tsx": {
-    "mtime": 1782316626.8571346,
-    "ast_hash": "e152bdd8704ae28e5252fd71d7dcc746",
+    "mtime": 1782595227.4851112,
+    "ast_hash": "decd456863dd7c89435dbdf47bcb737a",
     "semantic_hash": ""
   },
   "src/shared/components/ui/Avatar.tsx": {
@@ -525,14 +541,14 @@
     "semantic_hash": "61cf5d1f68d80f1eda6a143c2554e7c8"
   },
   "src/shared/components/ui/SettingsModal.test.tsx": {
-    "mtime": 1781010054.1834533,
-    "ast_hash": "5a593412e54b52ca498c8ea2eab940e0",
-    "semantic_hash": "5a593412e54b52ca498c8ea2eab940e0"
+    "mtime": 1782595457.8037822,
+    "ast_hash": "836ed11daff912ca7382e99fb3042413",
+    "semantic_hash": ""
   },
   "src/shared/components/ui/SettingsModal.tsx": {
-    "mtime": 1782235210.7463994,
-    "ast_hash": "5b366aea9a9ec40d1c551eb7de088441",
-    "semantic_hash": "5b366aea9a9ec40d1c551eb7de088441"
+    "mtime": 1782595218.8815932,
+    "ast_hash": "d040244c5f777ebd30d71fe632cb7159",
+    "semantic_hash": ""
   },
   "src/shared/components/ui/TimePicker.tsx": {
     "mtime": 1781265561.6107073,
