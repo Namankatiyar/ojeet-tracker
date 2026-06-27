@@ -331,8 +331,8 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
                     ) : (
                         <span className="profile-card-status-badge offline">
                             <span className="profile-card-status-dot" />
-                            Last seen {remoteProfileData?.live_activity?.updated_at
-                                ? formatLastSeen(remoteProfileData.live_activity.updated_at)
+                            Last seen {(remoteProfileData?.live_activity?.updated_at || remoteProfileData?.updated_at)
+                                ? formatLastSeen(remoteProfileData?.live_activity?.updated_at || remoteProfileData?.updated_at)
                                 : 'recently'}
                         </span>
                     )}
