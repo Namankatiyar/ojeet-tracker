@@ -2,14 +2,15 @@
  * src/features/chat/hooks/useAgentChat.ts
  * Phase 4: Conversation loop, function calling intercept, and confirmation flow.
  */
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { generateChatResponse, type ChatTurn } from '../../../shared/lib/gemini';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { useStudyCoPilot } from '../../../shared/hooks/useStudyCoPilot';
-import { buildTelemetryPayload } from '../utils/telemetryCompiler';
+import { buildAgentSystemPrompt, AgentContext } from '../utils/agentPromptBuilder';
 import { useAgentTools } from './useAgentTools';
 import { type Tool } from '@google/genai';
+import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 
 // ── Message Types ──────────────────────────────────────────────────────────────
 export type MessageRole = 'user' | 'model' | 'tool' | 'system';
@@ -24,7 +25,7 @@ export interface ChatMessage {
     id: string;
     role: MessageRole;
     content: string;
-    timestamp: Date;
+    timestamp: string; // ISO string for local storage compatibility
     // For pending confirmations
     pendingAction?: ConfirmActionPayload;
     actionId?: string;
@@ -34,36 +35,120 @@ export interface ChatMessage {
     isStreaming?: boolean;
 }
 
+export interface ChatSession {
+    id: string;
+    title: string;
+    messages: ChatMessage[];
+    history: ChatTurn[];
+    lastUpdated: string;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function makeId(): string {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 function makeMessage(role: MessageRole, content: string, extras?: Partial<ChatMessage>): ChatMessage {
-    return { id: makeId(), role, content, timestamp: new Date(), ...extras };
+    return { id: makeId(), role, content, timestamp: new Date().toISOString(), ...extras };
 }
 
-// Build a human-readable summary of a destructive action for the confirmation card
-function buildDestructionDescription(toolName: string, args: Record<string, unknown>): string {
-    switch (toolName) {
+const DEFAULT_WELCOME_TEXT = 'Hi! I\'m **Blue**, your AI study buddy. I can track your syllabus progress, schedule tasks, log mock scores, and keep you on track without burning you out.\n\nAsk me anything — like *"What should I revise today?"* or *"Schedule Electrostatics revision for tomorrow."*';
+
+function getInitialSessions(): ChatSession[] {
+    return [{
+        id: makeId(),
+        title: 'New Conversation',
+        messages: [
+            makeMessage('system', DEFAULT_WELCOME_TEXT),
+        ],
+        history: [],
+        lastUpdated: new Date().toISOString(),
+    }];
+}
+
+function getFriendlyErrorMessage(errorMsg: string): string {
+    const msg = errorMsg.toLowerCase();
+    
+    if (errorMsg === 'NO_API_KEY') {
+        return '🔑 **API key not configured.** Please paste your Gemini API key in the settings field above.';
+    }
+    
+    if (msg.includes('api key not valid') || msg.includes('api_key_invalid') || msg.includes('invalid key') || msg.includes('api key')) {
+        return '🔑 **Invalid API Key.** The key you provided is not recognized by Google Gemini. Please click the key icon `🔑` in the top right to verify or update your key.';
+    }
+    
+    if (msg.includes('fetch failed') || msg.includes('network') || msg.includes('failed to fetch') || msg.includes('offline') || msg.includes('timeout')) {
+        return '🌐 **Connection Error.** Could not reach Gemini servers. Please verify your internet connection and try again.';
+    }
+    
+    if (msg.includes('quota') || msg.includes('limit') || msg.includes('429')) {
+        return '⏳ **Rate Limit Exceeded.** You have reached the request limit for your free Gemini API key. Please wait a moment before trying again.';
+    }
+    
+    return `⚠️ **Blue encountered an error.** Please try again or recheck your API key configurations if this persists.\n\n*(Error details: ${errorMsg})*`;
+}
+
+function getToolProcessingMessage(name: string, args: Record<string, unknown>): string {
+    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+    const formatSubject = (sub: unknown) => typeof sub === 'string' ? capitalize(sub) : '';
+
+    switch (name) {
+        case 'toggle_chapter_material':
+            return `⚙️ Updating progress for ${formatSubject(args.subject)} chapter "${args.chapter_name}" (${args.material})...`;
+        case 'toggle_subtopic_material':
+            return `⚙️ Updating progress for subtopic "${args.subtopic_name}" in "${args.chapter_name}" (${args.material})...`;
+        case 'update_subtopic_attempted':
+            return `⚙️ Updating question attempts for "${args.subtopic_name}" in "${args.chapter_name}"...`;
+        case 'set_subtopic_last_revised':
+            return `⚙️ Setting revision date for "${args.subtopic_name}" in "${args.chapter_name}"...`;
+        case 'set_chapter_priority':
+            return `⚙️ Setting priority for "${args.chapter_name}" to ${args.priority}...`;
+        case 'mark_chapter_revised':
+            return `⚙️ Marking "${args.chapter_name}" as revised...`;
+        case 'add_planner_task':
+            return `⚙️ Adding task "${args.title}" to planner...`;
+        case 'toggle_planner_task':
+            return `⚙️ Updating planner task...`;
         case 'delete_planner_task':
-            return `Delete planner task with ID: ${args.task_id}`;
+            return `⚙️ Deleting planner task...`;
+        case 'schedule_revision':
+            return `⚙️ Scheduling revision for "${args.chapter_name}"...`;
+        case 'log_study_session':
+            return `⚙️ Logging study session "${args.title}" (${args.duration_minutes} min)...`;
         case 'delete_study_session':
-            return `Delete study session with ID: ${args.session_id}`;
+            return `⚙️ Deleting study session...`;
+        case 'add_mock_score':
+            return `⚙️ Logging mock score for "${args.name}"...`;
         case 'delete_mock_score':
-            return `Delete mock score with ID: ${args.score_id}`;
+            return `⚙️ Deleting mock score...`;
+        case 'add_exam_date':
+            return `⚙️ Adding exam date for "${args.name}"...`;
         case 'delete_exam_date':
-            return `Delete exam date with ID: ${args.exam_id}`;
+            return `⚙️ Deleting exam date...`;
+        case 'set_primary_exam':
+            return `⚙️ Setting primary countdown exam...`;
+        case 'get_chapter_progress':
+            return `⚙️ Checking progress for "${args.chapter_name}"...`;
+        case 'get_subject_chapters':
+            return `⚙️ Retrieving chapters for ${formatSubject(args.subject)}...`;
+        case 'list_planner_tasks':
+            return `⚙️ Loading planner tasks...`;
+        case 'list_study_sessions':
+            return `⚙️ Loading study sessions...`;
+        case 'list_mock_scores':
+            return `⚙️ Loading mock scores...`;
+        case 'list_exam_dates':
+            return `⚙️ Loading exam dates...`;
         default:
-            return `Execute: ${toolName}`;
+            return `⚙️ Running action: ${name}...`;
     }
 }
 
 // ── Main Hook ──────────────────────────────────────────────────────────────────
 export function useAgentChat() {
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        makeMessage('system', 'Hi! I\'m **Aria**, your AI study assistant. I can read your syllabus progress, schedule tasks, log mock scores, and give you personalised insights.\n\nAsk me anything — like *"What should I revise today?"* or *"Schedule Electrostatics revision for tomorrow."*'),
-    ]);
+    const [sessions, setSessions] = useLocalStorage<ChatSession[]>('ojee_chat_sessions', getInitialSessions());
+    const [activeSessionId, setActiveSessionId] = useLocalStorage<string>('ojee_active_chat_session_id', '');
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -78,39 +163,133 @@ export function useAgentChat() {
     const { recommendations, studyShares, totalWeeklyHours } = useStudyCoPilot();
     const { toolDeclarations, executeToolCall, isDestructive } = useAgentTools();
 
-    // ── Build Telemetry ────────────────────────────────────────────────────────
-    const buildTelemetry = useCallback((): string => {
-        return buildTelemetryPayload({
-            progress, plannerTasks, mockScores, studySessions, examDates,
+    // ── Session Management ────────────────────────────────────────────────────────
+    
+    // Ensure we always have a valid active session pointer
+    const currentSessionId = activeSessionId && sessions.some(s => s.id === activeSessionId)
+        ? activeSessionId
+        : (sessions[0]?.id || '');
+        
+    const activeSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
+    const messages = activeSession ? activeSession.messages : [];
+
+    // Sync history ref with active session whenever it changes
+    useEffect(() => {
+        if (activeSession) {
+            historyRef.current = activeSession.history || [];
+        } else {
+            historyRef.current = [];
+        }
+    }, [currentSessionId, activeSession]);
+
+    const startNewSession = useCallback(() => {
+        const newSession = getInitialSessions()[0];
+        setSessions(prev => [newSession, ...prev]);
+        setActiveSessionId(newSession.id);
+    }, [setSessions, setActiveSessionId]);
+
+    const switchSession = useCallback((id: string) => {
+        setActiveSessionId(id);
+    }, [setActiveSessionId]);
+
+    const deleteSession = useCallback((id: string) => {
+        setSessions(prev => {
+            const remaining = prev.filter(s => s.id !== id);
+            if (remaining.length === 0) {
+                const fresh = getInitialSessions();
+                setActiveSessionId(fresh[0].id);
+                return fresh;
+            }
+            if (id === activeSessionId) {
+                setActiveSessionId(remaining[0].id);
+            }
+            return remaining;
+        });
+    }, [activeSessionId, setActiveSessionId, setSessions]);
+
+    // ── Build Agent Prompt ────────────────────────────────────────────────────────
+    const buildAgentPrompt = useCallback((): string => {
+        const ctx: AgentContext = {
+            nowIso: new Date().toISOString(),
+            todayStr: new Date().toLocaleDateString('en-CA'),
+            plannerTasks, mockScores, studySessions, examDates,
             physicsProgress, chemistryProgress, mathsProgress, overallProgress,
             recommendations, studyShares, totalWeeklyHours,
-        });
+        };
+        return buildAgentSystemPrompt(ctx);
     }, [progress, plannerTasks, mockScores, studySessions, examDates,
         physicsProgress, chemistryProgress, mathsProgress, overallProgress,
         recommendations, studyShares, totalWeeklyHours]);
 
-    // ── Append UI message ──────────────────────────────────────────────────────
-    const appendMessage = useCallback((msg: ChatMessage) => {
-        setMessages(prev => [...prev, msg]);
-        return msg;
-    }, []);
+    // ── Append UI message to Active Session ───────────────────────────────────
+    const updateActiveSession = useCallback((updater: (s: ChatSession) => ChatSession) => {
+        setSessions(prev => prev.map(s => {
+            if (s.id === currentSessionId) {
+                const updated = updater(s);
+                return {
+                    ...updated,
+                    lastUpdated: new Date().toISOString()
+                };
+            }
+            return s;
+        }));
+    }, [currentSessionId, setSessions]);
 
-    const updateLastMessage = useCallback((updater: (msg: ChatMessage) => ChatMessage) => {
-        setMessages(prev => {
-            const copy = [...prev];
-            copy[copy.length - 1] = updater(copy[copy.length - 1]);
-            return copy;
-        });
-    }, []);
+    const appendMessage = useCallback((msg: ChatMessage) => {
+        updateActiveSession(s => ({
+            ...s,
+            messages: [...s.messages, msg]
+        }));
+        return msg;
+    }, [updateActiveSession]);
+
+    const updateMessageById = useCallback((id: string, updater: (msg: ChatMessage) => ChatMessage) => {
+        updateActiveSession(s => ({
+            ...s,
+            messages: s.messages.map(m => m.id === id ? updater(m) : m)
+        }));
+    }, [updateActiveSession]);
+
+    // Build a human-readable summary of a destructive action for the confirmation card
+    const buildDestructionDescription = useCallback((toolName: string, args: Record<string, unknown>): string => {
+        switch (toolName) {
+            case 'delete_planner_task': {
+                const task = plannerTasks.find(t => t.id === args.task_id);
+                return task ? `Delete task "${task.title}" scheduled for ${task.date}?` : `Delete planner task with ID: ${args.task_id}`;
+            }
+            case 'delete_study_session': {
+                const session = studySessions.find(s => s.id === args.session_id);
+                return session ? `Delete study session of ${session.title || session.subject || 'task'} (${Math.round((session.duration || 0) / 60)} min)?` : `Delete study session with ID: ${args.session_id}`;
+            }
+            case 'delete_mock_score': {
+                const score = mockScores.find(s => s.id === args.score_id);
+                return score ? `Delete mock score of ${score.totalMarks} marks in "${score.name}"?` : `Delete mock score with ID: ${args.score_id}`;
+            }
+            case 'delete_exam_date': {
+                const exam = examDates.find(e => e.id === args.exam_id);
+                return exam ? `Delete exam date "${exam.name}" on ${exam.date}?` : `Delete exam date with ID: ${args.exam_id}`;
+            }
+            default:
+                return `Execute: ${toolName}`;
+        }
+    }, [plannerTasks, studySessions, mockScores, examDates]);
 
     // ── Core Execution Loop ────────────────────────────────────────────────────
-    const runAgentLoop = useCallback(async (userMessage: string, extraHistory?: ChatTurn[]) => {
+    const runAgentLoop = useCallback(async (userMessage: string, extraHistory?: ChatTurn[], targetMessageId?: string) => {
         setIsLoading(true);
         setError(null);
 
-        // Add streaming placeholder
-        const streamingMsg = makeMessage('model', '', { isStreaming: true });
-        appendMessage(streamingMsg);
+        let activeMsgId = targetMessageId;
+
+        if (!activeMsgId) {
+            // Add streaming placeholder
+            const streamingMsg = makeMessage('model', '', { isStreaming: true });
+            appendMessage(streamingMsg);
+            activeMsgId = streamingMsg.id;
+        } else {
+            // Ensure the existing target message is marked as streaming
+            updateMessageById(activeMsgId, m => ({ ...m, isStreaming: true }));
+        }
 
         try {
             const history = extraHistory ?? historyRef.current;
@@ -120,7 +299,7 @@ export function useAgentChat() {
                 history,
                 userMessage,
                 tools,
-                systemInjection: buildTelemetry(),
+                systemInstruction: buildAgentPrompt(),
             });
 
             const candidate = result.candidates?.[0];
@@ -132,16 +311,26 @@ export function useAgentChat() {
             const textParts = parts.filter(p => p.text).map(p => p.text!).join('');
             const functionCalls = parts.filter(p => p.functionCall);
 
-            // Update history with user message
-            historyRef.current = [
-                ...history,
-                { role: 'user', parts: [{ text: userMessage }] },
-                { role: 'model', parts },
-            ];
+            // Update history with user message / model response
+            const newHistory: ChatTurn[] = [...history];
+            if (userMessage) {
+                newHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+            }
+            newHistory.push({ role: 'model', parts });
+            historyRef.current = newHistory;
+            updateActiveSession(s => ({ ...s, history: newHistory }));
 
             if (functionCalls.length > 0) {
-                // Handle function calls — remove streaming placeholder first
-                updateLastMessage(m => ({ ...m, isStreaming: false, content: textParts || '⚙️ Processing...', role: 'model' }));
+                // Determine processing message for the first tool
+                const firstCall = functionCalls[0].functionCall as { name: string; args: Record<string, unknown> };
+                const processingMsg = getToolProcessingMessage(firstCall.name, firstCall.args);
+
+                updateMessageById(activeMsgId, m => ({
+                    ...m,
+                    isStreaming: true,
+                    content: textParts ? `${textParts}\n\n${processingMsg}` : processingMsg,
+                    role: 'model'
+                }));
 
                 // Process each function call
                 const toolResponseParts: any[] = [];
@@ -157,11 +346,15 @@ export function useAgentChat() {
 
                         pendingActionsRef.current.set(actionId, { toolName: name, args, historyTurn: modelTurn });
 
-                        appendMessage(makeMessage('model', description, {
+                        // Update active message to become the destructive action ConfirmCard
+                        updateMessageById(activeMsgId, m => ({
+                            ...m,
+                            isStreaming: false,
+                            content: description,
                             pendingAction: { toolName: name, toolArgs: args, description },
                             actionId,
                         }));
-                        // Don't add tool response to history yet — wait for confirmation
+                        
                         setIsLoading(false);
                         return;
                     } else {
@@ -179,15 +372,17 @@ export function useAgentChat() {
                         role: 'user',
                         parts: toolResponseParts,
                     };
-                    historyRef.current = [...historyRef.current, toolHistoryTurn];
+                    const updatedHistory = [...historyRef.current, toolHistoryTurn];
+                    historyRef.current = updatedHistory;
+                    updateActiveSession(s => ({ ...s, history: updatedHistory }));
 
-                    // Recursively call the agent with empty message (it will pick up tool responses)
-                    await runAgentLoop('', historyRef.current);
+                    // Recursively call the agent with empty message, passing activeMsgId to reuse the message bubble
+                    await runAgentLoop('', historyRef.current, activeMsgId);
                     return;
                 }
             } else {
                 // ── PURE TEXT RESPONSE ─────────────────────────────────────
-                updateLastMessage(m => ({
+                updateMessageById(activeMsgId, m => ({
                     ...m,
                     isStreaming: false,
                     content: textParts || '(No response)',
@@ -195,32 +390,41 @@ export function useAgentChat() {
             }
         } catch (e) {
             const errorMsg = e instanceof Error ? e.message : 'Unknown error';
-            if (errorMsg === 'NO_API_KEY') {
-                updateLastMessage(m => ({
-                    ...m,
-                    isStreaming: false,
-                    content: '🔑 **API key not configured.** Please paste your Gemini API key in the settings field above.',
-                }));
-            } else {
-                updateLastMessage(m => ({
-                    ...m,
-                    isStreaming: false,
-                    content: `❌ Error: ${errorMsg}`,
-                }));
+            const friendlyMsg = getFriendlyErrorMessage(errorMsg);
+            updateMessageById(activeMsgId, m => ({
+                ...m,
+                isStreaming: false,
+                content: friendlyMsg,
+            }));
+            if (errorMsg !== 'NO_API_KEY') {
                 setError(errorMsg);
             }
         } finally {
             setIsLoading(false);
         }
-    }, [toolDeclarations, buildTelemetry, appendMessage, updateLastMessage, executeToolCall, isDestructive]);
+    }, [toolDeclarations, buildAgentPrompt, appendMessage, updateMessageById, executeToolCall, isDestructive, updateActiveSession, buildDestructionDescription]);
 
     // ── Public: Send Message ───────────────────────────────────────────────────
     const sendMessage = useCallback(async (content: string) => {
         if (!content.trim() || isLoading) return;
 
-        appendMessage(makeMessage('user', content));
+        const userMsg = makeMessage('user', content);
+        
+        // Add to active session and update title if it's default
+        updateActiveSession(s => {
+            const isDefaultTitle = s.title === 'New Conversation' || s.title === 'New Chat';
+            const cleanTitle = isDefaultTitle 
+                ? (content.length > 25 ? content.slice(0, 22) + '...' : content) 
+                : s.title;
+            return {
+                ...s,
+                title: cleanTitle,
+                messages: [...s.messages, userMsg]
+            };
+        });
+
         await runAgentLoop(content);
-    }, [isLoading, appendMessage, runAgentLoop]);
+    }, [isLoading, updateActiveSession, runAgentLoop]);
 
     // ── Public: Confirm Pending Action ─────────────────────────────────────────
     const confirmPendingAction = useCallback(async (actionId: string) => {
@@ -230,15 +434,16 @@ export function useAgentChat() {
         pendingActionsRef.current.delete(actionId);
 
         // Mark confirmed in UI
-        setMessages(prev => prev.map(m =>
-            m.actionId === actionId ? { ...m, isConfirmed: true } : m
-        ));
+        updateActiveSession(s => ({
+            ...s,
+            messages: s.messages.map(m => m.actionId === actionId ? { ...m, isConfirmed: true } : m)
+        }));
 
         // Execute the destructive action
         const toolResult = executeToolCall(pending.toolName, pending.args);
 
         // Push tool call + response into history
-        historyRef.current = [
+        const newHistory: ChatTurn[] = [
             ...historyRef.current,
             pending.historyTurn,
             {
@@ -246,39 +451,51 @@ export function useAgentChat() {
                 parts: [{ functionResponse: { name: pending.toolName, response: JSON.parse(toolResult) } }],
             },
         ];
+        historyRef.current = newHistory;
+        updateActiveSession(s => ({ ...s, history: newHistory }));
 
         // Continue the loop to get a final confirmation message from Gemini
         await runAgentLoop('', historyRef.current);
-    }, [executeToolCall, runAgentLoop]);
+    }, [executeToolCall, runAgentLoop, updateActiveSession]);
 
     // ── Public: Cancel Pending Action ──────────────────────────────────────────
     const cancelPendingAction = useCallback((actionId: string) => {
         pendingActionsRef.current.delete(actionId);
-        setMessages(prev => prev.map(m =>
-            m.actionId === actionId ? { ...m, isCancelled: true } : m
-        ));
-        // Push a cancellation tool response into history
-        // so Gemini knows the action was cancelled
+        updateActiveSession(s => ({
+            ...s,
+            messages: s.messages.map(m => m.actionId === actionId ? { ...m, isCancelled: true } : m)
+        }));
         appendMessage(makeMessage('model', '✅ Action cancelled.'));
-    }, [appendMessage]);
+    }, [updateActiveSession, appendMessage]);
 
     // ── Public: Clear Chat ─────────────────────────────────────────────────────
-    const clearChat = useCallback(() => {
+    const clearActiveSession = useCallback(() => {
         historyRef.current = [];
         pendingActionsRef.current.clear();
-        setMessages([
-            makeMessage('system', 'Chat cleared. How can I help you?'),
-        ]);
+        updateActiveSession(s => ({
+            ...s,
+            title: 'New Conversation',
+            messages: [
+                makeMessage('system', 'Chat cleared. How can I help you?'),
+            ],
+            history: []
+        }));
         setError(null);
-    }, []);
+    }, [updateActiveSession]);
 
     return {
+        sessions,
+        activeSessionId: currentSessionId,
+        startNewSession,
+        switchSession,
+        deleteSession,
         messages,
         isLoading,
         error,
         sendMessage,
         confirmPendingAction,
         cancelPendingAction,
-        clearChat,
+        clearActiveSession,
     };
 }
+

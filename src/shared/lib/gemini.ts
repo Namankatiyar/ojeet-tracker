@@ -25,23 +25,7 @@ function createClient(apiKey: string): GoogleGenAI {
     return new GoogleGenAI({ apiKey });
 }
 
-// ── System Instruction ─────────────────────────────────────────────
-const BASE_SYSTEM_INSTRUCTION = `You are **Aria**, an intelligent AI study assistant embedded in OJEE Tracker — an offline-first JEE/OJEE syllabus tracker and study planner.
-
-Your purpose is to help the student:
-1. Understand their progress across Physics, Chemistry, and Mathematics.
-2. Identify weak areas based on mock test scores and study patterns.
-3. Schedule and manage revision tasks directly in the planner.
-4. Log and manage study sessions, mock scores, and exam dates.
-5. Provide actionable, concise insights without being verbose.
-
-STRICT RULES:
-- Never perform write actions without confirming the student's intent.
-- Destructive actions (deleting tasks, scores, sessions) MUST be confirmed by the user before execution — the UI handles this via a confirmation card; DO NOT execute them directly.
-- Always use the provided tools to read or mutate state. Never hallucinate data.
-- When resolving subtopic or chapter names from user messages, use fuzzy matching logic — prefer the closest match from the available data.
-- Always communicate in a concise, supportive, and motivational tone.
-- Today's date and time are injected in the telemetry payload; use them for scheduling.`;
+// (Removed BASE_SYSTEM_INSTRUCTION in favor of dynamic agentPromptBuilder)
 
 // ── Chat Turn Types ────────────────────────────────────────────────
 export interface ChatFunctionCall {
@@ -65,7 +49,7 @@ export interface GeminiChatOptions {
     history: ChatTurn[];
     userMessage: string;
     tools: Tool[];
-    systemInjection: string;
+    systemInstruction: string;
 }
 
 // ── Core Chat Function ─────────────────────────────────────────────
@@ -77,7 +61,7 @@ export async function generateChatResponse(options: GeminiChatOptions): Promise<
 
     const client = createClient(apiKey);
 
-    const systemInstruction = `${BASE_SYSTEM_INSTRUCTION}\n\n---\n## CURRENT USER TELEMETRY\n${options.systemInjection}`;
+    const systemInstruction = options.systemInstruction;
 
     // Build contents array — only include non-empty user messages
     const contents: Content[] = options.history.map(turn => ({
