@@ -76,6 +76,8 @@ describe('SettingsModal', () => {
         onClose: vi.fn(),
         disableAutoShift: false,
         onDisableAutoShiftChange: vi.fn(),
+        enableAIAgent: true,
+        onEnableAIAgentChange: vi.fn(),
         backgroundUrl: '',
         onBackgroundUrlChange: vi.fn(),
         dimLevel: 20,
@@ -137,9 +139,20 @@ describe('SettingsModal', () => {
                 <SettingsModal {...defaultProps} />
             </BrowserRouter>
         );
-        const checkbox = screen.getByRole('checkbox');
-        fireEvent.click(checkbox);
+        const checkboxes = screen.getAllByRole('checkbox');
+        fireEvent.click(checkboxes[0]);
         expect(defaultProps.onDisableAutoShiftChange).toHaveBeenCalledWith(true);
+    });
+
+    it('triggers onEnableAIAgentChange when toggle is clicked', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        const checkboxes = screen.getAllByRole('checkbox');
+        fireEvent.click(checkboxes[1]);
+        expect(defaultProps.onEnableAIAgentChange).toHaveBeenCalledWith(false);
     });
 
     it('triggers appearance change handlers on slider input', () => {

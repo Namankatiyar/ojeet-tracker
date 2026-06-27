@@ -16,6 +16,9 @@ interface SettingsModalProps {
     // Auto-shift
     disableAutoShift: boolean;
     onDisableAutoShiftChange: (value: boolean) => void;
+    // AI Agent
+    enableAIAgent: boolean;
+    onEnableAIAgentChange: (value: boolean) => void;
     // Background
     backgroundUrl: string;
     onBackgroundUrlChange: (url: string) => void;
@@ -78,6 +81,8 @@ export function SettingsModal({
     onClose,
     disableAutoShift,
     onDisableAutoShiftChange,
+    enableAIAgent,
+    onEnableAIAgentChange,
     backgroundUrl,
     onBackgroundUrlChange,
     dimLevel,
@@ -387,6 +392,20 @@ export function SettingsModal({
                                     type="checkbox"
                                     checked={disableAutoShift}
                                     onChange={(e) => onDisableAutoShiftChange(e.target.checked)}
+                                />
+                                <span className="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div className="settings-row" style={{ marginTop: 'var(--space-4)' }}>
+                            <div className="setting-info">
+                                <span className="setting-label">Enable AI Study Assistant</span>
+                                <span className="setting-description">Show the chatbot button in the bottom right corner</span>
+                            </div>
+                            <label className="toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    checked={enableAIAgent}
+                                    onChange={(e) => onEnableAIAgentChange(e.target.checked)}
                                 />
                                 <span className="toggle-slider"></span>
                             </label>

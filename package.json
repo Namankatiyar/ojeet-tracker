@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.10.0",
+    "@lottiefiles/dotlottie-react": "^0.19.5",
     "@supabase/supabase-js": "^2.49.8",
     "@vercel/analytics": "^1.6.1",
     "@vercel/og": "^0.6.2",

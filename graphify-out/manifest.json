@@ -1,7 +1,7 @@
 {
   "package.json": {
-    "mtime": 1782570664.3363366,
-    "ast_hash": "50c115cbf6d1bcb9bc2184f4bd768d0f",
+    "mtime": 1782593003.206876,
+    "ast_hash": "570bd2fe0ae789d3729fb67831d263fc",
     "semantic_hash": ""
   },
   "public/data/chemistry.json": {
@@ -714,35 +714,10 @@
     "ast_hash": "70fd609658c7023684b5b88383370fcf",
     "semantic_hash": "70fd609658c7023684b5b88383370fcf"
   },
-  "public/arrowdown.svg": {
-    "mtime": 1781953138.3532968,
-    "ast_hash": "077f1a865ee95bb072b9c43ca2dff259",
-    "semantic_hash": "077f1a865ee95bb072b9c43ca2dff259"
-  },
-  "public/arrowup.svg": {
-    "mtime": 1781953138.3532968,
-    "ast_hash": "9f97db4610c0d26e92e1fcfc57a6964f",
-    "semantic_hash": "9f97db4610c0d26e92e1fcfc57a6964f"
-  },
-  "public/clock.svg": {
-    "mtime": 1781953138.354522,
-    "ast_hash": "dfdd1dc71b84477bf0b9582bb62b1229",
-    "semantic_hash": "dfdd1dc71b84477bf0b9582bb62b1229"
-  },
   "public/og_image.jpg": {
-    "mtime": 1781324142.8172188,
-    "ast_hash": "dac66c65aa7589d1a39414681d2e2b00",
-    "semantic_hash": "dac66c65aa7589d1a39414681d2e2b00"
-  },
-  "public/progress.svg": {
-    "mtime": 1781953138.35466,
-    "ast_hash": "d9bc2340f77d0c732d18dd49e7c39188",
-    "semantic_hash": "d9bc2340f77d0c732d18dd49e7c39188"
-  },
-  "public/progressdown.svg": {
-    "mtime": 1781953138.3548033,
-    "ast_hash": "5a165dfe0ba2d0b20402eaaaae47bc6f",
-    "semantic_hash": "5a165dfe0ba2d0b20402eaaaae47bc6f"
+    "mtime": 1782594014.6553688,
+    "ast_hash": "c936d305018230aff26a266c1788f26e",
+    "semantic_hash": ""
   },
   ".agents/rules/graphify.md": {
     "mtime": 1781953138.3382962,
@@ -940,8 +915,8 @@
     "semantic_hash": ""
   },
   "src/features/chat/components/ChatDrawer.tsx": {
-    "mtime": 1782592552.6748056,
-    "ast_hash": "c4ddbd613d1902e56627ee6591bb4be6",
+    "mtime": 1782594480.309566,
+    "ast_hash": "cec1ae9d0f3b7cf2b6a1aecace8e984b",
     "semantic_hash": ""
   },
   "src/features/chat/hooks/useAgentChat.ts": {

@@ -32,6 +32,7 @@ function AppContent() {
 
     const {
         setPlannerTasks, studySessions, mockScores, primaryExamDate, disableAutoShift, setDisableAutoShift,
+        enableAIAgent, setEnableAIAgent,
         physicsProgress, chemistryProgress, mathsProgress, progressCardSettings, setProgressCardSettings
     } = useUserProgress();
 
@@ -100,7 +101,7 @@ function AppContent() {
     useProfileSync();
 
     return (
-        <div className="app">
+        <div className={`app ${enableAIAgent ? 'has-chat-fab' : ''}`}>
             <Header
                 currentView={currentView}
                 onNavigate={handleNavigate}
@@ -110,6 +111,8 @@ function AppContent() {
                 onAccentChange={setAccentColor}
                 disableAutoShift={disableAutoShift}
                 onDisableAutoShiftChange={setDisableAutoShift}
+                enableAIAgent={enableAIAgent}
+                onEnableAIAgentChange={setEnableAIAgent}
                 backgroundUrl={backgroundUrl}
                 onBackgroundUrlChange={setBackgroundUrl}
                 dimLevel={dimLevel}
@@ -140,7 +143,7 @@ function AppContent() {
                 isOpen={isDiscordModalOpen}
                 onClose={() => setIsDiscordModalOpen(false)}
             />
-            <ChatDrawer />
+            {enableAIAgent && <ChatDrawer />}
         </div>
     );
 }

@@ -3,7 +3,7 @@
  * Phase 5: Glassmorphic sidebar chat drawer + FAB toggle
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Key, CheckCircle2, XCircle, AlertTriangle, Sparkles, Copy, History, Plus, Trash2, ChevronRight } from 'lucide-react';
+import { X, Send, Key, CheckCircle2, XCircle, AlertTriangle, Copy, History, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { useAgentChat, type ChatMessage } from '../hooks/useAgentChat';
 import { saveApiKey, loadApiKey, clearApiKey } from '../../../shared/lib/gemini';
 
@@ -144,7 +144,7 @@ function MessageBubble({ message, onConfirm, onCancel }: BubbleProps) {
         return (
             <div className="chat-bubble-row">
                 <div className="chat-bubble-avatar chat-bubble-avatar--aria">
-                    <Sparkles size={13} />
+                    <img src="/blueBot.png" alt="Blue" className="chat-avatar-img" />
                 </div>
                 <div className="chat-bubble-container">
                     <ConfirmCard
@@ -164,7 +164,7 @@ function MessageBubble({ message, onConfirm, onCancel }: BubbleProps) {
         <div className={`chat-bubble-row ${isUser ? 'chat-bubble-row--user' : ''}`}>
             {!isUser && (
                 <div className="chat-bubble-avatar chat-bubble-avatar--aria">
-                    <Sparkles size={13} />
+                    <img src="/blueBot.png" alt="Blue" className="chat-avatar-img" />
                 </div>
             )}
             <div className="chat-bubble-container">
@@ -398,7 +398,7 @@ export function ChatDrawer() {
                 {/* Header */}
                 <div className="chat-header">
                     <div className="chat-header-avatar">
-                        <Sparkles size={15} />
+                        <img src="/blueBot.png" alt="Blue" className="chat-avatar-img" />
                     </div>
                     <div className="chat-header-info">
                         <div className="chat-header-name">
@@ -540,7 +540,7 @@ export function ChatDrawer() {
                                     <>
                                         <div className="chat-welcome-card glass-panel">
                                             <div className="chat-welcome-avatar">
-                                                <Sparkles size={20} />
+                                                <img src="/blueBot.png" alt="Blue" className="chat-avatar-img" />
                                             </div>
                                             <h2>Hello, I'm Blue</h2>
                                             <p className="chat-welcome-desc">
@@ -622,7 +622,7 @@ export function ChatDrawer() {
                     title="AI Study Assistant"
                 >
                     <span className="chat-fab-icon">
-                        <Sparkles size={20} />
+                        <img src="/blueBot.png" alt="Blue" className="chat-avatar-img" />
                     </span>
                 </button>
             )}

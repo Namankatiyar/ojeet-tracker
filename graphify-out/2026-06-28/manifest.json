@@ -940,13 +940,13 @@
     "semantic_hash": ""
   },
   "src/features/chat/components/ChatDrawer.tsx": {
-    "mtime": 1782592265.8384705,
-    "ast_hash": "0c83cd1d38341ebb6fadb0c8dfa1009d",
+    "mtime": 1782592552.6748056,
+    "ast_hash": "c4ddbd613d1902e56627ee6591bb4be6",
     "semantic_hash": ""
   },
   "src/features/chat/hooks/useAgentChat.ts": {
-    "mtime": 1782592281.4782515,
-    "ast_hash": "ca8eb7f41213cd0a943a5d50d1cd4a6c",
+    "mtime": 1782592500.4031923,
+    "ast_hash": "6336ddccd29c3fb17a41a878d9641f4c",
     "semantic_hash": ""
   },
   "src/features/chat/hooks/useAgentTools.ts": {
