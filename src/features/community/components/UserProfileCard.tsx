@@ -155,14 +155,33 @@ export function UserProfileCard({ onEditClick, previewSettings, previewMode = fa
     const streak = useMemo(() => {
         if (isSignedOutCurrentUser) return 0;
         if (remoteProfileData) return remoteProfileData.streak_count || 0;
-        let count = 0;
+
+        const getDailyStudyTime = (dateStr: string) => {
+            return studySessions
+                .filter(s => getSessionDate(s) === dateStr)
+                .reduce((acc, s) => acc + s.duration, 0);
+        };
+
         const checkDate = new Date();
+        const todayStr = checkDate.toLocaleDateString('en-CA');
+        const yesterday = new Date(checkDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+
+        const hasToday = getDailyStudyTime(todayStr) >= 60;
+        const hasYesterday = getDailyStudyTime(yesterdayStr) >= 60;
+
+        if (!hasToday && !hasYesterday) {
+            return 0;
+        }
+
+        const startCheckDate = hasToday ? checkDate : yesterday;
+        let count = 0;
         while (true) {
-            const dateStr = checkDate.toLocaleDateString('en-CA');
-            const hasSession = studySessions.some(s => getSessionDate(s) === dateStr);
-            if (hasSession) {
+            const dateStr = startCheckDate.toLocaleDateString('en-CA');
+            if (getDailyStudyTime(dateStr) >= 60) {
                 count++;
-                checkDate.setDate(checkDate.getDate() - 1);
+                startCheckDate.setDate(startCheckDate.getDate() - 1);
             } else {
                 break;
             }

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Trash2, Clock, X, Pencil, Plus, Calendar } from 'lucide-react';
 import { Subject, SubjectData, StudySession } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
 import { formatDateLocal } from '../../../shared/utils/date';
+import { TimePicker } from '../../../shared/components/ui/TimePicker';
 
 interface SessionHistoryProps {
     sessions: StudySession[];
@@ -43,6 +44,31 @@ export function SessionHistory({
     const [manualSubject, setManualSubject] = useState<Subject | ''>('');
     const [manualMaterial, setManualMaterial] = useState('');
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+    const [logMode, setLogMode] = useState<'duration' | 'time'>('duration');
+    const [manualStartTime, setManualStartTime] = useState('');
+    const [manualEndTime, setManualEndTime] = useState('');
+
+    const calculatedDurationText = useMemo(() => {
+        if (!manualStartTime || !manualEndTime) return '';
+        const [startH, startM] = manualStartTime.split(':').map(Number);
+        const [endH, endM] = manualEndTime.split(':').map(Number);
+        
+        let diffMin = (endH * 60 + endM) - (startH * 60 + startM);
+        if (diffMin < 0) {
+            diffMin += 24 * 60; // overnight session
+        }
+        
+        const hrs = Math.floor(diffMin / 60);
+        const mins = diffMin % 60;
+        
+        const overnightSuffix = (endH * 60 + endM) < (startH * 60 + startM) ? ' (overnight)' : '';
+        
+        if (hrs > 0) {
+            return `${hrs}h ${mins}m${overnightSuffix}`;
+        }
+        return `${mins}m${overnightSuffix}`;
+    }, [manualStartTime, manualEndTime]);
 
     const openEditModal = (session: StudySession) => {
         setEditingSession(session);
@@ -86,6 +112,18 @@ export function SessionHistory({
         setManualDate(new Date().toISOString().split('T')[0]);
         setManualSubject('');
         setManualMaterial('');
+
+        // Pre-fill start/end times with current time - 30 minutes to now
+        const now = new Date();
+        const start = new Date(now.getTime() - 30 * 60 * 1000);
+        const formatTime = (d: Date) => {
+            const h = d.getHours().toString().padStart(2, '0');
+            const m = d.getMinutes().toString().padStart(2, '0');
+            return `${h}:${m}`;
+        };
+        setManualStartTime(formatTime(start));
+        setManualEndTime(formatTime(now));
+        setLogMode('duration');
         setShowManualEntry(true);
     };
 
@@ -94,11 +132,41 @@ export function SessionHistory({
     };
 
     const handleAddManualEntry = () => {
-        const duration = manualHours * 3600 + manualMinutes * 60;
-        if (duration <= 0 || !manualTitle.trim()) return;
+        let duration = 0;
+        let entryStartTimeStr = '';
+        let entryEndTimeStr = '';
 
         const entryDate = new Date(manualDate);
-        entryDate.setHours(12, 0, 0, 0);
+
+        if (logMode === 'time') {
+            if (!manualStartTime || !manualEndTime) return;
+            const [startH, startM] = manualStartTime.split(':').map(Number);
+            const [endH, endM] = manualEndTime.split(':').map(Number);
+
+            const startDateTime = new Date(entryDate);
+            startDateTime.setHours(startH, startM, 0, 0);
+
+            const endDateTime = new Date(entryDate);
+            endDateTime.setHours(endH, endM, 0, 0);
+
+            // Handle overnight study sessions
+            if (endDateTime.getTime() < startDateTime.getTime()) {
+                endDateTime.setDate(endDateTime.getDate() + 1);
+            }
+
+            duration = Math.floor((endDateTime.getTime() - startDateTime.getTime()) / 1000);
+            entryStartTimeStr = startDateTime.toISOString();
+            entryEndTimeStr = endDateTime.toISOString();
+        } else {
+            duration = manualHours * 3600 + manualMinutes * 60;
+            // Default 12:00 PM local
+            const startDateTime = new Date(entryDate);
+            startDateTime.setHours(12, 0, 0, 0);
+            entryStartTimeStr = startDateTime.toISOString();
+            entryEndTimeStr = new Date(startDateTime.getTime() + duration * 1000).toISOString();
+        }
+
+        if (duration <= 0 || !manualTitle.trim()) return;
 
         const session: StudySession = {
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -106,8 +174,8 @@ export function SessionHistory({
             subject: manualSubject || undefined,
             material: manualMaterial || undefined,
             type: manualSubject ? 'chapter' : 'custom',
-            startTime: entryDate.toISOString(),
-            endTime: new Date(entryDate.getTime() + duration * 1000).toISOString(),
+            startTime: entryStartTimeStr,
+            endTime: entryEndTimeStr,
             localDate: formatDateLocal(entryDate),
             duration,
         };
@@ -115,6 +183,12 @@ export function SessionHistory({
         onAddSession(session);
         closeManualEntryModal();
     };
+
+    const isSaveDisabled = !manualTitle.trim() || (
+        logMode === 'duration' 
+            ? (manualHours === 0 && manualMinutes === 0)
+            : (!manualStartTime || !manualEndTime || manualStartTime === manualEndTime)
+    );
 
     return (
         <>
@@ -238,29 +312,77 @@ export function SessionHistory({
                                     autoFocus
                                 />
                             </div>
+
                             <div className="edit-form-group">
-                                <label>Duration *</label>
-                                <div className="duration-input-group">
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="23"
-                                        value={manualHours}
-                                        onChange={e => setManualHours(Math.max(0, parseInt(e.target.value) || 0))}
-                                        className="edit-input duration-input"
-                                    />
-                                    <span className="duration-label">hours</span>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="59"
-                                        value={manualMinutes}
-                                        onChange={e => setManualMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
-                                        className="edit-input duration-input"
-                                    />
-                                    <span className="duration-label">minutes</span>
+                                <label>Log Entry By</label>
+                                <div className="manual-entry-mode-selector">
+                                    <button
+                                        type="button"
+                                        className={`mode-btn ${logMode === 'duration' ? 'active' : ''}`}
+                                        onClick={() => setLogMode('duration')}
+                                    >
+                                        Duration
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`mode-btn ${logMode === 'time' ? 'active' : ''}`}
+                                        onClick={() => setLogMode('time')}
+                                    >
+                                        Start & End Time
+                                    </button>
                                 </div>
                             </div>
+
+                            {logMode === 'duration' ? (
+                                <div className="edit-form-group">
+                                    <label>Duration *</label>
+                                    <div className="duration-input-group">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="23"
+                                            value={manualHours}
+                                            onChange={e => setManualHours(Math.max(0, parseInt(e.target.value) || 0))}
+                                            className="edit-input duration-input"
+                                        />
+                                        <span className="duration-label">hours</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="59"
+                                            value={manualMinutes}
+                                            onChange={e => setManualMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                                            className="edit-input duration-input"
+                                        />
+                                        <span className="duration-label">minutes</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="time-entry-group">
+                                    <div className="time-entry-inputs">
+                                        <div className="edit-form-group">
+                                            <label>Start Time *</label>
+                                            <TimePicker
+                                                value={manualStartTime}
+                                                onChange={setManualStartTime}
+                                            />
+                                        </div>
+                                        <div className="edit-form-group">
+                                            <label>End Time *</label>
+                                            <TimePicker
+                                                value={manualEndTime}
+                                                onChange={setManualEndTime}
+                                            />
+                                        </div>
+                                    </div>
+                                    {calculatedDurationText && (
+                                        <div className="duration-preview-text">
+                                            Calculated Duration: {calculatedDurationText}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="edit-form-group">
                                 <label>Date</label>
                                 <button
@@ -301,7 +423,7 @@ export function SessionHistory({
                                 <button
                                     className="edit-save-btn"
                                     onClick={handleAddManualEntry}
-                                    disabled={!manualTitle.trim() || (manualHours === 0 && manualMinutes === 0)}
+                                    disabled={isSaveDisabled}
                                 >
                                     Add Session
                                 </button>

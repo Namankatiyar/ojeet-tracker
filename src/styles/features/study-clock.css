@@ -496,9 +496,79 @@
   text-align: center;
 }
 
+/* Remove spin buttons from duration-input and time-input */
+.duration-input::-webkit-outer-spin-button,
+.duration-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.duration-input {
+  -moz-appearance: textfield;
+}
+
 .duration-label {
   color: var(--text-secondary);
   font-size: 0.85rem;
+}
+
+/* Manual entry mode selector */
+.manual-entry-mode-selector {
+  display: flex;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.manual-entry-mode-selector .mode-btn {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--border-radius-sm) - 2px);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.manual-entry-mode-selector .mode-btn:hover {
+  color: var(--text-primary);
+}
+
+.manual-entry-mode-selector .mode-btn.active {
+  background: var(--accent);
+  color: var(--bg-primary);
+  font-weight: 600;
+}
+
+/* Time entry group */
+.time-entry-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.time-entry-inputs {
+  display: flex;
+  gap: 1rem;
+}
+
+.time-entry-inputs .edit-form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.duration-preview-text {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 /* Date picker button for manual entry */
@@ -764,8 +834,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -773,11 +843,13 @@
 }
 
 html[data-theme="dark"] .distribution-modal-overlay {
+  background: color-mix(in srgb, var(--bg-base), transparent 40%);
   backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .distribution-modal {
-  background: var(--bg-modal, var(--bg-secondary));
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--border-radius);
   padding: 2rem;
@@ -785,13 +857,16 @@ html[data-theme="dark"] .distribution-modal-overlay {
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  box-shadow: var(--shadow-lg);
   animation: slideUp 0.3s ease;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
 
 html[data-theme="dark"] .distribution-modal {
+  background: var(--panel-bg);
+  border-color: var(--panel-border);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
 }

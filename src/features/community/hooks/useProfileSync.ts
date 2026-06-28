@@ -364,6 +364,36 @@ export function useProfileSync() {
             heatmapData.push({ dayLabel: DAY_LABELS[dayOfWeek], level, seconds });
         }
 
+        // Compute daily study time to calculate the streak count
+        const getDailyStudyTime = (dateStr: string) => {
+            return studySessions
+                .filter(s => getSessionDate(s) === dateStr)
+                .reduce((acc, s) => acc + s.duration, 0);
+        };
+
+        const checkDate = new Date();
+        const todayStrLocal = checkDate.toLocaleDateString('en-CA');
+        const yesterday = new Date(checkDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+
+        const hasToday = getDailyStudyTime(todayStrLocal) >= 60;
+        const hasYesterday = getDailyStudyTime(yesterdayStr) >= 60;
+
+        let calculatedStreak = 0;
+        if (hasToday || hasYesterday) {
+            const startCheckDate = hasToday ? checkDate : yesterday;
+            while (true) {
+                const dateStr = startCheckDate.toLocaleDateString('en-CA');
+                if (getDailyStudyTime(dateStr) >= 60) {
+                    calculatedStreak++;
+                    startCheckDate.setDate(startCheckDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+        }
+
         const snapshot = {
             grade_status: progressCardSettings.gradeStatus || null,
             target_exam: progressCardSettings.targetExam || null,
@@ -375,6 +405,7 @@ export function useProfileSync() {
             today_questions: todayQuestions,
             momentum_heatmap: heatmapData,
             todays_tasks: todayTasks,
+            streak_count: calculatedStreak,
         };
 
         const snapshotStr = JSON.stringify(snapshot);
