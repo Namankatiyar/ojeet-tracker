@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1782596066.6273482,
-    "ast_hash": "ac360135557a7037c169390c03ee0771",
+    "mtime": 1782752145.7818165,
+    "ast_hash": "cd9f579965f3333ef0d2edebc94fb350",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "src/features/chat/hooks/useAgentTools.ts": {
-    "mtime": 1782596066.629371,
-    "ast_hash": "6b08dde31a3c958e1de3f2c040a3b527",
+    "mtime": 1782752843.923095,
+    "ast_hash": "05b9eb4c6b31ad7cd443972b9fbdfd03",
     "semantic_hash": ""
   },
   "src/features/chat/utils/agentPromptBuilder.ts": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/TaskModal.tsx": {
-    "mtime": 1781265743.046662,
-    "ast_hash": "26d576b14a57610e78f3fecce997ae5b",
+    "mtime": 1782752561.0353627,
+    "ast_hash": "d3a77ee1b3ae5eb59b0764f5fb4cb43d",
     "semantic_hash": ""
   },
   "src/features/planner/components/WeeklyView.tsx": {
@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/hooks/useTaskForm.ts": {
-    "mtime": 1781010054.1751964,
-    "ast_hash": "bffc77ef886b4c160c74ba3359233016",
+    "mtime": 1782752444.4510162,
+    "ast_hash": "5074aef909d86c287f22b8efd7e87f05",
     "semantic_hash": ""
   },
   "src/features/reports/components/CoPilotNudgeRow.tsx": {
@@ -355,8 +355,8 @@
     "semantic_hash": ""
   },
   "src/features/reports/components/DailyAnalytics.tsx": {
-    "mtime": 1782654901.2873127,
-    "ast_hash": "39160787a06494972b4f19408f08392d",
+    "mtime": 1782753073.7864194,
+    "ast_hash": "a4134a3f5e37f5606cd9a21c041dfd63",
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/components/StudyClock.tsx": {
-    "mtime": 1782049668.7608218,
-    "ast_hash": "ab9ad78a2922baf1dadd00465792fe42",
+    "mtime": 1782751099.8271012,
+    "ast_hash": "4e2017807c763c18bbd7e5dc0301e072",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Timer/ModeSelector.tsx": {
@@ -635,8 +635,8 @@
     "semantic_hash": ""
   },
   "src/shared/components/ui/SettingsModal.tsx": {
-    "mtime": 1782596066.6303484,
-    "ast_hash": "d040244c5f777ebd30d71fe632cb7159",
+    "mtime": 1782730250.4141889,
+    "ast_hash": "18a8f8cf715b081881af2b554cf059e2",
     "semantic_hash": ""
   },
   "src/shared/components/ui/TimePicker.tsx": {
@@ -675,8 +675,8 @@
     "semantic_hash": ""
   },
   "src/shared/types/index.ts": {
-    "mtime": 1782401569.6072617,
-    "ast_hash": "7c79e537210f60c651d22bed53032724",
+    "mtime": 1782752079.807312,
+    "ast_hash": "dc3efe82cb456ed03de93201583ec01c",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {

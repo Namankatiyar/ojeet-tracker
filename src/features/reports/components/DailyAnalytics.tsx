@@ -373,8 +373,9 @@ export const DailyAnalytics: React.FC = () => {
     const renderDelta = () => {
         if (prevTotalSec === 0 && totalDurationSec === 0) return null;
         if (isToday) {
-            const label = diffSec > 0 ? `+${formatSmartDuration(diffSec)}` : `-${formatSmartDuration(Math.abs(diffSec))}`;
-            return <span className="dh-badge stable" title="Day in progress">{label} (so far)</span>;
+            const label = diffSec >= 0 ? `+${formatSmartDuration(diffSec)}` : `-${formatSmartDuration(Math.abs(diffSec))}`;
+            const badgeClass = diffSec >= 0 ? "dh-badge success" : "dh-badge danger";
+            return <span className={badgeClass} title="Day in progress">{label} (so far)</span>;
         }
         if (diffSec > 0) {
             const label = formatSmartDuration(diffSec);
@@ -390,8 +391,9 @@ export const DailyAnalytics: React.FC = () => {
     const renderQuestionDelta = () => {
         if (prevQuestions === 0 && todayQuestions === 0) return null;
         if (isToday) {
-            const label = diffQuestions > 0 ? `+${diffQuestions}` : `${diffQuestions}`;
-            return <span className="dh-badge stable" title="Day in progress">{label} (so far)</span>;
+            const label = diffQuestions >= 0 ? `+${diffQuestions}` : `${diffQuestions}`;
+            const badgeClass = diffQuestions >= 0 ? "dh-badge success" : "dh-badge danger";
+            return <span className={badgeClass} title="Day in progress">{label} (so far)</span>;
         }
         if (diffQuestions > 0) {
             return <span className="dh-badge success">+{diffQuestions}</span>;
