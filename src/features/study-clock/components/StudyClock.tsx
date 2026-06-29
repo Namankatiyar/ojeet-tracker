@@ -75,6 +75,16 @@ export function StudyClock({
         requestNotificationPermission();
     }, []);
 
+    // Toggle body class to hide distracting global FABs in fullscreen mode
+    useEffect(() => {
+        if (isFullscreen) {
+            document.body.classList.add('hide-global-fabs');
+        } else {
+            document.body.classList.remove('hide-global-fabs');
+        }
+        return () => document.body.classList.remove('hide-global-fabs');
+    }, [isFullscreen]);
+
     // ── Task title helper ──
     const getTaskTitle = useCallback((): string => {
         if (taskType === 'custom') return customTitle || 'Untitled Session';
@@ -331,13 +341,16 @@ export function StudyClock({
                             engine.pause();
                             setIsFullscreen(false);
                         }}
+                        title="Click to Pause & Exit Fullscreen"
                     >
                         {displayTime}
                     </div>
-                    <div className="fullscreen-title">{getTaskTitle()}</div>
-                    <div className="timer-state-label fullscreen-state-label">
-                        {phaseLabel}
-                        {engine.mode === 'pomodoro' && ` • CYCLE ${engine.cycleCount + 1}`}
+                    <div className="fullscreen-info-group">
+                        <h2 className="fullscreen-title">{getTaskTitle()}</h2>
+                        <div className="fullscreen-state-label">
+                            {phaseLabel}
+                            {engine.mode === 'pomodoro' && ` • CYCLE ${engine.cycleCount + 1}`}
+                        </div>
                     </div>
                 </div>
             </div>
