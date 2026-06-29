@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { RemoteProfile, LiveActivity } from '../../../shared/types';
+
+// Persist last full profile fetch across route navigations
+let globalLastFullFetchTime = 0;
 
 export type FriendProfile = RemoteProfile & {
     live_activity?: LiveActivity | null;
@@ -9,6 +13,7 @@ export type FriendProfile = RemoteProfile & {
 };
 
 export function useFriends() {
+    const location = useLocation();
     const { user, isConfigured, isLoading: isAuthLoading } = useRemoteAuth();
     const [friends, setFriends] = useState<FriendProfile[]>(() => {
         try {
@@ -37,10 +42,60 @@ export function useFriends() {
     }, [user, isAuthLoading]);
 
     // Keep friend IDs in a ref so the polling interval can access them without recreating
-    const friendIdsRef = useRef<string[]>([]);
+    const friendIdsRef = useRef<string[]>(
+        (() => {
+            try {
+                const cached = localStorage.getItem('jee-community-friends-cache');
+                const parsed = cached ? JSON.parse(cached) : [];
+                return parsed.map((f: any) => f.id);
+            } catch {
+                return [];
+            }
+        })()
+    );
 
-    const fetchFriends = useCallback(async () => {
+    const lastPollTimeRef = useRef<number>(0);
+
+    const pollLiveActivity = useCallback(async () => {
+        const friendIds = friendIdsRef.current;
+        if (!isConfigured || !supabase || friendIds.length === 0) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('live_activity')
+                .select('*')
+                .in('user_id', friendIds);
+
+            if (error) throw error;
+
+            setFriends(prev => {
+                const updated = prev.map(f => {
+                    const updatedLive = data.find(l => l.user_id === f.id);
+                    return updatedLive ? { ...f, live_activity: updatedLive } : f;
+                });
+                
+                localStorage.setItem('jee-community-friends-cache', JSON.stringify(updated));
+                return updated;
+            });
+            lastPollTimeRef.current = Date.now();
+        } catch (err) {
+            console.warn('Failed to poll live activity', err);
+        }
+    }, [isConfigured]);
+
+    const fetchFriends = useCallback(async (force = false) => {
         if (!user || !isConfigured || !supabase) {
+            setIsLoading(false);
+            return;
+        }
+
+        const now = Date.now();
+        // If not forced and less than 5 minutes have passed, skip full fetch
+        if (!force && globalLastFullFetchTime !== 0 && now - globalLastFullFetchTime < 300000) {
+            // Still run live activity poll immediately to ensure live status is fresh on navigation
+            if (now - lastPollTimeRef.current > 5000) {
+                pollLiveActivity();
+            }
             setIsLoading(false);
             return;
         }
@@ -144,46 +199,18 @@ export function useFriends() {
 
             setFriends(merged);
             localStorage.setItem('jee-community-friends-cache', JSON.stringify(merged));
+            globalLastFullFetchTime = Date.now();
         } catch (err: any) {
             console.error('Failed to fetch friends', err);
             setError(err.message || 'Failed to fetch friends');
         } finally {
             setIsLoading(false);
         }
-    }, [user, isConfigured]);
-
-    const lastPollTimeRef = useRef<number>(0);
-
-    const pollLiveActivity = useCallback(async () => {
-        const friendIds = friendIdsRef.current;
-        if (!isConfigured || !supabase || friendIds.length === 0) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('live_activity')
-                .select('*')
-                .in('user_id', friendIds);
-
-            if (error) throw error;
-
-            setFriends(prev => {
-                const updated = prev.map(f => {
-                    const updatedLive = data.find(l => l.user_id === f.id);
-                    return updatedLive ? { ...f, live_activity: updatedLive } : f;
-                });
-                
-                localStorage.setItem('jee-community-friends-cache', JSON.stringify(updated));
-                return updated;
-            });
-            lastPollTimeRef.current = Date.now();
-        } catch (err) {
-            console.warn('Failed to poll live activity', err);
-        }
-    }, [isConfigured]);
+    }, [user, isConfigured, pollLiveActivity]);
 
     useEffect(() => {
-        fetchFriends();
-    }, [fetchFriends]);
+        fetchFriends(false);
+    }, [fetchFriends, location.pathname]);
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval> | null = null;
@@ -200,13 +227,20 @@ export function useFriends() {
             }
         };
 
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
+        const handleFocusOrVisible = () => {
+            const isVisible = document.visibilityState === 'visible';
+            const isFocused = document.hasFocus();
+            
+            if (isVisible && isFocused) {
                 const now = Date.now();
                 // Throttle immediate re-fetch to once every 5 seconds
                 if (now - lastPollTimeRef.current > 5000) {
                     pollLiveActivity();
                 }
+                
+                // Refresh full profiles immediately on window focus
+                fetchFriends(true);
+                
                 startPolling();
             } else {
                 stopPolling();
@@ -214,17 +248,24 @@ export function useFriends() {
         };
 
         // Initial setup
-        if (document.visibilityState === 'visible') {
+        if (document.visibilityState === 'visible' && document.hasFocus()) {
+            pollLiveActivity();
+            startPolling();
+        } else if (document.visibilityState === 'visible') {
             startPolling();
         }
 
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+        document.addEventListener('visibilitychange', handleFocusOrVisible);
+        window.addEventListener('focus', handleFocusOrVisible);
+        window.addEventListener('blur', handleFocusOrVisible);
 
         return () => {
             stopPolling();
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            document.removeEventListener('visibilitychange', handleFocusOrVisible);
+            window.removeEventListener('focus', handleFocusOrVisible);
+            window.removeEventListener('blur', handleFocusOrVisible);
         };
-    }, [pollLiveActivity]);
+    }, [pollLiveActivity, fetchFriends]);
 
     const disconnectFriend = useCallback(async (friendId: string) => {
         if (!user || !isConfigured || !supabase) {
