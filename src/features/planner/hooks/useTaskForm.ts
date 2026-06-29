@@ -26,6 +26,9 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
     const [selectedMaterial, setSelectedMaterial] = useState<string[]>([]);
     const [chapterSearch, setChapterSearch] = useState('');
 
+    // Question Counter State
+    const [questions, setQuestions] = useState<number>(0);
+
     useEffect(() => {
         if (isOpen) {
             setChapterSearch('');
@@ -33,9 +36,11 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
                 setTaskType(taskToEdit.type);
                 setTime(taskToEdit.time);
                 setDate(taskToEdit.date);
+                setQuestions(taskToEdit.questions || 0);
 
                 if (taskToEdit.type === 'custom') {
-                    setCustomTitle(taskToEdit.title);
+                    const cleanTitle = taskToEdit.title.replace(/\s*\(\d+\s*Qs\)$/, '');
+                    setCustomTitle(cleanTitle);
                     setCustomSubject(taskToEdit.subject || 'none');
                     setSelectedSubject(taskToEdit.subject || '');
                     setSelectedChapterSerial('');
@@ -54,6 +59,7 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
                 setSelectedSubject('');
                 setSelectedChapterSerial('');
                 setSelectedMaterial([]);
+                setQuestions(0);
                 setDate(initialDate);
 
                 // Default time: Current time rounded to nearest 5 mins
@@ -132,5 +138,6 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
         isSaveDisabled,
         resetChapterSelection,
         resolveSubject,
+        questions, setQuestions,
     };
 }

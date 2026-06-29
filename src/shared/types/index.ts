@@ -72,6 +72,7 @@ export interface PlannerTask {
     material?: string;
     completedAt?: string;
     wasShifted?: boolean; // True if this task was auto-moved from a past day
+    questions?: number; // Questions to attempt
 }
 
 export interface StudySession {

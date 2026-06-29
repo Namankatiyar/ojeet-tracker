@@ -546,17 +546,53 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             setProgress(prog => {
                 const subjectProgress = prog[task.subject!];
                 const chapterProgress = subjectProgress[task.chapterSerial!] || { completed: {}, priority: 'none' };
+                
+                let updatedDetail = chapterProgress.detail;
+                if (task.questions && task.questions > 0) {
+                    const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+                    const currentAttempted = currentDetail.attemptedByMaterial || {};
+                    const currentCount = currentAttempted[task.material!] || 0;
+                    
+                    const change = newStatus ? task.questions : -task.questions;
+                    const newCount = Math.max(0, currentCount + change);
+                    const netChange = newCount - currentCount;
+
+                    if (netChange !== 0) {
+                        const todayStr = new Date().toLocaleDateString('en-CA');
+                        setDailyQuestionLogs(prevLogs => ({
+                            ...prevLogs,
+                            [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + netChange)
+                        }));
+                    }
+
+                    updatedDetail = {
+                        ...currentDetail,
+                        attemptedByMaterial: {
+                            ...currentAttempted,
+                            [task.material!]: newCount
+                        }
+                    };
+                }
+
                 return {
                     ...prog,
                     [task.subject!]: {
                         ...subjectProgress,
                         [task.chapterSerial!]: {
                             ...chapterProgress,
-                            completed: { ...chapterProgress.completed, [task.material!]: newStatus }
+                            completed: { ...chapterProgress.completed, [task.material!]: newStatus },
+                            detail: updatedDetail
                         }
                     }
                 };
             });
+        } else if (task.questions && task.questions > 0) {
+            const change = newStatus ? task.questions : -task.questions;
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            setDailyQuestionLogs(prevLogs => ({
+                ...prevLogs,
+                [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + change)
+            }));
         }
 
         setPlannerTasks(prev => prev.map(t => {
@@ -570,7 +606,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             }
             return t;
         }));
-    }, [accentColor, setPlannerTasks, setProgress]);
+    }, [accentColor, setPlannerTasks, setProgress, setDailyQuestionLogs]);
 
     const handleDeletePlannerTask = useCallback((taskId: string) => {
         setPlannerTasks(prev => prev.filter(t => t.id !== taskId));

@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { X, BookOpen, Type, Search, ChevronRight } from 'lucide-react';
+import { X, BookOpen, Type, Search, ChevronRight, Minus, Plus } from 'lucide-react';
 import { Subject, SubjectData, PlannerTask, AppProgress } from '../../../shared/types';
 import { useTaskForm, TaskType } from '../hooks/useTaskForm';
 import { TimePicker, TimePickerHandle } from '../../../shared/components/ui/TimePicker';
@@ -37,13 +37,16 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
             date: form.date,
             time: form.time,
             completed: taskToEdit ? taskToEdit.completed : false,
-            type: form.taskType
+            type: form.taskType,
+            questions: form.questions > 0 ? form.questions : undefined
         };
 
         if (form.taskType === 'custom') {
+            const cleanTitle = form.customTitle.replace(/\s*\(\d+\s*Qs\)$/, '');
+            const finalTitle = form.questions > 0 ? `${cleanTitle} (${form.questions} Qs)` : cleanTitle;
             onSave({
                 ...baseTask,
-                title: form.customTitle,
+                title: finalTitle,
                 subject: form.resolveSubject(),
             });
         } else {
@@ -52,10 +55,13 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
             const chapter = subjectInfo?.chapters.find((c: any) => c.serial === form.selectedChapterSerial);
             if (!chapter) return;
 
+            const baseTitle = chapter.name;
+            const finalTitle = form.questions > 0 ? `${baseTitle} (${form.questions} Qs)` : baseTitle;
+
             if (form.selectedMaterial.length === 0) {
                 onSave({
                     ...baseTask,
-                    title: chapter.name,
+                    title: finalTitle,
                     subject: form.selectedSubject,
                     chapterSerial: form.selectedChapterSerial as number,
                 });
@@ -64,7 +70,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
                     onSave({
                         ...baseTask,
                         id: index === 0 ? baseTask.id : crypto.randomUUID(),
-                        title: chapter.name,
+                        title: finalTitle,
                         subtitle: material,
                         subject: form.selectedSubject as Subject,
                         chapterSerial: form.selectedChapterSerial as number,
@@ -160,6 +166,9 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
                     </button>
                 </div>
             </div>
+            {form.customSubject !== 'none' && (
+                <QuestionStepper value={form.questions} onChange={form.setQuestions} />
+            )}
         </>
     );
 }
@@ -230,26 +239,58 @@ function ChapterTaskFields({ form, progress, subjectData }: { form: ReturnType<t
             )}
 
             {form.selectedChapterSerial !== '' && (
-                <div className="form-group">
-                    <label>Materials <span className="optional-label">(optional)</span></label>
-                    <div className="material-pills">
-                        {form.availableMaterials.map((m) => (
-                            <button
-                                key={m}
-                                className={`material-pill ${form.selectedMaterial.includes(m) ? 'selected' : ''}`}
-                                onClick={() => form.setSelectedMaterial(prev =>
-                                    prev.includes(m) ? prev.filter(mat => mat !== m) : [...prev, m]
-                                )}
-                            >
-                                {m}
-                            </button>
-                        ))}
+                <>
+                    <div className="form-group">
+                        <label>Materials <span className="optional-label">(optional)</span></label>
+                        <div className="material-pills">
+                            {form.availableMaterials.map((m) => (
+                                <button
+                                    key={m}
+                                    className={`material-pill ${form.selectedMaterial.includes(m) ? 'selected' : ''}`}
+                                    onClick={() => form.setSelectedMaterial(prev =>
+                                        prev.includes(m) ? prev.filter(mat => mat !== m) : [...prev, m]
+                                    )}
+                                >
+                                    {m}
+                                </button>
+                            ))}
+                        </div>
+                        {form.selectedMaterial.length === 0 && form.availableMaterials.length > 0 && (
+                            <div className="material-hint">Leave empty for general chapter task</div>
+                        )}
                     </div>
-                    {form.selectedMaterial.length === 0 && form.availableMaterials.length > 0 && (
-                        <div className="material-hint">Leave empty for general chapter task</div>
-                    )}
-                </div>
+                    <QuestionStepper value={form.questions} onChange={form.setQuestions} />
+                </>
             )}
         </>
+    );
+}
+
+function QuestionStepper({ value, onChange }: { value: number; onChange: (val: number) => void }) {
+    return (
+        <div className="form-group-inline">
+            <label>Questions</label>
+            <div className="modern-stepper">
+                <button
+                    type="button"
+                    onClick={() => onChange(Math.max(0, value - 5))}
+                    disabled={value <= 0}
+                >
+                    <Minus size={14} />
+                </button>
+                <input
+                    type="number"
+                    value={value}
+                    onChange={(e) => onChange(Math.max(0, parseInt(e.target.value) || 0))}
+                    min="0"
+                />
+                <button
+                    type="button"
+                    onClick={() => onChange(value + 5)}
+                >
+                    <Plus size={14} />
+                </button>
+            </div>
+        </div>
     );
 }

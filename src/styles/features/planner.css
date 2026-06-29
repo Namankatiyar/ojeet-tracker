@@ -2093,3 +2093,46 @@
 [data-theme="light"] .period-badge.pm {
   background: color-mix(in srgb, var(--accent), transparent 88%);
 }
+
+/* Inline alignment for questions stepper */
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.form-group-inline label {
+  margin-bottom: 0 !important;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Fix input clipping */
+.task-modal .modern-stepper input {
+  padding: 0 !important;
+  width: 3rem !important;
+}
+
+/* Make reset button match stepper height and border radius */
+.task-modal .stepper-wrapper-with-reset {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.task-modal .stepper-wrapper-with-reset .icon-btn-reset {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast) !important;
+}
+
+.task-modal .stepper-wrapper-with-reset .icon-btn-reset:hover {
+  background: color-mix(in srgb, var(--confidence-red) 12%, transparent) !important;
+  color: var(--confidence-red) !important;
+  border-color: color-mix(in srgb, var(--confidence-red), transparent 70%) !important;
+}
