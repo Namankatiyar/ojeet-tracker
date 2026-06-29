@@ -41,6 +41,13 @@ const defaultProgressCardSettings: ProgressCardSettings = {
         mathsProgress: true,
         examCountdown: true,
     },
+    bannerUrl: '',
+    customStatus: '',
+    gradeStatus: 'Class 12',
+    targetExam: 'JEE 2026',
+    discordSpecialTag: '',
+    inviteCode: '',
+    showTasks: true,
 };
 
 const defaultSubjectDataRecord: Record<Subject, SubjectData | null> = {

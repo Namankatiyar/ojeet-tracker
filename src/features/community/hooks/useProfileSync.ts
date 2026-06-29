@@ -137,10 +137,11 @@ export function useProfileSync() {
                         if (!prev.customStatus && data.custom_status) {
                             updates.customStatus = data.custom_status;
                         }
-                        if (data.grade_status && prev.gradeStatus !== data.grade_status) {
+                        // Prefill grade status and target exam if missing locally or if they are the default values
+                        if (data.grade_status && (!prev.gradeStatus || prev.gradeStatus === 'Class 12') && prev.gradeStatus !== data.grade_status) {
                             updates.gradeStatus = data.grade_status;
                         }
-                        if (data.target_exam && prev.targetExam !== data.target_exam) {
+                        if (data.target_exam && (!prev.targetExam || prev.targetExam === 'JEE 2026') && prev.targetExam !== data.target_exam) {
                             updates.targetExam = data.target_exam;
                         }
 

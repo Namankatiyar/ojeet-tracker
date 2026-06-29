@@ -10,6 +10,11 @@ export interface SyncedProgressCardSettings {
     userName: ProgressCardSettings['userName'];
     visibleStats: ProgressCardSettings['visibleStats'];
     showTasks?: ProgressCardSettings['showTasks'];
+    customAvatarUrl?: ProgressCardSettings['customAvatarUrl'];
+    bannerUrl?: ProgressCardSettings['bannerUrl'];
+    customStatus?: ProgressCardSettings['customStatus'];
+    gradeStatus?: ProgressCardSettings['gradeStatus'];
+    targetExam?: ProgressCardSettings['targetExam'];
 }
 
 export interface SyncPayloadV1 {

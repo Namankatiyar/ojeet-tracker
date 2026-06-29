@@ -38,20 +38,30 @@ describe('syncPayload', () => {
         expect(filtered.map((t) => t.id)).toEqual(['edge', 'future']);
     });
 
-    it('excludes avatar url from synced settings payload', () => {
+    it('includes avatar url and other profile settings in synced settings payload', () => {
         const payload = buildSyncPayload({
             progress: baseProgress,
             plannerTasks: [],
             mockScores: [],
             examDates: [],
             disableAutoShift: false,
-            progressCardSettings,
+            progressCardSettings: {
+                ...progressCardSettings,
+                bannerUrl: 'https://example.com/banner.png',
+                customStatus: 'Studying',
+                gradeStatus: 'Class 12',
+                targetExam: 'JEE 2026',
+            },
             mockExamPresets: [],
             generatedAt: '2026-03-07T10:00:00.000Z',
         });
 
         expect(payload.domains.settings.progressCardSettings.userName).toBe('Naman');
         expect(payload.domains.settings.progressCardSettings.visibleStats.examCountdown).toBe(true);
-        expect('customAvatarUrl' in payload.domains.settings.progressCardSettings).toBe(false);
+        expect(payload.domains.settings.progressCardSettings.customAvatarUrl).toBe('https://example.com/avatar.png');
+        expect(payload.domains.settings.progressCardSettings.bannerUrl).toBe('https://example.com/banner.png');
+        expect(payload.domains.settings.progressCardSettings.customStatus).toBe('Studying');
+        expect(payload.domains.settings.progressCardSettings.gradeStatus).toBe('Class 12');
+        expect(payload.domains.settings.progressCardSettings.targetExam).toBe('JEE 2026');
     });
 });

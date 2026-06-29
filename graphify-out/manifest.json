@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "src/core/context/RemoteSyncContext.tsx": {
-    "mtime": 1782596066.6273482,
-    "ast_hash": "6de68f6bdb29d3672bbbd9603c3e7358",
+    "mtime": 1782753868.2368393,
+    "ast_hash": "52c17fde9873cdd05dbb9e8ed5c86939",
     "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
-    "mtime": 1782654907.0338883,
-    "ast_hash": "ec9f1707119692c5818ee9e174db1ba2",
+    "mtime": 1782753874.2809908,
+    "ast_hash": "53bc2682ea38fef3f649b61d7083cb6b",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/AddMockModal.tsx": {
@@ -495,8 +495,8 @@
     "semantic_hash": ""
   },
   "src/features/sync/syncLocalStorage.ts": {
-    "mtime": 1782596066.629371,
-    "ast_hash": "d10fe4ffc9afd8df08c2f9096245c576",
+    "mtime": 1782753849.4503672,
+    "ast_hash": "a249d1025410297625189d6a5d5423de",
     "semantic_hash": ""
   },
   "src/features/sync/syncMerge.test.ts": {
@@ -510,18 +510,18 @@
     "semantic_hash": ""
   },
   "src/features/sync/syncPayload.test.ts": {
-    "mtime": 1781245187.9359334,
-    "ast_hash": "33ece65d0cb9366218f329340f7e4d81",
+    "mtime": 1782753881.3641684,
+    "ast_hash": "1ea111755f04b533b789695a5326d6fc",
     "semantic_hash": ""
   },
   "src/features/sync/syncPayload.ts": {
-    "mtime": 1782596066.629371,
-    "ast_hash": "64ad47f4054bf77305e00f4e2d96d73f",
+    "mtime": 1782753839.7971241,
+    "ast_hash": "814def6cbf1781db8b772641731a3242",
     "semantic_hash": ""
   },
   "src/features/sync/syncTypes.ts": {
-    "mtime": 1782596066.629371,
-    "ast_hash": "ca738cacdb46ef4012977356c1df4fb5",
+    "mtime": 1782753828.7118444,
+    "ast_hash": "39982cd3fccd916e8435944ce54083a3",
     "semantic_hash": ""
   },
   "src/main.tsx": {
@@ -942,6 +942,11 @@
   "public/og_image.jpg": {
     "mtime": 1782596066.6263483,
     "ast_hash": "c936d305018230aff26a266c1788f26e",
+    "semantic_hash": ""
+  },
+  "public/musicBot.png": {
+    "mtime": 1782753290.336236,
+    "ast_hash": "16e45b2eaf6ada3f10a1b1418746d878",
     "semantic_hash": ""
   }
 }

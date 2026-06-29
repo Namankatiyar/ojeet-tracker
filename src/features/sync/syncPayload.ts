@@ -39,6 +39,11 @@ export function toSyncedProgressCardSettings(settings: SyncPayloadInput['progres
             examCountdown: true,
         },
         showTasks: settings?.showTasks ?? true,
+        customAvatarUrl: settings?.customAvatarUrl ?? '',
+        bannerUrl: settings?.bannerUrl ?? '',
+        customStatus: settings?.customStatus ?? '',
+        gradeStatus: settings?.gradeStatus ?? 'Class 12',
+        targetExam: settings?.targetExam ?? 'JEE 2026',
     };
 }
 
@@ -59,7 +64,6 @@ export function buildSyncPayload(input: SyncPayloadInput): SyncPayloadV1 {
             settings: {
                 disableAutoShift: input.disableAutoShift,
                 enableAIAgent: input.enableAIAgent,
-                // customAvatarUrl is intentionally excluded from sync.
                 progressCardSettings: toSyncedProgressCardSettings(input.progressCardSettings),
                 mockExamPresets: input.mockExamPresets || [],
             },
