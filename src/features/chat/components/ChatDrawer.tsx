@@ -6,6 +6,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Key, CheckCircle2, XCircle, AlertTriangle, Copy, History, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { useAgentChat, type ChatMessage } from '../hooks/useAgentChat';
 import { saveApiKey, loadApiKey, clearApiKey } from '../../../shared/lib/gemini';
+import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 
 // ── Robust Markdown Renderer ──────────────────────────────────────────────────
 function renderMarkdown(text: string): string {
@@ -289,6 +290,7 @@ export function ChatDrawer() {
     const [showApiKeyPanel, setShowApiKeyPanel] = useState(() => !loadApiKey());
     const [activeView, setActiveView] = useState<'chat' | 'history'>('chat');
     const [confirmClear, setConfirmClear] = useState(false);
+    const [tooltipDismissed, setTooltipDismissed] = useLocalStorage<boolean>('fab_tooltip_dismissed_chat', false);
 
     const { 
         sessions, activeSessionId, startNewSession, switchSession, deleteSession,
@@ -624,6 +626,26 @@ export function ChatDrawer() {
                     <span className="chat-fab-icon">
                         <img src="/blueBot.png" alt="Blue" className="chat-avatar-img" />
                     </span>
+                    {!tooltipDismissed && (
+                        <div 
+                            className="fab-info-tooltip fab-info-tooltip--right"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="fab-info-tooltip-text">
+                                You can disable this feature in Settings.
+                            </div>
+                            <button 
+                                className="fab-info-tooltip-close" 
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    setTooltipDismissed(true); 
+                                }} 
+                                aria-label="Dismiss tooltip"
+                            >
+                                <X size={12} />
+                            </button>
+                        </div>
+                    )}
                 </button>
             )}
         </>

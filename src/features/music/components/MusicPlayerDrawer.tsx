@@ -82,6 +82,7 @@ export function MusicPlayerDrawer() {
     // Playlists state via localStorage
     const [playlists, setPlaylists] = useLocalStorage<Playlist[]>('ojee_playlists', [DEFAULT_PLAYLIST]);
     const [activePlaylistId, setActivePlaylistId] = useLocalStorage<string>('ojee_active_playlist', DEFAULT_PLAYLIST.id);
+    const [tooltipDismissed, setTooltipDismissed] = useLocalStorage<boolean>('fab_tooltip_dismissed_music', false);
     
     // UI State
     const [newPlaylistName, setNewPlaylistName] = useState('');
@@ -546,6 +547,26 @@ export function MusicPlayerDrawer() {
                     <span className="music-fab-icon">
                         <img src="/musicBot.png" alt="Music" />
                     </span>
+                    {!tooltipDismissed && (
+                        <div 
+                            className="fab-info-tooltip fab-info-tooltip--left"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="fab-info-tooltip-text">
+                                You can disable this feature in Settings.
+                            </div>
+                            <button 
+                                className="fab-info-tooltip-close" 
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    setTooltipDismissed(true); 
+                                }} 
+                                aria-label="Dismiss tooltip"
+                            >
+                                <X size={12} />
+                            </button>
+                        </div>
+                    )}
                 </button>
             )}
         </>
