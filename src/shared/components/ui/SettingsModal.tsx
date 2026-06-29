@@ -74,6 +74,17 @@ const STORAGE_KEYS = {
     filterPhysics: 'jee-tracker-filter-physics',
     filterChemistry: 'jee-tracker-filter-chemistry',
     filterMaths: 'jee-tracker-filter-maths',
+
+    // Additional keys to clear on reset
+    ojeeVisitCount: 'ojee_visit_count',
+    ojeeDiscordDismissed: 'ojee_discord_dismissed',
+    ojeeSessionActive: 'ojee_session_active',
+    pcmBridgeCacheCleanup: 'pcm-tracker-bridge-cache-cleanup-v1',
+    ojeetImportHistory: 'ojeet-import-history',
+    pendingInviteCode: 'pending_invite_code',
+    breakdownPeriod: 'breakdownPeriod',
+    ojeeChatSessions: 'ojee_chat_sessions',
+    ojeeActiveChatSessionId: 'ojee_active_chat_session_id',
 };
 
 export function SettingsModal({
@@ -137,17 +148,40 @@ export function SettingsModal({
                 if (key && (
                     key.startsWith('jee-') ||
                     key.startsWith('ojeet-') ||
-                    key.startsWith('studyClock_')
+                    key.startsWith('studyClock_') ||
+                    key.startsWith('ojee-') ||
+                    key.startsWith('pcm-') ||
+                    key === 'pending_invite_code' ||
+                    key === 'breakdownPeriod'
                 )) {
                     keysToRemove.push(key);
                 }
             }
             keysToRemove.forEach(key => localStorage.removeItem(key));
 
+            // 3. Clear all sessionStorage
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key) {
+                    sessionStorage.removeItem(key);
+                }
+            }
+
+            // 4. Clear browser caches (service worker and cache API)
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(registrations.map((registration) => registration.unregister()));
+            }
+
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map((name) => caches.delete(name)));
+            }
+
             setImportStatus('success');
             setStatusMessage('Data reset successfully! Reloading...');
 
-            // 3. Reload page to reinitialize all state with default local storage
+            // 5. Reload page to reinitialize all state with default local storage
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
