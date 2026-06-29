@@ -604,12 +604,38 @@
         background: transparent;
     }
 
-    .music-spotify-nav {
+    .music-spotify-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-2);
+        padding: 0 var(--space-1);
+    }
+
+    .music-spotify-title {
+        font-size: var(--text-xs);
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .music-spotify-close-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: var(--space-1);
+        border-radius: var(--radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--space-4);
-        margin-top: var(--space-3);
+        transition: color var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    .music-spotify-close-btn:hover {
+        color: var(--text-primary);
+        background: var(--bg-tertiary);
     }
 
     /* ── Player Dock — centered layout ────────────────────────────── */

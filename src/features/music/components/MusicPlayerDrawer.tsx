@@ -98,6 +98,7 @@ export function MusicPlayerDrawer() {
     const [volume, setVolume] = useState(0.5);
     const [muted, setMuted] = useState(false);
     const [loop, setLoop] = useState(false);
+    const [showSpotifyEmbed, setShowSpotifyEmbed] = useState(true);
 
     // Refs
     const createInputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +146,10 @@ export function MusicPlayerDrawer() {
             addTrackUrlRef.current.focus();
         }
     }, [showAddTrack]);
+
+    useEffect(() => {
+        setShowSpotifyEmbed(true);
+    }, [currentTrackIndex, activePlaylistId]);
 
     // ── Playlist Management ──────────────────────────────────────
     const handleAddPlaylist = () => {
@@ -455,36 +460,36 @@ export function MusicPlayerDrawer() {
                 </div>
 
                 {/* ─── Spotify Embedded Player ─────────────────────── */}
-                {currentTrack && isSpotify && (
+                {currentTrack && isSpotify && showSpotifyEmbed && (
                     <div className="music-spotify-embed">
+                        <div className="music-spotify-header">
+                            <span className="music-spotify-title">Spotify Playback</span>
+                            <button 
+                                className="music-spotify-close-btn" 
+                                onClick={() => {
+                                    setPlaying(false);
+                                    setShowSpotifyEmbed(false);
+                                }}
+                                aria-label="Close Spotify player"
+                                title="Close player"
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
                         <iframe 
                             src={getSpotifyEmbedUrl(currentTrack.url)} 
                             width="100%" 
-                            height="152" 
+                            height="352" 
                             frameBorder="0" 
                             allowFullScreen 
                             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
                             loading="lazy"
                         />
-                        <div className="music-spotify-nav">
-                            <button className="music-dock-btn" onClick={handlePrev}>
-                                <SkipBack size={18} />
-                            </button>
-                            <button 
-                                className={`music-dock-btn ${loop ? 'music-dock-btn--active' : ''}`} 
-                                onClick={() => setLoop(!loop)}
-                            >
-                                <Repeat size={16} />
-                            </button>
-                            <button className="music-dock-btn" onClick={handleNext}>
-                                <SkipForward size={18} />
-                            </button>
-                        </div>
                     </div>
                 )}
 
                 {/* ─── Player Dock ─────────────────────────────────── */}
-                {(!isSpotify || !currentTrack) && (
+                {(!isSpotify || !currentTrack || !showSpotifyEmbed) && (
                     <div className="music-dock">
                         <div className="music-dock-row">
                             {/* Volume — left side, upward popup slider */}
