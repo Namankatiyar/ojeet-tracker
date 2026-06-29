@@ -128,17 +128,26 @@ export function useAgentTools() {
     // ── PLANNER TOOLS ─────────────────────────────────────────────────────────
     const addPlannerTask = useCallback((
         title: string, date: string, time: string = '08:00',
-        subject?: Subject, chapterName?: string, material?: string
+        subject?: Subject, chapterName?: string, material?: string,
+        questions?: number
     ): string => {
         let chapterSerial: number | undefined;
+        let resolvedTitle = title;
         if (subject && chapterName) {
             const chapters = mergedSubjectData[subject]?.chapters ?? [];
             const ch = fuzzyFindChapter(chapters, chapterName);
-            if (ch) chapterSerial = ch.serial;
+            if (ch) {
+                chapterSerial = ch.serial;
+                resolvedTitle = ch.name;
+            }
         }
+        
+        const cleanTitle = resolvedTitle.replace(/\s*\(\d+\s*Qs\)$/, '');
+        const finalTitle = questions && questions > 0 ? `${cleanTitle} (${questions} Qs)` : cleanTitle;
+
         const task: PlannerTask = {
             id: `agent-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            title,
+            title: finalTitle,
             date,
             time,
             completed: false,
@@ -146,9 +155,10 @@ export function useAgentTools() {
             subject,
             chapterSerial,
             material,
+            questions: questions && questions > 0 ? questions : undefined,
         };
         handleAddPlannerTask(task);
-        return ok(`Added task "${title}" on ${date} at ${time}.`, { taskId: task.id });
+        return ok(`Added task "${finalTitle}" on ${date} at ${time}.`, { taskId: task.id });
     }, [mergedSubjectData, handleAddPlannerTask]);
 
     const togglePlannerTask = useCallback((taskId: string): string => {
@@ -337,7 +347,7 @@ export function useAgentTools() {
             markChapterRevisedTool(args.subject as Subject, args.chapter_name as string, args.confidence as ConfidenceLevel | undefined),
         // Planner
         add_planner_task: (args: Record<string, unknown>) =>
-            addPlannerTask(args.title as string, args.date as string, args.time as string | undefined, args.subject as Subject | undefined, args.chapter_name as string | undefined, args.material as string | undefined),
+            addPlannerTask(args.title as string, args.date as string, args.time as string | undefined, args.subject as Subject | undefined, args.chapter_name as string | undefined, args.material as string | undefined, args.questions as number | undefined),
         toggle_planner_task: (args: Record<string, unknown>) =>
             togglePlannerTask(args.task_id as string),
         delete_planner_task: (args: Record<string, unknown>) =>
@@ -559,6 +569,7 @@ export function useAgentTools() {
                         subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
                         chapter_name: { type: Type.STRING, description: 'Optional chapter name (fuzzy matched)' },
                         material: { type: Type.STRING, description: 'Optional material type' },
+                        questions: { type: Type.NUMBER, description: 'Optional number of questions to attempt for this task' },
                     },
                     required: ['title', 'date'],
                 },
