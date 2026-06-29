@@ -44,7 +44,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
             onSave({
                 ...baseTask,
                 title: form.customTitle,
-                subject: form.customSubject === 'none' ? undefined : form.customSubject
+                subject: form.resolveSubject(),
             });
         } else {
             if (!form.selectedSubject || form.selectedChapterSerial === '') return;
@@ -85,7 +85,7 @@ export function TaskModal({ isOpen, onClose, onSave, initialDate, subjectData, t
                 </div>
 
                 <div className="modal-body-scrollable">
-                    <TaskTypeToggle activeType={form.taskType} onChange={form.setTaskType} />
+                    <TaskTypeToggle activeType={form.taskType} onChange={form.changeTaskType} />
 
                     <div className="task-form">
                         {form.taskType === 'chapter' ? (
@@ -145,7 +145,7 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
                         <button
                             key={subj}
                             className={`material-pill custom-subject-pill ${form.customSubject === subj ? 'selected' : ''}`}
-                            onClick={() => form.setCustomSubject(subj)}
+                            onClick={() => form.selectCustomSubject(subj)}
                             style={{ '--pill-color': `var(--color-${subj})` } as any}
                         >
                             {subj.charAt(0).toUpperCase() + subj.slice(1)}
@@ -153,7 +153,7 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
                     ))}
                     <button
                         className={`material-pill custom-subject-pill ${form.customSubject === 'none' ? 'selected' : ''}`}
-                        onClick={() => form.setCustomSubject('none')}
+                        onClick={() => form.selectCustomSubject('none')}
                         style={{ '--pill-color': 'var(--text-secondary)' } as any}
                     >
                         None
@@ -174,11 +174,7 @@ function ChapterTaskFields({ form, progress, subjectData }: { form: ReturnType<t
                         <button
                             key={subj}
                             className={`subject-option ${form.selectedSubject === subj ? 'selected' : ''}`}
-                            onClick={() => {
-                                form.setSelectedSubject(subj);
-                                form.resetChapterSelection();
-                                form.setChapterSearch('');
-                            }}
+                            onClick={() => form.selectChapterSubject(subj)}
                             style={{ '--subj-color': `var(--color-${subj})` } as any}
                         >
                             {subj.charAt(0).toUpperCase() + subj.slice(1)}

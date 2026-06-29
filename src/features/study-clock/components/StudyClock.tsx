@@ -16,6 +16,34 @@ import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { requestNotificationPermission, dispatchNotification } from '../../../shared/utils/notifications';
 import { formatDateLocal } from '../../../shared/utils/date';
 
+function plannerTaskSessionMeta(
+    task: PlannerTask,
+    subjectData: Record<Subject, SubjectData | null>,
+): {
+    sessionSubject?: Subject;
+    sessionChapterSerial?: number;
+    sessionChapterName?: string;
+    sessionMaterial?: string;
+    sessionType: 'chapter' | 'custom';
+} {
+    if (!task.subject) {
+        return { sessionType: 'custom' };
+    }
+    if (task.chapterSerial != null) {
+        return {
+            sessionSubject: task.subject,
+            sessionChapterSerial: task.chapterSerial,
+            sessionChapterName: subjectData[task.subject]?.chapters.find(c => c.serial === task.chapterSerial)?.name,
+            sessionMaterial: task.material,
+            sessionType: 'chapter',
+        };
+    }
+    return {
+        sessionSubject: task.subject,
+        sessionType: 'custom',
+    };
+}
+
 interface StudyClockProps {
     subjectData: Record<Subject, SubjectData | null>;
     sessions: StudySession[];
@@ -101,12 +129,13 @@ export function StudyClock({
                 sessionMaterial = selectedMaterial || undefined;
             } else if (taskType === 'task' && selectedTaskId) {
                 const task = plannerTasks.find(t => t.id === selectedTaskId);
-                if (task?.type === 'chapter' && task.subject) {
-                    sessionSubject = task.subject;
-                    sessionChapterSerial = task.chapterSerial;
-                    sessionChapterName = subjectData[task.subject]?.chapters.find(c => c.serial === task.chapterSerial)?.name;
-                    sessionMaterial = task.material;
-                    sessionType = 'chapter';
+                if (task) {
+                    const meta = plannerTaskSessionMeta(task, subjectData);
+                    sessionSubject = meta.sessionSubject;
+                    sessionChapterSerial = meta.sessionChapterSerial;
+                    sessionChapterName = meta.sessionChapterName;
+                    sessionMaterial = meta.sessionMaterial;
+                    sessionType = meta.sessionType;
                 } else {
                     sessionType = 'custom';
                 }
@@ -153,12 +182,13 @@ export function StudyClock({
                 sessionMaterial = selectedMaterial || undefined;
             } else if (taskType === 'task' && selectedTaskId) {
                 const task = plannerTasks.find(t => t.id === selectedTaskId);
-                if (task?.type === 'chapter' && task.subject) {
-                    sessionSubject = task.subject;
-                    sessionChapterSerial = task.chapterSerial;
-                    sessionChapterName = subjectData[task.subject]?.chapters.find(c => c.serial === task.chapterSerial)?.name;
-                    sessionMaterial = task.material;
-                    sessionType = 'chapter';
+                if (task) {
+                    const meta = plannerTaskSessionMeta(task, subjectData);
+                    sessionSubject = meta.sessionSubject;
+                    sessionChapterSerial = meta.sessionChapterSerial;
+                    sessionChapterName = meta.sessionChapterName;
+                    sessionMaterial = meta.sessionMaterial;
+                    sessionType = meta.sessionType;
                 } else {
                     sessionType = 'custom';
                 }
@@ -224,11 +254,17 @@ export function StudyClock({
         if (!task || task.completed) return;
         setTaskType('task');
         setSelectedTaskId(taskId);
-        if (task.type === 'chapter' && task.subject) {
+        if (task.subject) {
             setSelectedSubject(task.subject);
-            setSelectedChapter(task.chapterSerial || '');
-            setSelectedMaterial(task.material || '');
-            setCustomTitle('');
+            if (task.chapterSerial != null) {
+                setSelectedChapter(task.chapterSerial);
+                setSelectedMaterial(task.material || '');
+                setCustomTitle('');
+            } else {
+                setSelectedChapter('');
+                setSelectedMaterial('');
+                setCustomTitle(task.title);
+            }
         } else {
             setSelectedSubject('');
             setSelectedChapter('');
@@ -438,11 +474,17 @@ export function StudyClock({
                                                     setSelectedTaskId(taskId);
                                                     const task = plannerTasks.find(t => t.id === taskId);
                                                     if (task) {
-                                                        if (task.type === 'chapter' && task.subject) {
+                                                        if (task.subject) {
                                                             setSelectedSubject(task.subject);
-                                                            setSelectedChapter(task.chapterSerial || '');
-                                                            setSelectedMaterial(task.material || '');
-                                                            setCustomTitle('');
+                                                            if (task.chapterSerial != null) {
+                                                                setSelectedChapter(task.chapterSerial);
+                                                                setSelectedMaterial(task.material || '');
+                                                                setCustomTitle('');
+                                                            } else {
+                                                                setSelectedChapter('');
+                                                                setSelectedMaterial('');
+                                                                setCustomTitle(task.title);
+                                                            }
                                                         } else {
                                                             setSelectedSubject('');
                                                             setSelectedChapter('');
@@ -461,11 +503,11 @@ export function StudyClock({
                                         </div>
                                         {selectedTaskId && (() => {
                                             const task = plannerTasks.find(t => t.id === selectedTaskId);
-                                            if (task?.type === 'chapter' && task.subject) {
+                                            if (task?.subject) {
                                                 return (
                                                     <div className="task-auto-filled">
                                                         <div className="auto-filled-item"><span>Subject:</span> {task.subject.charAt(0).toUpperCase() + task.subject.slice(1)}</div>
-                                                        {task.chapterSerial && <div className="auto-filled-item"><span>Chapter:</span> {subjectData[task.subject]?.chapters.find(c => c.serial === task.chapterSerial)?.name || `#${task.chapterSerial}`}</div>}
+                                                        {task.chapterSerial != null && <div className="auto-filled-item"><span>Chapter:</span> {subjectData[task.subject]?.chapters.find(c => c.serial === task.chapterSerial)?.name || `#${task.chapterSerial}`}</div>}
                                                         {task.material && <div className="auto-filled-item"><span>Material:</span> {task.material}</div>}
                                                     </div>
                                                 );

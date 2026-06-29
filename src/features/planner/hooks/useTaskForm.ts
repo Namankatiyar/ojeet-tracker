@@ -37,17 +37,15 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
                 if (taskToEdit.type === 'custom') {
                     setCustomTitle(taskToEdit.title);
                     setCustomSubject(taskToEdit.subject || 'none');
-                    // Reset chapter fields
-                    setSelectedSubject('');
+                    setSelectedSubject(taskToEdit.subject || '');
                     setSelectedChapterSerial('');
                     setSelectedMaterial([]);
                 } else {
                     setSelectedSubject(taskToEdit.subject || '');
+                    setCustomSubject(taskToEdit.subject || 'none');
                     setSelectedChapterSerial(taskToEdit.chapterSerial || '');
                     setSelectedMaterial(taskToEdit.material ? [taskToEdit.material] : []);
-                    // Reset custom fields
                     setCustomTitle('');
-                    setCustomSubject('none');
                 }
             } else {
                 setTaskType('chapter');
@@ -91,19 +89,48 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
         setSelectedMaterial([]);
     };
 
+    const selectChapterSubject = (subj: Subject) => {
+        setSelectedSubject(subj);
+        setCustomSubject(subj);
+        resetChapterSelection();
+        setChapterSearch('');
+    };
+
+    const selectCustomSubject = (subj: Subject | 'none') => {
+        setCustomSubject(subj);
+        setSelectedSubject(subj === 'none' ? '' : subj);
+    };
+
+    const changeTaskType = (newType: TaskType) => {
+        if (newType === taskType) return;
+        if (newType === 'custom' && selectedSubject && customSubject === 'none') {
+            setCustomSubject(selectedSubject);
+        } else if (newType === 'chapter' && customSubject !== 'none' && !selectedSubject) {
+            setSelectedSubject(customSubject);
+        }
+        setTaskType(newType);
+    };
+
+    const resolveSubject = (): Subject | undefined => {
+        if (customSubject !== 'none') return customSubject;
+        if (selectedSubject) return selectedSubject as Subject;
+        return undefined;
+    };
+
     return {
-        taskType, setTaskType,
+        taskType, setTaskType, changeTaskType,
         date, setDate,
         time, setTime,
         customTitle, setCustomTitle,
-        customSubject, setCustomSubject,
-        selectedSubject, setSelectedSubject,
+        customSubject, setCustomSubject, selectCustomSubject,
+        selectedSubject, setSelectedSubject, selectChapterSubject,
         selectedChapterSerial, setSelectedChapterSerial,
         selectedMaterial, setSelectedMaterial,
         chapterSearch, setChapterSearch,
         filteredChapters,
         availableMaterials,
         isSaveDisabled,
-        resetChapterSelection
+        resetChapterSelection,
+        resolveSubject,
     };
 }

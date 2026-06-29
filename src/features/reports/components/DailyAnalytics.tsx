@@ -276,14 +276,16 @@ export const DailyAnalytics: React.FC = () => {
             materials: Set<string>;
         }> = {};
         daySessions.forEach(s => {
-            if (!s.chapterName || !s.subject) return;
-            const key = `${s.subject}-${s.chapterName}`;
+            if (!s.subject) return;
+            const name = s.chapterName?.trim() || s.title?.trim();
+            if (!name) return;
+            const key = `${s.subject}-${name}`;
             if (!map[key]) {
                 map[key] = {
-                    name: s.chapterName,
+                    name,
                     subject: s.subject,
                     duration: 0,
-                    materials: new Set()
+                    materials: new Set(),
                 };
             }
             map[key].duration += s.duration;
