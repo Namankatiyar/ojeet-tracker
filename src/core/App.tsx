@@ -18,6 +18,7 @@ import { useProfileSync } from '../features/community/hooks/useProfileSync';
 
 import { AppRoutes } from './AppRoutes';
 import { ChatDrawer } from '../features/chat/components/ChatDrawer';
+import { MusicPlayerDrawer } from '../features/music/components/MusicPlayerDrawer';
 
 type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject;
 
@@ -144,6 +145,7 @@ function AppContent() {
                 onClose={() => setIsDiscordModalOpen(false)}
             />
             {enableAIAgent && <ChatDrawer />}
+            <MusicPlayerDrawer />
         </div>
     );
 }
