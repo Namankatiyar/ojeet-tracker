@@ -33,7 +33,7 @@ function AppContent() {
 
     const {
         setPlannerTasks, studySessions, mockScores, primaryExamDate, disableAutoShift, setDisableAutoShift,
-        enableAIAgent, setEnableAIAgent,
+        enableAIAgent, setEnableAIAgent, enableMusicPlayer, setEnableMusicPlayer,
         physicsProgress, chemistryProgress, mathsProgress, progressCardSettings, setProgressCardSettings
     } = useUserProgress();
 
@@ -114,6 +114,8 @@ function AppContent() {
                 onDisableAutoShiftChange={setDisableAutoShift}
                 enableAIAgent={enableAIAgent}
                 onEnableAIAgentChange={setEnableAIAgent}
+                enableMusicPlayer={enableMusicPlayer}
+                onEnableMusicPlayerChange={setEnableMusicPlayer}
                 backgroundUrl={backgroundUrl}
                 onBackgroundUrlChange={setBackgroundUrl}
                 dimLevel={dimLevel}
@@ -145,7 +147,7 @@ function AppContent() {
                 onClose={() => setIsDiscordModalOpen(false)}
             />
             {enableAIAgent && <ChatDrawer />}
-            <MusicPlayerDrawer />
+            {enableMusicPlayer && <MusicPlayerDrawer />}
         </div>
     );
 }

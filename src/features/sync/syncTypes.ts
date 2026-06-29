@@ -29,6 +29,7 @@ export interface SyncPayloadV1 {
         settings: {
             disableAutoShift: boolean;
             enableAIAgent?: boolean;
+            enableMusicPlayer?: boolean;
             progressCardSettings: SyncedProgressCardSettings;
             mockExamPresets: MockExamPreset[];
         };
@@ -48,6 +49,7 @@ export interface SyncPayloadInput {
     examDates: ExamEntry[];
     disableAutoShift: boolean;
     enableAIAgent?: boolean;
+    enableMusicPlayer?: boolean;
     progressCardSettings: ProgressCardSettings;
     mockExamPresets: MockExamPreset[];
     appVersion?: string;

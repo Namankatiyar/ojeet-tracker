@@ -24,6 +24,8 @@ interface UserProgressContextType {
     setDisableAutoShift: (disable: boolean | ((prev: boolean) => boolean)) => void;
     enableAIAgent: boolean;
     setEnableAIAgent: (enable: boolean | ((prev: boolean) => boolean)) => void;
+    enableMusicPlayer: boolean;
+    setEnableMusicPlayer: (enable: boolean | ((prev: boolean) => boolean)) => void;
     progressCardSettings: ProgressCardSettings;
     setProgressCardSettings: (settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)) => void;
     dailyQuestionLogs: Record<string, number>;
@@ -180,6 +182,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const primaryExamDate = examDates.find(e => e.isPrimary)?.date ?? examDates[0]?.date ?? '';
     const [disableAutoShift, setDisableAutoShift] = useLocalStorage<boolean>('jee-tracker-disable-auto-shift', false);
     const [enableAIAgent, setEnableAIAgent] = useLocalStorage<boolean>('jee-tracker-enable-ai-agent', true);
+    const [enableMusicPlayer, setEnableMusicPlayer] = useLocalStorage<boolean>('jee-tracker-enable-music-player', true);
     const [progressCardSettings, setProgressCardSettings] = useLocalStorage<ProgressCardSettings>('jee-tracker-progress-card', {
         userName: '',
         customAvatarUrl: '',
@@ -693,6 +696,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             progress, setProgress, plannerTasks, setPlannerTasks, studySessions, setStudySessions,
             mockScores, setMockScores, examDates, setExamDates, primaryExamDate, disableAutoShift, setDisableAutoShift,
             enableAIAgent, setEnableAIAgent,
+            enableMusicPlayer, setEnableMusicPlayer,
             progressCardSettings, setProgressCardSettings, dailyQuestionLogs, setDailyQuestionLogs,
             physicsProgress, chemistryProgress, mathsProgress, overallProgress, calculateSubjectProgress,
             handleToggleMaterial, handleSetPriority, handleUpdateChapterDetail, handleAddPlannerTask, handleTogglePlannerTask,

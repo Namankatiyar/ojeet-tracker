@@ -19,6 +19,9 @@ interface SettingsModalProps {
     // AI Agent
     enableAIAgent: boolean;
     onEnableAIAgentChange: (value: boolean) => void;
+    // Music Player
+    enableMusicPlayer: boolean;
+    onEnableMusicPlayerChange: (value: boolean) => void;
     // Background
     backgroundUrl: string;
     onBackgroundUrlChange: (url: string) => void;
@@ -94,6 +97,8 @@ export function SettingsModal({
     onDisableAutoShiftChange,
     enableAIAgent,
     onEnableAIAgentChange,
+    enableMusicPlayer,
+    onEnableMusicPlayerChange,
     backgroundUrl,
     onBackgroundUrlChange,
     dimLevel,
@@ -440,6 +445,20 @@ export function SettingsModal({
                                     type="checkbox"
                                     checked={enableAIAgent}
                                     onChange={(e) => onEnableAIAgentChange(e.target.checked)}
+                                />
+                                <span className="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div className="settings-row" style={{ marginTop: 'var(--space-4)' }}>
+                            <div className="setting-info">
+                                <span className="setting-label">Enable Music Player</span>
+                                <span className="setting-description">Show the music player button in the bottom right corner</span>
+                            </div>
+                            <label className="toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    checked={enableMusicPlayer}
+                                    onChange={(e) => onEnableMusicPlayerChange(e.target.checked)}
                                 />
                                 <span className="toggle-slider"></span>
                             </label>

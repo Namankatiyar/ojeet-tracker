@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1782596066.623348,
-    "ast_hash": "570bd2fe0ae789d3729fb67831d263fc",
+    "mtime": 1782756233.2333896,
+    "ast_hash": "e8279b567a8dec2cf704918ae29b0269",
     "semantic_hash": ""
   },
   "public/data/chemistry.json": {
@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "src/core/App.tsx": {
-    "mtime": 1782596066.6263483,
-    "ast_hash": "888233f4aa09abe969eab4dfc613f2d6",
+    "mtime": 1782760285.022539,
+    "ast_hash": "eabc6dc3f2e5b0d9c06a63928d79a47c",
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "src/core/context/RemoteSyncContext.tsx": {
-    "mtime": 1782753868.2368393,
-    "ast_hash": "52c17fde9873cdd05dbb9e8ed5c86939",
+    "mtime": 1782760276.5602314,
+    "ast_hash": "329830a5b5265a03f2978d23e5c6b520",
     "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1782752145.7818165,
-    "ast_hash": "cd9f579965f3333ef0d2edebc94fb350",
+    "mtime": 1782760264.7858036,
+    "ast_hash": "a9c855fa3c025813202e175dd3a4e502",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useFriends.ts": {
-    "mtime": 1782406386.5006163,
-    "ast_hash": "96b85bdbb6df70bb7d8ab675f3a05262",
+    "mtime": 1782754420.9072225,
+    "ast_hash": "0d91ee5150751743bcc0b5761096ae0f",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/components/StudyClock.tsx": {
-    "mtime": 1782751099.8271012,
-    "ast_hash": "4e2017807c763c18bbd7e5dc0301e072",
+    "mtime": 1782760136.633166,
+    "ast_hash": "ac47cfe92a28b556ca8f780ea177b56a",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Timer/ModeSelector.tsx": {
@@ -495,8 +495,8 @@
     "semantic_hash": ""
   },
   "src/features/sync/syncLocalStorage.ts": {
-    "mtime": 1782753849.4503672,
-    "ast_hash": "a249d1025410297625189d6a5d5423de",
+    "mtime": 1782760273.1861088,
+    "ast_hash": "ad8c8d9a41e580ec66da3bd889640c02",
     "semantic_hash": ""
   },
   "src/features/sync/syncMerge.test.ts": {
@@ -515,13 +515,13 @@
     "semantic_hash": ""
   },
   "src/features/sync/syncPayload.ts": {
-    "mtime": 1782753839.7971241,
-    "ast_hash": "814def6cbf1781db8b772641731a3242",
+    "mtime": 1782760270.387007,
+    "ast_hash": "147b7cbec868006b4f5301531ed53252",
     "semantic_hash": ""
   },
   "src/features/sync/syncTypes.ts": {
-    "mtime": 1782753828.7118444,
-    "ast_hash": "39982cd3fccd916e8435944ce54083a3",
+    "mtime": 1782760267.9119172,
+    "ast_hash": "42ec30342d7a1d9d33cf9fe7a2adb8b4",
     "semantic_hash": ""
   },
   "src/main.tsx": {
@@ -545,8 +545,8 @@
     "semantic_hash": ""
   },
   "src/shared/components/layout/Header.tsx": {
-    "mtime": 1782596066.629371,
-    "ast_hash": "decd456863dd7c89435dbdf47bcb737a",
+    "mtime": 1782760288.34966,
+    "ast_hash": "ac7aa07c4522c9df25dfc7ced936606a",
     "semantic_hash": ""
   },
   "src/shared/components/ui/Avatar.tsx": {
@@ -630,13 +630,13 @@
     "semantic_hash": ""
   },
   "src/shared/components/ui/SettingsModal.test.tsx": {
-    "mtime": 1782596066.629371,
-    "ast_hash": "836ed11daff912ca7382e99fb3042413",
+    "mtime": 1782760419.2834353,
+    "ast_hash": "78167968c92650b6fd21e139882a56f5",
     "semantic_hash": ""
   },
   "src/shared/components/ui/SettingsModal.tsx": {
-    "mtime": 1782730250.4141889,
-    "ast_hash": "18a8f8cf715b081881af2b554cf059e2",
+    "mtime": 1782760296.983974,
+    "ast_hash": "917b5521c716679f55fb601a66a03ad3",
     "semantic_hash": ""
   },
   "src/shared/components/ui/TimePicker.tsx": {
@@ -947,6 +947,11 @@
   "public/musicBot.png": {
     "mtime": 1782753290.336236,
     "ast_hash": "16e45b2eaf6ada3f10a1b1418746d878",
+    "semantic_hash": ""
+  },
+  "src/features/music/components/MusicPlayerDrawer.tsx": {
+    "mtime": 1782760241.3949544,
+    "ast_hash": "35bbe1285af2da4b3487b472e068b20f",
     "semantic_hash": ""
   }
 }

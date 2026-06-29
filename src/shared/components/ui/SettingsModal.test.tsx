@@ -78,6 +78,8 @@ describe('SettingsModal', () => {
         onDisableAutoShiftChange: vi.fn(),
         enableAIAgent: true,
         onEnableAIAgentChange: vi.fn(),
+        enableMusicPlayer: true,
+        onEnableMusicPlayerChange: vi.fn(),
         backgroundUrl: '',
         onBackgroundUrlChange: vi.fn(),
         dimLevel: 20,
@@ -128,7 +130,7 @@ describe('SettingsModal', () => {
                 <SettingsModal {...defaultProps} />
             </BrowserRouter>
         );
-        const closeBtn = screen.getByRole('button', { name: '' }).closest('button'); // Lucide X icon button
+        const closeBtn = document.querySelector('.close-btn');
         if (closeBtn) fireEvent.click(closeBtn);
         expect(defaultProps.onClose).toHaveBeenCalled();
     });
@@ -153,6 +155,17 @@ describe('SettingsModal', () => {
         const checkboxes = screen.getAllByRole('checkbox');
         fireEvent.click(checkboxes[1]);
         expect(defaultProps.onEnableAIAgentChange).toHaveBeenCalledWith(false);
+    });
+
+    it('triggers onEnableMusicPlayerChange when toggle is clicked', () => {
+        render(
+            <BrowserRouter>
+                <SettingsModal {...defaultProps} />
+            </BrowserRouter>
+        );
+        const checkboxes = screen.getAllByRole('checkbox');
+        fireEvent.click(checkboxes[2]);
+        expect(defaultProps.onEnableMusicPlayerChange).toHaveBeenCalledWith(false);
     });
 
     it('triggers appearance change handlers on slider input', () => {

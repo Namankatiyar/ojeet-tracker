@@ -241,7 +241,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const { user, isConfigured } = useRemoteAuth();
     const {
         progress, setProgress, plannerTasks, setPlannerTasks, studySessions, setStudySessions, mockScores, setMockScores,
-        examDates, setExamDates, disableAutoShift, setDisableAutoShift, enableAIAgent, setEnableAIAgent, progressCardSettings, setProgressCardSettings, mockExamPresets, setMockExamPresets
+        examDates, setExamDates, disableAutoShift, setDisableAutoShift, enableAIAgent, setEnableAIAgent, enableMusicPlayer, setEnableMusicPlayer, progressCardSettings, setProgressCardSettings, mockExamPresets, setMockExamPresets
     } = useUserProgress();
     const { subjectData, setSubjectData, customColumns, setCustomColumns, excludedColumns, setExcludedColumns, materialOrder, setMaterialOrder } = useSubjectData();
 
@@ -290,6 +290,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         settings: JSON.stringify({
             disableAutoShift,
             enableAIAgent,
+            enableMusicPlayer,
             progressCardSettings: {
                 userName: progressCardSettings.userName,
                 visibleStats: progressCardSettings.visibleStats,
@@ -308,7 +309,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             excludedColumns,
             materialOrder,
         }),
-    }), [progress, plannerTasks, mockScores, examDates, disableAutoShift, enableAIAgent, progressCardSettings, mockExamPresets, subjectData, customColumns, excludedColumns, materialOrder]);
+    }), [progress, plannerTasks, mockScores, examDates, disableAutoShift, enableAIAgent, enableMusicPlayer, progressCardSettings, mockExamPresets, subjectData, customColumns, excludedColumns, materialOrder]);
 
     const clearScheduledSync = useCallback(() => {
         if (scheduledTimerRef.current !== null) {
@@ -328,6 +329,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setDisableAutoShift(payload.domains.settings.disableAutoShift);
         if (payload.domains.settings.enableAIAgent !== undefined) {
             setEnableAIAgent(payload.domains.settings.enableAIAgent);
+        }
+        if (payload.domains.settings.enableMusicPlayer !== undefined) {
+            setEnableMusicPlayer(payload.domains.settings.enableMusicPlayer);
         }
         setProgressCardSettings((prev) => ({
             ...prev,

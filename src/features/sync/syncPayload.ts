@@ -64,6 +64,7 @@ export function buildSyncPayload(input: SyncPayloadInput): SyncPayloadV1 {
             settings: {
                 disableAutoShift: input.disableAutoShift,
                 enableAIAgent: input.enableAIAgent,
+                enableMusicPlayer: input.enableMusicPlayer,
                 progressCardSettings: toSyncedProgressCardSettings(input.progressCardSettings),
                 mockExamPresets: input.mockExamPresets || [],
             },

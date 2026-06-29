@@ -11,9 +11,7 @@ import {
     VolumeX, 
     Plus, 
     Trash2,
-    Music,
-    ListMusic,
-    ChevronDown
+    Music
 } from 'lucide-react';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
