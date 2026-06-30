@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark-glass' | 'dark-solid';
 
 interface ThemeContextType {
   theme: Theme;
@@ -16,6 +16,8 @@ interface ThemeContextType {
   setGlassIntensity: (intensity: number | ((prev: number) => number)) => void;
   glassRefraction: number;
   setGlassRefraction: (refraction: number | ((prev: number) => number)) => void;
+  useGridBackground: boolean;
+  setUseGridBackground: (use: boolean | ((prev: boolean) => boolean)) => void;
   toggleTheme: () => void;
   setSupportOverride: (active: boolean) => void;
 }
@@ -23,13 +25,24 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Use system preference for first load; avoid JS viewport breakpoints.
-  const defaultTheme =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
+  // Read theme from localStorage with migration from 'dark' to 'dark-glass'
+  const getInitialTheme = (): Theme => {
+    if (typeof window === 'undefined') return 'light';
+    try {
+      const stored = window.localStorage.getItem('jee-tracker-theme');
+      if (stored) {
+        let parsed = JSON.parse(stored);
+        if (parsed === 'dark') {
+          parsed = 'dark-glass';
+          window.localStorage.setItem('jee-tracker-theme', JSON.stringify('dark-glass'));
+        }
+        return parsed as Theme;
+      }
+    } catch (e) {}
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark-glass' : 'light';
+  };
 
-  const [theme, setTheme] = useLocalStorage<Theme>('jee-tracker-theme', defaultTheme);
+  const [theme, setTheme] = useLocalStorage<Theme>('jee-tracker-theme', getInitialTheme());
   const [accentColor, setAccentColor] = useLocalStorage<string>('jee-tracker-accent', '#06b6d4');
   const [backgroundUrl, setBackgroundUrl] = useLocalStorage<string>(
     'jee-tracker-background-url',
@@ -44,6 +57,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     'jee-tracker-glass-refraction',
     50
   );
+  const [useGridBackground, setUseGridBackground] = useLocalStorage<boolean>(
+    'jee-tracker-grid-bg',
+    true
+  );
 
   const [supportOverride, setSupportOverride] = useState(false);
 
@@ -52,7 +69,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ? 'https://images.unsplash.com/photo-1755958681554-e0689f85eda0?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
     : backgroundUrl;
 
-  const toggleTheme = () => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  const toggleTheme = () =>
+    setTheme((prev) => {
+      if (prev === 'light') return 'dark-solid';
+      if (prev === 'dark-solid') return 'dark-glass';
+      return 'light';
+    });
 
   // Apply theme
   useLayoutEffect(() => {
@@ -135,15 +157,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Clear direct background inline style from previous implementation
     document.body.style.backgroundImage = '';
 
-    if (effectiveBackgroundUrl && theme === 'dark') {
+    if (theme === 'dark-solid' && useGridBackground) {
+      document.documentElement.style.setProperty('--custom-bg-url', 'none');
+      document.body.classList.remove('has-custom-bg');
+      document.body.classList.add('has-grid-bg');
+    } else if (effectiveBackgroundUrl && (theme === 'dark-glass' || theme === 'dark-solid')) {
       document.documentElement.style.setProperty(
         '--custom-bg-url',
         `url("${effectiveBackgroundUrl}")`
       );
       document.body.classList.add('has-custom-bg');
+      document.body.classList.remove('has-grid-bg');
     } else {
       document.documentElement.style.setProperty('--custom-bg-url', 'none');
       document.body.classList.remove('has-custom-bg');
+      document.body.classList.remove('has-grid-bg');
     }
     document.documentElement.style.setProperty('--dim-level', (dimLevel / 100).toString());
 
@@ -175,7 +203,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       '--glass-refraction',
       `saturate(${saturation}%) brightness(${brightness}%) hue-rotate(${hueRotate}deg)`
     );
-  }, [effectiveBackgroundUrl, theme, dimLevel, glassIntensity, glassRefraction]);
+  }, [effectiveBackgroundUrl, theme, useGridBackground, dimLevel, glassIntensity, glassRefraction]);
 
   return (
     <ThemeContext.Provider
@@ -192,6 +220,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setGlassIntensity,
         glassRefraction,
         setGlassRefraction,
+        useGridBackground,
+        setUseGridBackground,
         toggleTheme,
         setSupportOverride,
       }}

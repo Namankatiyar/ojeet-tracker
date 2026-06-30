@@ -19,7 +19,7 @@
   box-shadow: var(--shadow-lg);
 }
 
-[data-theme='dark'] .import-sync-card {
+[data-theme^='dark-'] .import-sync-card {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);

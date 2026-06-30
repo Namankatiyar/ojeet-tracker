@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../shared/components/layout/Header';
 import { Footer } from '../shared/components/layout/Footer';
 import { DiscordInviteModal } from '../shared/components/ui/DiscordInviteModal';
+import { ThemeOnboardingModal } from '../shared/components/ui/ThemeOnboardingModal';
 import { Subject } from '../shared/types';
 import { formatDateLocal } from '../shared/utils/date';
 
@@ -28,6 +29,7 @@ function AppContent() {
 
   const {
     theme,
+    setTheme,
     toggleTheme,
     accentColor,
     setAccentColor,
@@ -39,6 +41,8 @@ function AppContent() {
     setGlassIntensity,
     glassRefraction,
     setGlassRefraction,
+    useGridBackground,
+    setUseGridBackground,
   } = useTheme();
 
   const {
@@ -132,9 +136,12 @@ function AppContent() {
         currentView={currentView}
         onNavigate={handleNavigate}
         theme={theme}
+        onThemeChange={setTheme}
         onThemeToggle={toggleTheme}
         accentColor={accentColor}
         onAccentChange={setAccentColor}
+        useGridBackground={useGridBackground}
+        onUseGridBackgroundChange={setUseGridBackground}
         disableAutoShift={disableAutoShift}
         onDisableAutoShiftChange={setDisableAutoShift}
         enableAIAgent={enableAIAgent}
@@ -171,6 +178,7 @@ function AppContent() {
         isOpen={isDiscordModalOpen}
         onClose={() => setIsDiscordModalOpen(false)}
       />
+      <ThemeOnboardingModal />
       {enableAIAgent && <ChatDrawer />}
       {enableMusicPlayer && <MusicPlayerDrawer />}
     </div>

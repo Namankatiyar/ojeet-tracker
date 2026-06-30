@@ -841,7 +841,7 @@
   animation: fadeIn 0.2s ease;
 }
 
-html[data-theme='dark'] .distribution-modal-overlay {
+html[data-theme^='dark-'] .distribution-modal-overlay {
   background: color-mix(in srgb, var(--bg-base), transparent 40%);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -862,7 +862,7 @@ html[data-theme='dark'] .distribution-modal-overlay {
   scrollbar-color: var(--border) transparent;
 }
 
-html[data-theme='dark'] .distribution-modal {
+html[data-theme^='dark-'] .distribution-modal {
   background: var(--panel-bg);
   border-color: var(--panel-border);
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);

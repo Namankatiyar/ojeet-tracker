@@ -74,6 +74,8 @@ describe('SettingsModal', () => {
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),
+    theme: 'light' as const,
+    onThemeChange: vi.fn(),
     disableAutoShift: false,
     onDisableAutoShiftChange: vi.fn(),
     enableAIAgent: true,
@@ -82,6 +84,8 @@ describe('SettingsModal', () => {
     onEnableMusicPlayerChange: vi.fn(),
     backgroundUrl: '',
     onBackgroundUrlChange: vi.fn(),
+    useGridBackground: true,
+    onUseGridBackgroundChange: vi.fn(),
     dimLevel: 20,
     onDimLevelChange: vi.fn(),
     glassIntensity: 50,
@@ -166,6 +170,22 @@ describe('SettingsModal', () => {
     const checkboxes = screen.getAllByRole('checkbox');
     fireEvent.click(checkboxes[2]);
     expect(defaultProps.onEnableMusicPlayerChange).toHaveBeenCalledWith(false);
+  });
+
+  it('triggers onThemeChange when theme buttons are clicked', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+
+    const solidBtn = screen.getByText('Dark (Solid)');
+    fireEvent.click(solidBtn);
+    expect(defaultProps.onThemeChange).toHaveBeenCalledWith('dark-solid');
+
+    const glassBtn = screen.getByText('Dark (Glass)');
+    fireEvent.click(glassBtn);
+    expect(defaultProps.onThemeChange).toHaveBeenCalledWith('dark-glass');
   });
 
   it('triggers appearance change handlers on slider input', () => {

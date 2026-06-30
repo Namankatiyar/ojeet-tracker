@@ -193,7 +193,7 @@
       transform var(--transition-fast);
   }
 
-  html[data-theme='dark'] .invite-copy-btn {
+  html[data-theme^='dark-'] .invite-copy-btn {
     background: var(--accent);
     color: var(--accent-text);
   }
@@ -341,16 +341,16 @@
   }
 
   /* Override dark mode translucency for skeleton CTA button to keep it vibrant */
-  html[data-theme='dark'] .skeleton-cta-btn,
-  [data-theme='dark'] .skeleton-cta-btn {
+  html[data-theme^='dark-'] .skeleton-cta-btn,
+  [data-theme^='dark-'] .skeleton-cta-btn {
     background: var(--accent);
     color: var(--accent-text);
     border-color: var(--accent-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
-  html[data-theme='dark'] .skeleton-cta-btn:hover:not(:disabled),
-  [data-theme='dark'] .skeleton-cta-btn:hover:not(:disabled) {
+  html[data-theme^='dark-'] .skeleton-cta-btn:hover:not(:disabled),
+  [data-theme^='dark-'] .skeleton-cta-btn:hover:not(:disabled) {
     background: var(--accent-hover);
     color: var(--accent-text);
     border-color: var(--accent-hover);

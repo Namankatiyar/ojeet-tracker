@@ -623,9 +623,9 @@
 
 /* Highly specific overrides to completely strip global styles from ui.css */
 textarea.chat-textarea,
-[data-theme='dark'] textarea.chat-textarea,
+[data-theme^='dark-'] textarea.chat-textarea,
 textarea.chat-textarea:focus,
-[data-theme='dark'] textarea.chat-textarea:focus {
+[data-theme^='dark-'] textarea.chat-textarea:focus {
   background: transparent;
   border: none;
   box-shadow: none;

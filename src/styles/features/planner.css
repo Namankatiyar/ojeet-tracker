@@ -155,7 +155,7 @@
   min-height: 250px;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   transition: all 0.2s ease;
 }
@@ -1713,14 +1713,14 @@
 }
 
 /* Neuter the global dark-mode input override for segment inputs */
-[data-theme='dark'] .time-segment-input {
+[data-theme^='dark-'] .time-segment-input {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
 
-[data-theme='dark'] .time-segment-input:focus {
+[data-theme^='dark-'] .time-segment-input:focus {
   border-color: transparent !important;
   box-shadow: none !important;
 }
@@ -2012,87 +2012,87 @@
 }
 
 /* Light Mode Overrides */
-:root:not([data-theme='dark']) .modal-content .type-btn,
+:root:not([data-theme^='dark-']) .modal-content .type-btn,
 [data-theme='light'] .modal-content .type-btn {
   border: 1px solid var(--border);
   background: var(--bg-tertiary);
 }
 
-:root:not([data-theme='dark']) .subject-option,
+:root:not([data-theme^='dark-']) .subject-option,
 [data-theme='light'] .subject-option {
   border: 1px solid var(--border);
   background: var(--bg-tertiary);
 }
 
-:root:not([data-theme='dark']) .large-input,
+:root:not([data-theme^='dark-']) .large-input,
 [data-theme='light'] .large-input {
   border: 1px solid var(--border);
   background: var(--bg-tertiary);
 }
 
-:root:not([data-theme='dark']) .material-pill,
+:root:not([data-theme^='dark-']) .material-pill,
 [data-theme='light'] .material-pill {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
 }
 
 /* Light mode time picker */
-:root:not([data-theme='dark']) .time-display-box,
+:root:not([data-theme^='dark-']) .time-display-box,
 [data-theme='light'] .time-display-box {
   background: var(--bg-tertiary);
   border: 1.5px solid var(--border);
 }
 
-:root:not([data-theme='dark']) .time-display-box:hover,
+:root:not([data-theme^='dark-']) .time-display-box:hover,
 [data-theme='light'] .time-display-box:hover {
   border-color: var(--border-hover);
   background: var(--bg-secondary);
 }
 
-:root:not([data-theme='dark']) .time-display-box.active,
+:root:not([data-theme^='dark-']) .time-display-box.active,
 [data-theme='light'] .time-display-box.active {
   background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 90%);
 }
 
-:root:not([data-theme='dark']) .custom-time-picker,
+:root:not([data-theme^='dark-']) .custom-time-picker,
 [data-theme='light'] .custom-time-picker {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-:root:not([data-theme='dark']) .time-btn,
+:root:not([data-theme^='dark-']) .time-btn,
 [data-theme='light'] .time-btn {
   color: var(--text-secondary);
 }
 
-:root:not([data-theme='dark']) .time-btn:hover,
+:root:not([data-theme^='dark-']) .time-btn:hover,
 [data-theme='light'] .time-btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
-:root:not([data-theme='dark']) .period-btn,
+:root:not([data-theme^='dark-']) .period-btn,
 [data-theme='light'] .period-btn {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
 }
 
-:root:not([data-theme='dark']) .period-btn:hover,
+:root:not([data-theme^='dark-']) .period-btn:hover,
 [data-theme='light'] .period-btn:hover {
   background: var(--bg-primary);
   border-color: var(--border-hover);
 }
 
 /* Light mode: neuter the global input override for segment inputs */
-:root:not([data-theme='dark']) .time-segment-input,
+:root:not([data-theme^='dark-']) .time-segment-input,
 [data-theme='light'] .time-segment-input {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
 }
 
-:root:not([data-theme='dark']) .time-segment-input:focus,
+:root:not([data-theme^='dark-']) .time-segment-input:focus,
 [data-theme='light'] .time-segment-input:focus {
   border-color: transparent !important;
   box-shadow: none !important;
@@ -2101,14 +2101,14 @@
 }
 
 /* Light mode period badge */
-:root:not([data-theme='dark']) .period-badge.am,
+:root:not([data-theme^='dark-']) .period-badge.am,
 [data-theme='light'] .period-badge.am {
   color: color-mix(in srgb, var(--accent), var(--text-primary) 18%);
   background: color-mix(in srgb, var(--accent), transparent 92%);
   border-color: color-mix(in srgb, var(--accent), transparent 70%);
 }
 
-:root:not([data-theme='dark']) .period-badge.pm,
+:root:not([data-theme^='dark-']) .period-badge.pm,
 [data-theme='light'] .period-badge.pm {
   background: color-mix(in srgb, var(--accent), transparent 88%);
 }
