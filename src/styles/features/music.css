@@ -316,46 +316,42 @@
         min-width: 0;
     }
 
-    /* ── Equalizer Bars ────────────────────────────────────────────── */
-    .music-now-playing-eq,
-    .music-track-eq {
+    /* ── Fluid Waveform ────────────────────────────────────────────── */
+    .music-waveform {
         display: flex;
         align-items: flex-end;
-        gap: 2px;
-        flex-shrink: 0;
-    }
-
-    .music-now-playing-eq {
+        gap: 1px;
         height: var(--space-5);
+        width: 32px;
+        flex-shrink: 0;
+        box-sizing: border-box;
     }
 
-    .music-track-eq {
+    .music-waveform--small {
         height: var(--space-4);
+        width: 22px;
     }
 
-    .music-eq-bar {
-        width: 3px;
-        border-radius: var(--radius-xs);
-        background: var(--accent);
-        animation: music-eq-bounce 1s ease-in-out infinite;
+    .music-waveform-bar {
+        flex: 1;
+        height: 100%;
+        background: linear-gradient(to top, var(--accent-hover), var(--accent));
+        border-radius: var(--radius-full);
+        transform-origin: bottom;
+        animation: fluid-wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        animation-delay: calc(var(--bar-idx) * -0.12s);
     }
 
-    .music-track-eq .music-eq-bar {
-        width: 2px;
+    @keyframes fluid-wave {
+        0%, 100% {
+            transform: scaleY(0.15);
+        }
+        50% {
+            transform: scaleY(1);
+        }
     }
 
-    .music-eq-bar:nth-child(1) { height: 40%; animation-delay: 0s; }
-    .music-eq-bar:nth-child(2) { height: 70%; animation-delay: 0.15s; }
-    .music-eq-bar:nth-child(3) { height: 50%; animation-delay: 0.3s; }
-    .music-eq-bar:nth-child(4) { height: 80%; animation-delay: 0.45s; }
-
-    @keyframes music-eq-bounce {
-        0%, 100% { transform: scaleY(0.3); }
-        50% { transform: scaleY(1); }
-    }
-
-    .music-now-playing-eq--paused .music-eq-bar,
-    .music-track-eq--paused .music-eq-bar {
+    .music-waveform--paused .music-waveform-bar {
         animation-play-state: paused;
     }
 
@@ -401,7 +397,7 @@
     }
 
     .music-add-track-collapse--open {
-        max-height: 120px;
+        max-height: 280px;
         opacity: 1;
     }
 
@@ -445,6 +441,76 @@
 
     .music-add-track-inner input::placeholder {
         color: var(--text-muted);
+    }
+    
+    .music-add-track-divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: var(--space-1) 0;
+    }
+    
+    .music-add-track-divider::before,
+    .music-add-track-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .music-add-track-divider span {
+        padding: 0 var(--space-2);
+    }
+
+    .music-local-upload-zone {
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-tertiary);
+        transition: border-color var(--transition-fast), background var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .music-local-upload-zone:hover {
+        border-color: var(--accent);
+        background: var(--accent-light);
+    }
+
+    .music-local-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-4);
+        width: 100%;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        text-align: center;
+    }
+    
+    .music-local-upload-label:hover {
+        color: var(--accent);
+    }
+
+    .music-upload-hint {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        font-weight: 400;
+    }
+    
+    .music-spinner {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
 
     /* ── Track List ─────────────────────────────────────────────────── */

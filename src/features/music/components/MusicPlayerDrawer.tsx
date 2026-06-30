@@ -11,17 +11,23 @@ import {
     VolumeX, 
     Plus, 
     Trash2,
-    Music
+    Music,
+    Upload,
+    HardDrive,
+    Loader2
 } from 'lucide-react';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
+import { saveAudioFile, getAudioFile, deleteAudioFile } from '../utils/audioStorage';
 
 // ── Types ────────────────────────────────────────────────────────
 interface Track {
     id: string;
     title: string;
     url: string;
-    type: 'youtube' | 'spotify' | 'other';
+    type: 'youtube' | 'spotify' | 'other' | 'local';
+    fileName?: string;
+    fileSize?: number;
 }
 
 interface Playlist {
@@ -57,20 +63,24 @@ function SourceIcon({ type }: { type: Track['type'] }) {
     if (type === 'spotify') {
         return <img className="music-source-icon" src="/spotify.png" alt="Spotify" />;
     }
+    if (type === 'local') {
+        return <HardDrive size={14} className="music-source-icon-fallback" />;
+    }
     return <Music size={14} className="music-source-icon-fallback" />;
 }
 
-/** Tiny equalizer bars component */
-function EqBars({ paused, small }: { paused?: boolean; small?: boolean }) {
-    const className = small
-        ? `music-track-eq ${paused ? 'music-track-eq--paused' : ''}`
-        : `music-now-playing-eq ${paused ? 'music-now-playing-eq--paused' : ''}`;
+/** Fluid waveform animation component */
+function FluidWaveform({ paused, small }: { paused?: boolean; small?: boolean }) {
+    const barCount = small ? 8 : 12;
     return (
-        <div className={className}>
-            <div className="music-eq-bar" />
-            <div className="music-eq-bar" />
-            <div className="music-eq-bar" />
-            <div className="music-eq-bar" />
+        <div className={`music-waveform ${paused ? 'music-waveform--paused' : ''} ${small ? 'music-waveform--small' : ''}`}>
+            {Array.from({ length: barCount }).map((_, idx) => (
+                <span 
+                    key={idx} 
+                    className="music-waveform-bar" 
+                    style={{ '--bar-idx': idx } as React.CSSProperties} 
+                />
+            ))}
         </div>
     );
 }
@@ -90,6 +100,7 @@ export function MusicPlayerDrawer() {
     const [newTrackTitle, setNewTrackTitle] = useState('');
     const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
     const [showAddTrack, setShowAddTrack] = useState(false);
+    const [isSavingLocal, setIsSavingLocal] = useState(false);
 
     // Player state
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
@@ -98,6 +109,7 @@ export function MusicPlayerDrawer() {
     const [muted, setMuted] = useState(false);
     const [loop, setLoop] = useState(false);
     const [showSpotifyEmbed, setShowSpotifyEmbed] = useState(true);
+    const [localObjectUrl, setLocalObjectUrl] = useState<string | null>(null);
 
     // Refs
     const createInputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +162,37 @@ export function MusicPlayerDrawer() {
         setShowSpotifyEmbed(true);
     }, [currentTrackIndex, activePlaylistId]);
 
+    // Handle local track playback URL
+    useEffect(() => {
+        if (!currentTrack || currentTrack.type !== 'local') {
+            setLocalObjectUrl(null);
+            return;
+        }
+        
+        let isActive = true;
+        
+        getAudioFile(currentTrack.id).then((blob) => {
+            if (!isActive || !blob) return;
+            const url = URL.createObjectURL(blob);
+            setLocalObjectUrl(url);
+        }).catch(err => {
+            console.error('Failed to load local track:', err);
+        });
+        
+        return () => {
+            isActive = false;
+        };
+    }, [currentTrack]);
+
+    // Revoke object URL when it changes or unmounts
+    useEffect(() => {
+        return () => {
+            if (localObjectUrl) {
+                URL.revokeObjectURL(localObjectUrl);
+            }
+        };
+    }, [localObjectUrl]);
+
     // ── Playlist Management ──────────────────────────────────────
     const handleAddPlaylist = () => {
         if (!newPlaylistName.trim()) return;
@@ -167,6 +210,14 @@ export function MusicPlayerDrawer() {
 
     const handleDeletePlaylist = () => {
         if (playlists.length <= 1) return;
+        
+        // Cleanup local storage for tracks in this playlist
+        activePlaylist.tracks.forEach(t => {
+            if (t.type === 'local') {
+                deleteAudioFile(t.id).catch(console.error);
+            }
+        });
+        
         setPlaylists(prev => prev.filter(p => p.id !== activePlaylistId));
         setActivePlaylistId(playlists[0].id);
         setCurrentTrackIndex(0);
@@ -199,6 +250,12 @@ export function MusicPlayerDrawer() {
 
     const handleDeleteTrack = (trackId: string, e: React.MouseEvent) => {
         e.stopPropagation();
+        
+        const trackToDelete = activePlaylist.tracks.find(t => t.id === trackId);
+        if (trackToDelete?.type === 'local') {
+            deleteAudioFile(trackId).catch(console.error);
+        }
+        
         setPlaylists(prev => prev.map(p => {
             if (p.id === activePlaylist.id) {
                 return { ...p, tracks: p.tracks.filter(t => t.id !== trackId) };
@@ -210,6 +267,61 @@ export function MusicPlayerDrawer() {
             setPlaying(false);
         } else if (deletedIndex < currentTrackIndex) {
             setCurrentTrackIndex(prev => prev - 1);
+        }
+    };
+
+    const handleFileDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+            await handleAddLocalFile(file);
+        }
+    };
+    
+    const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            await handleAddLocalFile(file);
+        }
+    };
+    
+    const handleAddLocalFile = async (file: File) => {
+        if (!file.type.startsWith('audio/')) {
+            alert('Please select an audio file.');
+            return;
+        }
+        
+        setIsSavingLocal(true);
+        const trackId = Date.now().toString();
+        try {
+            await saveAudioFile(trackId, file);
+            
+            const newTrack: Track = {
+                id: trackId,
+                title: file.name.replace(/\.[^/.]+$/, ""),
+                url: trackId,
+                type: 'local',
+                fileName: file.name,
+                fileSize: file.size
+            };
+            
+            setPlaylists(prev => prev.map(p => {
+                if (p.id === activePlaylist.id) {
+                    return { ...p, tracks: [...p.tracks, newTrack] };
+                }
+                return p;
+            }));
+            
+            setShowAddTrack(false);
+        } catch (error) {
+            console.error('Error saving local file:', error);
+            if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                alert('Storage quota exceeded. Please free up some space or remove older tracks.');
+            } else {
+                alert('Failed to save audio file to local storage.');
+            }
+        } finally {
+            setIsSavingLocal(false);
         }
     };
 
@@ -266,7 +378,7 @@ export function MusicPlayerDrawer() {
             {/* Hidden ReactPlayer for audio streams */}
             {currentTrack && !isSpotify && (
                 <ReactPlayer
-                    src={currentTrack.url}
+                    src={currentTrack.type === 'local' ? (localObjectUrl || undefined) : currentTrack.url}
                     playing={playing}
                     volume={volume}
                     muted={muted}
@@ -360,7 +472,7 @@ export function MusicPlayerDrawer() {
                 {/* ─── Now Playing (compact row) ──────────────────── */}
                 {currentTrack && (
                     <div className="music-now-playing">
-                        <EqBars paused={!playing} small />
+                        <FluidWaveform paused={!playing} small />
                         <span className="music-now-playing-title">{currentTrack.title}</span>
                         <SourceIcon type={currentTrack.type} />
                     </div>
@@ -407,6 +519,38 @@ export function MusicPlayerDrawer() {
                                 Add
                             </button>
                         </div>
+                        
+                        <div className="music-add-track-divider">
+                            <span>or</span>
+                        </div>
+                        
+                        <div 
+                            className="music-local-upload-zone"
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={handleFileDrop}
+                        >
+                            <input 
+                                type="file" 
+                                accept="audio/*" 
+                                id="music-local-upload" 
+                                onChange={handleFileInput} 
+                                style={{ display: 'none' }} 
+                            />
+                            <label htmlFor="music-local-upload" className="music-local-upload-label">
+                                {isSavingLocal ? (
+                                    <>
+                                        <Loader2 size={16} className="music-spinner" />
+                                        <span>Saving to device...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload size={16} />
+                                        <span>Click or drag audio file here</span>
+                                        <span className="music-upload-hint">Works offline</span>
+                                    </>
+                                )}
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -436,7 +580,7 @@ export function MusicPlayerDrawer() {
                                 >
                                     <span className="music-track-number">
                                         {isActive && playing ? (
-                                            <EqBars small />
+                                            <FluidWaveform small />
                                         ) : (
                                             idx + 1
                                         )}
