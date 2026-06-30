@@ -54,9 +54,9 @@
 ### `study_session_log`
 - **Purpose:** Granular log of study actions for analytics.
 - **Primary key:** `id`
-- **Important columns:** `user_id`, `session_id`, `action`, `payload`, `created_at`
+- **Important columns:** `user_id`, `client_id`, `session_id`, `action`, `payload`, `created_at`
 - **RLS:** Users can insert and read their own logs. Updates and deletes are disabled (`qual: false`).
-- **Constraints:** Enforces uniqueness on `(user_id, session_id)` to prevent duplicates, and limits payload duration via a `CHECK` constraint (max 24 hours).
+- **Constraints:** `action` is constrained to `'INSERT'` or `'DELETE'` via a CHECK. There is **no unique constraint on `(user_id, session_id)`** — duplicate prevention is handled client-side. There is no payload duration CHECK constraint.
 
 ### `user_data_blobs`
 - **Purpose:** Stores individual larger blobs of unstructured user data or backups.
@@ -66,7 +66,7 @@
 
 ### `peer_relationships` & `peer_visibility_settings` & `live_activity`[^1]
 - **Purpose:** Manages peer connections and live study visibility.
-- **Foreign keys:** `user_id` maps to `profiles.id`.
+- **Foreign keys:** `peer_relationships` uses two FKs — `user_id_1` and `user_id_2` — both referencing `profiles(id)`. A CHECK constraint enforces `user_id_1 < user_id_2` for canonical ordering. `peer_visibility_settings` and `live_activity` use a single `user_id` FK to `profiles(id)`.
 
 ### Relationship Map
 
@@ -115,11 +115,47 @@ Study timer ends
 
 ## 7. Database Functions, Triggers, RPCs, and Storage
 
-- **`handle_new_user_profile`**: Trigger function to create a row in `profiles` upon new user registration.
-- **`are_users_peers`**[^1]: Legacy RPC/Function previously used for peer visibility (now deprecated for performance).
-- **`before_upsert_user_study_aggregate`**: Trigger that handles pre-processing of analytics JSON before saving.
-- **`trigger_prune_stale_session_logs` & `trigger_prune_orphaned_chunks`**: After-action triggers on `user_sync_state` that automatically clean up old, unnecessary state chunks and logs to prevent database bloat.
-- **`set_updated_at`**: Standard trigger attached to `user_sync_state` and `user_data_blobs` to keep `updated_at` timestamps accurate.
+### Active Triggers (live on tables)
+
+| Trigger Name | Table | Event | Function Called |
+|---|---|---|---|
+| `ensure_invite_code` | `profiles` | BEFORE INSERT | `set_invite_code()` |
+| `trg_profiles_updated_at` | `profiles` | BEFORE UPDATE | `set_updated_at()` |
+| `trg_user_data_blobs_updated_at` | `user_data_blobs` | BEFORE UPDATE | `set_updated_at()` |
+| `trg_user_sync_state_updated_at` | `user_sync_state` | BEFORE UPDATE | `set_updated_at()` |
+| `trg_user_study_aggregate_before_upsert` | `user_study_aggregate` | BEFORE INSERT OR UPDATE | `before_upsert_user_study_aggregate()` |
+
+### Functions / RPCs (public schema)
+
+**Core / Auth:**
+- **`handle_new_user()`**: Creates a row in `auth.users` extensions (companion to profile creation).
+- **`handle_new_user_profile()`**: Creates a row in `profiles` upon new user registration (called by auth trigger).
+- **`set_invite_code()`**: Auto-generates a 4-char `[A-Z0-9]` invite code on profile INSERT.
+- **`set_updated_at()`**: Generic trigger function to stamp `updated_at = now()`.
+- **`set_completed_at()`**: Sets a `completed_at` timestamp field (reserved for future use).
+- **`rls_auto_enable()`**: Utility function to bulk-enable RLS on tables.
+
+**Analytics:**
+- **`before_upsert_user_study_aggregate()`**: Pre-processes analytics JSONB (validates structure, coerces types) before INSERT/UPDATE on `user_study_aggregate`.
+- **`compute_session_duration()`**: Helper for calculating study session duration from log entries.
+- **`merge_video_logs(new_logs jsonb)`**: RPC that merges incoming video watch entries into `video_watch_45d_json`, pruning entries older than 45 days. Called directly by the client.
+- **`prune_all_video_watch_logs()`**: Bulk-prunes all video watch log entries from `user_study_aggregate`.
+- **`prune_video_watch_entries()`**: Prunes individual stale video watch entries.
+
+**Sync / Pruning (invoked as cron jobs, NOT after-action triggers):**
+- **`trigger_prune_stale_session_logs()`**: Callable function that deletes old `study_session_log` rows beyond a retention window.
+- **`trigger_prune_orphaned_chunks()`**: Callable function that deletes `user_sync_chunks` rows not referenced by the current `payload_version`.
+- **`cron_prune_stale_session_logs()`**: Cron-scheduled wrapper that calls `trigger_prune_stale_session_logs()`.
+- **`cron_prune_orphaned_chunks()`**: Cron-scheduled wrapper that calls `trigger_prune_orphaned_chunks()`.
+- **`prune_stale_sync_chunks()`**: Alternative pruning function for sync chunks (overloaded).
+- **`prune_stale_session_logs()`**: Alternative pruning function for session logs.
+
+**Peer System (UI not yet implemented):**[^1]
+- **`are_users_peers(uuid, uuid)`**: Legacy function — returns boolean if two users are connected. Deprecated from RLS policies for performance.
+- **`add_friend_by_invite_code(text)`** / **`send_peer_request_by_invite_code(text)`**: Initiates a peer request via invite code lookup.
+- **`respond_to_peer_request(uuid, text)`**: Accepts or rejects a pending peer request.
+- **`remove_peer(uuid)`** / **`disconnect_peer(uuid)`**: Removes an accepted peer connection.
+- **`get_profile_by_invite_code(text)`**: Returns a user's public profile by their invite code.
 
 ## 8. Mental Model for Developers
 
@@ -165,8 +201,9 @@ Study timer ends
 
 - **API Routes:** None (Thick client architecture)
 - **Supabase Clients:** `src/shared/lib/supabase.ts`
-- **Core Tables:** `profiles`, `user_sync_state`, `user_sync_chunks`, `user_study_aggregate`, `study_session_log`, `live_activity`
-- **Core Triggers:** `handle_new_user_profile`, `trigger_prune_stale_session_logs`, `before_upsert_user_study_aggregate`
+- **Core Tables:** `profiles`, `user_sync_state`, `user_sync_chunks`, `user_study_aggregate`, `study_session_log`, `live_activity`, `peer_relationships`, `peer_visibility_settings`, `user_data_blobs`, `sync_prune_audit_log`, `subjects`, `chapters`
+- **Active DB Triggers:** `ensure_invite_code`, `trg_profiles_updated_at`, `trg_user_data_blobs_updated_at`, `trg_user_sync_state_updated_at`, `trg_user_study_aggregate_before_upsert`
+- **Key RPCs/Functions:** `merge_video_logs`, `handle_new_user_profile`, `set_invite_code`, `before_upsert_user_study_aggregate`, `cron_prune_stale_session_logs`, `cron_prune_orphaned_chunks`, and the full peer system RPC set
 - **Env Vars:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
 ---

@@ -179,8 +179,8 @@ export function useProfileSync() {
         const sendHeartbeat = async (force: boolean = false) => {
             try {
                 const now = Date.now();
-                // Throttle to 5 seconds unless forced by interval
-                if (!force && now - lastHeartbeatSentAtRef.current < 5000) {
+                // Throttle to 15 seconds unless forced by interval
+                if (!force && now - lastHeartbeatSentAtRef.current < 15000) {
                     return;
                 }
 
@@ -205,7 +205,9 @@ export function useProfileSync() {
                             ? timerState.runStartedAtMs - (timerState.accumulatedActiveMs || 0)
                             : (timerState.startTimestamp || null);
                         if (startMs) {
-                            startedAt = new Date(startMs).toISOString();
+                            // Round to nearest second to prevent JS timer drift from causing unnecessary heartbeat updates
+                            const roundedStartMs = Math.round(startMs / 1000) * 1000;
+                            startedAt = new Date(roundedStartMs).toISOString();
                         }
 
                         const rawType = localStorage.getItem('studyClock_taskType');

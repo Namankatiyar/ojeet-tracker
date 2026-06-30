@@ -1,179 +1,271 @@
+# Database Schema Reference
+
+> Auto-reconciled against live Supabase project `immvdbsmzfnbsfuhuknh` on 2026-06-30.
+> All column types, constraints, defaults, foreign keys, and indexes reflect the actual live database.
+
+---
+
 ## Table `profiles`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `id` | `uuid` | Primary |
-| `display_name` | `text` |  Nullable |
-| `avatar_seed` | `text` |  Nullable |
-| `created_at` | `timestamptz` |  |
-| `updated_at` | `timestamptz` |  |
-| `username` | `text` |  Nullable Unique |
-| `avatar_url` | `text` |  Nullable |
-| `banner_url` | `text` |  Nullable |
-| `custom_status` | `text` |  Nullable |
-| `invite_code` | `text` |  Nullable Unique |
-| `streak_count` | `int4` |  |
-| `lifetime_hours` | `numeric` |  |
-| `weekly_hours` | `numeric` |  |
-| `focus_score` | `int4` |  |
-| `discord_tag` | `text` |  Nullable |
-| `grade_status` | `text` |  Nullable |
-| `target_exam` | `text` |  Nullable |
-| `today_study_seconds` | `int4` |  Nullable |
-| `today_questions` | `int4` |  Nullable |
-| `momentum_heatmap` | `jsonb` |  Nullable |
-| `todays_tasks` | `jsonb` |  Nullable |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `id` | `uuid` | NO | — | **Primary Key**; FK → `auth.users(id)` ON DELETE CASCADE |
+| `display_name` | `text` | YES | — | |
+| `avatar_seed` | `text` | YES | — | |
+| `created_at` | `timestamptz` | NO | `now()` | |
+| `updated_at` | `timestamptz` | NO | `now()` | |
+| `username` | `text` | YES | — | Unique |
+| `avatar_url` | `text` | YES | — | |
+| `banner_url` | `text` | YES | — | |
+| `custom_status` | `text` | YES | — | CHECK `char_length(custom_status) <= 100` |
+| `invite_code` | `text` | YES | — | Unique; CHECK `invite_code ~ '^[A-Z0-9]{4}$'` |
+| `streak_count` | `int4` | NO | `0` | |
+| `lifetime_hours` | `numeric` | NO | `0.00` | |
+| `weekly_hours` | `numeric` | NO | `0.00` | |
+| `focus_score` | `int4` | NO | `0` | CHECK `focus_score >= 0 AND focus_score <= 100` |
+| `discord_tag` | `text` | YES | — | |
+| `grade_status` | `text` | YES | — | |
+| `target_exam` | `text` | YES | — | |
+| `today_study_seconds` | `int4` | YES | `0` | |
+| `today_questions` | `int4` | YES | `0` | |
+| `momentum_heatmap` | `jsonb` | YES | `'[]'::jsonb` | |
+| `todays_tasks` | `jsonb` | YES | `'[]'::jsonb` | |
+
+### Indexes
+- `profiles_pkey` — UNIQUE `(id)`
+- `profiles_username_key` — UNIQUE `(username)`
+- `profiles_invite_code_key` — UNIQUE `(invite_code)` *(duplicate of `idx_profiles_invite_code`; candidate for removal)*
+- `idx_profiles_invite_code` — `(invite_code)`
+
+### Triggers
+- `ensure_invite_code` — BEFORE INSERT: auto-generates invite code via `set_invite_code()`
+- `trg_profiles_updated_at` — BEFORE UPDATE: sets `updated_at = now()` via `set_updated_at()`
+
+---
 
 ## Table `subjects`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `id` | `uuid` | Primary |
-| `name` | `text` |  Unique |
-| `display_order` | `int4` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `id` | `uuid` | NO | `gen_random_uuid()` | **Primary Key** |
+| `name` | `text` | NO | — | Unique |
+| `display_order` | `int4` | NO | — | |
+
+### Indexes
+- `subjects_pkey` — UNIQUE `(id)`
+- `subjects_name_key` — UNIQUE `(name)` *(0 scans; candidate for removal)*
+
+---
 
 ## Table `chapters`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `id` | `uuid` | Primary |
-| `subject_id` | `uuid` |  |
-| `seed_serial` | `int4` |  |
-| `name` | `text` |  |
-| `default_order` | `int4` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `id` | `uuid` | NO | `gen_random_uuid()` | **Primary Key** |
+| `subject_id` | `uuid` | NO | — | FK → `subjects(id)` ON DELETE CASCADE |
+| `seed_serial` | `int4` | NO | — | |
+| `name` | `text` | NO | — | |
+| `default_order` | `int4` | NO | — | |
+
+### Indexes
+- `chapters_pkey` — UNIQUE `(id)`
+- `chapters_subject_id_seed_serial_key` — UNIQUE `(subject_id, seed_serial)`
+
+---
 
 ## Table `user_data_blobs`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `id` | `uuid` | Primary |
-| `user_id` | `uuid` |  Unique |
-| `compressed_state` | `text` |  |
-| `created_at` | `timestamptz` |  |
-| `updated_at` | `timestamptz` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `id` | `uuid` | NO | `gen_random_uuid()` | **Primary Key** |
+| `user_id` | `uuid` | NO | — | Unique; FK → `profiles(id)` ON DELETE CASCADE |
+| `compressed_state` | `text` | NO | — | |
+| `created_at` | `timestamptz` | NO | `now()` | |
+| `updated_at` | `timestamptz` | NO | `now()` | |
+
+### Indexes
+- `user_data_blobs_pkey` — UNIQUE `(id)`
+- `user_data_blobs_user_id_key` — UNIQUE `(user_id)`
+
+### Triggers
+- `trg_user_data_blobs_updated_at` — BEFORE UPDATE: sets `updated_at = now()` via `set_updated_at()`
+
+---
 
 ## Table `user_sync_state`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `user_id` | `uuid` | Primary |
-| `payload_inline` | `text` |  Nullable |
-| `payload_storage` | `text` |  |
-| `payload_version` | `int8` |  |
-| `chunk_count` | `int4` |  |
-| `payload_bytes` | `int4` |  |
-| `checksum` | `text` |  |
-| `client_updated_at` | `timestamptz` |  |
-| `app_version` | `text` |  Nullable |
-| `updated_at` | `timestamptz` |  |
-| `exam_mode` | `text` |  Nullable |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `user_id` | `uuid` | NO | — | **Primary Key**; FK → `profiles(id)` ON DELETE CASCADE |
+| `payload_inline` | `text` | YES | — | CHECK `payload_inline IS NULL OR octet_length(payload_inline) <= 524288` |
+| `payload_storage` | `text` | NO | `'inline'` | CHECK `IN ('inline', 'chunked')` |
+| `payload_version` | `int8` | NO | `1` | |
+| `chunk_count` | `int4` | NO | `0` | CHECK `chunk_count >= 0` |
+| `payload_bytes` | `int4` | NO | `0` | CHECK `payload_bytes >= 0` |
+| `checksum` | `text` | NO | `''` | |
+| `client_updated_at` | `timestamptz` | NO | `now()` | |
+| `app_version` | `text` | YES | — | |
+| `updated_at` | `timestamptz` | NO | `now()` | |
+| `exam_mode` | `text` | YES | `'jee'` | CHECK `IN ('jee', 'neet')` |
+
+### Indexes
+- `user_sync_state_pkey` — UNIQUE `(user_id)`
+
+### Triggers
+- `trg_user_sync_state_updated_at` — BEFORE UPDATE: sets `updated_at = now()` via `set_updated_at()`
+
+---
 
 ## Table `user_sync_chunks`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `user_id` | `uuid` | Primary |
-| `payload_version` | `int8` | Primary |
-| `chunk_index` | `int4` | Primary |
-| `chunk_data` | `text` |  |
-| `created_at` | `timestamptz` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `user_id` | `uuid` | NO | — | **Primary Key** (part); FK → `profiles(id)` ON DELETE CASCADE |
+| `payload_version` | `int8` | NO | — | **Primary Key** (part) |
+| `chunk_index` | `int4` | NO | — | **Primary Key** (part); CHECK `chunk_index >= 0` |
+| `chunk_data` | `text` | NO | — | CHECK `octet_length(chunk_data) <= 524288` |
+| `created_at` | `timestamptz` | NO | `now()` | |
+
+### Indexes
+- `user_sync_chunks_pkey` — UNIQUE `(user_id, payload_version, chunk_index)`
+- `idx_user_sync_chunks_user_version` — `(user_id, payload_version)`
+
+---
 
 ## Table `user_study_aggregate`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `user_id` | `uuid` | Primary |
-| `total_seconds_overall` | `int8` |  |
-| `total_seconds_physics` | `int8` |  |
-| `total_seconds_chemistry` | `int8` |  |
-| `total_seconds_maths` | `int8` |  |
-| `buckets_daily_json` | `jsonb` |  |
-| `buckets_weekly_json` | `jsonb` |  |
-| `buckets_monthly_json` | `jsonb` |  |
-| `video_watch_45d_json` | `jsonb` |  |
-| `updated_at` | `timestamptz` |  |
-| `total_seconds_biology` | `int8` |  Nullable |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `user_id` | `uuid` | NO | — | **Primary Key**; FK → `profiles(id)` ON DELETE CASCADE |
+| `total_seconds_overall` | `int8` | NO | `0` | CHECK `total_seconds_overall >= 0` |
+| `total_seconds_physics` | `int8` | NO | `0` | CHECK `total_seconds_physics >= 0` |
+| `total_seconds_chemistry` | `int8` | NO | `0` | CHECK `total_seconds_chemistry >= 0` |
+| `total_seconds_maths` | `int8` | NO | `0` | CHECK `total_seconds_maths >= 0` |
+| `buckets_daily_json` | `jsonb` | NO | `'{}'::jsonb` | CHECK `jsonb_typeof(...) = 'object'` |
+| `buckets_weekly_json` | `jsonb` | NO | `'{}'::jsonb` | CHECK `jsonb_typeof(...) = 'object'` |
+| `buckets_monthly_json` | `jsonb` | NO | `'{}'::jsonb` | CHECK `jsonb_typeof(...) = 'object'` |
+| `video_watch_45d_json` | `jsonb` | NO | `'[]'::jsonb` | CHECK `jsonb_typeof(...) = 'array'` |
+| `updated_at` | `timestamptz` | NO | `now()` | |
+| `total_seconds_biology` | `int8` | YES | `0` | *(reserved for NEET/biology exam mode)* |
+
+### Indexes
+- `user_study_aggregate_pkey` — UNIQUE `(user_id)`
+
+### Triggers
+- `trg_user_study_aggregate_before_upsert` — BEFORE INSERT OR UPDATE: pre-processes analytics JSON via `before_upsert_user_study_aggregate()`
+
+---
 
 ## Table `sync_prune_audit_log`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `id` | `int8` | Primary |
-| `called_by` | `uuid` |  |
-| `target_user_id` | `uuid` |  |
-| `keep_version` | `int8` |  |
-| `rows_deleted` | `int4` |  |
-| `pruned_at` | `timestamptz` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `id` | `int8` | NO | `nextval(...)` | **Primary Key** (auto-increment) |
+| `called_by` | `uuid` | NO | — | |
+| `target_user_id` | `uuid` | NO | — | |
+| `keep_version` | `int8` | NO | — | |
+| `rows_deleted` | `int4` | NO | `0` | |
+| `pruned_at` | `timestamptz` | NO | `now()` | |
+
+### Indexes
+- `sync_prune_audit_log_pkey` — UNIQUE `(id)`
+
+---
 
 ## Table `study_session_log`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `id` | `uuid` | Primary |
-| `user_id` | `uuid` |  |
-| `client_id` | `text` |  |
-| `session_id` | `text` |  |
-| `action` | `text` |  |
-| `payload` | `jsonb` |  Nullable |
-| `created_at` | `timestamptz` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `id` | `uuid` | NO | `gen_random_uuid()` | **Primary Key** |
+| `user_id` | `uuid` | NO | — | FK → `profiles(id)` ON DELETE CASCADE |
+| `client_id` | `text` | NO | — | |
+| `session_id` | `text` | NO | — | |
+| `action` | `text` | NO | — | CHECK `action IN ('INSERT', 'DELETE')` |
+| `payload` | `jsonb` | YES | — | |
+| `created_at` | `timestamptz` | NO | `timezone('utc', now())` | |
+
+### Indexes
+- `study_session_log_pkey` — UNIQUE `(id)`
+- `idx_study_session_log_user_id_created_at_id` — `(user_id, created_at, id)`
+
+> **Note:** There is no unique constraint on `(user_id, session_id)`. Duplicate prevention relies on client-side deduplication and the `action` CHECK constraint. RLS prevents client-side UPDATE and DELETE.
+
+---
 
 ## Table `peer_relationships`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `user_id_1` | `uuid` | Primary |
-| `user_id_2` | `uuid` | Primary |
-| `status` | `text` |  |
-| `created_at` | `timestamptz` |  |
-| `updated_at` | `timestamptz` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `user_id_1` | `uuid` | NO | — | **Primary Key** (part); FK → `profiles(id)` ON DELETE CASCADE |
+| `user_id_2` | `uuid` | NO | — | **Primary Key** (part); FK → `profiles(id)` ON DELETE CASCADE |
+| `status` | `text` | NO | — | CHECK `status IN ('pending_1_to_2', 'pending_2_to_1', 'accepted', 'blocked_1_by_2', 'blocked_2_by_1', 'blocked_both')` |
+| `created_at` | `timestamptz` | NO | `now()` | |
+| `updated_at` | `timestamptz` | NO | `now()` | |
+
+### Constraints
+- `chk_user_id_ordering` — CHECK `user_id_1 < user_id_2` *(ensures canonical row ordering, prevents duplicate pairs)*
+
+### Indexes
+- `peer_relationships_pkey` — UNIQUE `(user_id_1, user_id_2)`
+- `idx_peer_relationships_status` — `(status)`
+- `idx_peer_relationships_user_id_2` — `(user_id_2)` *(0 scans; candidate for removal)*
+
+---
 
 ## Table `peer_visibility_settings`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `user_id` | `uuid` | Primary |
-| `show_live_activity` | `bool` |  |
-| `show_weekly_summary` | `bool` |  |
-| `show_badges` | `bool` |  |
-| `show_backlog_snapshot` | `bool` |  |
-| `show_completed_tasks` | `bool` |  |
-| `updated_at` | `timestamptz` |  |
-| `show_agenda` | `bool` |  Nullable |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `user_id` | `uuid` | NO | — | **Primary Key**; FK → `profiles(id)` ON DELETE CASCADE |
+| `show_live_activity` | `bool` | NO | `true` | |
+| `show_weekly_summary` | `bool` | NO | `true` | |
+| `show_badges` | `bool` | NO | `true` | |
+| `show_backlog_snapshot` | `bool` | NO | `true` | |
+| `show_completed_tasks` | `bool` | NO | `true` | |
+| `updated_at` | `timestamptz` | NO | `now()` | |
+| `show_agenda` | `bool` | YES | `true` | |
+
+### Indexes
+- `peer_visibility_settings_pkey` — UNIQUE `(user_id)`
+
+---
 
 ## Table `live_activity`
 
 ### Columns
 
-| Name | Type | Constraints |
-|------|------|-------------|
-| `user_id` | `uuid` | Primary |
-| `is_active` | `bool` |  |
-| `subject` | `text` |  Nullable |
-| `chapter_name` | `text` |  Nullable |
-| `chapter_serial` | `int4` |  Nullable |
-| `material` | `text` |  Nullable |
-| `started_at` | `timestamptz` |  Nullable |
-| `updated_at` | `timestamptz` |  |
+| Name | Type | Nullable | Default | Constraints |
+|------|------|----------|---------|-------------|
+| `user_id` | `uuid` | NO | — | **Primary Key**; FK → `profiles(id)` ON DELETE CASCADE |
+| `is_active` | `bool` | NO | `false` | |
+| `subject` | `text` | YES | — | CHECK `subject IN ('physics', 'chemistry', 'maths')` |
+| `chapter_name` | `text` | YES | — | |
+| `chapter_serial` | `int4` | YES | — | |
+| `material` | `text` | YES | — | |
+| `started_at` | `timestamptz` | YES | — | |
+| `updated_at` | `timestamptz` | NO | `now()` | |
 
+### Indexes
+- `live_activity_pkey` — UNIQUE `(user_id)`

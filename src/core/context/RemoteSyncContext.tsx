@@ -767,9 +767,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (currentStr === lastPushedAggregateRef.current) return;
 
             try {
+                // Strip updated_at to ensure single query variant and faster execution
+                const { updated_at, ...upsertPayload } = remoteStudyAggregate;
+
                 const { error } = await supabaseClient
                     .from('user_study_aggregate')
-                    .upsert(remoteStudyAggregate, { onConflict: 'user_id' }); // Removing .select() suppresses RETURNING *
+                    .upsert(upsertPayload, { onConflict: 'user_id' }); // Removing .select() suppresses RETURNING *
                 if (!error) {
                     lastPushedAggregateRef.current = currentStr;
                 }
