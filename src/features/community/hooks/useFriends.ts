@@ -238,8 +238,8 @@ export function useFriends() {
                     pollLiveActivity();
                 }
                 
-                // Refresh full profiles immediately on window focus
-                fetchFriends(true);
+                // Refresh full profiles on window focus (respects 5-minute cache)
+                fetchFriends(false);
                 
                 startPolling();
             } else {
