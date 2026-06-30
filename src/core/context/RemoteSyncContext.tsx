@@ -650,7 +650,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             } catch (error) {
                 // If sync fails with a "Payload version mismatch" or similar permanent-looking error,
                 // or after too many retries, prioritize a PWA update check.
-                if (retryAttemptRef.current > 5) {
+                if (retryAttemptRef.current > 5 && navigator.onLine) {
                     console.warn('[Sync] Persistent failures detected. Checking for PWA updates...');
                     if ((window as any).__FORCE_PWA_UPDATE__) (window as any).__FORCE_PWA_UPDATE__();
                 }

@@ -58,6 +58,10 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             setSession(data.session ?? null);
             setUser(data.session?.user ?? null);
             setIsLoading(false);
+        }).catch((err) => {
+            console.error('Failed to get session:', err);
+            if (!isMounted) return;
+            setIsLoading(false);
         });
 
         const {
