@@ -113,6 +113,23 @@ body.has-custom-bg {
   z-index: 0;
 }
 
+/* Custom Grid Background for Dark Solid */
+html[data-theme='dark-solid'] body.has-grid-bg {
+  /* Pure base black color, no accent colored gradients */
+  background-color: var(--bg-primary);
+  
+  /* Cutting mat SVG pattern:
+     - 50x50 tile
+     - Minor lines every 10px (very faint)
+     - Major lines through center (slightly visible)
+     - Plus sign and dot exactly at the intersections 
+  */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50'%3E%3Cpath d='M0 10.5 L50 10.5 M0 20.5 L50 20.5 M0 30.5 L50 30.5 M0 40.5 L50 40.5 M10.5 0 L10.5 50 M20.5 0 L20.5 50 M30.5 0 L30.5 50 M40.5 0 L40.5 50' fill='none' stroke='rgba(255,255,255,0.015)' stroke-width='1'/%3E%3Cpath d='M0 25.5 L50 25.5 M25.5 0 L25.5 50' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3Cpath d='M21 25.5 L30 25.5 M25.5 21 L25.5 30' fill='none' stroke='rgba(255,255,255,0.15)' stroke-width='1'/%3E%3Ccircle cx='25.5' cy='25.5' r='1' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-size: 50px 50px;
+  background-position: center top;
+}
+
 /* Remove accent glow when custom background is active (looks better with image backgrounds) */
 body.has-custom-bg {
   --shadow-glow: none;

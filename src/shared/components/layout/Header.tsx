@@ -40,6 +40,8 @@ interface HeaderProps {
   onThemeToggle: () => void;
   accentColor: string;
   onAccentChange: (color: string) => void;
+  useGridBackground: boolean;
+  onUseGridBackgroundChange: (value: boolean) => void;
   // New Settings Props
   disableAutoShift: boolean;
   onDisableAutoShiftChange: (value: boolean) => void;
@@ -88,6 +90,8 @@ export function Header({
   onThemeToggle,
   accentColor,
   onAccentChange,
+  useGridBackground,
+  onUseGridBackgroundChange,
   disableAutoShift,
   onDisableAutoShiftChange,
   enableAIAgent,
@@ -449,6 +453,8 @@ export function Header({
         onEnableMusicPlayerChange={onEnableMusicPlayerChange}
         backgroundUrl={backgroundUrl}
         onBackgroundUrlChange={onBackgroundUrlChange}
+        useGridBackground={useGridBackground}
+        onUseGridBackgroundChange={onUseGridBackgroundChange}
         dimLevel={dimLevel}
         onDimLevelChange={onDimLevelChange}
         glassIntensity={glassIntensity}

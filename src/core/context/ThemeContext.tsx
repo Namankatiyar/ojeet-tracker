@@ -16,6 +16,8 @@ interface ThemeContextType {
   setGlassIntensity: (intensity: number | ((prev: number) => number)) => void;
   glassRefraction: number;
   setGlassRefraction: (refraction: number | ((prev: number) => number)) => void;
+  useGridBackground: boolean;
+  setUseGridBackground: (use: boolean | ((prev: boolean) => boolean)) => void;
   toggleTheme: () => void;
   setSupportOverride: (active: boolean) => void;
 }
@@ -54,6 +56,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [glassRefraction, setGlassRefraction] = useLocalStorage<number>(
     'jee-tracker-glass-refraction',
     50
+  );
+  const [useGridBackground, setUseGridBackground] = useLocalStorage<boolean>(
+    'jee-tracker-grid-bg',
+    true
   );
 
   const [supportOverride, setSupportOverride] = useState(false);
@@ -151,15 +157,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Clear direct background inline style from previous implementation
     document.body.style.backgroundImage = '';
 
-    if (effectiveBackgroundUrl && (theme === 'dark-glass' || theme === 'dark-solid')) {
+    if (theme === 'dark-solid' && useGridBackground) {
+      document.documentElement.style.setProperty('--custom-bg-url', 'none');
+      document.body.classList.remove('has-custom-bg');
+      document.body.classList.add('has-grid-bg');
+    } else if (effectiveBackgroundUrl && (theme === 'dark-glass' || theme === 'dark-solid')) {
       document.documentElement.style.setProperty(
         '--custom-bg-url',
         `url("${effectiveBackgroundUrl}")`
       );
       document.body.classList.add('has-custom-bg');
+      document.body.classList.remove('has-grid-bg');
     } else {
       document.documentElement.style.setProperty('--custom-bg-url', 'none');
       document.body.classList.remove('has-custom-bg');
+      document.body.classList.remove('has-grid-bg');
     }
     document.documentElement.style.setProperty('--dim-level', (dimLevel / 100).toString());
 
@@ -191,7 +203,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       '--glass-refraction',
       `saturate(${saturation}%) brightness(${brightness}%) hue-rotate(${hueRotate}deg)`
     );
-  }, [effectiveBackgroundUrl, theme, dimLevel, glassIntensity, glassRefraction]);
+  }, [effectiveBackgroundUrl, theme, useGridBackground, dimLevel, glassIntensity, glassRefraction]);
 
   return (
     <ThemeContext.Provider
@@ -208,6 +220,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setGlassIntensity,
         glassRefraction,
         setGlassRefraction,
+        useGridBackground,
+        setUseGridBackground,
         toggleTheme,
         setSupportOverride,
       }}

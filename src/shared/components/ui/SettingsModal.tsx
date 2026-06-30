@@ -35,9 +35,10 @@ interface SettingsModalProps {
   // Music Player
   enableMusicPlayer: boolean;
   onEnableMusicPlayerChange: (value: boolean) => void;
-  // Background
   backgroundUrl: string;
   onBackgroundUrlChange: (url: string) => void;
+  useGridBackground: boolean;
+  onUseGridBackgroundChange: (value: boolean) => void;
   dimLevel: number;
   onDimLevelChange: (level: number) => void;
   // Glassmorphism
@@ -116,6 +117,8 @@ export function SettingsModal({
   onEnableMusicPlayerChange,
   backgroundUrl,
   onBackgroundUrlChange,
+  useGridBackground,
+  onUseGridBackgroundChange,
   dimLevel,
   onDimLevelChange,
   glassIntensity,
@@ -527,6 +530,32 @@ export function SettingsModal({
                 </button>
               </div>
             </div>
+
+            {/* Background Pattern (Dark Solid only) */}
+            {theme === 'dark-solid' && (
+              <div className="settings-row vertical">
+                <div className="setting-info">
+                  <span className="setting-label">Background Pattern</span>
+                  <span className="setting-description">
+                    Use a custom grid pattern or your wallpaper image
+                  </span>
+                </div>
+                <div className="view-toggles">
+                  <button
+                    className={`view-btn ${useGridBackground ? 'active' : ''}`}
+                    onClick={() => onUseGridBackgroundChange(true)}
+                  >
+                    Dotted Grid
+                  </button>
+                  <button
+                    className={`view-btn ${!useGridBackground ? 'active' : ''}`}
+                    onClick={() => onUseGridBackgroundChange(false)}
+                  >
+                    Image Wallpaper
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Background Image */}
             <div className="settings-row vertical">

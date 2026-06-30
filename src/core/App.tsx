@@ -41,6 +41,8 @@ function AppContent() {
     setGlassIntensity,
     glassRefraction,
     setGlassRefraction,
+    useGridBackground,
+    setUseGridBackground,
   } = useTheme();
 
   const {
@@ -138,6 +140,8 @@ function AppContent() {
         onThemeToggle={toggleTheme}
         accentColor={accentColor}
         onAccentChange={setAccentColor}
+        useGridBackground={useGridBackground}
+        onUseGridBackgroundChange={setUseGridBackground}
         disableAutoShift={disableAutoShift}
         onDisableAutoShiftChange={setDisableAutoShift}
         enableAIAgent={enableAIAgent}
