@@ -84,6 +84,8 @@ describe('SettingsModal', () => {
     onEnableMusicPlayerChange: vi.fn(),
     backgroundUrl: '',
     onBackgroundUrlChange: vi.fn(),
+    useGridBackground: true,
+    onUseGridBackgroundChange: vi.fn(),
     dimLevel: 20,
     onDimLevelChange: vi.fn(),
     glassIntensity: 50,
