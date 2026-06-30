@@ -155,7 +155,7 @@
   min-height: 250px;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   transition: all 0.2s ease;
 }
