@@ -28,7 +28,7 @@
   transition: all var(--transition-normal);
 }
 
-html[data-theme='dark'] .header {
+html[data-theme^='dark-'] .header {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -106,7 +106,7 @@ html[data-theme='dark'] .header {
     box-shadow var(--transition-fast);
 }
 
-html[data-theme='dark'] .nav {
+html[data-theme^='dark-'] .nav {
   background: rgba(18, 18, 26, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
@@ -180,11 +180,11 @@ html[data-theme='dark'] .nav {
 }
 
 /* Glass effect for nav items in dark mode */
-html[data-theme='dark'] .nav-item:hover {
+html[data-theme^='dark-'] .nav-item:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
-html[data-theme='dark'] .nav-item.active {
+html[data-theme^='dark-'] .nav-item.active {
   background: var(--accent-light);
 }
 
@@ -279,7 +279,7 @@ html[data-theme='dark'] .nav-item.active {
   z-index: 2000;
 }
 
-html[data-theme='dark'] .mobile-menu-overlay {
+html[data-theme^='dark-'] .mobile-menu-overlay {
   backdrop-filter: var(--panel-blur);
 }
 
@@ -300,7 +300,7 @@ html[data-theme='dark'] .mobile-menu-overlay {
   animation: slideDown 0.2s ease;
 }
 
-html[data-theme='dark'] .mobile-menu-dropdown {
+html[data-theme^='dark-'] .mobile-menu-dropdown {
   backdrop-filter: var(--panel-blur);
 }
 
@@ -375,7 +375,7 @@ html[data-theme='dark'] .mobile-menu-dropdown {
   justify-content: center;
 }
 
-html[data-theme='dark'] .theme-toggle-icon {
+html[data-theme^='dark-'] .theme-toggle-icon {
   color: var(--accent);
 }
 
@@ -688,7 +688,7 @@ html[data-theme='dark'] .theme-toggle-icon {
 }
 
 /* Dark Theme overrides */
-html[data-theme='dark'] .footer {
+html[data-theme^='dark-'] .footer {
   border-top: 1px solid var(--panel-border);
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
@@ -699,7 +699,7 @@ html[data-theme='dark'] .footer {
     0 -20px 60px color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
-html[data-theme='dark'] .footer::before {
+html[data-theme^='dark-'] .footer::before {
   background: radial-gradient(
     120px circle at top center,
     color-mix(in srgb, var(--accent), transparent 75%),
@@ -707,7 +707,7 @@ html[data-theme='dark'] .footer::before {
   );
 }
 
-html[data-theme='dark'] .footer-main-grid {
+html[data-theme^='dark-'] .footer-main-grid {
   border-bottom: 1px solid var(--panel-border);
 }
 

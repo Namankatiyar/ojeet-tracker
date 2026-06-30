@@ -53,8 +53,8 @@
   animation: modal-fade-in 0.2s ease;
 }
 
-html[data-theme='dark'] .modal-overlay,
-html[data-theme='dark'] .modal-backdrop {
+html[data-theme^='dark-'] .modal-overlay,
+html[data-theme^='dark-'] .modal-backdrop {
   background: color-mix(in srgb, var(--bg-base), transparent 40%);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -78,8 +78,8 @@ html[data-theme='dark'] .modal-backdrop {
 }
 
 /* Dark mode glass effect */
-html[data-theme='dark'] .modal-container,
-html[data-theme='dark'] .modal-content {
+html[data-theme^='dark-'] .modal-container,
+html[data-theme^='dark-'] .modal-content {
   @extend .glass-panel;
   /* Note: Since I'm using plain CSS, I'll just keep the properties for now but ensure they match exactly or use the class in HTML if possible. For CSS layers, I'll use the class. */
 }
@@ -217,14 +217,14 @@ html[data-theme='dark'] .modal-content {
 }
 
 /* Dark mode glass input */
-html[data-theme='dark'] .modal-input {
+html[data-theme^='dark-'] .modal-input {
   background: rgba(0, 0, 0, 0.3);
   border-color: var(--panel-border);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
 }
 
-html[data-theme='dark'] .modal-input:focus {
+html[data-theme^='dark-'] .modal-input:focus {
   border-color: var(--glass-border-light);
   box-shadow:
     var(--panel-inner-glow),
@@ -278,19 +278,19 @@ html[data-theme='dark'] .modal-input:focus {
 }
 
 /* Light mode input modal */
-:root:not([data-theme='dark']) .modal-content.input-modal,
+:root:not([data-theme^='dark-']) .modal-content.input-modal,
 [data-theme='light'] .modal-content.input-modal {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
 }
 
-:root:not([data-theme='dark']) .modal-content.input-modal .modal-footer,
+:root:not([data-theme^='dark-']) .modal-content.input-modal .modal-footer,
 [data-theme='light'] .modal-content.input-modal .modal-footer {
   background: var(--color-bg-tertiary);
 }
 
 /* Dark mode input modal */
-html[data-theme='dark'] .modal-content.input-modal .modal-footer {
+html[data-theme^='dark-'] .modal-content.input-modal .modal-footer {
   background: var(--bg-tertiary);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -368,7 +368,7 @@ html[data-theme='dark'] .modal-content.input-modal .modal-footer {
 }
 
 /* Dark mode settings modal */
-html[data-theme='dark'] .settings-modal {
+html[data-theme^='dark-'] .settings-modal {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -388,7 +388,7 @@ html[data-theme='dark'] .settings-modal {
   animation: modal-fade-in 0.2s ease;
 }
 
-html[data-theme='dark'] .distribution-modal-overlay {
+html[data-theme^='dark-'] .distribution-modal-overlay {
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
 }
@@ -457,7 +457,7 @@ html[data-theme='dark'] .distribution-modal-overlay {
 }
 
 /* Dark mode distribution modal */
-html[data-theme='dark'] .distribution-modal {
+html[data-theme^='dark-'] .distribution-modal {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -852,7 +852,7 @@ html[data-theme='dark'] .distribution-modal {
   overflow: hidden;
 }
 
-html[data-theme='dark'] .progress-card-modal {
+html[data-theme^='dark-'] .progress-card-modal {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -903,7 +903,7 @@ html[data-theme='dark'] .progress-card-modal {
   overflow-y: auto;
 }
 
-html[data-theme='dark'] .progress-card-settings {
+html[data-theme^='dark-'] .progress-card-settings {
   background: rgba(0, 0, 0, 0.15);
 }
 
@@ -1014,12 +1014,12 @@ html[data-theme='dark'] .progress-card-settings {
   z-index: 1;
 }
 
-html[data-theme='dark'] .progress-card {
+html[data-theme^='dark-'] .progress-card {
   background: #1a1a1f;
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-html[data-theme='dark'] .progress-card::before {
+html[data-theme^='dark-'] .progress-card::before {
   background: linear-gradient(
     135deg,
     rgba(var(--card-accent-rgb), 0.15) 0%,
@@ -1084,7 +1084,7 @@ html[data-theme='dark'] .progress-card::before {
   border: 1px solid var(--border);
 }
 
-html[data-theme='dark'] .card-stat-item {
+html[data-theme^='dark-'] .card-stat-item {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(255, 255, 255, 0.08);
 }
@@ -1101,7 +1101,7 @@ html[data-theme='dark'] .card-stat-item {
   flex-shrink: 0;
 }
 
-html[data-theme='dark'] .card-stat-item .stat-icon {
+html[data-theme^='dark-'] .card-stat-item .stat-icon {
   background: rgba(245, 158, 11, 0.2);
 }
 
@@ -1181,7 +1181,7 @@ html[data-theme='dark'] .card-stat-item .stat-icon {
     0 0 0 1px rgba(88, 101, 242, 0.1);
 }
 
-html[data-theme='dark'] .discord-modal {
+html[data-theme^='dark-'] .discord-modal {
   background: var(--panel-bg);
   border-color: var(--panel-border);
   box-shadow:
@@ -1255,7 +1255,7 @@ html[data-theme='dark'] .discord-modal {
   animation: float 4s ease-in-out infinite;
 }
 
-html[data-theme='dark'] .discord-logo-floating {
+html[data-theme^='dark-'] .discord-logo-floating {
   border-color: var(--panel-bg);
 }
 
@@ -1322,12 +1322,12 @@ html[data-theme='dark'] .discord-logo-floating {
   background: color-mix(in srgb, var(--bg-tertiary), #5865f2 3%);
 }
 
-html[data-theme='dark'] .discord-tag {
+html[data-theme^='dark-'] .discord-tag {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(255, 255, 255, 0.05);
 }
 
-html[data-theme='dark'] .discord-tag:hover {
+html[data-theme^='dark-'] .discord-tag:hover {
   color: #7289da;
   background: rgba(88, 101, 242, 0.1);
   border-color: rgba(88, 101, 242, 0.4);

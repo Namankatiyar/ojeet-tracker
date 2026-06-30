@@ -8,6 +8,7 @@ import {
   Pi,
   Sun,
   Moon,
+  Zap,
   Palette,
   Settings,
   Calendar,
@@ -34,7 +35,8 @@ interface HeaderProps {
   onNavigate: (
     view: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject
   ) => void;
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark-glass' | 'dark-solid';
+  onThemeChange: (theme: 'light' | 'dark-glass' | 'dark-solid') => void;
   onThemeToggle: () => void;
   accentColor: string;
   onAccentChange: (color: string) => void;
@@ -82,6 +84,7 @@ export function Header({
   currentView,
   onNavigate,
   theme,
+  onThemeChange,
   onThemeToggle,
   accentColor,
   onAccentChange,
@@ -281,7 +284,13 @@ export function Header({
               aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
               <span className="theme-toggle-icon">
-                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                {theme === 'light' ? (
+                  <Moon size={20} />
+                ) : theme === 'dark-solid' ? (
+                  <Zap size={20} />
+                ) : (
+                  <Sun size={20} />
+                )}
               </span>
             </button>
 
@@ -336,9 +345,19 @@ export function Header({
                     }}
                   >
                     <span>
-                      {theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                      {theme === 'light'
+                        ? 'Switch to Dark Mode (Solid)'
+                        : theme === 'dark-solid'
+                          ? 'Switch to Dark Mode (Glass)'
+                          : 'Switch to Light Mode'}
                     </span>
-                    {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                    {theme === 'light' ? (
+                      <Moon size={18} />
+                    ) : theme === 'dark-solid' ? (
+                      <Zap size={18} />
+                    ) : (
+                      <Sun size={18} />
+                    )}
                   </div>
 
                   <div
@@ -420,6 +439,8 @@ export function Header({
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        theme={theme}
+        onThemeChange={onThemeChange}
         disableAutoShift={disableAutoShift}
         onDisableAutoShiftChange={onDisableAutoShiftChange}
         enableAIAgent={enableAIAgent}

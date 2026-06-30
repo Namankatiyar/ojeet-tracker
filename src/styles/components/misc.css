@@ -22,7 +22,7 @@
   animation: dp-fade-in 0.18s ease;
 }
 
-html[data-theme='dark'] .dp-backdrop {
+html[data-theme^='dark-'] .dp-backdrop {
   background: color-mix(in srgb, var(--bg-base), transparent 40%);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -55,7 +55,7 @@ html[data-theme='dark'] .dp-backdrop {
   gap: 1rem;
 }
 
-html[data-theme='dark'] .dp-panel {
+html[data-theme^='dark-'] .dp-panel {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -227,7 +227,7 @@ html[data-theme='dark'] .dp-panel {
   font-weight: 700;
 }
 
-html[data-theme='dark'] .dp-day.selected {
+html[data-theme^='dark-'] .dp-day.selected {
   background: color-mix(in srgb, var(--accent), transparent 15%);
 }
 
@@ -291,25 +291,25 @@ html[data-theme='dark'] .dp-day.selected {
 }
 
 /* Light mode adjustments */
-:root:not([data-theme='dark']) .dp-panel,
+:root:not([data-theme^='dark-']) .dp-panel,
 [data-theme='light'] .dp-panel {
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-:root:not([data-theme='dark']) .dp-nav-btn,
+:root:not([data-theme^='dark-']) .dp-nav-btn,
 [data-theme='light'] .dp-nav-btn {
   background: var(--bg-tertiary);
   border-color: var(--border);
 }
 
-:root:not([data-theme='dark']) .dp-nav-btn:hover,
+:root:not([data-theme^='dark-']) .dp-nav-btn:hover,
 [data-theme='light'] .dp-nav-btn:hover {
   background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 80%);
 }
 
-:root:not([data-theme='dark']) .dp-day:hover:not(:disabled):not(.empty):not(.selected),
+:root:not([data-theme^='dark-']) .dp-day:hover:not(:disabled):not(.empty):not(.selected),
 [data-theme='light'] .dp-day:hover:not(:disabled):not(.empty):not(.selected) {
   background: var(--bg-tertiary);
   border-color: var(--border);

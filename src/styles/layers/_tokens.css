@@ -193,7 +193,7 @@
 }
 
 /* ===== Dark Mode Tokens ===== */
-[data-theme='dark'] {
+[data-theme='dark-glass'] {
   /* Background Colors */
   --color-bg-base: #0a0a0f;
   --color-bg-primary: color-mix(in srgb, var(--accent), var(--color-bg-base) 95%);
@@ -252,6 +252,56 @@
   /* Gradient Background tokens */
   --gradient-start: color-mix(in srgb, var(--accent), #0a0a0f 85%);
   --gradient-end: #0a0a0f;
+}
+
+/* ===== Dark Mode (Solid) Tokens ===== */
+[data-theme='dark-solid'] {
+  /* Background Colors (Solid) */
+  --color-bg-base: #000000;
+  --color-bg-primary: color-mix(in srgb, var(--accent), var(--color-bg-base) 96%);
+  --color-bg-secondary: #08080c;
+  --color-bg-tertiary: #111116;
+
+  /* Text Colors */
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* Border Colors */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Accent & Priority backgrounds */
+  --accent-light: rgba(6, 182, 212, 0.15);
+  --color-priority-high-bg: rgba(239, 68, 68, 0.12);
+  --color-priority-medium-bg: rgba(245, 158, 11, 0.12);
+  --color-priority-low-bg: rgba(34, 197, 94, 0.12);
+  --color-completed-bg: rgba(99, 102, 241, 0.12);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 25px color-mix(in srgb, var(--accent), transparent 80%);
+
+  /* Opaque Panel Surfaces (No glassmorphism) */
+  --panel-bg: var(--color-bg-secondary);
+  --panel-bg-hover: var(--color-bg-tertiary);
+  --panel-border: var(--color-border);
+  --panel-border-light: var(--color-border-hover);
+  --panel-blur: none;
+  --panel-shadow: var(--shadow-md);
+  --panel-shadow-hover: var(--shadow-lg);
+  --panel-inner-glow: none;
+
+  /* Card/Modal Backgrounds */
+  --bg-card: var(--color-bg-secondary);
+  --bg-card-item: var(--color-bg-tertiary);
+  --bg-modal: #08080c;
+
+  /* Gradient Background tokens */
+  --gradient-start: color-mix(in srgb, var(--accent), #000000 90%);
+  --gradient-end: #000000;
 }
 
 /* ===== Utility Classes for Subject Colors ===== */

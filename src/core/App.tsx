@@ -28,6 +28,7 @@ function AppContent() {
 
   const {
     theme,
+    setTheme,
     toggleTheme,
     accentColor,
     setAccentColor,
@@ -132,6 +133,7 @@ function AppContent() {
         currentView={currentView}
         onNavigate={handleNavigate}
         theme={theme}
+        onThemeChange={setTheme}
         onThemeToggle={toggleTheme}
         accentColor={accentColor}
         onAccentChange={setAccentColor}

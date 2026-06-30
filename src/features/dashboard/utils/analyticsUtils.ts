@@ -107,12 +107,13 @@ export const getSubjectColors = () => {
  * Get standardized chart options based on theme and type
  */
 export const getChartOptions = (
-  theme: 'light' | 'dark',
+  theme: 'light' | 'dark-glass' | 'dark-solid',
   type: 'bar' | 'line' | 'mock',
   mockMaxMarks = 300
 ) => {
-  const axisColor = theme === 'dark' ? '#ffffff' : '#000000';
-  const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const isDark = theme.startsWith('dark');
+  const axisColor = isDark ? '#ffffff' : '#000000';
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
 
   const baseOptions = {
     responsive: true,
