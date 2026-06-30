@@ -8,9 +8,15 @@ This document serves as the single source of truth for the **ojee-tracker** visu
 
 `ojee-tracker` is an offline-first, high-focus JEE/OJEE syllabus tracker and study planner designed for students preparing for one of the most demanding competitive exams.
 
-- **Workspace Aesthetic**: The interface is designed as an immersive, high-performance workspace. It utilizes a premium translucent glassmorphism in dark mode (layered shadows, internal glowing boundaries, and blurred backdrop refractions) and clean card surfaces in light mode.
+- **Workspace Aesthetic (Three Theme Modes)**:
+  - **Light Mode (`light`)**: Clean, opaque, and snappy layout utilizing flat card surfaces.
+  - **Dark Glass Mode (`dark-glass`)**: Immersive workspace using premium translucent glassmorphism, layered shadows, internal glowing boundaries, and backdrop blurs (`backdrop-filter`).
+  - **Dark Solid Mode (`dark-solid`)**: High-performance, battery-saving dark mode using a pure black (`#000000`) background layout, metallic silver borders (`rgba(255, 255, 255, 0.15)`), and sharp inner/outer shadows to define boundaries with absolutely zero opacity/blur filters.
 - **Dynamic Adaptability**: The interface supports a dynamic accent color engine. When a user picks a custom accent color, the application shifts the color's hue by 60 degrees to compute a complementary secondary accent, updates the PWA theme, and recalculates text contrast boundaries (switching text between `#ffffff` and `#000000` depending on accent brightness).
-- **Responsive Performance**: On desktop (viewport width $\ge$ 48rem), the application renders full glassmorphism, blur refractions, and fixed sections. On mobile (viewport width < 48rem), glassmorphism falls back to solid background layers (`var(--bg-secondary)`) to avoid GPU scrolling lag.
+- **Responsive & Performance Boundaries**: 
+  - On desktop (viewport width $\ge$ 48rem), the application renders glassmorphism details for `dark-glass` and sharp metallic borders for `dark-solid`.
+  - On mobile (viewport width < 48rem) or when using `dark-solid`, backdrop filters are completely disabled (`var(--panel-blur): none`) to ensure lag-free scrolling and animations.
+  - Shared dark styles use CSS selectors matching `html[data-theme^='dark-']`, while glassmorphism-specific styling is isolated via `html[data-theme='dark-glass']`.
 
 ---
 
@@ -60,21 +66,44 @@ No raw hex values or RGB definitions may exist in component CSS logic. All styli
 
 #### Background Topology
 
-- `--color-bg-base`: `#f8fafc` (Light) / `#0a0a0f` (Dark) — Underlying application wrapper color.
-- `--color-bg-primary`: Slightly tinted by accent — Root layout layer.
-- `--color-bg-secondary`: `#ffffff` (Light) / `rgba(18, 18, 26, 0.35)` (Dark) — Primary structural containers, headers, modals.
-- `--color-bg-tertiary`: `#f1f5f9` (Light) / `rgba(26, 26, 40, 0.5)` (Dark) — Nested cards, inputs, dense arrays.
+- `--color-bg-base`: Underlying application wrapper color.
+  - Light: `#f8fafc`
+  - Dark Glass: `#0a0a0f`
+  - Dark Solid: `#000000` (Pure Black)
+- `--color-bg-primary`: Root layout layer.
+  - Light / Dark Glass: Tinted dynamically by accent (`color-mix(...)`).
+  - Dark Solid: `#000000` (Pure Black)
+- `--color-bg-secondary`: Primary structural containers, headers, modals.
+  - Light: `#ffffff`
+  - Dark Glass: `rgba(18, 18, 26, 0.35)`
+  - Dark Solid: `#000000` (Pure Black)
+- `--color-bg-tertiary`: Nested cards, inputs, dense lists.
+  - Light: `#f1f5f9`
+  - Dark Glass: `rgba(26, 26, 40, 0.5)`
+  - Dark Solid: `#08080c` (Slightly lighter than pure black to show nesting highlights)
 
 #### Text Hierarchy
 
-- `--color-text-primary`: `#0f172a` (Light) / `#f1f5f9` (Dark) — High contrast reading.
-- `--color-text-secondary`: `#475569` (Light) / `#94a3b8` (Dark) — Standard body contrast.
-- `--color-text-muted`: `#94a3b8` (Light) / `#64748b` (Dark) — Metadata, placeholders.
+- `--color-text-primary`: High contrast reading.
+  - Light: `#0f172a`
+  - Dark Glass / Dark Solid: `#f1f5f9`
+- `--color-text-secondary`: Standard body contrast.
+  - Light: `#475569`
+  - Dark Glass / Dark Solid: `#94a3b8`
+- `--color-text-muted`: Metadata, placeholders.
+  - Light: `#94a3b8`
+  - Dark Glass / Dark Solid: `#64748b`
 
-#### Borders
+#### Borders & Boundaries
 
-- `--color-border`: `#e2e8f0` (Light) / `rgba(255, 255, 255, 0.08)` (Dark) — Default border.
-- `--color-border-hover`: `#cbd5e1` (Light) / `rgba(255, 255, 255, 0.15)` (Dark) — Hover border.
+- `--color-border`: Default border.
+  - Light: `#e2e8f0`
+  - Dark Glass: `rgba(255, 255, 255, 0.08)`
+  - Dark Solid: `rgba(255, 255, 255, 0.15)` (Slightly brighter silver border for solid black layout separation)
+- `--color-border-hover`: Hover border.
+  - Light: `#cbd5e1`
+  - Dark Glass: `rgba(255, 255, 255, 0.15)`
+  - Dark Solid: `rgba(255, 255, 255, 0.25)`
 
 #### Dynamic Accent System
 
@@ -108,12 +137,15 @@ Accent tokens are dynamically written to the `:root` element by the theme provid
 - `--radius-lg`: `16px` (Large container bounds)
 - `--radius-full`: `9999px` (Badges, Avatars)
 
-### 2.5 Shadows & Glassmorphism
+### 2.5 Shadows, Glassmorphism & Metallic Boundaries
 
 - `--shadow-sm`, `--shadow-md`, `--shadow-lg`: Depth logic.
-- **Glass Specifics (Mandatory for Dark Mode Containers)**:
-  - Primary interactive panels: `var(--panel-bg)` with `backdrop-filter: blur(var(--panel-blur))` (resolves to `none` in light mode).
+- **Glass Specifics (`dark-glass` mode)**:
+  - Primary interactive panels: `var(--panel-bg)` with `backdrop-filter: blur(var(--panel-blur))` (usually `20px` blur).
   - Highlight Ring: `box-shadow: var(--panel-inner-glow), var(--panel-shadow)`.
+- **Metallic Specifics (`dark-solid` mode)**:
+  - Background surface is opaque pure black (`#000000`).
+  - Highlight Boundaries: Employs a crisp silver border (`rgba(255, 255, 255, 0.15)`) coupled with a strong inset metallic shadow (`--panel-inner-glow: inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 20px rgba(255,255,255,0.02)`) and a deep outer shadow (`--panel-shadow: 0 4px 12px rgba(0,0,0,0.8), 0 1px 2px rgba(0,0,0,0.5)`) to isolate layered components without blurs.
 
 ### 2.6 Motion
 
@@ -165,8 +197,12 @@ Transitions strictly limit expensive browser paints. Only properties related to 
 
 ### 3.4 Cards & Surfaces
 
-- **Aesthetic Definition**: Must apply `.glass-panel` or `.glass-card` classes.
-- **Performance boundary**: Mobile layouts discard blur properties. Ensure cards fall back to opaque `var(--bg-secondary)` below the `48rem` media breakpoint.
+- **Aesthetic Definition**: Must apply `.glass-panel` or `.glass-card` classes. In standard dark modes, these apply borders, background colors, and composition styles according to the theme.
+- **Glassmorphism vs. Solid/Metallic rendering**:
+  - In `dark-glass`, desktop layouts apply translucency and blur.
+  - In `dark-solid`, desktop/mobile layouts render opaque `#000000` panels, disabling blur.
+  - On mobile, `dark-glass` falls back to the solid `var(--bg-secondary)`.
+- **Structural Borders**: Card elements rely on `var(--panel-border)` and `var(--panel-inner-glow)` for layout contrast. Do not override card borders with arbitrary hardcoded color assignments.
 
 ### 3.5 Chapter Workspace Drawer (`.chapter-drawer`)
 

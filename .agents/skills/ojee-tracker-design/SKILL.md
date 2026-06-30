@@ -13,9 +13,15 @@ This document merges the visual design specifications for **ojee-tracker** with 
 
 `ojee-tracker` is an offline-first, high-focus JEE/OJEE syllabus tracker and study planner designed for students preparing for one of the most demanding exams. 
 - **The Subject & Context**: The exam preparation journey is a high-stakes, long-term marathon. The interface must not feel like a casual app or a generic SaaS dashboard. It must feel like an immersive, high-performance instrument or workspace—a premium dashboard that helps students focus, track, and execute.
-- **Aesthetic Direction**: Premium translucent glassmorphism in dark mode (layered shadows, internal glowing boundaries, and blurred backdrop refractions) and clean card surfaces in light mode. This provides depth and focus, evoking a professional dark IDE or high-end laboratory terminal.
+- **Aesthetic Direction (Three Theme Modes)**:
+  - **Light Mode (`light`)**: Clean, opaque, and snappy layout utilizing flat card surfaces.
+  - **Dark Glass Mode (`dark-glass`)**: Immersive workspace using premium translucent glassmorphism, layered shadows, internal glowing boundaries, and backdrop blurs (`backdrop-filter`).
+  - **Dark Solid Mode (`dark-solid`)**: High-performance, battery-saving dark mode using a pure black (`#000000`) background layout, metallic silver borders (`rgba(255, 255, 255, 0.15)`), and sharp inner/outer shadows to define boundaries with absolutely zero opacity/blur filters.
 - **Dynamic Adaptability**: The interface supports a dynamic accent color engine. Users can pick a custom accent color, which is saved in local storage. The application then dynamically shifts the color's hue by 60 degrees to compute a complementary secondary accent, updates the PWA theme, and recalculates text contrast boundaries (switching text between `#ffffff` and `#000000` depending on accent brightness).
-- **Responsive Performance**: On desktop (viewport width $\ge$ 48rem), the application shows full glassmorphism, blur refractions, and fixed side sections. On mobile (viewport width < 48rem), glassmorphism falls back to solid background layers (`var(--bg-secondary)`) to avoid GPU scrolling lag.
+- **Responsive & Performance Boundaries**:
+  - On desktop (viewport width $\ge$ 48rem), the application renders glassmorphism details for `dark-glass` and sharp metallic borders for `dark-solid`.
+  - On mobile (viewport width < 48rem) or when using `dark-solid`, backdrop filters are completely disabled (`var(--panel-blur): none`) to ensure lag-free scrolling and animations.
+  - Shared dark styles use CSS selectors matching `html[data-theme^='dark-']`, while glassmorphism-specific styling is isolated via `html[data-theme='dark-glass']`.
 
 ---
 
@@ -102,25 +108,25 @@ We run on a strict **4px baseline grid**. Do not introduce rogue numbers (e.g., 
 Never write raw hex or RGB values directly in component styles. All styling must pull from the custom properties defined in `@layer tokens` (within [src/styles/layers/_tokens.css](file:///home/naman/Documents/ojee-tracker/src/styles/layers/_tokens.css)).
 
 ### 5.1 Background Topology
-| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
-| :--- | :--- | :--- | :--- |
-| **Base Background** | `--color-bg-base` | `#f8fafc` | `#0a0a0f` |
-| **Primary Background** | `--color-bg-primary` | `color-mix(...)` (accent + base 96%) | `color-mix(...)` (accent + base 95%) |
-| **Secondary Background** | `--color-bg-secondary` | `#ffffff` | `rgba(18, 18, 26, 0.35)` |
-| **Tertiary Background** | `--color-bg-tertiary` | `#f1f5f9` | `rgba(26, 26, 40, 0.5)` |
+| Name | CSS Variable | Light Hex | Dark Glass Hex | Dark Solid Hex |
+| :--- | :--- | :--- | :--- | :--- |
+| **Base Background** | `--color-bg-base` | `#f8fafc` | `#0a0a0f` | `#000000` (Pure Black) |
+| **Primary Background** | `--color-bg-primary` | `color-mix(...)` (accent + base 96%) | `color-mix(...)` (accent + base 95%) | `#000000` (Pure Black) |
+| **Secondary Background** | `--color-bg-secondary` | `#ffffff` | `rgba(18, 18, 26, 0.35)` | `#000000` (Pure Black) |
+| **Tertiary Background** | `--color-bg-tertiary` | `#f1f5f9` | `rgba(26, 26, 40, 0.5)` | `#08080c` (Nesting bump) |
 
 ### 5.2 Text Hierarchy
-| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
+| Name | CSS Variable | Light Hex | Dark Glass / Dark Solid Hex |
 | :--- | :--- | :--- | :--- |
 | **Primary Text** | `--color-text-primary` | `#0f172a` | `#f1f5f9` |
 | **Secondary Text** | `--color-text-secondary` | `#475569` | `#94a3b8` |
 | **Muted Text** | `--color-text-muted` | `#94a3b8` | `#64748b` |
 
-### 5.3 Borders
-| Name | CSS Variable | Resolved Light Hex | Resolved Dark Hex |
-| :--- | :--- | :--- | :--- |
-| **Default Border** | `--color-border` | `#e2e8f0` | `rgba(255, 255, 255, 0.08)` |
-| **Hover Border** | `--color-border-hover` | `#cbd5e1` | `rgba(255, 255, 255, 0.15)` |
+### 5.3 Borders & Boundaries
+| Name | CSS Variable | Light Hex | Dark Glass Hex | Dark Solid Hex |
+| :--- | :--- | :--- | :--- | :--- |
+| **Default Border** | `--color-border` | `#e2e8f0` | `rgba(255, 255, 255, 0.08)` | `rgba(255, 255, 255, 0.15)` (Silver boundary) |
+| **Hover Border** | `--color-border-hover` | `#cbd5e1` | `rgba(255, 255, 255, 0.15)` | `rgba(255, 255, 255, 0.25)` |
 
 ### 5.4 Accent System (Dynamic)
 Accent tokens are dynamically written to the `:root` element by the theme provider. Always use the following semantic mappings:
@@ -206,12 +212,16 @@ All styles are organized into Cascade Layers. This controls precedence and resol
     - Checkmark symbol changes to a horizontal dash `-` or partial block.
 
 ### 7.4 Cards & Surfaces
-- **Aesthetic Definition**: Must apply `.glass-panel` or `.glass-card` classes.
+- **Aesthetic Definition**: Must apply `.glass-panel` or `.glass-card` classes. In standard dark modes, these apply borders, background colors, and composition styles according to the active theme.
 - **Glass Panel Structure**:
   - Background: `var(--panel-bg)`
-  - Backdrop blur: `var(--panel-blur)` (resolves to `none` in light mode, dynamic `blur()` in dark mode).
-  - Highlight Ring: `box-shadow: var(--panel-inner-glow), var(--panel-shadow)`.
-- **Performance boundary**: Mobile layouts discard blur properties. Ensure cards fall back to opaque `var(--bg-secondary)` below the `48rem` media breakpoint.
+  - Backdrop blur: `var(--panel-blur)` (resolves to `none` in light/dark-solid modes, dynamic `blur()` in dark-glass mode).
+  - Highlight Ring/Boundaries: `box-shadow: var(--panel-inner-glow), var(--panel-shadow)`.
+- **Glassmorphism vs. Solid/Metallic rendering**:
+  - In `dark-glass`, desktop layouts apply translucency and blur.
+  - In `dark-solid`, desktop/mobile layouts render opaque `#000000` panels, disabling blur.
+  - On mobile, `dark-glass` falls back to the solid `var(--bg-secondary)`.
+- **Structural Borders**: Card elements rely on `var(--panel-border)` and `var(--panel-inner-glow)` for layout contrast. Do not override card borders with arbitrary hardcoded color assignments.
 
 ### 7.5 Chapter Workspace Drawer (`.chapter-drawer`)
 - Slides out from the right using an absolute modal overlay.
