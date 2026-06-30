@@ -282,34 +282,38 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const clientIdRef = useRef<string>(Math.random().toString(36).substring(2, 15));
     const pendingSessionLogsRef = useRef<Omit<StudySessionLogEntry, 'id' | 'created_at' | 'user_id'>[]>([]);
 
-    const domainSnapshots = useMemo<Record<SyncDomain, string>>(() => ({
-        progress: JSON.stringify(progress),
-        plannerTasks: JSON.stringify(plannerTasks),
-        mockScores: JSON.stringify(mockScores),
-        examDates: JSON.stringify(examDates),
-        settings: JSON.stringify({
-            disableAutoShift,
-            enableAIAgent,
-            enableMusicPlayer,
-            progressCardSettings: {
-                userName: progressCardSettings.userName,
-                visibleStats: progressCardSettings.visibleStats,
-                showTasks: progressCardSettings.showTasks,
-                customAvatarUrl: progressCardSettings.customAvatarUrl,
-                bannerUrl: progressCardSettings.bannerUrl,
-                customStatus: progressCardSettings.customStatus,
-                gradeStatus: progressCardSettings.gradeStatus,
-                targetExam: progressCardSettings.targetExam,
-            },
-            mockExamPresets,
-        }),
-        subjects: JSON.stringify({
-            subjectData,
-            customColumns,
-            excludedColumns,
-            materialOrder,
-        }),
-    }), [progress, plannerTasks, mockScores, examDates, disableAutoShift, enableAIAgent, enableMusicPlayer, progressCardSettings, mockExamPresets, subjectData, customColumns, excludedColumns, materialOrder]);
+    const domainSnapshots = useMemo<Record<SyncDomain, string | null>>(() => {
+        const isSubjectDataLoaded = subjectData.physics !== null && subjectData.chemistry !== null && subjectData.maths !== null;
+
+        return {
+            progress: JSON.stringify(progress),
+            plannerTasks: JSON.stringify(plannerTasks),
+            mockScores: JSON.stringify(mockScores),
+            examDates: JSON.stringify(examDates),
+            settings: JSON.stringify({
+                disableAutoShift,
+                enableAIAgent,
+                enableMusicPlayer,
+                progressCardSettings: {
+                    userName: progressCardSettings.userName,
+                    visibleStats: progressCardSettings.visibleStats,
+                    showTasks: progressCardSettings.showTasks,
+                    customAvatarUrl: progressCardSettings.customAvatarUrl,
+                    bannerUrl: progressCardSettings.bannerUrl,
+                    customStatus: progressCardSettings.customStatus,
+                    gradeStatus: progressCardSettings.gradeStatus,
+                    targetExam: progressCardSettings.targetExam,
+                },
+                mockExamPresets,
+            }),
+            subjects: isSubjectDataLoaded ? JSON.stringify({
+                subjectData,
+                customColumns,
+                excludedColumns,
+                materialOrder,
+            }) : null,
+        };
+    }, [progress, plannerTasks, mockScores, examDates, disableAutoShift, enableAIAgent, enableMusicPlayer, progressCardSettings, mockExamPresets, subjectData, customColumns, excludedColumns, materialOrder]);
 
     const clearScheduledSync = useCallback(() => {
         if (scheduledTimerRef.current !== null) {
@@ -668,6 +672,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         domainKeys.forEach((domain) => {
             const previous = domainSnapshotsRef.current[domain];
             const current = domainSnapshots[domain];
+
+            if (current === null) return;
+
             domainSnapshotsRef.current[domain] = current;
 
             if (previous === null) return;
