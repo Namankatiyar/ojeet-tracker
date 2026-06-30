@@ -1,257 +1,269 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Identity Card Preview (Sleek Minimal Theme)</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-darker: #0f1012;
-      --bg-dark: #151619;
-      --text-primary: #ffffff;
-      --text-secondary: #9aa0a6;
-      --accent-neon: #00f0ff; /* Bright Cyan glow color for branding */
-      --border-color: #242529;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Identity Card Preview (Sleek Minimal Theme)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-darker: #0f1012;
+        --bg-dark: #151619;
+        --text-primary: #ffffff;
+        --text-secondary: #9aa0a6;
+        --accent-neon: #00f0ff; /* Bright Cyan glow color for branding */
+        --border-color: #242529;
+      }
 
-    body {
-      margin: 0;
-      padding: 40px;
-      background-color: #090a0b;
-      font-family: 'Inter', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      color: var(--text-primary);
-    }
+      body {
+        margin: 0;
+        padding: 40px;
+        background-color: #090a0b;
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        color: var(--text-primary);
+      }
 
-    .preview-info {
-      margin-bottom: 20px;
-      text-align: center;
-    }
+      .preview-info {
+        margin-bottom: 20px;
+        text-align: center;
+      }
 
-    .preview-info h1 {
-      font-size: 24px;
-      margin: 0 0 8px 0;
-    }
+      .preview-info h1 {
+        font-size: 24px;
+        margin: 0 0 8px 0;
+      }
 
-    .preview-info p {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin: 0;
-    }
+      .preview-info p {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin: 0;
+      }
 
-    /* OG Image Simulated Canvas (1200x630) */
-    .og-canvas {
-      width: 1200px;
-      height: 630px;
-      background-color: var(--bg-darker);
-      border-radius: 20px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-      border: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-    }
+      /* OG Image Simulated Canvas (1200x630) */
+      .og-canvas {
+        width: 1200px;
+        height: 630px;
+        background-color: var(--bg-darker);
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+        border: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+      }
 
-    /* Banner area - Sleek backdrop */
-    .profile-banner {
-      height: 280px;
-      background: linear-gradient(135deg, #13151a 0%, #1e2638 50%, #121318 100%);
-      border-bottom: 1px solid var(--border-color);
-      position: relative;
-    }
+      /* Banner area - Sleek backdrop */
+      .profile-banner {
+        height: 280px;
+        background: linear-gradient(135deg, #13151a 0%, #1e2638 50%, #121318 100%);
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+      }
 
-    .profile-banner-media {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6));
-      z-index: 1;
-    }
+      .profile-banner-media {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.6));
+        z-index: 1;
+      }
 
-    /* Custom Banner image simulator */
-    .banner-simulated-bg {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.7;
-    }
+      /* Custom Banner image simulator */
+      .banner-simulated-bg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.7;
+      }
 
-    /* Main body layout */
-    .profile-body {
-      flex: 1;
-      background-color: var(--bg-dark);
-      padding: 0 80px 50px 80px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
+      /* Main body layout */
+      .profile-body {
+        flex: 1;
+        background-color: var(--bg-dark);
+        padding: 0 80px 50px 80px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
 
-    /* Avatar container */
-    .avatar-wrapper {
-      position: absolute;
-      top: -110px;
-      left: 80px;
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background-color: var(--bg-dark);
-      padding: 8px;
-      box-sizing: border-box;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      z-index: 2;
-    }
+      /* Avatar container */
+      .avatar-wrapper {
+        position: absolute;
+        top: -110px;
+        left: 80px;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background-color: var(--bg-dark);
+        padding: 8px;
+        box-sizing: border-box;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        z-index: 2;
+      }
 
-    .avatar-image {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-    }
+      .avatar-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      }
 
-    /* Profile details section */
-    .profile-details {
-      margin-top: 100px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      margin-bottom: auto;
-    }
+      /* Profile details section */
+      .profile-details {
+        margin-top: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: auto;
+      }
 
-    .profile-name {
-      font-size: 52px;
-      font-weight: 800;
-      margin: 0;
-      letter-spacing: -0.03em;
-      color: var(--text-primary);
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    }
+      .profile-name {
+        font-size: 52px;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.03em;
+        color: var(--text-primary);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
 
-    .profile-subtext {
-      font-size: 20px;
-      color: var(--text-secondary);
-      margin: 8px 0 0 0;
-      font-weight: 500;
-    }
+      .profile-subtext {
+        font-size: 20px;
+        color: var(--text-secondary);
+        margin: 8px 0 0 0;
+        font-weight: 500;
+      }
 
-    /* Footer / Branding */
-    .og-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 30px;
-      border-top: 1px solid var(--border-color);
-    }
+      /* Footer / Branding */
+      .og-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 30px;
+        border-top: 1px solid var(--border-color);
+      }
 
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+      .brand-group {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
 
-    /* Glow effect for logo */
-    .brand-logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: var(--accent-neon);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      color: #000000;
-      font-size: 22px;
-      box-shadow: 0 0 20px var(--accent-neon);
-    }
+      /* Glow effect for logo */
+      .brand-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--accent-neon);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #000000;
+        font-size: 22px;
+        box-shadow: 0 0 20px var(--accent-neon);
+      }
 
-    .brand-name {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
-    }
+      .brand-name {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+      }
 
-    .brand-accent-text {
-      color: var(--accent-neon);
-      text-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-    }
+      .brand-accent-text {
+        color: var(--accent-neon);
+        text-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+      }
 
-    .brand-url {
-      color: var(--text-secondary);
-      font-weight: 500;
-      font-size: 18px;
-    }
+      .brand-url {
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-size: 18px;
+      }
 
-    .join-prompt {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+      .join-prompt {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-    .join-arrow {
-      color: var(--accent-neon);
-      font-size: 24px;
-      text-shadow: 0 0 10px var(--accent-neon);
-    }
-  </style>
-</head>
-<body>
-
-  <div class="preview-info">
-    <h1>Identity Card Preview (Sleek Minimal)</h1>
-    <p>Simulating the updated design containing only the user banner, avatar, name, and OJEE Tracker branding.</p>
-  </div>
-
-  <!-- Simulated Canvas -->
-  <div class="og-canvas">
-    <!-- Banner -->
-    <div class="profile-banner">
-      <!-- Simulated banner background image -->
-      <img class="banner-simulated-bg" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200&h=280" alt="Banner">
-      <div class="profile-banner-media"></div>
+      .join-arrow {
+        color: var(--accent-neon);
+        font-size: 24px;
+        text-shadow: 0 0 10px var(--accent-neon);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="preview-info">
+      <h1>Identity Card Preview (Sleek Minimal)</h1>
+      <p>
+        Simulating the updated design containing only the user banner, avatar, name, and OJEE
+        Tracker branding.
+      </p>
     </div>
 
-    <!-- Profile Details & Body -->
-    <div class="profile-body">
-      <!-- Avatar overlapping the banner -->
-      <div class="avatar-wrapper">
-        <img class="avatar-image" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200&h=200" alt="Avatar">
+    <!-- Simulated Canvas -->
+    <div class="og-canvas">
+      <!-- Banner -->
+      <div class="profile-banner">
+        <!-- Simulated banner background image -->
+        <img
+          class="banner-simulated-bg"
+          src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200&h=280"
+          alt="Banner"
+        />
+        <div class="profile-banner-media"></div>
       </div>
 
-      <!-- User Details (No Stats) -->
-      <div class="profile-details">
-        <h2 class="profile-name">Naman Katiyar</h2>
-        <p class="profile-subtext">Syllabus Tracker & Study Room</p>
-      </div>
-
-      <!-- Footer / Brand -->
-      <div class="og-footer">
-        <div class="brand-group">
-          <div class="brand-logo">Ω</div>
-          <span class="brand-name">OJEE <span class="brand-accent-text">Tracker</span></span>
-          <span class="brand-url">• tracker.ojeet.tech</span>
+      <!-- Profile Details & Body -->
+      <div class="profile-body">
+        <!-- Avatar overlapping the banner -->
+        <div class="avatar-wrapper">
+          <img
+            class="avatar-image"
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200&h=200"
+            alt="Avatar"
+          />
         </div>
-        <div class="join-prompt">
-          <span>Join study room</span>
-          <span class="join-arrow">→</span>
+
+        <!-- User Details (No Stats) -->
+        <div class="profile-details">
+          <h2 class="profile-name">Naman Katiyar</h2>
+          <p class="profile-subtext">Syllabus Tracker & Study Room</p>
+        </div>
+
+        <!-- Footer / Brand -->
+        <div class="og-footer">
+          <div class="brand-group">
+            <div class="brand-logo">Ω</div>
+            <span class="brand-name">OJEE <span class="brand-accent-text">Tracker</span></span>
+            <span class="brand-url">• tracker.ojeet.tech</span>
+          </div>
+          <div class="join-prompt">
+            <span>Join study room</span>
+            <span class="join-arrow">→</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-
-</body>
+  </body>
 </html>

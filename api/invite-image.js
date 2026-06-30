@@ -167,8 +167,7 @@ export default async function handler(req, res) {
               left: 0,
               width: '100%',
               height: '100%',
-              background:
-                'linear-gradient(135deg, #020617 0%, #0f172a 60%, #1e1b4b 100%)', // High contrast dark slate
+              background: 'linear-gradient(135deg, #020617 0%, #0f172a 60%, #1e1b4b 100%)', // High contrast dark slate
             },
           }),
 
@@ -220,8 +219,7 @@ export default async function handler(req, res) {
           width: '100%',
           height: '100%',
           opacity: 0.25,
-          backgroundImage:
-            'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)',
           backgroundSize: '32px 32px',
         },
       }),
@@ -470,8 +468,11 @@ export default async function handler(req, res) {
     });
 
     res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
-    
+    res.setHeader(
+      'Cache-Control',
+      'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400'
+    );
+
     const buffer = await imageRes.arrayBuffer();
     return res.status(200).end(Buffer.from(buffer));
   } catch (e) {

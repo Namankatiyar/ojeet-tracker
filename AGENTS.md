@@ -9,6 +9,7 @@ This document captures key learnings about the project architecture and our curr
 `ojee-tracker` is an offline-first JEE/OJEE syllabus tracker and study planner designed for students. It enables tracking syllabus completion, planning daily study tasks, timing study sessions, and recording mock exam scores.
 
 ### Tech Stack
+
 - **Framework & Core**: Vite + React (v18.3.1) + TypeScript.
 - **State & Persistence**: React Context APIs coupled with Custom Local Storage hooks (`useLocalStorage`) for robust offline-first persistence.
 - **Database / Sync**: Supabase integration (`@supabase/supabase-js`) for cloud synchronization when logged in.
@@ -16,6 +17,7 @@ This document captures key learnings about the project architecture and our curr
 - **Libraries**: `chart.js` (performance analytics), `lucide-react` (icons), `canvas-confetti` (completion celebrations).
 
 ### Directory Structure
+
 - [public/data/](file:///home/naman/Documents/ojee-tracker/public/data/): Holds the JEE 2026 syllabus JSON files (`physics.json`, `chemistry.json`, `maths.json`).
 - [src/core/](file:///home/naman/Documents/ojee-tracker/src/core/): Context providers (Auth, Sync, Theme, Subject Data, User Progress) and routing.
 - [src/features/](file:///home/naman/Documents/ojee-tracker/src/features/): Main feature modules:
@@ -30,9 +32,10 @@ This document captures key learnings about the project architecture and our curr
 
 ## 2. Recent Implementation: Subtopics Tracking & Chapter Workspace (V2)
 
-The subtopics tracking and Chapter Workspace (V2) features have been fully implemented and integrated. 
+The subtopics tracking and Chapter Workspace (V2) features have been fully implemented and integrated.
 
 ### Key Implementations & Architecture
+
 1. **Collapsible Row-Based Subtopics**: Replaced nested card clutter in [ChapterDetailDrawer.tsx](file:///home/naman/Documents/ojee-tracker/src/features/subjects/components/ChapterDetailDrawer.tsx) with clean, collapsible subtopic rows.
    - **Collapsed State**: Shows the subtopic name, a completion fraction, and horizontal progress dots mapping to NCERT, PYQs, and Modules.
    - **Expanded State**: Expands inline to reveal material checklist selectors, a compact question stepper, revision date/count selectors, and reset buttons.
@@ -51,6 +54,7 @@ The subtopics tracking and Chapter Workspace (V2) features have been fully imple
 The Daily Study Analytics section has been completely overhauled into a premium, screenshot-ready **12-column Bento Dashboard** for single-glance productivity tracking.
 
 ### Layout & Architecture
+
 1. **Bento Grid Layout**: Structured using a 12-column grid (`.dh-bento-grid`) with explicit cell spans (Hero: `span 5`, Weekly Overview: `span 4`, Streak/Momentum Stack: `span 3`, Timeline & Subjects: `span 12`). It collapses gracefully to single-column layouts on mobile screens.
 2. **Integrated Subject & Chapter Breakdown**: Replaced the monolithic block and table view with independent `.dh-subject-card` items inside a responsive CSS Grid (`repeat(auto-fit, minmax(280px, 1fr))`).
    - Each card features its own subject-colored horizontal progress tracker.
@@ -60,6 +64,7 @@ The Daily Study Analytics section has been completely overhauled into a premium,
 5. **Unified Navigation & Date Controls**: Removed the "Yesterday/Today" pill toggle to consolidate all date selections into `< >` buttons and the unified `.dh-calendar-trigger` (linking to `DatePickerModal`).
 
 ### Visual Rules & UI Polish
+
 - **Dynamic Comparisons**: The delta comparison label dynamically renders relative previous day names (e.g., `vs Thu`). To avoid unfair comparisons, delta pills display "so far" for days currently in progress (e.g., today).
 - **Consistent Headers**: Bento cards use a unified header structure: a flex-row wrapping `<Icon size={14} /> <h3>Title</h3>`. Decorative icons use `var(--text-secondary)` to save `var(--accent)` solely for active states.
 - **Glassmorphism & Density**: We maintain strict high-density spacing (`var(--space-3) var(--space-4)` padding, `--text-xs` for metadata) with translucent background layers and standard design tokens (no utility classes, no custom variables).

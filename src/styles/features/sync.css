@@ -1,181 +1,181 @@
 /* ===== Import Sync Page ===== */
 
 .import-sync-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - var(--header-height));
-    padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--header-height));
+  padding: var(--space-lg);
 }
 
 .import-sync-card {
-    max-width: 440px;
-    width: 100%;
-    padding: var(--space-2xl);
-    border-radius: var(--radius-lg);
-    text-align: center;
-    border: 1px solid var(--border);
-    background: var(--bg-secondary);
-    box-shadow: var(--shadow-lg);
+  max-width: 440px;
+  width: 100%;
+  padding: var(--space-2xl);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-lg);
 }
 
-[data-theme="dark"] .import-sync-card {
-    background: var(--panel-bg);
-    backdrop-filter: var(--panel-blur);
-    -webkit-backdrop-filter: var(--panel-blur);
-    border: 1px solid var(--panel-border);
-    box-shadow: var(--panel-shadow), var(--panel-inner-glow);
+[data-theme='dark'] .import-sync-card {
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow), var(--panel-inner-glow);
 }
 
 .import-sync-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
 }
 
 .import-sync-content h2 {
-    color: var(--text-primary);
-    font-size: 1.35rem;
-    font-weight: 600;
-    margin: 0;
+  color: var(--text-primary);
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0;
 }
 
 .import-sync-content p {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
 }
 
 .import-sync-content strong {
-    color: var(--text-primary);
+  color: var(--text-primary);
 }
 
 /* Icon state colors */
 .import-sync-icon-success {
-    color: var(--priority-low);
-    /* green */
+  color: var(--priority-low);
+  /* green */
 }
 
 .import-sync-icon-accent {
-    color: var(--accent);
+  color: var(--accent);
 }
 
 .import-sync-icon-error {
-    color: var(--priority-high);
-    /* red */
+  color: var(--priority-high);
+  /* red */
 }
 
 /* Spinner animation */
 .import-sync-spinner {
-    color: var(--accent);
-    animation: sync-spin 1s linear infinite;
+  color: var(--accent);
+  animation: sync-spin 1s linear infinite;
 }
 
 @keyframes sync-spin {
-    from {
-        transform: rotate(0deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
 
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ===== Cloud Auth Prompt ===== */
 
 .cloud-sync-modal {
-    width: min(92vw, 480px);
+  width: min(92vw, 480px);
 }
 
 .cloud-sync-modal-subtitle {
-    margin: 0 0 var(--space-sm) 0;
-    color: var(--text-primary);
-    font-size: 0.96rem;
-    line-height: 1.6;
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+  line-height: 1.6;
 }
 
 .cloud-sync-modal-note {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.88rem;
-    line-height: 1.5;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
 .cloud-sync-modal-actions {
-    justify-content: flex-end;
-    gap: var(--space-sm);
-    align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  align-items: center;
 }
 
 .cloud-sync-google-btn {
-    min-width: 208px;
+  min-width: 208px;
 }
 
 .cloud-sync-modal-actions .modal-btn.cancel {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    min-width: 120px;
-    white-space: nowrap;
-    padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 120px;
+  white-space: nowrap;
+  padding: 0 1rem;
 }
 
 @media (max-width: 48rem) {
-    .cloud-sync-modal-actions {
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: flex-start;
-    }
+  .cloud-sync-modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
 
-    .cloud-sync-modal-actions .modal-btn.cancel,
-    .cloud-sync-modal-actions .cloud-sync-google-btn {
-        width: 100%;
-        min-width: 0;
-        flex: 0 0 auto;
-        height: 44px;
-    }
+  .cloud-sync-modal-actions .modal-btn.cancel,
+  .cloud-sync-modal-actions .cloud-sync-google-btn {
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+    height: 44px;
+  }
 }
 
 .cloud-sync-inline-error {
-    margin: var(--space-sm) 0 0 0;
-    color: var(--priority-high);
-    font-size: 0.85rem;
+  margin: var(--space-sm) 0 0 0;
+  color: var(--priority-high);
+  font-size: 0.85rem;
 }
 
 /* ===== PWA Install Prompt ===== */
 
 .pwa-install-modal {
-    width: min(92vw, 460px);
+  width: min(92vw, 460px);
 }
 
 .pwa-install-modal-subtitle {
-    margin: 0 0 var(--space-sm) 0;
-    color: var(--text-primary);
-    font-size: 0.96rem;
-    line-height: 1.6;
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+  line-height: 1.6;
 }
 
 .pwa-install-modal-note {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.88rem;
-    line-height: 1.5;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
 .pwa-install-modal-actions {
-    justify-content: flex-end;
-    gap: var(--space-sm);
-    align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  align-items: center;
 }
 
 .pwa-install-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    height: 40px;
-    min-width: 140px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 40px;
+  min-width: 140px;
 }

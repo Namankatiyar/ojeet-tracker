@@ -7,62 +7,79 @@ import { PlannerTask, MockScore, StudySession, ExamEntry, Subject } from '../../
 import { CoPilotRecommendation } from '../../../shared/hooks/useStudyCoPilot';
 
 export interface AgentContext {
-    // Temporal
-    nowIso: string;
-    todayStr: string;
+  // Temporal
+  nowIso: string;
+  todayStr: string;
 
-    // Progress State
-    physicsProgress: number;
-    chemistryProgress: number;
-    mathsProgress: number;
-    overallProgress: number;
+  // Progress State
+  physicsProgress: number;
+  chemistryProgress: number;
+  mathsProgress: number;
+  overallProgress: number;
 
-    // Live App State
-    plannerTasks: PlannerTask[];
-    mockScores: MockScore[];
-    studySessions: StudySession[];
-    examDates: ExamEntry[];
-    recommendations: CoPilotRecommendation[];
+  // Live App State
+  plannerTasks: PlannerTask[];
+  mockScores: MockScore[];
+  studySessions: StudySession[];
+  examDates: ExamEntry[];
+  recommendations: CoPilotRecommendation[];
 
-    // Metrics
-    studyShares: Record<Subject, number>;
-    totalWeeklyHours: number;
+  // Metrics
+  studyShares: Record<Subject, number>;
+  totalWeeklyHours: number;
 }
 
 function formatDuration(seconds: number): string {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 }
 
 export function buildAgentSystemPrompt(ctx: AgentContext): string {
-    // --- Data Formatting Helpers ---
-    const primaryExam = ctx.examDates.find(e => e.isPrimary) ?? ctx.examDates[0];
-    const daysToExam = primaryExam
-        ? Math.max(0, Math.ceil((new Date(primaryExam.date).getTime() - new Date(ctx.nowIso).getTime()) / (1000 * 60 * 60 * 24)))
-        : null;
+  // --- Data Formatting Helpers ---
+  const primaryExam = ctx.examDates.find((e) => e.isPrimary) ?? ctx.examDates[0];
+  const daysToExam = primaryExam
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(primaryExam.date).getTime() - new Date(ctx.nowIso).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      )
+    : null;
 
-    const upcomingTasks = ctx.plannerTasks
-        .filter(t => !t.completed && t.date >= ctx.todayStr)
-        .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
-        .slice(0, 10)
-        .map(t => `  • [${t.date} ${t.time}] ${t.title}${t.subtitle ? ` (${t.subtitle})` : ''}${t.wasShifted ? ' [OVERDUE]' : ''}`);
+  const upcomingTasks = ctx.plannerTasks
+    .filter((t) => !t.completed && t.date >= ctx.todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+    .slice(0, 10)
+    .map(
+      (t) =>
+        `  • [${t.date} ${t.time}] ${t.title}${t.subtitle ? ` (${t.subtitle})` : ''}${t.wasShifted ? ' [OVERDUE]' : ''}`
+    );
 
-    const recentMocks = [...ctx.mockScores]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 5)
-        .map(m => `  • ${m.date} | ${m.name} | P:${m.physicsMarks} C:${m.chemistryMarks} M:${m.mathsMarks} = ${m.totalMarks}/${m.maxMarks ?? 300}`);
+  const recentMocks = [...ctx.mockScores]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
+    .map(
+      (m) =>
+        `  • ${m.date} | ${m.name} | P:${m.physicsMarks} C:${m.chemistryMarks} M:${m.mathsMarks} = ${m.totalMarks}/${m.maxMarks ?? 300}`
+    );
 
-    const todaysSessions = ctx.studySessions
-        .filter(s => (s.localDate ?? s.startTime.split('T')[0]) === ctx.todayStr)
-        .map(s => `  • ${s.title} (${formatDuration(s.duration)})${s.subject ? ` [${s.subject}]` : ''}`);
+  const todaysSessions = ctx.studySessions
+    .filter((s) => (s.localDate ?? s.startTime.split('T')[0]) === ctx.todayStr)
+    .map(
+      (s) => `  • ${s.title} (${formatDuration(s.duration)})${s.subject ? ` [${s.subject}]` : ''}`
+    );
 
-    const topRecs = ctx.recommendations.slice(0, 3).map(r =>
+  const topRecs = ctx.recommendations
+    .slice(0, 3)
+    .map(
+      (r) =>
         `  • [${r.type.toUpperCase()}] ${r.subject.toUpperCase()} Ch.${r.chapterSerial} "${r.chapterName}" — urgency ${r.urgencyIndex}/100. ${r.message}`
     );
 
-    return `
+  return `
 [IDENTITY & ROLE]
 You are Blue — an AI study buddy embedded inside JEE Tracker, a syllabus tracker and study planner built specifically for JEE aspirants. Your vibe: think of yourself as that one friend who actually aced JEE but never made anyone feel dumb about it. You're bright, warm, a little chaotic-good, and weirdly obsessed with helping people hit their goals. You speak gen-Z fluently, drop the occasional certified banger of a pep talk, and make even Thermodynamics feel like a conversation worth having.
 

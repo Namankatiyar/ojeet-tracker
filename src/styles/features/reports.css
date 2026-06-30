@@ -116,20 +116,40 @@
 }
 
 /* Row Variants */
-.row-variant-stuck { border-left-color: var(--priority-high); }
-.text-row-variant-stuck { color: var(--priority-high); }
+.row-variant-stuck {
+  border-left-color: var(--priority-high);
+}
+.text-row-variant-stuck {
+  color: var(--priority-high);
+}
 
-.row-variant-mock { border-left-color: var(--confidence-purple); }
-.text-row-variant-mock { color: var(--confidence-purple); }
+.row-variant-mock {
+  border-left-color: var(--confidence-purple);
+}
+.text-row-variant-mock {
+  color: var(--confidence-purple);
+}
 
-.row-variant-neglect { border-left-color: var(--priority-medium); }
-.text-row-variant-neglect { color: var(--priority-medium); }
+.row-variant-neglect {
+  border-left-color: var(--priority-medium);
+}
+.text-row-variant-neglect {
+  color: var(--priority-medium);
+}
 
-.row-variant-complete { border-left-color: var(--priority-low); }
-.text-row-variant-complete { color: var(--priority-low); }
+.row-variant-complete {
+  border-left-color: var(--priority-low);
+}
+.text-row-variant-complete {
+  color: var(--priority-low);
+}
 
-.row-variant-revision { border-left-color: var(--accent); }
-.text-row-variant-revision { color: var(--accent); }
+.row-variant-revision {
+  border-left-color: var(--accent);
+}
+.text-row-variant-revision {
+  color: var(--accent);
+}
 
 /* Column 1: Subject */
 .nudge-col-subject {
@@ -144,11 +164,21 @@
   flex-shrink: 0;
 }
 
-.icon-revision { color: var(--accent); }
-.icon-stuck { color: var(--priority-medium); }
-.icon-mock { color: var(--priority-high); }
-.icon-neglect { color: var(--confidence-purple); }
-.icon-complete { color: var(--priority-low); }
+.icon-revision {
+  color: var(--accent);
+}
+.icon-stuck {
+  color: var(--priority-medium);
+}
+.icon-mock {
+  color: var(--priority-high);
+}
+.icon-neglect {
+  color: var(--confidence-purple);
+}
+.icon-complete {
+  color: var(--priority-low);
+}
 
 .nudge-subject-badge {
   font-size: 0.65rem;
@@ -157,9 +187,18 @@
   border-radius: var(--radius-xs);
   text-align: center;
 }
-.badge-physics { background: color-mix(in srgb, var(--physics), transparent 85%); color: var(--physics); }
-.badge-chemistry { background: color-mix(in srgb, var(--chemistry), transparent 85%); color: var(--chemistry); }
-.badge-maths { background: color-mix(in srgb, var(--maths), transparent 85%); color: var(--maths); }
+.badge-physics {
+  background: color-mix(in srgb, var(--physics), transparent 85%);
+  color: var(--physics);
+}
+.badge-chemistry {
+  background: color-mix(in srgb, var(--chemistry), transparent 85%);
+  color: var(--chemistry);
+}
+.badge-maths {
+  background: color-mix(in srgb, var(--maths), transparent 85%);
+  color: var(--maths);
+}
 
 /* Column 2: Details */
 .nudge-col-details {
@@ -260,13 +299,17 @@
   background: color-mix(in srgb, var(--priority-high), transparent 80%);
   border-color: color-mix(in srgb, var(--priority-high), transparent 50%);
 }
-.compact-metric.metric-high .c-metric-val { color: var(--priority-high); }
+.compact-metric.metric-high .c-metric-val {
+  color: var(--priority-high);
+}
 
 .compact-metric.metric-low-retention {
   background: color-mix(in srgb, var(--priority-high), transparent 80%);
   border-color: color-mix(in srgb, var(--priority-high), transparent 50%);
 }
-.compact-metric.metric-low-retention .c-metric-val { color: var(--priority-high); }
+.compact-metric.metric-low-retention .c-metric-val {
+  color: var(--priority-high);
+}
 
 .c-metric-lbl {
   color: var(--text-muted);
@@ -316,7 +359,9 @@
   background: var(--accent);
   color: white;
 }
-.btn-compact.primary:hover { background: var(--accent-hover); }
+.btn-compact.primary:hover {
+  background: var(--accent-hover);
+}
 .btn-compact.success {
   background: var(--priority-low);
   color: white;
@@ -379,16 +424,46 @@
 }
 
 /* Confidence color coding */
-.inline-conf-btn.level-1 { border-color: color-mix(in srgb, var(--confidence-red), transparent 60%); }
-.inline-conf-btn.level-1:hover { background: var(--confidence-red); color: white; border-color: var(--confidence-red); }
-.inline-conf-btn.level-2 { border-color: color-mix(in srgb, var(--confidence-amber), transparent 60%); }
-.inline-conf-btn.level-2:hover { background: var(--confidence-amber); color: white; border-color: var(--confidence-amber); }
-.inline-conf-btn.level-3 { border-color: color-mix(in srgb, var(--confidence-yellow), transparent 60%); }
-.inline-conf-btn.level-3:hover { background: var(--confidence-yellow); color: white; border-color: var(--confidence-yellow); }
-.inline-conf-btn.level-4 { border-color: color-mix(in srgb, var(--accent), transparent 60%); }
-.inline-conf-btn.level-4:hover { background: var(--accent); color: white; border-color: var(--accent); }
-.inline-conf-btn.level-5 { border-color: color-mix(in srgb, var(--confidence-green), transparent 60%); }
-.inline-conf-btn.level-5:hover { background: var(--confidence-green); color: white; border-color: var(--confidence-green); }
+.inline-conf-btn.level-1 {
+  border-color: color-mix(in srgb, var(--confidence-red), transparent 60%);
+}
+.inline-conf-btn.level-1:hover {
+  background: var(--confidence-red);
+  color: white;
+  border-color: var(--confidence-red);
+}
+.inline-conf-btn.level-2 {
+  border-color: color-mix(in srgb, var(--confidence-amber), transparent 60%);
+}
+.inline-conf-btn.level-2:hover {
+  background: var(--confidence-amber);
+  color: white;
+  border-color: var(--confidence-amber);
+}
+.inline-conf-btn.level-3 {
+  border-color: color-mix(in srgb, var(--confidence-yellow), transparent 60%);
+}
+.inline-conf-btn.level-3:hover {
+  background: var(--confidence-yellow);
+  color: white;
+  border-color: var(--confidence-yellow);
+}
+.inline-conf-btn.level-4 {
+  border-color: color-mix(in srgb, var(--accent), transparent 60%);
+}
+.inline-conf-btn.level-4:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.inline-conf-btn.level-5 {
+  border-color: color-mix(in srgb, var(--confidence-green), transparent 60%);
+}
+.inline-conf-btn.level-5:hover {
+  background: var(--confidence-green);
+  color: white;
+  border-color: var(--confidence-green);
+}
 
 .inline-cancel-btn {
   background: transparent;
@@ -438,8 +513,15 @@
 }
 
 @keyframes pulse-sparkle {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 0.8; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }
 
 /* Responsive Table */
@@ -452,9 +534,9 @@
     grid-template-columns: 70px 1fr;
     grid-template-rows: auto auto auto;
     grid-template-areas:
-      "subject details"
-      "subject metrics"
-      "actions actions";
+      'subject details'
+      'subject metrics'
+      'actions actions';
     gap: var(--space-2) var(--space-3);
     padding: var(--space-4) var(--space-3);
   }
@@ -495,12 +577,11 @@
     align-items: flex-start;
     gap: var(--space-3);
   }
-  
+
   .recommendation-count-badge {
     align-self: flex-start;
   }
 }
-
 
 /* ============================================= */
 /* Daily Study Analytics — Bento Dashboard       */
@@ -568,7 +649,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .dh-nav-arrow:hover {
@@ -593,7 +676,9 @@
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .dh-pill-btn.active {
@@ -610,11 +695,17 @@
   color: var(--text-secondary);
   padding: 6px var(--space-3);
   border-radius: var(--radius-sm);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: border-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -781,7 +872,11 @@
 
 .dh-metric-unit {
   font-size: var(--text-base);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   color: var(--text-muted);
   font-weight: 600;
 }
@@ -928,8 +1023,6 @@
   border: 1px solid transparent;
 }
 
-
-
 .dh-weekly-bar-seg {
   width: 100%;
   transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -940,10 +1033,18 @@
   border-radius: var(--radius-xs) var(--radius-xs) 0 0;
 }
 
-.dh-weekly-bar-seg.physics { background-color: var(--physics); }
-.dh-weekly-bar-seg.chemistry { background-color: var(--chemistry); }
-.dh-weekly-bar-seg.maths { background-color: var(--maths); }
-.dh-weekly-bar-seg.custom { background-color: var(--custom); }
+.dh-weekly-bar-seg.physics {
+  background-color: var(--physics);
+}
+.dh-weekly-bar-seg.chemistry {
+  background-color: var(--chemistry);
+}
+.dh-weekly-bar-seg.maths {
+  background-color: var(--maths);
+}
+.dh-weekly-bar-seg.custom {
+  background-color: var(--custom);
+}
 
 .dh-weekly-day-label {
   font-size: 0.65rem;
@@ -976,7 +1077,10 @@
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.15s;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s 0.15s;
   z-index: 99;
   box-shadow: var(--panel-shadow);
 }
@@ -985,7 +1089,10 @@
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0s;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s 0s;
 }
 
 /* ── Streak + Momentum Stats ── */
@@ -1046,7 +1153,11 @@
 }
 
 .dh-stat-value.text-label {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 1rem;
 }
 
@@ -1118,7 +1229,9 @@
   width: 100%;
   border-radius: 0;
   min-height: 0;
-  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity var(--transition-fast);
+  transition:
+    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity var(--transition-fast);
 }
 
 .dh-histogram-container.compact .dh-histogram-bar.empty {
@@ -1127,27 +1240,47 @@
 }
 
 .dh-histogram-bar.physics {
-  background: linear-gradient(to top, color-mix(in srgb, var(--physics), transparent 20%), var(--physics));
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--physics), transparent 20%),
+    var(--physics)
+  );
   box-shadow: 0 0 10px color-mix(in srgb, var(--physics), transparent 50%);
 }
 
 .dh-histogram-bar.chemistry {
-  background: linear-gradient(to top, color-mix(in srgb, var(--chemistry), transparent 20%), var(--chemistry));
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--chemistry), transparent 20%),
+    var(--chemistry)
+  );
   box-shadow: 0 0 10px color-mix(in srgb, var(--chemistry), transparent 50%);
 }
 
 .dh-histogram-bar.maths {
-  background: linear-gradient(to top, color-mix(in srgb, var(--maths), transparent 20%), var(--maths));
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--maths), transparent 20%),
+    var(--maths)
+  );
   box-shadow: 0 0 10px color-mix(in srgb, var(--maths), transparent 50%);
 }
 
 .dh-histogram-bar.custom {
-  background: linear-gradient(to top, color-mix(in srgb, var(--custom), transparent 20%), var(--custom));
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--custom), transparent 20%),
+    var(--custom)
+  );
   box-shadow: 0 0 10px color-mix(in srgb, var(--custom), transparent 50%);
 }
 
 .dh-histogram-bar.mixed {
-  background: linear-gradient(to top, color-mix(in srgb, var(--accent), transparent 20%), var(--accent));
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--accent), transparent 20%),
+    var(--accent)
+  );
   box-shadow: 0 0 10px color-mix(in srgb, var(--accent), transparent 50%);
 }
 
@@ -1174,7 +1307,10 @@
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.15s;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s 0.15s;
   z-index: 99;
   box-shadow: var(--panel-shadow);
 }
@@ -1183,7 +1319,10 @@
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0s;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s 0s;
 }
 
 /* Axis: replaces flat space-between label row with precisely-pinned ticks */
@@ -1252,7 +1391,10 @@
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.15s;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s 0.15s;
   z-index: 99;
   box-shadow: var(--panel-shadow);
 }
@@ -1262,7 +1404,10 @@
   z-index: 100;
   visibility: visible;
   transform: translateY(0);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0s;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0s 0s;
 }
 
 /* ── Subject Focus & Chapters ── */
@@ -1312,9 +1457,15 @@
   flex-shrink: 0;
 }
 
-.dh-legend-dot.physics { background-color: var(--physics); }
-.dh-legend-dot.chemistry { background-color: var(--chemistry); }
-.dh-legend-dot.maths { background-color: var(--maths); }
+.dh-legend-dot.physics {
+  background-color: var(--physics);
+}
+.dh-legend-dot.chemistry {
+  background-color: var(--chemistry);
+}
+.dh-legend-dot.maths {
+  background-color: var(--maths);
+}
 
 .dh-subject-card-name {
   font-size: var(--text-sm);
@@ -1351,9 +1502,15 @@
   border-radius: var(--radius-full);
   transition: width var(--transition-slow);
 }
-.dh-subject-progress-fill.physics { background-color: var(--physics); }
-.dh-subject-progress-fill.chemistry { background-color: var(--chemistry); }
-.dh-subject-progress-fill.maths { background-color: var(--maths); }
+.dh-subject-progress-fill.physics {
+  background-color: var(--physics);
+}
+.dh-subject-progress-fill.chemistry {
+  background-color: var(--chemistry);
+}
+.dh-subject-progress-fill.maths {
+  background-color: var(--maths);
+}
 
 .dh-chapter-cards {
   display: flex;
@@ -1416,17 +1573,17 @@
   border-color: transparent;
   color: #ffffff;
 }
-.dh-material-tag.completed.physics { 
+.dh-material-tag.completed.physics {
   background-color: color-mix(in srgb, var(--physics), transparent 85%);
   color: var(--physics);
   border-color: color-mix(in srgb, var(--physics), transparent 50%);
 }
-.dh-material-tag.completed.chemistry { 
+.dh-material-tag.completed.chemistry {
   background-color: color-mix(in srgb, var(--chemistry), transparent 85%);
   color: var(--chemistry);
   border-color: color-mix(in srgb, var(--chemistry), transparent 50%);
 }
-.dh-material-tag.completed.maths { 
+.dh-material-tag.completed.maths {
   background-color: color-mix(in srgb, var(--maths), transparent 85%);
   color: var(--maths);
   border-color: color-mix(in srgb, var(--maths), transparent 50%);
@@ -1545,7 +1702,9 @@
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .dh-edit-modal.active {
@@ -1582,7 +1741,11 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   outline: none;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: var(--text-sm);
   transition: border-color var(--transition-fast);
 }

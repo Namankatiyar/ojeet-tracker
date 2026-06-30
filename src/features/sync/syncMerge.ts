@@ -1,34 +1,58 @@
 import { SyncPayloadV1 } from './syncTypes';
 
-export type SyncDomain = 'progress' | 'plannerTasks' | 'mockScores' | 'examDates' | 'settings' | 'subjects';
+export type SyncDomain =
+  | 'progress'
+  | 'plannerTasks'
+  | 'mockScores'
+  | 'examDates'
+  | 'settings'
+  | 'subjects';
 
 interface MergeOptions {
-    hasLocalUnsyncedEdit: (domain: SyncDomain) => boolean;
+  hasLocalUnsyncedEdit: (domain: SyncDomain) => boolean;
 }
 
 export function mergePayloadDomainsWithPolicy(
-    localPayload: SyncPayloadV1,
-    remotePayload: SyncPayloadV1,
-    options: MergeOptions
+  localPayload: SyncPayloadV1,
+  remotePayload: SyncPayloadV1,
+  options: MergeOptions
 ): SyncPayloadV1 {
-    const merged: SyncPayloadV1 = {
-        ...remotePayload,
-        domains: {
-            ...remotePayload.domains,
-            settings: {
-                ...remotePayload.domains.settings,
-            },
-        },
-    };
+  const merged: SyncPayloadV1 = {
+    ...remotePayload,
+    domains: {
+      ...remotePayload.domains,
+      settings: {
+        ...remotePayload.domains.settings,
+      },
+    },
+  };
 
-    const shouldUseLocalForDomain = (domain: SyncDomain) => options.hasLocalUnsyncedEdit(domain);
+  const shouldUseLocalForDomain = (domain: SyncDomain) => options.hasLocalUnsyncedEdit(domain);
 
-    merged.domains.progress = shouldUseLocalForDomain('progress') || !remotePayload.domains.progress ? localPayload.domains.progress : remotePayload.domains.progress;
-    merged.domains.plannerTasks = shouldUseLocalForDomain('plannerTasks') || !remotePayload.domains.plannerTasks ? localPayload.domains.plannerTasks : remotePayload.domains.plannerTasks;
-    merged.domains.mockScores = shouldUseLocalForDomain('mockScores') || !remotePayload.domains.mockScores ? localPayload.domains.mockScores : remotePayload.domains.mockScores;
-    merged.domains.examDates = shouldUseLocalForDomain('examDates') || !remotePayload.domains.examDates ? localPayload.domains.examDates : remotePayload.domains.examDates;
-    merged.domains.settings = shouldUseLocalForDomain('settings') || !remotePayload.domains.settings ? localPayload.domains.settings : remotePayload.domains.settings;
-    merged.domains.subjects = shouldUseLocalForDomain('subjects') || !remotePayload.domains.subjects ? localPayload.domains.subjects : remotePayload.domains.subjects;
+  merged.domains.progress =
+    shouldUseLocalForDomain('progress') || !remotePayload.domains.progress
+      ? localPayload.domains.progress
+      : remotePayload.domains.progress;
+  merged.domains.plannerTasks =
+    shouldUseLocalForDomain('plannerTasks') || !remotePayload.domains.plannerTasks
+      ? localPayload.domains.plannerTasks
+      : remotePayload.domains.plannerTasks;
+  merged.domains.mockScores =
+    shouldUseLocalForDomain('mockScores') || !remotePayload.domains.mockScores
+      ? localPayload.domains.mockScores
+      : remotePayload.domains.mockScores;
+  merged.domains.examDates =
+    shouldUseLocalForDomain('examDates') || !remotePayload.domains.examDates
+      ? localPayload.domains.examDates
+      : remotePayload.domains.examDates;
+  merged.domains.settings =
+    shouldUseLocalForDomain('settings') || !remotePayload.domains.settings
+      ? localPayload.domains.settings
+      : remotePayload.domains.settings;
+  merged.domains.subjects =
+    shouldUseLocalForDomain('subjects') || !remotePayload.domains.subjects
+      ? localPayload.domains.subjects
+      : remotePayload.domains.subjects;
 
-    return merged;
+  return merged;
 }

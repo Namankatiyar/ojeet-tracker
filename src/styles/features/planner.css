@@ -208,7 +208,9 @@
 .day-column.drag-over {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent), transparent 80%);
-  box-shadow: 0 0 0 4px var(--accent), var(--shadow-glow);
+  box-shadow:
+    0 0 0 4px var(--accent),
+    var(--shadow-glow);
   transform: translateY(-4px);
   z-index: 10;
 }
@@ -391,16 +393,20 @@
   pointer-events: none;
   opacity: 0.12;
   background:
-    linear-gradient(to top right,
+    linear-gradient(
+      to top right,
       transparent calc(50% - 0.5px),
       var(--text-muted) calc(50% - 0.5px),
       var(--text-muted) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px)),
-    linear-gradient(to top left,
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      to top left,
       transparent calc(50% - 0.5px),
       var(--text-muted) calc(50% - 0.5px),
       var(--text-muted) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px));
+      transparent calc(50% + 0.5px)
+    );
 }
 
 /* ===== Cell Header (Date + Study Time) ===== */
@@ -535,8 +541,6 @@
 .cal-event-more:hover {
   color: var(--accent);
 }
-
-
 
 /* ===== Cursor-Anchored Hover Panel ===== */
 .cal-hover-panel {
@@ -872,7 +876,7 @@
   color: var(--accent);
 }
 
-.day-modal-task-label input[type="checkbox"] {
+.day-modal-task-label input[type='checkbox'] {
   margin-top: 3px;
   accent-color: var(--accent);
   width: 16px;
@@ -1000,7 +1004,6 @@
   }
 }
 
-
 /* ===== Tasks ===== */
 .planner-task {
   background: var(--bg-tertiary);
@@ -1062,7 +1065,9 @@
   color: var(--text-primary);
   text-decoration: none;
   border-bottom: 1px solid transparent;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .task-title-link:hover {
@@ -1073,7 +1078,9 @@
 .task-link-icon {
   opacity: 0;
   transform: translateY(1px);
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -1355,7 +1362,6 @@
   pointer-events: none;
 }
 
-
 .modal-content .type-btn {
   display: flex;
   flex-direction: column;
@@ -1457,7 +1463,8 @@
 
 .chapter-search-box:focus-within {
   border-color: color-mix(in srgb, var(--accent), transparent 35%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 0 2px color-mix(in srgb, var(--accent), transparent 85%);
 }
 
@@ -1678,7 +1685,10 @@
   border: 1.5px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   cursor: text;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
   gap: 0.55rem;
 }
 
@@ -1703,14 +1713,14 @@
 }
 
 /* Neuter the global dark-mode input override for segment inputs */
-[data-theme="dark"] .time-segment-input {
+[data-theme='dark'] .time-segment-input {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
 
-[data-theme="dark"] .time-segment-input:focus {
+[data-theme='dark'] .time-segment-input:focus {
   border-color: transparent !important;
   box-shadow: none !important;
 }
@@ -1729,7 +1739,9 @@
   font-family: inherit;
   letter-spacing: 0.02em;
   line-height: 1;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   caret-color: var(--accent);
 }
 
@@ -1802,7 +1814,9 @@
   background: transparent;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 .time-picker-toggle:hover {
@@ -1817,7 +1831,9 @@
 .time-icon {
   color: var(--text-muted);
   flex-shrink: 0;
-  transition: color 0.2s, transform 0.2s;
+  transition:
+    color 0.2s,
+    transform 0.2s;
   opacity: 0.5;
 }
 
@@ -1838,7 +1854,9 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   animation: slideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 @keyframes slideDown {
@@ -1893,7 +1911,10 @@
   color: var(--text-secondary);
   font-weight: 500;
   font-size: 0.85rem;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
   width: 100%;
   text-align: center;
 }
@@ -1964,8 +1985,6 @@
     flex-direction: row;
   }
 
-
-
   .modal-body-scrollable {
     padding: var(--space-4);
   }
@@ -1993,88 +2012,88 @@
 }
 
 /* Light Mode Overrides */
-:root:not([data-theme="dark"]) .modal-content .type-btn,
-[data-theme="light"] .modal-content .type-btn {
+:root:not([data-theme='dark']) .modal-content .type-btn,
+[data-theme='light'] .modal-content .type-btn {
   border: 1px solid var(--border);
   background: var(--bg-tertiary);
 }
 
-:root:not([data-theme="dark"]) .subject-option,
-[data-theme="light"] .subject-option {
+:root:not([data-theme='dark']) .subject-option,
+[data-theme='light'] .subject-option {
   border: 1px solid var(--border);
   background: var(--bg-tertiary);
 }
 
-:root:not([data-theme="dark"]) .large-input,
-[data-theme="light"] .large-input {
+:root:not([data-theme='dark']) .large-input,
+[data-theme='light'] .large-input {
   border: 1px solid var(--border);
   background: var(--bg-tertiary);
 }
 
-:root:not([data-theme="dark"]) .material-pill,
-[data-theme="light"] .material-pill {
+:root:not([data-theme='dark']) .material-pill,
+[data-theme='light'] .material-pill {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
 }
 
 /* Light mode time picker */
-:root:not([data-theme="dark"]) .time-display-box,
-[data-theme="light"] .time-display-box {
+:root:not([data-theme='dark']) .time-display-box,
+[data-theme='light'] .time-display-box {
   background: var(--bg-tertiary);
   border: 1.5px solid var(--border);
 }
 
-:root:not([data-theme="dark"]) .time-display-box:hover,
-[data-theme="light"] .time-display-box:hover {
+:root:not([data-theme='dark']) .time-display-box:hover,
+[data-theme='light'] .time-display-box:hover {
   border-color: var(--border-hover);
   background: var(--bg-secondary);
 }
 
-:root:not([data-theme="dark"]) .time-display-box.active,
-[data-theme="light"] .time-display-box.active {
+:root:not([data-theme='dark']) .time-display-box.active,
+[data-theme='light'] .time-display-box.active {
   background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 90%);
 }
 
-:root:not([data-theme="dark"]) .custom-time-picker,
-[data-theme="light"] .custom-time-picker {
+:root:not([data-theme='dark']) .custom-time-picker,
+[data-theme='light'] .custom-time-picker {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-:root:not([data-theme="dark"]) .time-btn,
-[data-theme="light"] .time-btn {
+:root:not([data-theme='dark']) .time-btn,
+[data-theme='light'] .time-btn {
   color: var(--text-secondary);
 }
 
-:root:not([data-theme="dark"]) .time-btn:hover,
-[data-theme="light"] .time-btn:hover {
+:root:not([data-theme='dark']) .time-btn:hover,
+[data-theme='light'] .time-btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
-:root:not([data-theme="dark"]) .period-btn,
-[data-theme="light"] .period-btn {
+:root:not([data-theme='dark']) .period-btn,
+[data-theme='light'] .period-btn {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
 }
 
-:root:not([data-theme="dark"]) .period-btn:hover,
-[data-theme="light"] .period-btn:hover {
+:root:not([data-theme='dark']) .period-btn:hover,
+[data-theme='light'] .period-btn:hover {
   background: var(--bg-primary);
   border-color: var(--border-hover);
 }
 
 /* Light mode: neuter the global input override for segment inputs */
-:root:not([data-theme="dark"]) .time-segment-input,
-[data-theme="light"] .time-segment-input {
+:root:not([data-theme='dark']) .time-segment-input,
+[data-theme='light'] .time-segment-input {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
 }
 
-:root:not([data-theme="dark"]) .time-segment-input:focus,
-[data-theme="light"] .time-segment-input:focus {
+:root:not([data-theme='dark']) .time-segment-input:focus,
+[data-theme='light'] .time-segment-input:focus {
   border-color: transparent !important;
   box-shadow: none !important;
   background: color-mix(in srgb, var(--accent), transparent 88%) !important;
@@ -2082,15 +2101,15 @@
 }
 
 /* Light mode period badge */
-:root:not([data-theme="dark"]) .period-badge.am,
-[data-theme="light"] .period-badge.am {
+:root:not([data-theme='dark']) .period-badge.am,
+[data-theme='light'] .period-badge.am {
   color: color-mix(in srgb, var(--accent), var(--text-primary) 18%);
   background: color-mix(in srgb, var(--accent), transparent 92%);
   border-color: color-mix(in srgb, var(--accent), transparent 70%);
 }
 
-:root:not([data-theme="dark"]) .period-badge.pm,
-[data-theme="light"] .period-badge.pm {
+:root:not([data-theme='dark']) .period-badge.pm,
+[data-theme='light'] .period-badge.pm {
   background: color-mix(in srgb, var(--accent), transparent 88%);
 }
 
@@ -2128,7 +2147,10 @@
   border-radius: var(--radius-sm) !important;
   background: var(--bg-secondary) !important;
   border: 1px solid var(--border) !important;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast) !important;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast) !important;
 }
 
 .task-modal .stepper-wrapper-with-reset .icon-btn-reset:hover {

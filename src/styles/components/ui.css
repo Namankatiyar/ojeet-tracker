@@ -69,17 +69,17 @@
 }
 
 /* Glass buttons dark mode */
-[data-theme="dark"] .btn-primary,
-[data-theme="dark"] .primary-action-btn,
-[data-theme="dark"] .primary-btn {
+[data-theme='dark'] .btn-primary,
+[data-theme='dark'] .primary-action-btn,
+[data-theme='dark'] .primary-btn {
   background: color-mix(in srgb, var(--accent), transparent 20%);
   backdrop-filter: var(--panel-blur);
   border: 1px solid color-mix(in srgb, var(--accent), white 20%);
   box-shadow: var(--panel-inner-glow);
 }
 
-[data-theme="dark"] .btn-secondary,
-[data-theme="dark"] .secondary-btn {
+[data-theme='dark'] .btn-secondary,
+[data-theme='dark'] .secondary-btn {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   border: 1px solid var(--panel-border);
@@ -143,14 +143,13 @@
   animation: fadeIn 0.2s ease;
 }
 
-[data-theme="dark"] .color-picker-popup {
+[data-theme='dark'] .color-picker-popup {
   background: var(--panel-bg);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);
 }
-
 
 @keyframes fadeIn {
   from {
@@ -189,7 +188,9 @@
 .color-option.selected {
   border-color: var(--text-primary);
   transform: scale(1.1);
-  box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 0 4px var(--accent);
+  box-shadow:
+    0 0 0 2px var(--bg-secondary),
+    0 0 0 4px var(--accent);
 }
 
 .theme-toggle {
@@ -213,22 +214,23 @@
 
 /* ===== Glass Input Fields (Global) ===== */
 /* Applied to all dark mode inputs/textareas/selects */
-[data-theme="dark"] input,
-[data-theme="dark"] textarea,
-[data-theme="dark"] select {
+[data-theme='dark'] input,
+[data-theme='dark'] textarea,
+[data-theme='dark'] select {
   background: rgba(0, 0, 0, 0.3);
   border-color: var(--panel-border);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
 }
 
-[data-theme="dark"] input:focus,
-[data-theme="dark"] textarea:focus,
-[data-theme="dark"] select:focus {
+[data-theme='dark'] input:focus,
+[data-theme='dark'] textarea:focus,
+[data-theme='dark'] select:focus {
   border-color: var(--glass-border-light);
-  box-shadow: var(--panel-inner-glow), 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
+  box-shadow:
+    var(--panel-inner-glow),
+    0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
 }
-
 
 /* ===== Checkboxes ===== */
 .checkbox-container {
@@ -265,12 +267,12 @@
   border-color: var(--accent);
 }
 
-.checkbox-container input:checked~.checkmark {
+.checkbox-container input:checked ~ .checkmark {
   background: var(--accent);
   border-color: var(--accent);
 }
 
-.checkbox-container input:checked~.checkmark::after {
+.checkbox-container input:checked ~ .checkmark::after {
   content: '✓';
   color: var(--accent-text);
   font-size: 0.75rem;
@@ -283,14 +285,14 @@
   -webkit-backdrop-filter: var(--panel-blur);
 }
 
-[data-theme="dark"] .filter-dropdown {
+[data-theme='dark'] .filter-dropdown {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow), var(--panel-inner-glow);
 }
 
-:root:not([data-theme="dark"]) .filter-dropdown,
-[data-theme="light"] .filter-dropdown {
+:root:not([data-theme='dark']) .filter-dropdown,
+[data-theme='light'] .filter-dropdown {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
@@ -389,11 +391,14 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
-  
+
   opacity: 0;
   visibility: hidden;
   transform: translateY(4px);
-  transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast),
+    visibility var(--transition-fast);
 }
 
 .chat-fab:hover .fab-info-tooltip,
@@ -403,8 +408,8 @@
   transform: translateY(0);
 }
 
-:root:not([data-theme="dark"]) .fab-info-tooltip,
-[data-theme="light"] .fab-info-tooltip {
+:root:not([data-theme='dark']) .fab-info-tooltip,
+[data-theme='light'] .fab-info-tooltip {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
@@ -433,7 +438,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .fab-info-tooltip-close:hover {

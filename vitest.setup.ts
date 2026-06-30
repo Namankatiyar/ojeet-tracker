@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom'
-import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
 
 class MockLocalStorage {
   private store: Record<string, string> = {};
@@ -39,12 +39,12 @@ if (typeof window !== 'undefined') {
     Object.defineProperty(window, 'localStorage', {
       value: mockLocalStorage,
       writable: true,
-      configurable: true
+      configurable: true,
     });
     Object.defineProperty(window, 'sessionStorage', {
       value: mockSessionStorage,
       writable: true,
-      configurable: true
+      configurable: true,
     });
   } catch (e) {
     // Ignore if already defined or read-only
@@ -54,12 +54,12 @@ if (typeof window !== 'undefined') {
     Object.defineProperty(globalThis, 'localStorage', {
       value: mockLocalStorage,
       writable: true,
-      configurable: true
+      configurable: true,
     });
     Object.defineProperty(globalThis, 'sessionStorage', {
       value: mockSessionStorage,
       writable: true,
-      configurable: true
+      configurable: true,
     });
   } catch (e) {
     // Ignore
@@ -67,8 +67,5 @@ if (typeof window !== 'undefined') {
 }
 
 afterEach(() => {
-  cleanup()
-})
-
-
-
+  cleanup();
+});

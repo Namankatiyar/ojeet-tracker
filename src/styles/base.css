@@ -2,12 +2,20 @@
 /* Global element styles (reset is in layers/_reset.css) */
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
-  transition: background-color var(--transition-normal), color var(--transition-normal);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
   position: relative;
 }
 
@@ -20,7 +28,7 @@ html {
 }
 
 /* Custom Background Image Layer - DARK MODE ONLY */
-html[data-theme="dark"] body.has-custom-bg::before {
+html[data-theme='dark'] body.has-custom-bg::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -33,7 +41,7 @@ html[data-theme="dark"] body.has-custom-bg::before {
 }
 
 /* Dimming Overlay - DARK MODE ONLY */
-html[data-theme="dark"] body.has-custom-bg::after {
+html[data-theme='dark'] body.has-custom-bg::after {
   content: '';
   position: fixed;
   inset: 0;
@@ -44,29 +52,56 @@ html[data-theme="dark"] body.has-custom-bg::after {
 }
 
 /* Background Gradients - on body, but transparent when custom bg is used */
-html[data-theme="dark"] body {
+html[data-theme='dark'] body {
   background:
     /* Primary accent blob - top left */
-    radial-gradient(ellipse 80% 60% at 10% 10%, color-mix(in srgb, var(--accent), transparent 70%) 0%, transparent 50%),
+    radial-gradient(
+      ellipse 80% 60% at 10% 10%,
+      color-mix(in srgb, var(--accent), transparent 70%) 0%,
+      transparent 50%
+    ),
     /* Secondary accent blob - top right */
-    radial-gradient(ellipse 60% 50% at 90% 15%, color-mix(in srgb, var(--accent), var(--secondary-accent, #a855f7) 50%) 0%, transparent 40%),
+    radial-gradient(
+        ellipse 60% 50% at 90% 15%,
+        color-mix(in srgb, var(--accent), var(--secondary-accent, #a855f7) 50%) 0%,
+        transparent 40%
+      ),
     /* Warm accent - bottom left */
-    radial-gradient(ellipse 70% 60% at 5% 85%, color-mix(in srgb, #f59e0b, transparent 80%) 0%, transparent 45%),
+    radial-gradient(
+        ellipse 70% 60% at 5% 85%,
+        color-mix(in srgb, #f59e0b, transparent 80%) 0%,
+        transparent 45%
+      ),
     /* Cool accent - bottom right */
-    radial-gradient(ellipse 80% 70% at 95% 90%, color-mix(in srgb, var(--accent), #06b6d4 40%) 0%, transparent 50%),
+    radial-gradient(
+        ellipse 80% 70% at 95% 90%,
+        color-mix(in srgb, var(--accent), #06b6d4 40%) 0%,
+        transparent 50%
+      ),
     /* Center glow */
-    radial-gradient(ellipse 100% 80% at 50% 50%, color-mix(in srgb, var(--accent), transparent 92%) 0%, transparent 60%),
+    radial-gradient(
+        ellipse 100% 80% at 50% 50%,
+        color-mix(in srgb, var(--accent), transparent 92%) 0%,
+        transparent 60%
+      ),
     /* Subtle secondary tint - mid left */
-    radial-gradient(circle at 20% 50%, color-mix(in srgb, var(--secondary-accent, #8b5cf6), transparent 88%) 0%, transparent 35%),
+    radial-gradient(
+        circle at 20% 50%,
+        color-mix(in srgb, var(--secondary-accent, #8b5cf6), transparent 88%) 0%,
+        transparent 35%
+      ),
     /* Subtle teal - mid right */
-    radial-gradient(circle at 80% 40%, color-mix(in srgb, #14b8a6, transparent 90%) 0%, transparent 30%),
-    /* Base dark gradient */
-    linear-gradient(180deg, #0a0a12 0%, #0f0f18 50%, #0a0a0f 100%);
+    radial-gradient(
+        circle at 80% 40%,
+        color-mix(in srgb, #14b8a6, transparent 90%) 0%,
+        transparent 30%
+      ),
+    /* Base dark gradient */ linear-gradient(180deg, #0a0a12 0%, #0f0f18 50%, #0a0a0f 100%);
   background-attachment: fixed;
 }
 
 @media (max-width: 48rem) {
-  html[data-theme="dark"] body {
+  html[data-theme='dark'] body {
     background-attachment: scroll;
     /* Performance fix for mobile scrolling */
   }
@@ -112,31 +147,31 @@ body.has-custom-bg {
 }
 
 /* Light mode scrollbar */
-:root:not([data-theme="dark"]) ::-webkit-scrollbar-thumb,
-[data-theme="light"] ::-webkit-scrollbar-thumb {
+:root:not([data-theme='dark']) ::-webkit-scrollbar-thumb,
+[data-theme='light'] ::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 40%);
   background-clip: padding-box;
 }
 
-:root:not([data-theme="dark"]) ::-webkit-scrollbar-thumb:hover,
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+:root:not([data-theme='dark']) ::-webkit-scrollbar-thumb:hover,
+[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 20%);
   background-clip: padding-box;
 }
 
 /* Dark mode scrollbar - with translucent track */
-[data-theme="dark"] ::-webkit-scrollbar-track {
+[data-theme='dark'] ::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--accent), rgba(255, 255, 255, 0.1) 30%);
   box-shadow: 0 0 8px color-mix(in srgb, var(--accent), transparent 70%);
   background-clip: padding-box;
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--accent), rgba(255, 255, 255, 0.2) 20%);
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 50%);
   background-clip: padding-box;
@@ -146,27 +181,25 @@ body.has-custom-bg {
 
 /* Fallback for Mobile - Solid Colors for Performance */
 @media (max-width: 47.9375rem) {
-
-  html[data-theme="dark"] .overall-progress-card,
-  html[data-theme="dark"] .exam-countdown-card,
-  html[data-theme="dark"] .agenda-card,
-  html[data-theme="dark"] .task-log-card,
-  html[data-theme="dark"] .subject-card,
-  html[data-theme="dark"] .chapter-card,
-  html[data-theme="dark"] .study-clock-container,
-  html[data-theme="dark"] .timer-card,
-  html[data-theme="dark"] .stats-panel,
-  html[data-theme="dark"] .session-log-panel,
-  html[data-theme="dark"] .day-column,
-  html[data-theme="dark"] .monthly-calendar,
-  html[data-theme="dark"] .settings-panel,
-  html[data-theme="dark"] .modal-content,
-  html[data-theme="dark"] .view-toggles,
-  html[data-theme="dark"] .analytics-panel {
+  html[data-theme='dark'] .overall-progress-card,
+  html[data-theme='dark'] .exam-countdown-card,
+  html[data-theme='dark'] .agenda-card,
+  html[data-theme='dark'] .task-log-card,
+  html[data-theme='dark'] .subject-card,
+  html[data-theme='dark'] .chapter-card,
+  html[data-theme='dark'] .study-clock-container,
+  html[data-theme='dark'] .timer-card,
+  html[data-theme='dark'] .stats-panel,
+  html[data-theme='dark'] .session-log-panel,
+  html[data-theme='dark'] .day-column,
+  html[data-theme='dark'] .monthly-calendar,
+  html[data-theme='dark'] .settings-panel,
+  html[data-theme='dark'] .modal-content,
+  html[data-theme='dark'] .view-toggles,
+  html[data-theme='dark'] .analytics-panel {
     background: var(--bg-secondary);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border: 1px solid var(--border);
   }
 }
-

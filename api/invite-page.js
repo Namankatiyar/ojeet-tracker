@@ -8,7 +8,7 @@ function replaceMeta(html, property, name, value) {
   const val = property || name;
   const regex = new RegExp(`<meta\\s+[^>]*?${attr}="${val}"[^>]*?>`, 'i');
   const newTag = `<meta ${attr}="${val}" content="${value}" />`;
-  
+
   if (html.match(regex)) {
     return html.replace(regex, newTag);
   } else {
@@ -34,7 +34,9 @@ export default async function handler(req, res) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     // Fetch the profile details via RPC (which has SECURITY DEFINER and can bypass RLS)
-    const { data, error } = await supabase.rpc('get_profile_by_invite_code', { friend_code: inviteCode });
+    const { data, error } = await supabase.rpc('get_profile_by_invite_code', {
+      friend_code: inviteCode,
+    });
 
     let displayName = 'a Study Peer';
     if (!error && data && data.length > 0) {
@@ -42,7 +44,11 @@ export default async function handler(req, res) {
     }
 
     const host = req.headers['x-forwarded-host'] || req.headers.host || 'tracker.ojeet.tech';
-    const isDev = host.includes('localhost') || host.includes('127.0.0.1') || process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
+    const isDev =
+      host.includes('localhost') ||
+      host.includes('127.0.0.1') ||
+      process.env.NODE_ENV === 'development' ||
+      process.env.VERCEL_ENV === 'development';
 
     // Read the static index.html template
     let htmlPath;
@@ -82,10 +88,13 @@ export default async function handler(req, res) {
     html = replaceMeta(html, null, 'twitter:description', ogDescription);
     html = replaceMeta(html, 'og:image', null, ogImageUrl);
     html = replaceMeta(html, null, 'twitter:image', ogImageUrl);
-    
+
     // Also inject page title and description
     html = html.replace(/<title>.*?<\/title>/i, `<title>${ogTitle}</title>`);
-    html = html.replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${ogDescription}" />`);
+    html = html.replace(
+      /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i,
+      `<meta name="description" content="${ogDescription}" />`
+    );
 
     res.setHeader('Content-Type', 'text/html');
     return res.status(200).send(html);

@@ -4,15 +4,15 @@
 
 <br/>
 
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&amp;logo=vite&amp;logoColor=white)](https://vitejs.dev/)
-[![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&amp;logo=react&amp;logoColor=61DAFB)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&amp;logo=typescript&amp;logoColor=white)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&amp;logo=supabase&amp;logoColor=white)](https://supabase.com/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
 <br/>
 
-[![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&amp;logoColor=white)](#)
-[![Discord](https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white)](https://discord.gg/6dKrbVQU8W)
+[![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&logoColor=white)](#)
+[![Discord](https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/6dKrbVQU8W)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>
@@ -44,28 +44,28 @@
 
 ### 📊 Premium Bento Analytics Dashboard
 
-| Feature | Description |
-|---|---|
-| **12-Column Grid Layout** | Single-glance dashboard organizing stats, active items, and trends into responsive cards |
-| **7-Day Weekly Heatmap** | Interactive stacked bar chart — Physics, Chemistry, Maths — relative to selected date |
-| **24-Hour Histogram Timeline** | Dynamic hourly capsules with subject-colored gradient glows for active study intervals |
-| **Delta Progress Indicators** | Real-time metrics comparing today's performance to yesterday |
-| **Exam Countdown** | Dynamic timer that shifts Green → Yellow → Red as exam day approaches |
-| **Motivational Quotes** | Uplifting quotes randomized on entry to inspire every session |
+| Feature                        | Description                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| **12-Column Grid Layout**      | Single-glance dashboard organizing stats, active items, and trends into responsive cards |
+| **7-Day Weekly Heatmap**       | Interactive stacked bar chart — Physics, Chemistry, Maths — relative to selected date    |
+| **24-Hour Histogram Timeline** | Dynamic hourly capsules with subject-colored gradient glows for active study intervals   |
+| **Delta Progress Indicators**  | Real-time metrics comparing today's performance to yesterday                             |
+| **Exam Countdown**             | Dynamic timer that shifts Green → Yellow → Red as exam day approaches                    |
+| **Motivational Quotes**        | Uplifting quotes randomized on entry to inspire every session                            |
 
 <br/>
 
-### 📚 Subject & Subtopics Workspace *(V2)*
+### 📚 Subject & Subtopics Workspace _(V2)_
 
 Granular syllabus tracking across the full **Physics**, **Chemistry**, and **Maths** syllabus with:
 
 - **Collapsible Row-Based Subtopics** — Clean, expandable rows replacing card clutter
 - **Standardized Resource Dots** — Track preparation across three domains per subtopic:
 
-  | Resource | Description |
-  |---|---|
-  | 📖 **NCERT** | Readings & Exercises |
-  | 📝 **PYQs** | Previous Years' Questions |
+  | Resource       | Description                         |
+  | -------------- | ----------------------------------- |
+  | 📖 **NCERT**   | Readings & Exercises                |
+  | 📝 **PYQs**    | Previous Years' Questions           |
   | 📦 **Modules** | Coaching material & Reference books |
 
 - **Revision Trackers & Stale Badges** — Warning badges for topics not revised in over 30 days
@@ -76,7 +76,7 @@ Granular syllabus tracking across the full **Physics**, **Chemistry**, and **Mat
 
 ### 👥 Peer Community & Social System
 
-> *Study better, together.*
+> _Study better, together._
 
 - 🔗 **Peer Sync** — Share progress cards and compare completion rates with friends
 - 📨 **Invite System** — Secure, custom invite links for study partners
@@ -128,13 +128,13 @@ Backend (opt.):   Supabase (Auth, Storage, Realtime)
 
 **Context Modules:**
 
-| Context | Responsibility |
-|---|---|
-| `ThemeContext` | Appearance, dark/light modes, glassmorphism variables |
-| `SubjectDataContext` | Syllabus metadata, column headers, subject tables |
-| `UserProgressContext` | Completion percentages, schedules, mock scores |
-| `RemoteAuthContext` | Supabase Auth, Google OAuth, session tokens |
-| `RemoteSyncContext` | Background delta syncing between LocalStorage & Supabase |
+| Context               | Responsibility                                           |
+| --------------------- | -------------------------------------------------------- |
+| `ThemeContext`        | Appearance, dark/light modes, glassmorphism variables    |
+| `SubjectDataContext`  | Syllabus metadata, column headers, subject tables        |
+| `UserProgressContext` | Completion percentages, schedules, mock scores           |
+| `RemoteAuthContext`   | Supabase Auth, Google OAuth, session tokens              |
+| `RemoteSyncContext`   | Background delta syncing between LocalStorage & Supabase |
 
 <br/>
 
@@ -237,6 +237,6 @@ Join the community, share progress, and study together!
 
 **Made with ❤️ for JEE aspirants**
 
-*Good luck with your preparation. You've got this. 🚀*
+_Good luck with your preparation. You've got this. 🚀_
 
 </div>

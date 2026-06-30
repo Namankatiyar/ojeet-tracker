@@ -8,15 +8,15 @@ vi.mock('../../utils/pwaBridge');
 
 // Mock Lucide icons
 vi.mock('lucide-react', () => ({
-    Download: () => <div data-testid="icon-download" />,
-    Upload: () => <div data-testid="icon-upload" />,
-    X: () => <div data-testid="icon-x" />,
-    AlertTriangle: () => <div data-testid="icon-alert" />,
-    Check: () => <div data-testid="icon-check" />,
-    Image: () => <div data-testid="icon-image" />,
-    Trash2: () => <div data-testid="icon-trash" />,
-    Cloud: () => <div data-testid="icon-cloud" />,
-    LogOut: () => <div data-testid="icon-logout" />,
+  Download: () => <div data-testid="icon-download" />,
+  Upload: () => <div data-testid="icon-upload" />,
+  X: () => <div data-testid="icon-x" />,
+  AlertTriangle: () => <div data-testid="icon-alert" />,
+  Check: () => <div data-testid="icon-check" />,
+  Image: () => <div data-testid="icon-image" />,
+  Trash2: () => <div data-testid="icon-trash" />,
+  Cloud: () => <div data-testid="icon-cloud" />,
+  LogOut: () => <div data-testid="icon-logout" />,
 }));
 
 // Mock Contexts
@@ -24,211 +24,219 @@ const mockSignInWithGoogle = vi.fn();
 const mockSignOut = vi.fn();
 const mockResetPrompt = vi.fn();
 vi.mock('../../../core/context/RemoteAuthContext', () => ({
-    useRemoteAuth: () => ({
-        user: { email: 'test@example.com' },
-        isConfigured: true,
-        signInWithGoogle: mockSignInWithGoogle,
-        signOut: mockSignOut,
-        resetPrompt: mockResetPrompt,
-    }),
+  useRemoteAuth: () => ({
+    user: { email: 'test@example.com' },
+    isConfigured: true,
+    signInWithGoogle: mockSignInWithGoogle,
+    signOut: mockSignOut,
+    resetPrompt: mockResetPrompt,
+  }),
 }));
 
 const mockSyncNow = vi.fn();
 vi.mock('../../../core/context/RemoteSyncContext', () => ({
-    useRemoteSync: () => ({
-        status: 'idle',
-        lastSyncedAt: null,
-        lastError: null,
-        remoteStudyAggregate: null,
-        syncNow: mockSyncNow,
-    }),
+  useRemoteSync: () => ({
+    status: 'idle',
+    lastSyncedAt: null,
+    lastError: null,
+    remoteStudyAggregate: null,
+    syncNow: mockSyncNow,
+  }),
 }));
 
 // Mock Navigation
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
-    const actual = await vi.importActual('react-router-dom');
-    return {
-        ...actual,
-        useNavigate: () => mockNavigate,
-    };
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
 });
 
 // Mock PWA bridge
 vi.mock('../../utils/pwaBridge', () => ({
-    runPwaRecoveryAndReload: vi.fn(),
+  runPwaRecoveryAndReload: vi.fn(),
 }));
 
 // Mock Vibrant
 vi.mock('node-vibrant/browser', () => ({
-    Vibrant: {
-        from: vi.fn().mockReturnValue({
-            getPalette: vi.fn().mockResolvedValue({
-                Vibrant: { hex: '#ff0000' }
-            })
-        })
-    }
+  Vibrant: {
+    from: vi.fn().mockReturnValue({
+      getPalette: vi.fn().mockResolvedValue({
+        Vibrant: { hex: '#ff0000' },
+      }),
+    }),
+  },
 }));
 
 describe('SettingsModal', () => {
-    const defaultProps = {
-        isOpen: true,
-        onClose: vi.fn(),
-        disableAutoShift: false,
-        onDisableAutoShiftChange: vi.fn(),
-        enableAIAgent: true,
-        onEnableAIAgentChange: vi.fn(),
-        enableMusicPlayer: true,
-        onEnableMusicPlayerChange: vi.fn(),
-        backgroundUrl: '',
-        onBackgroundUrlChange: vi.fn(),
-        dimLevel: 20,
-        onDimLevelChange: vi.fn(),
-        glassIntensity: 50,
-        onGlassIntensityChange: vi.fn(),
-        glassRefraction: 30,
-        onGlassRefractionChange: vi.fn(),
-        onAccentChange: vi.fn(),
-    };
+  const defaultProps = {
+    isOpen: true,
+    onClose: vi.fn(),
+    disableAutoShift: false,
+    onDisableAutoShiftChange: vi.fn(),
+    enableAIAgent: true,
+    onEnableAIAgentChange: vi.fn(),
+    enableMusicPlayer: true,
+    onEnableMusicPlayerChange: vi.fn(),
+    backgroundUrl: '',
+    onBackgroundUrlChange: vi.fn(),
+    dimLevel: 20,
+    onDimLevelChange: vi.fn(),
+    glassIntensity: 50,
+    onGlassIntensityChange: vi.fn(),
+    glassRefraction: 30,
+    onGlassRefractionChange: vi.fn(),
+    onAccentChange: vi.fn(),
+  };
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        // Create modal root for portal
-        const modalRoot = document.createElement('div');
-        modalRoot.id = 'modal-root';
-        document.body.appendChild(modalRoot);
-    });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Create modal root for portal
+    const modalRoot = document.createElement('div');
+    modalRoot.id = 'modal-root';
+    document.body.appendChild(modalRoot);
+  });
 
-    afterEach(() => {
-        const modalRoot = document.getElementById('modal-root');
-        if (modalRoot) document.body.removeChild(modalRoot);
-    });
+  afterEach(() => {
+    const modalRoot = document.getElementById('modal-root');
+    if (modalRoot) document.body.removeChild(modalRoot);
+  });
 
-    it('renders nothing when closed', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} isOpen={false} />
-            </BrowserRouter>
-        );
-        expect(screen.queryByText('Settings')).not.toBeInTheDocument();
-    });
+  it('renders nothing when closed', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} isOpen={false} />
+      </BrowserRouter>
+    );
+    expect(screen.queryByText('Settings')).not.toBeInTheDocument();
+  });
 
-    it('renders correctly when open', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        expect(screen.getByText('Settings')).toBeInTheDocument();
-        expect(screen.getByText('Behavior')).toBeInTheDocument();
-        expect(screen.getByText('Appearance')).toBeInTheDocument();
-    });
+  it('renders correctly when open', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    expect(screen.getByText('Settings')).toBeInTheDocument();
+    expect(screen.getByText('Behavior')).toBeInTheDocument();
+    expect(screen.getByText('Appearance')).toBeInTheDocument();
+  });
 
-    it('calls onClose when close button is clicked', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        const closeBtn = document.querySelector('.close-btn');
-        if (closeBtn) fireEvent.click(closeBtn);
-        expect(defaultProps.onClose).toHaveBeenCalled();
-    });
+  it('calls onClose when close button is clicked', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    const closeBtn = document.querySelector('.close-btn');
+    if (closeBtn) fireEvent.click(closeBtn);
+    expect(defaultProps.onClose).toHaveBeenCalled();
+  });
 
-    it('triggers onDisableAutoShiftChange when toggle is clicked', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        const checkboxes = screen.getAllByRole('checkbox');
-        fireEvent.click(checkboxes[0]);
-        expect(defaultProps.onDisableAutoShiftChange).toHaveBeenCalledWith(true);
-    });
+  it('triggers onDisableAutoShiftChange when toggle is clicked', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+    expect(defaultProps.onDisableAutoShiftChange).toHaveBeenCalledWith(true);
+  });
 
-    it('triggers onEnableAIAgentChange when toggle is clicked', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        const checkboxes = screen.getAllByRole('checkbox');
-        fireEvent.click(checkboxes[1]);
-        expect(defaultProps.onEnableAIAgentChange).toHaveBeenCalledWith(false);
-    });
+  it('triggers onEnableAIAgentChange when toggle is clicked', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[1]);
+    expect(defaultProps.onEnableAIAgentChange).toHaveBeenCalledWith(false);
+  });
 
-    it('triggers onEnableMusicPlayerChange when toggle is clicked', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        const checkboxes = screen.getAllByRole('checkbox');
-        fireEvent.click(checkboxes[2]);
-        expect(defaultProps.onEnableMusicPlayerChange).toHaveBeenCalledWith(false);
-    });
+  it('triggers onEnableMusicPlayerChange when toggle is clicked', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[2]);
+    expect(defaultProps.onEnableMusicPlayerChange).toHaveBeenCalledWith(false);
+  });
 
-    it('triggers appearance change handlers on slider input', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        
-        const dimSlider = document.querySelector('.dim-slider') as HTMLInputElement;
-        expect(dimSlider).toBeTruthy();
-        fireEvent.change(dimSlider, { target: { value: '40' } });
-        expect(defaultProps.onDimLevelChange).toHaveBeenCalledWith(40);
+  it('triggers appearance change handlers on slider input', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
 
-        const glassSlider = document.querySelector('.glass-slider:not(.refraction-slider)') as HTMLInputElement;
-        expect(glassSlider).toBeTruthy();
-        fireEvent.change(glassSlider, { target: { value: '60' } });
-        expect(defaultProps.onGlassIntensityChange).toHaveBeenCalledWith(60);
+    const dimSlider = document.querySelector('.dim-slider') as HTMLInputElement;
+    expect(dimSlider).toBeTruthy();
+    fireEvent.change(dimSlider, { target: { value: '40' } });
+    expect(defaultProps.onDimLevelChange).toHaveBeenCalledWith(40);
 
-        const refractionSlider = document.querySelector('.refraction-slider') as HTMLInputElement;
-        expect(refractionSlider).toBeTruthy();
-        fireEvent.change(refractionSlider, { target: { value: '75' } });
-        expect(defaultProps.onGlassRefractionChange).toHaveBeenCalledWith(75);
-    });
+    const glassSlider = document.querySelector(
+      '.glass-slider:not(.refraction-slider)'
+    ) as HTMLInputElement;
+    expect(glassSlider).toBeTruthy();
+    fireEvent.change(glassSlider, { target: { value: '60' } });
+    expect(defaultProps.onGlassIntensityChange).toHaveBeenCalledWith(60);
 
-    it('handles navigation items correctly', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
+    const refractionSlider = document.querySelector('.refraction-slider') as HTMLInputElement;
+    expect(refractionSlider).toBeTruthy();
+    fireEvent.change(refractionSlider, { target: { value: '75' } });
+    expect(defaultProps.onGlassRefractionChange).toHaveBeenCalledWith(75);
+  });
 
-        fireEvent.click(screen.getByText('Changelog').closest('.settings-row')!.querySelector('button')!);
-        expect(mockNavigate).toHaveBeenCalledWith('/changelog');
-        expect(defaultProps.onClose).toHaveBeenCalled();
+  it('handles navigation items correctly', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
 
-        fireEvent.click(screen.getByText('Privacy Policy').closest('.settings-row')!.querySelector('button')!);
-        expect(mockNavigate).toHaveBeenCalledWith('/privacy-policy');
-        
-        fireEvent.click(screen.getByText('Terms of Service').closest('.settings-row')!.querySelector('button')!);
-        expect(mockNavigate).toHaveBeenCalledWith('/terms-of-service');
-    });
+    fireEvent.click(
+      screen.getByText('Changelog').closest('.settings-row')!.querySelector('button')!
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/changelog');
+    expect(defaultProps.onClose).toHaveBeenCalled();
 
-    it('triggers sync when Sync Now is clicked', () => {
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        const syncBtn = screen.getByText('Sync Now').closest('button');
-        if (syncBtn) fireEvent.click(syncBtn);
-        expect(mockSyncNow).toHaveBeenCalled();
-    });
+    fireEvent.click(
+      screen.getByText('Privacy Policy').closest('.settings-row')!.querySelector('button')!
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/privacy-policy');
 
-    it('calls signOut when Sign Out is clicked', async () => {
-        mockSignOut.mockResolvedValue({ error: null });
-        render(
-            <BrowserRouter>
-                <SettingsModal {...defaultProps} />
-            </BrowserRouter>
-        );
-        const signOutBtn = screen.getByText('Sign Out').closest('button');
-        if (signOutBtn) fireEvent.click(signOutBtn);
-        expect(mockSignOut).toHaveBeenCalled();
-    });
+    fireEvent.click(
+      screen.getByText('Terms of Service').closest('.settings-row')!.querySelector('button')!
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/terms-of-service');
+  });
+
+  it('triggers sync when Sync Now is clicked', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    const syncBtn = screen.getByText('Sync Now').closest('button');
+    if (syncBtn) fireEvent.click(syncBtn);
+    expect(mockSyncNow).toHaveBeenCalled();
+  });
+
+  it('calls signOut when Sign Out is clicked', async () => {
+    mockSignOut.mockResolvedValue({ error: null });
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    const signOutBtn = screen.getByText('Sign Out').closest('button');
+    if (signOutBtn) fireEvent.click(signOutBtn);
+    expect(mockSignOut).toHaveBeenCalled();
+  });
 });

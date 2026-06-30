@@ -294,7 +294,6 @@
 }
 
 @keyframes glow-yellow {
-
   0%,
   100% {
     text-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
@@ -842,7 +841,7 @@
   animation: fadeIn 0.2s ease;
 }
 
-html[data-theme="dark"] .distribution-modal-overlay {
+html[data-theme='dark'] .distribution-modal-overlay {
   background: color-mix(in srgb, var(--bg-base), transparent 40%);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
@@ -863,7 +862,7 @@ html[data-theme="dark"] .distribution-modal-overlay {
   scrollbar-color: var(--border) transparent;
 }
 
-html[data-theme="dark"] .distribution-modal {
+html[data-theme='dark'] .distribution-modal {
   background: var(--panel-bg);
   border-color: var(--panel-border);
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);
@@ -1296,7 +1295,9 @@ body.hide-global-fabs .music-fab {
   align-items: center;
   gap: var(--space-6);
   padding: var(--space-10);
-  transition: transform var(--transition-normal), opacity var(--transition-normal);
+  transition:
+    transform var(--transition-normal),
+    opacity var(--transition-normal);
 }
 
 .fullscreen-time {
@@ -1308,7 +1309,9 @@ body.hide-global-fabs .music-fab {
   cursor: pointer;
   user-select: none;
   line-height: 1;
-  transition: transform var(--transition-normal), text-shadow var(--transition-normal);
+  transition:
+    transform var(--transition-normal),
+    text-shadow var(--transition-normal);
 }
 
 .fullscreen-time:hover {
@@ -1343,9 +1346,6 @@ body.hide-global-fabs .music-fab {
   margin: 0;
   transition: color var(--transition-normal);
 }
-
-
-
 
 /* ===== Mode Selector ===== */
 .mode-selector-wrapper {

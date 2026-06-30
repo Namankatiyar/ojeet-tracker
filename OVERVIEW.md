@@ -3,6 +3,7 @@
 This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
 To get entire essence of this codebase you have following files at your disposal:
+
 1. OVERVIEW.md
 2. CHANGELOG.md
 3. .ai_workflow/state-map.md
@@ -20,6 +21,7 @@ To get entire essence of this codebase you have following files at your disposal
 **OJEE Tracker** is a high-performance, offline-first progress tracking application specifically optimized for academic preparation. It solves the problem of tracking granular completion across multiple subjects (Physics, Chemistry, Maths) and diverse study materials (NCERT, PyQs, Modules, etc.).
 
 ### Key Philosophies:
+
 - **Visual-First Progress**: Immediate feedback through rings, bars, and confetti.
 - **Extreme Flexibility**: Users can modify the syllabus, add/remove resource columns, and reorder content.
 - **Deep Persistence**: Leveraging `localStorage` for a zero-server, instant-load experience.
@@ -40,6 +42,7 @@ To get entire essence of this codebase you have following files at your disposal
 ## 2. Technical Architecture
 
 ### Core Stack:
+
 - **Framework**: React 18 with TypeScript.
 - **State Management**: **React Context API** (Modular architecture).
 - **Routing**: React Router (react-router-dom) v7.
@@ -50,6 +53,7 @@ To get entire essence of this codebase you have following files at your disposal
 - **Versioning**: Automated via `commit-and-tag-version`.
 
 ### Project Structure:
+
 ```text
 /src
   /core           # Application setup (Providers, Hooks, Routing)
@@ -76,14 +80,17 @@ To get entire essence of this codebase you have following files at your disposal
 The application uses a **Layered Provider Pattern** to handle global state and side effects, ensuring separation of concerns and optimized re-rendering.
 
 ### 3.1 ThemeContext
+
 - **Responsibilities**: Manages `theme`, `accentColor`, `backgroundUrl`, `dimLevel`, and glassmorphism settings.
 - **Logic**: Automatically updates `document.documentElement` CSS variables and PWA meta tags when visual settings change.
 
 ### 3.2 SubjectDataContext
+
 - **Responsibilities**: Manages the syllabus structure for Physics, Chemistry, and Maths.
 - **Logic**: Handles initial CSV parsing, custom column management, material exclusion, and material/chapter ordering logic.
 
 ### 3.3 UserProgressContext
+
 - **Responsibilities**: Manages completion progress, planner tasks, study sessions, and mock scores.
 - **Logic**: Coordinates complex interactions, such as syncing "Mark Complete" actions between the Planner and Subject syllabus.
 
@@ -94,109 +101,123 @@ The application uses a **Layered Provider Pattern** to handle global state and s
 The project utilizes a **CSS Layered Architecture** to solve specificity battles and styling overrides. Styles are organized into a strict hierarchy: `reset`, `tokens`, `base`, `layout`, `components`, `features`, `utilities`.
 
 ### 4.1 Glassmorphism Engine
+
 Glass effects are centralized in `src/styles/components/glass.css` using the `.glass-panel` utility. This ensures that the **Refractive Index** and **Blur Intensity** settings from `ThemeContext` are applied consistently across all dashboard cards, modals, and tables.
 
 ---
 
 ## 5. Release Management
-...
----
+
+## ...
 
 ## 6. Refactoring History
 
 ### UI Consistency & Custom Background Fix (v0.0.21)
+
 - **Problem**: Custom loaded backgrounds were invisible due to `html` base stacking contexts eclipsing the z-axis. Unmatched panel styling broke `planner-task` and dashboard cohesiveness using `@extend` which is strictly invalid.
 - **Solution**:
-    - Extracted pseudo image/dim overlays from `html::before` to `body.has-custom-bg::before` in `base.css`.
-    - Sanitized standard CSS away from invalid `@extend` mixins (`dashboard.css`).
-    - Standardized `planner-task` background token references.
+  - Extracted pseudo image/dim overlays from `html::before` to `body.has-custom-bg::before` in `base.css`.
+  - Sanitized standard CSS away from invalid `@extend` mixins (`dashboard.css`).
+  - Standardized `planner-task` background token references.
 
 ### Strict Token-Based Glassmorphism & Light Mode Fix (v0.0.20)
+
 - **Problem**: Glassmorphism leaked into Light Mode due to global `backdrop-filter` declarations and escalating `!important` tags scaling across multiple modules.
-- **Solution**: 
-    - Isolated all glass properties (`--glass-*`) exclusively within `[data-theme="dark"]`.
-    - Implemented `var(--panel-blur)` as the definitive depth mapping token, which evaluates to `none` in Light Mode and `blur()` in Dark Mode.
-    - Stripped hardcoded `style={{...}}` layout objects from `InputModal.tsx` and `PageLoader.tsx`, cleanly moving them to `@layer components`.
+- **Solution**:
+  - Isolated all glass properties (`--glass-*`) exclusively within `[data-theme="dark"]`.
+  - Implemented `var(--panel-blur)` as the definitive depth mapping token, which evaluates to `none` in Light Mode and `blur()` in Dark Mode.
+  - Stripped hardcoded `style={{...}}` layout objects from `InputModal.tsx` and `PageLoader.tsx`, cleanly moving them to `@layer components`.
 
 ### TaskModal Architectural Cleanup (v0.0.19)
+
 - **Problem**: `TaskModal.tsx` was a 400-line monolith with fragmented state (13+ `useState` calls) and fragile time-syncing logic.
-- **Solution**: 
-    - Extracted form logic into a custom `useTaskForm` hook.
-    - Decomposed UI into `ChapterTaskFields` and `CustomTaskFields`.
-    - Created a reusable `TimePicker` component in `shared/ui`.
+- **Solution**:
+  - Extracted form logic into a custom `useTaskForm` hook.
+  - Decomposed UI into `ChapterTaskFields` and `CustomTaskFields`.
+  - Created a reusable `TimePicker` component in `shared/ui`.
 - **Optimization**: Centralized time-parsing utilities in `shared/utils/date.ts`, eliminating `useEffect`-based state syncing and reducing "one-off" errors in time formatting.
 
 ### Styling Centralization (v0.0.19)
+
 - **Problem**: Glassmorphism properties were duplicated across 10+ CSS files, making global style adjustments difficult.
 - **Solution**: Created a dedicated `glass.css` within the `components` layer.
 - **Implementation**: Refactored `AgendaCard`, `TaskLog`, `TimerCard`, and `ChapterTable` to consume unified `.glass-panel` properties.
 
 ### Planner Performance Overhaul (v0.0.18)
+
 - **Problem**: The `Planner.tsx` component was a 400+ line monolith with a critical performance issue: it re-filtered the entire `tasks` array on every render for every day shown in the calendar, causing significant lag.
 - **Solution**: Decomposed the component into `WeeklyView`, `MonthlyView`, `DayColumn`, and a memoized `MonthCell`.
-- **Optimization**: Created a `usePlannerData` hook to pre-process and group all tasks by date *once*. This changes data lookups from a slow O(N) filter to an instantaneous O(1) map lookup, eliminating the performance bottleneck.
+- **Optimization**: Created a `usePlannerData` hook to pre-process and group all tasks by date _once_. This changes data lookups from a slow O(N) filter to an instantaneous O(1) map lookup, eliminating the performance bottleneck.
 
 ### Dashboard De-bloat (v0.0.17)
+
 - **Problem**: The analytics dashboard was a monolithic "God Component" causing performance bottlenecks and maintenance issues.
 - **Solution**: Decomposed into `StudyTimePanel`, `MockScoresPanel`, and `AddMockModal`.
 - **Optimization**: Extracted data aggregation logic into memoized custom hooks (`useStudyTimeAnalytics`, `useMockScoresAnalytics`) to isolate re-renders and improve UI responsiveness.
 
 ### Multi-Exam Countdown Panel (v0.0.23)
+
 - **Problem**: Users preparring for competitive exams needed to track multiple related dates concurrently (e.g. Session 1, Session 2, Advanced) rather than a single target date.
-- **Solution**: 
+- **Solution**:
 -     - Migrated `UserProgressContext` from `examDate: string` to `examDates: ExamEntry[]`.
 -     - Implemented an auto-migration hook to preserve legacy single-date data.
 -     - Created the specialized `ExamCountdownModal` for interactive exam management.
 -     - Redesigned the Dashboard countdown card to show a primary focus and a secondary list of upcoming exams.
 
 ### Cloud Synchronization & Remote Auth (v0.0.28)
+
 - **Problem**: Local storage isolation prevented multi-device study tracking and posed a risk of data loss.
-- **Solution**: 
-    - **Supabase Integration**: Implemented bidirectional sync between `localStorage` and a remote Supabase instance.
-    - **Google OAuth**: Frictionless authentication using `RemoteAuthContext`.
-    - **Payload Optimization**: Data is LZ-compressed and chunked into indexed rows when exceeding 512KB, bypassing DB row-size constraints while maintaining high reliability.
-    - **Agile Aggregates**: Study time is aggregated per-subject and stored in a specialized table, permitting lightweight cross-device progress analytics.
-    - **Onboarding UX**: Integrated context-aware modals for Cloud Sync prompting and PWA installation.
+- **Solution**:
+  - **Supabase Integration**: Implemented bidirectional sync between `localStorage` and a remote Supabase instance.
+  - **Google OAuth**: Frictionless authentication using `RemoteAuthContext`.
+  - **Payload Optimization**: Data is LZ-compressed and chunked into indexed rows when exceeding 512KB, bypassing DB row-size constraints while maintaining high reliability.
+  - **Agile Aggregates**: Study time is aggregated per-subject and stored in a specialized table, permitting lightweight cross-device progress analytics.
+  - **Onboarding UX**: Integrated context-aware modals for Cloud Sync prompting and PWA installation.
 
 ### SubjectPage Performance & Component Decomposition (v0.0.22)
+
 - **Problem**: `SubjectPage.tsx` was a 448-line monolith. Lack of memoization caused all ~30+ chapter rows to re-render on every interaction (checkbox click, filter change), leading to noticeable UI lag.
-- **Solution**: 
-    - Extracted generic list reordering logic into `useReorderDrag` hook.
-    - Extracted memoized sorting/filtering into `useChapterSort` hook.
-    - Decomposed UI into `SubjectHeader` and `PriorityFilterDropdown`.
-    - Wrapped `ChapterRow` in `React.memo` and stabilized callbacks with `useCallback`.
+- **Solution**:
+  - Extracted generic list reordering logic into `useReorderDrag` hook.
+  - Extracted memoized sorting/filtering into `useChapterSort` hook.
+  - Decomposed UI into `SubjectHeader` and `PriorityFilterDropdown`.
+  - Wrapped `ChapterRow` in `React.memo` and stabilized callbacks with `useCallback`.
 - **Optimization**: Component size reduced from 448 to ~260 lines. UI interactions are now instantaneous due to prevented re-render cascades.
-+
-+### Cyclical Secondary Exam Interface (v0.0.25)
-+- **Problem**: Displaying multiple secondary exams in a list consumed too much vertical space on the Dashboard and introduced cluttered scrollbars.
-+- **Solution**: Replaced the list with a single cyclical button that loops through exams chronologically on click. State is persisted via `useLocalStorage` to ensure the selection survives reloads.
-+
+
+* +### Cyclical Secondary Exam Interface (v0.0.25)
+  +- **Problem**: Displaying multiple secondary exams in a list consumed too much vertical space on the Dashboard and introduced cluttered scrollbars.
+  +- **Solution**: Replaced the list with a single cyclical button that loops through exams chronologically on click. State is persisted via `useLocalStorage` to ensure the selection survives reloads.
+*
+
 ### Study Clock Multimodal Feedback & Persistence (v0.0.25)
+
 - **Problem**: Context loss during phase changes or refreshes. Lack of differentiated auditory feedback for specific user actions (Pause/Save). Large confetti bursts obscured the UI.
 - **Solution**:
-    - **Persistence**: Task selection state is now saved to `localStorage`, ensuring continuity across the entire Pomodoro lifecycle.
-    - **Multimodal Cues**: 
-        - **Audio**: Introduced distinct synthesized signatures for Start, Pause, and Completion.
-        - **Notifications**: Integrated system-level alerts for background phase transitions.
-    - **Visual Polish**: implemented targeted, accent-colored confetti bursts that spawn from the cursor coordinates on manual study task completion.
+  - **Persistence**: Task selection state is now saved to `localStorage`, ensuring continuity across the entire Pomodoro lifecycle.
+  - **Multimodal Cues**:
+    - **Audio**: Introduced distinct synthesized signatures for Start, Pause, and Completion.
+    - **Notifications**: Integrated system-level alerts for background phase transitions.
+  - **Visual Polish**: implemented targeted, accent-colored confetti bursts that spawn from the cursor coordinates on manual study task completion.
 
 ### Study Clock Overhaul & Timer Engine Extraction (v0.0.24)
+
 - **Problem**: The Study Clock was using a fragile `setInterval` state-syncing approach, leading to desync issues. The UI was cluttered with a radial SVG that didn't scale well, and preset management was inconsistent.
-- **Solution**: 
-    - Extracted core timing logic into a headless `useTimerEngine.ts` hook using high-precision timestamp math.
-    - Reverted UI to a large, clean horizontal textual display for better readability and scaling.
-    - Implemented a "Click for Fullscreen" feature with specialized keyboard shortcuts (F/Space/Escape).
-    - Standardized "Finish" button icons to green `CheckCircle2` across all modes for positive reinforcement.
-    - Integrated `triggerConfetti()` and a synthesized audio bell on session completion.
-    - Optimized internal state: removed "Save Preset" for Stopwatch mode and added a collapsible task selector to reclaim vertical estate during active sessions.
+- **Solution**:
+  - Extracted core timing logic into a headless `useTimerEngine.ts` hook using high-precision timestamp math.
+  - Reverted UI to a large, clean horizontal textual display for better readability and scaling.
+  - Implemented a "Click for Fullscreen" feature with specialized keyboard shortcuts (F/Space/Escape).
+  - Standardized "Finish" button icons to green `CheckCircle2` across all modes for positive reinforcement.
+  - Integrated `triggerConfetti()` and a synthesized audio bell on session completion.
+  - Optimized internal state: removed "Save Preset" for Stopwatch mode and added a collapsible task selector to reclaim vertical estate during active sessions.
 
 ### Planner-to-Clock Direct Linking (v0.0.22)
+
 - **Problem**: Users had to manually select tasks in the Study Clock even if they were already looking at them in the Planner.
-- **Solution**: 
-    - Made Planner task titles clickable (for non-completed tasks).
-    - Implemented URL-based task selection in `StudyClock` using `useSearchParams`.
-    - Study Clock now auto-populates all task metadata (Subject, Chapter, Material) on mount if a `taskId` is present.
+- **Solution**:
+  - Made Planner task titles clickable (for non-completed tasks).
+  - Implemented URL-based task selection in `StudyClock` using `useSearchParams`.
+  - Study Clock now auto-populates all task metadata (Subject, Chapter, Material) on mount if a `taskId` is present.
 
 ---
 
-*This document serves as the ground truth for agents. When in doubt, defer to the behaviors defined here.*
+_This document serves as the ground truth for agents. When in doubt, defer to the behaviors defined here._

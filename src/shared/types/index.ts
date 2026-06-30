@@ -4,185 +4,185 @@ export type Subject = 'physics' | 'chemistry' | 'maths';
 export type MockExamType = 'jm' | 'ja' | 'bt' | string;
 
 export interface Chapter {
-    serial: number;
-    name: string;
-    materials: string[];
-    subtopics?: string[];
+  serial: number;
+  name: string;
+  materials: string[];
+  subtopics?: string[];
 }
 
 export interface SubtopicState {
-    completed: Record<string, boolean>;
-    attemptedByMaterial?: Record<string, number>;
-    lastRevised?: string;
+  completed: Record<string, boolean>;
+  attemptedByMaterial?: Record<string, number>;
+  lastRevised?: string;
 }
 
 export interface ChapterProgress {
-    completed: Record<string, boolean>;
-    priority: Priority;
-    detail?: ChapterDetailProgress;
-    subtopics?: Record<string, SubtopicState>;
+  completed: Record<string, boolean>;
+  priority: Priority;
+  detail?: ChapterDetailProgress;
+  subtopics?: Record<string, SubtopicState>;
 }
 
 export type ConfidenceLevel = 1 | 2 | 3 | 4 | 5;
 
 export interface ChapterDetailProgress {
-    attemptedByMaterial: Record<string, number>;
-    confidence?: ConfidenceLevel;
-    lastRevised?: string;
-    revisionCount?: number;
-    notes?: string;
-    revisionHistory?: Array<{
-        date: string;
-        confidence: ConfidenceLevel;
-    }>;
-    lastActiveDate?: string;
+  attemptedByMaterial: Record<string, number>;
+  confidence?: ConfidenceLevel;
+  lastRevised?: string;
+  revisionCount?: number;
+  notes?: string;
+  revisionHistory?: Array<{
+    date: string;
+    confidence: ConfidenceLevel;
+  }>;
+  lastActiveDate?: string;
 }
 
 export interface SubjectProgress {
-    [chapterSerial: number]: ChapterProgress;
+  [chapterSerial: number]: ChapterProgress;
 }
 
 export interface SubjectStreak {
-    currentStreak: number;
-    lastStudiedDate?: string;
+  currentStreak: number;
+  lastStudiedDate?: string;
 }
 
 export interface AppProgress {
-    physics: SubjectProgress;
-    chemistry: SubjectProgress;
-    maths: SubjectProgress;
-    streaks?: Record<Subject, SubjectStreak>;
+  physics: SubjectProgress;
+  chemistry: SubjectProgress;
+  maths: SubjectProgress;
+  streaks?: Record<Subject, SubjectStreak>;
 }
 
 export interface SubjectData {
-    chapters: Chapter[];
-    materialNames: string[];
+  chapters: Chapter[];
+  materialNames: string[];
 }
 
 export interface PlannerTask {
-    id: string;
-    title: string;
-    subtitle?: string; // Material name for chapter tasks
-    date: string; // YYYY-MM-DD
-    time: string; // HH:mm
-    completed: boolean;
-    type: 'chapter' | 'custom';
-    subject?: Subject;
-    chapterSerial?: number;
-    material?: string;
-    completedAt?: string;
-    wasShifted?: boolean; // True if this task was auto-moved from a past day
-    questions?: number; // Questions to attempt
+  id: string;
+  title: string;
+  subtitle?: string; // Material name for chapter tasks
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  completed: boolean;
+  type: 'chapter' | 'custom';
+  subject?: Subject;
+  chapterSerial?: number;
+  material?: string;
+  completedAt?: string;
+  wasShifted?: boolean; // True if this task was auto-moved from a past day
+  questions?: number; // Questions to attempt
 }
 
 export interface StudySession {
-    id: string;
-    title: string;
-    subject?: Subject;
-    chapterSerial?: number;
-    chapterName?: string;
-    material?: string;
-    type: 'chapter' | 'custom' | 'task';
-    startTime: string;      // ISO timestamp
-    endTime: string;        // ISO timestamp
-    localDate?: string;     // YYYY-MM-DD in local time
-    duration: number;       // in seconds
-    timerMode?: 'stopwatch' | 'countdown' | 'pomodoro' | 'custom' | 'video';
-    profileId?: string;
-    sourceVideoId?: string;
+  id: string;
+  title: string;
+  subject?: Subject;
+  chapterSerial?: number;
+  chapterName?: string;
+  material?: string;
+  type: 'chapter' | 'custom' | 'task';
+  startTime: string; // ISO timestamp
+  endTime: string; // ISO timestamp
+  localDate?: string; // YYYY-MM-DD in local time
+  duration: number; // in seconds
+  timerMode?: 'stopwatch' | 'countdown' | 'pomodoro' | 'custom' | 'video';
+  profileId?: string;
+  sourceVideoId?: string;
 }
 
 export interface MockSubjectMarks {
-    physics: number;
-    chemistry: number;
-    maths: number;
+  physics: number;
+  chemistry: number;
+  maths: number;
 }
 
 export interface MockExamPreset {
-    id: string;
-    name: string;
-    shortName: string;
-    paperCount: 1 | 2;
-    subjectMaxMarks: MockSubjectMarks;
-    enabledSubjects?: {
-        physics: boolean;
-        chemistry: boolean;
-        maths: boolean;
-    };
+  id: string;
+  name: string;
+  shortName: string;
+  paperCount: 1 | 2;
+  subjectMaxMarks: MockSubjectMarks;
+  enabledSubjects?: {
+    physics: boolean;
+    chemistry: boolean;
+    maths: boolean;
+  };
 }
 
 export interface MockScore {
-    id: string;
-    name: string;           // e.g., "Mock Test 1", "NTA Mock 3"
-    date: string;           // YYYY-MM-DD
-    examType?: MockExamType;
-    physicsMarks: number;
-    chemistryMarks: number;
-    mathsMarks: number;
-    totalMarks: number;     // Sum of all three
-    maxMarks?: number;      // Optional, defaults to 300
-    paper1Marks?: MockSubjectMarks;
-    paper2Marks?: MockSubjectMarks;
+  id: string;
+  name: string; // e.g., "Mock Test 1", "NTA Mock 3"
+  date: string; // YYYY-MM-DD
+  examType?: MockExamType;
+  physicsMarks: number;
+  chemistryMarks: number;
+  mathsMarks: number;
+  totalMarks: number; // Sum of all three
+  maxMarks?: number; // Optional, defaults to 300
+  paper1Marks?: MockSubjectMarks;
+  paper2Marks?: MockSubjectMarks;
 }
 
 export interface ExamEntry {
-    id: string;
-    name: string;       // e.g. "JEE Mains", "JEE Advanced"
-    date: string;       // YYYY-MM-DD
-    isPrimary: boolean;  // The one shown in the main countdown display
+  id: string;
+  name: string; // e.g. "JEE Mains", "JEE Advanced"
+  date: string; // YYYY-MM-DD
+  isPrimary: boolean; // The one shown in the main countdown display
 }
 
 export interface ProgressCardSettings {
-    userName: string;
-    customAvatarUrl: string;
-    visibleStats: {
-        totalStudyTime: boolean;
-        highestMockScore: boolean;
-        highestDailyHours: boolean;
-        highestWeekAverage: boolean;
-        physicsTime: boolean;
-        chemistryTime: boolean;
-        mathsTime: boolean;
-        physicsProgress: boolean;
-        chemistryProgress: boolean;
-        mathsProgress: boolean;
-        examCountdown: boolean;
-    };
-    bannerUrl?: string;
-    customStatus?: string;
-    gradeStatus?: string;
-    targetExam?: string;
-    discordSpecialTag?: string;
-    inviteCode?: string;
-    showTasks?: boolean;
+  userName: string;
+  customAvatarUrl: string;
+  visibleStats: {
+    totalStudyTime: boolean;
+    highestMockScore: boolean;
+    highestDailyHours: boolean;
+    highestWeekAverage: boolean;
+    physicsTime: boolean;
+    chemistryTime: boolean;
+    mathsTime: boolean;
+    physicsProgress: boolean;
+    chemistryProgress: boolean;
+    mathsProgress: boolean;
+    examCountdown: boolean;
+  };
+  bannerUrl?: string;
+  customStatus?: string;
+  gradeStatus?: string;
+  targetExam?: string;
+  discordSpecialTag?: string;
+  inviteCode?: string;
+  showTasks?: boolean;
 }
 
 export interface RemoteProfile {
-    id: string;
-    display_name?: string;
-    username?: string;
-    avatar_url?: string;
-    banner_url?: string;
-    custom_status?: string;
-    invite_code?: string;
-    streak_count: number;
-    discord_tag?: string;
-    grade_status?: string;
-    target_exam?: string;
-    today_study_seconds: number;
-    today_questions: number;
-    momentum_heatmap: any[];
-    todays_tasks: any[];
-    updated_at?: string;
+  id: string;
+  display_name?: string;
+  username?: string;
+  avatar_url?: string;
+  banner_url?: string;
+  custom_status?: string;
+  invite_code?: string;
+  streak_count: number;
+  discord_tag?: string;
+  grade_status?: string;
+  target_exam?: string;
+  today_study_seconds: number;
+  today_questions: number;
+  momentum_heatmap: any[];
+  todays_tasks: any[];
+  updated_at?: string;
 }
 
 export interface LiveActivity {
-    user_id: string;
-    is_active: boolean;
-    subject?: string | null;
-    chapter_name?: string | null;
-    chapter_serial?: number | null;
-    material?: string | null;
-    started_at?: string | null;
-    updated_at: string;
+  user_id: string;
+  is_active: boolean;
+  subject?: string | null;
+  chapter_name?: string | null;
+  chapter_serial?: number | null;
+  material?: string | null;
+  started_at?: string | null;
+  updated_at: string;
 }
