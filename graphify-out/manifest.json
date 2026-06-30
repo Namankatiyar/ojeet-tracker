@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "src/core/App.tsx": {
-    "mtime": 1782841249.2696948,
-    "ast_hash": "4292c0a75f9a1291ec83c19d0396778d",
+    "mtime": 1782841535.4227803,
+    "ast_hash": "47dbf28c63c0900ec7039edb5deafc2c",
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -1022,6 +1022,11 @@
   "public/yotube.png": {
     "mtime": 1782737752.0,
     "ast_hash": "3a28ccc9de070314ee0d5405efd655cd",
+    "semantic_hash": ""
+  },
+  "src/shared/components/ui/ThemeOnboardingModal.tsx": {
+    "mtime": 1782841501.5748532,
+    "ast_hash": "e3a511d3151653e0f4b78561e3f59fd5",
     "semantic_hash": ""
   }
 }
