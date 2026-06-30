@@ -319,32 +319,53 @@
     /* ── Fluid Waveform ────────────────────────────────────────────── */
     .music-waveform {
         display: flex;
-        align-items: flex-end;
-        gap: 1px;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
         height: var(--space-5);
-        width: 32px;
+        width: 24px;
         flex-shrink: 0;
         box-sizing: border-box;
     }
 
     .music-waveform--small {
         height: var(--space-4);
-        width: 22px;
+        width: 18px;
+        gap: 3px;
     }
 
     .music-waveform-bar {
-        flex: 1;
-        height: 100%;
-        background: linear-gradient(to top, var(--accent-hover), var(--accent));
+        flex: 0 0 auto;
+        width: 4px;
+        background: currentColor;
         border-radius: var(--radius-full);
-        transform-origin: bottom;
-        animation: fluid-wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        animation-delay: calc(var(--bar-idx) * -0.12s);
+        transform-origin: center;
+        animation: fluid-wave 1s ease-in-out infinite;
+        will-change: transform;
+    }
+
+    .music-waveform--small .music-waveform-bar {
+        width: 3px;
+    }
+
+    .music-waveform-bar:nth-child(1) {
+        height: 60%;
+        animation-delay: 0s;
+    }
+
+    .music-waveform-bar:nth-child(2) {
+        height: 100%;
+        animation-delay: 0.15s;
+    }
+
+    .music-waveform-bar:nth-child(3) {
+        height: 60%;
+        animation-delay: 0.3s;
     }
 
     @keyframes fluid-wave {
         0%, 100% {
-            transform: scaleY(0.15);
+            transform: scaleY(0.5);
         }
         50% {
             transform: scaleY(1);
@@ -353,6 +374,7 @@
 
     .music-waveform--paused .music-waveform-bar {
         animation-play-state: paused;
+        transform: scaleY(0.5);
     }
 
     /* ── Source Logo Icon ───────────────────────────────────────────── */

@@ -71,16 +71,11 @@ function SourceIcon({ type }: { type: Track['type'] }) {
 
 /** Fluid waveform animation component */
 function FluidWaveform({ paused, small }: { paused?: boolean; small?: boolean }) {
-    const barCount = small ? 8 : 12;
     return (
         <div className={`music-waveform ${paused ? 'music-waveform--paused' : ''} ${small ? 'music-waveform--small' : ''}`}>
-            {Array.from({ length: barCount }).map((_, idx) => (
-                <span 
-                    key={idx} 
-                    className="music-waveform-bar" 
-                    style={{ '--bar-idx': idx } as React.CSSProperties} 
-                />
-            ))}
+            <span className="music-waveform-bar" />
+            <span className="music-waveform-bar" />
+            <span className="music-waveform-bar" />
         </div>
     );
 }
@@ -110,6 +105,7 @@ export function MusicPlayerDrawer() {
     const [loop, setLoop] = useState(false);
     const [showSpotifyEmbed, setShowSpotifyEmbed] = useState(true);
     const [localObjectUrl, setLocalObjectUrl] = useState<string | null>(null);
+    const [isBuffering, setIsBuffering] = useState(false);
 
     // Refs
     const createInputRef = useRef<HTMLInputElement>(null);
@@ -160,6 +156,7 @@ export function MusicPlayerDrawer() {
 
     useEffect(() => {
         setShowSpotifyEmbed(true);
+        setIsBuffering(false);
     }, [currentTrackIndex, activePlaylistId]);
 
     // Handle local track playback URL
@@ -384,6 +381,11 @@ export function MusicPlayerDrawer() {
                     muted={muted}
                     loop={false}
                     onEnded={handleTrackEnded}
+                    onBuffer={() => setIsBuffering(true)}
+                    onBufferEnd={() => setIsBuffering(false)}
+                    onPlay={() => setIsBuffering(false)}
+                    onError={() => setIsBuffering(false)}
+                    onReady={() => setIsBuffering(false)}
                     width="0"
                     height="0"
                     style={{ display: 'none' }}
@@ -472,7 +474,7 @@ export function MusicPlayerDrawer() {
                 {/* ─── Now Playing (compact row) ──────────────────── */}
                 {currentTrack && (
                     <div className="music-now-playing">
-                        <FluidWaveform paused={!playing} small />
+                        <FluidWaveform paused={!playing || isBuffering} small />
                         <span className="music-now-playing-title">{currentTrack.title}</span>
                         <SourceIcon type={currentTrack.type} />
                     </div>
@@ -580,7 +582,7 @@ export function MusicPlayerDrawer() {
                                 >
                                     <span className="music-track-number">
                                         {isActive && playing ? (
-                                            <FluidWaveform small />
+                                            <FluidWaveform paused={isBuffering} small />
                                         ) : (
                                             idx + 1
                                         )}
@@ -661,7 +663,13 @@ export function MusicPlayerDrawer() {
                                     <SkipBack size={18} />
                                 </button>
                                 <button className="music-dock-play" onClick={handlePlayPause} disabled={!currentTrack}>
-                                    {playing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                                    {isBuffering ? (
+                                        <Loader2 size={20} className="music-spinner" />
+                                    ) : playing ? (
+                                        <Pause size={20} fill="currentColor" />
+                                    ) : (
+                                        <Play size={20} fill="currentColor" />
+                                    )}
                                 </button>
                                 <button className="music-dock-btn" onClick={handleNext} disabled={!currentTrack}>
                                     <SkipForward size={18} />
