@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { ProgressRing } from '../../../shared/components/ui/ProgressBar';
 import {
@@ -525,10 +526,39 @@ export function Dashboard({
     markNotificationContextsRead(notificationItems.map((item) => item.id));
   }, [markNotificationContextsRead, notificationItems]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring' as const,
+        duration: 0.6, // Increased duration
+        bounce: 0, // Critically damped to avoid bounciness and 'AI slop'
+      },
+    },
+  };
+
   return (
-    <div className="dashboard">
+    <motion.div
+      className="dashboard"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
       <h1 className="sr-only">The Ultimate Offline-First JEE Tracker for Aspirants</h1>
-      <div className="dashboard-header">
+      <motion.div className="dashboard-header" variants={itemVariants}>
         {quote ? (
           <div className="quote-container">
             <p className="quote-text">"{quote.quote}"</p>
@@ -537,10 +567,10 @@ export function Dashboard({
         ) : (
           <p className="dashboard-title">Your Progress</p>
         )}
-      </div>
+      </motion.div>
 
       <div className="dashboard-stats-row">
-        <div className="glass-panel overall-progress-card">
+        <motion.div className="glass-panel overall-progress-card" variants={itemVariants}>
           <div className="overall-header">
             <h2>Overall Progress</h2>
             <p>Combined progress across all subjects</p>
@@ -575,9 +605,9 @@ export function Dashboard({
               <span className="stat-label">Complete</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="glass-panel agenda-card">
+        <motion.div className="glass-panel agenda-card" variants={itemVariants}>
           <div className="agenda-header">
             <div className="agenda-header-row">
               <h2>Today's Agenda</h2>
@@ -656,9 +686,9 @@ export function Dashboard({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="glass-panel exam-countdown-card">
+        <motion.div className="glass-panel exam-countdown-card" variants={itemVariants}>
           <div className="countdown-header">
             <div>
               <h2>Exam Countdown</h2>
@@ -724,16 +754,17 @@ export function Dashboard({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <div className="subject-cards">
         {subjects.map(({ key, label, icon, progress, color }) => {
           const stats = getChapterStats(key);
           return (
-            <div
+            <motion.div
               key={key}
               className="subject-card"
+              variants={itemVariants}
               onClick={() => onNavigate(key)}
               role="button"
               tabIndex={0}
@@ -777,19 +808,23 @@ export function Dashboard({
                   </svg>
                 </span>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
-      <AnalyticsPanels
-        studySessions={studySessions}
-        mockScores={mockScores}
-        onAddMockScore={onAddMockScore}
-        onDeleteMockScore={onDeleteMockScore}
-      />
+      <motion.div variants={itemVariants}>
+        <AnalyticsPanels
+          studySessions={studySessions}
+          mockScores={mockScores}
+          onAddMockScore={onAddMockScore}
+          onDeleteMockScore={onDeleteMockScore}
+        />
+      </motion.div>
 
-      <TaskLog tasks={plannerTasks} />
+      <motion.div variants={itemVariants}>
+        <TaskLog tasks={plannerTasks} />
+      </motion.div>
 
       <DashboardNotificationCenter
         items={notificationItems}
@@ -818,6 +853,6 @@ export function Dashboard({
         onInstall={handleInstallPwa}
         isBusy={isPwaInstallBusy}
       />
-    </div>
+    </motion.div>
   );
 }

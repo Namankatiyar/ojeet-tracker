@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import {
   PlannerTask,
@@ -127,13 +128,40 @@ export function Planner({
   const currentLabel =
     viewMode === 'monthly' ? dateNavigator.monthlyLabel : dateNavigator.weeklyLabel;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring' as const,
+        duration: 0.6,
+        bounce: 0,
+      },
+    },
+  };
+
   return (
-    <div className="planner-page">
+    <motion.div
+      className="planner-page"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
       <h1 className="sr-only">Interactive JEE Study Planner and Timetable App for Droppers</h1>
       <h2 className="sr-only">
         Weekly task manager and study calendar with auto-rescheduling for IIT preparation
       </h2>
-      <div className="planner-header">
+      <motion.div className="planner-header" variants={itemVariants}>
         <div className="view-toggles">
           <button
             className={`view-btn ${viewMode === 'weekly' ? 'active' : ''}`}
@@ -161,10 +189,11 @@ export function Planner({
             <ChevronRight size={20} />
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {viewMode === 'weekly' ? (
-        <WeeklyView
+        <motion.div variants={itemVariants}>
+          <WeeklyView
           reorderedWeekDays={dateNavigator.reorderedWeekDays}
           groupedTasks={groupedTasks}
           examDate={examDate}
@@ -173,10 +202,12 @@ export function Planner({
           onToggleTask={onToggleTask}
           onDeleteTask={onDeleteTask}
           onMoveTask={handleMoveTask}
-          onDuplicateTask={handleDuplicateTask}
+          onToggleTask={onToggleTask}
         />
+        </motion.div>
       ) : (
-        <MonthlyView
+        <motion.div variants={itemVariants}>
+          <MonthlyView
           monthDays={dateNavigator.monthDays}
           groupedTasks={groupedTasks}
           groupedSessions={groupedSessions}
@@ -189,6 +220,7 @@ export function Planner({
           onAddTask={handleAddTaskClick}
           onToggleTask={onToggleTask}
         />
+        </motion.div>
       )}
 
       <TaskModal
@@ -200,6 +232,6 @@ export function Planner({
         taskToEdit={taskToEdit}
         progress={progress}
       />
-    </div>
+    </motion.div>
   );
 }

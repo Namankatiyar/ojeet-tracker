@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { AnimatePresence, Reorder } from 'framer-motion';
+import { AnimatePresence, Reorder, motion } from 'framer-motion';
 import {
   Subject,
   SubjectData,
@@ -221,10 +221,38 @@ export function SubjectPage({
 
   const selectedChapterProgress = selectedChapter ? progress[selectedChapter.serial] : undefined;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring' as const,
+        duration: 0.6,
+        bounce: 0,
+      },
+    },
+  };
+
   return (
-    <div className="subject-page">
-      <SubjectHeader
-        subject={subject}
+    <motion.div
+      className="subject-page"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={itemVariants}>
+        <SubjectHeader
+          subject={subject}
         data={data}
         subjectProgress={subjectProgress}
         isEditing={isEditing}
@@ -233,9 +261,10 @@ export function SubjectPage({
         canAddMaterial={!!onAddMaterial}
         onAddMaterial={() => setIsAddMaterialModalOpen(true)}
       />
+      </motion.div>
 
       {hasScrollbar && (
-        <div className="double-scroll-row">
+        <motion.div className="double-scroll-row" variants={itemVariants}>
           <div className="left-scroll-spacer" />
           <div
             className="double-scroll-wrapper"
@@ -249,9 +278,9 @@ export function SubjectPage({
             <div style={{ width: tableWidth, height: '1px' }} />
           </div>
           <div className="right-scroll-spacer" />
-        </div>
+        </motion.div>
       )}
-      <div className="chapter-table-container desktop-chapter-table">
+      <motion.div className="chapter-table-container desktop-chapter-table" variants={itemVariants}>
         {/* Left Table: Serial & Chapter */}
         <div className="left-table-section">
           <table className="chapter-table">
@@ -323,7 +352,7 @@ export function SubjectPage({
                 onReorder={isEditing ? setLocalMaterials : () => {}}
               >
                 {data &&
-                  localMaterials.map((material, mIndex) => (
+                  localMaterials.map((material) => (
                     <Reorder.Item
                       as="th"
                       key={material}
@@ -448,10 +477,10 @@ export function SubjectPage({
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
 
       {isEditing && (
-        <div className="edit-actions-container">
+        <motion.div className="edit-actions-container" variants={itemVariants}>
           <button
             onClick={() => setIsAddChapterModalOpen(true)}
             className="primary-btn add-chapter-btn-wrapper"
@@ -459,10 +488,10 @@ export function SubjectPage({
             <Plus size={18} />
             Add New Chapter
           </button>
-        </div>
+        </motion.div>
       )}
 
-      <div className="mobile-chapter-view">
+      <motion.div className="mobile-chapter-view" variants={itemVariants}>
         <div className="mobile-chapter-controls">
           <div className="mobile-priority-filter">
             <span className="mobile-control-label">Filter</span>
@@ -524,9 +553,9 @@ export function SubjectPage({
             />
           ))}
         </Reorder.Group>
-      </div>
+      </motion.div>
 
-      <div className="legend">
+      <motion.div className="legend" variants={itemVariants}>
         <h4>Priority Legend</h4>
         <div className="legend-items">
           <div className="legend-item">
@@ -546,7 +575,7 @@ export function SubjectPage({
             <span>Completed</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Material Modals */}
       <ConfirmationModal
@@ -607,6 +636,6 @@ export function SubjectPage({
           />
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

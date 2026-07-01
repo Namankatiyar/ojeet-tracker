@@ -378,6 +378,7 @@ td.material-cell .checkbox-container {
 .priority-cell,
 .priority-header {
   width: 13rem; /* 208px */
+  text-align: center;
 }
 
 .priority-header-content {

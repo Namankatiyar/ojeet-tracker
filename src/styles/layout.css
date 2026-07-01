@@ -132,6 +132,7 @@ html[data-theme^='dark-'] .nav {
     color var(--transition-fast),
     box-shadow var(--transition-fast);
   white-space: nowrap;
+  position: relative;
 }
 
 .nav-item:hover {
@@ -140,11 +141,20 @@ html[data-theme^='dark-'] .nav {
 }
 
 .nav-item.active {
-  background: var(--accent-light);
   color: var(--accent);
 }
 
+.nav-item-active-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  z-index: 0;
+}
+
 .nav-icon {
+  position: relative;
+  z-index: 1;
   font-size: 1.125rem;
   display: flex;
   align-items: center;
@@ -152,6 +162,8 @@ html[data-theme^='dark-'] .nav {
 }
 
 .nav-label-wrapper {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 0fr;
   margin-left: 0;
@@ -185,7 +197,7 @@ html[data-theme^='dark-'] .nav-item:hover {
 }
 
 html[data-theme^='dark-'] .nav-item.active {
-  background: var(--accent-light);
+  /* active background handled by framer-motion indicator */
 }
 
 .header-actions {
