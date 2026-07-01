@@ -23,7 +23,7 @@
   overflow: hidden;
 }
 
-.ob-image-pane img {
+.ob-background-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -736,6 +736,48 @@
 .ob-signed-in-email {
   font-weight: 600;
   color: var(--accent);
+}
+
+/* ======================== */
+/* === Image Branding === */
+/* ======================== */
+.ob-branding {
+  --ob-brand-size: 48px;
+  position: absolute;
+  left: var(--space-6);
+  bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+  user-select: none;
+}
+
+.ob-branding-logo {
+  width: var(--ob-brand-size);
+  height: var(--ob-brand-size);
+  object-fit: contain;
+}
+
+.ob-branding-divider {
+  width: 1px;
+  height: calc(var(--ob-brand-size) * 0.725);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ob-branding-text {
+  font-weight: 600;
+  font-size: calc(var(--ob-brand-size) * 0.6);
+  line-height: var(--ob-brand-size);
+  letter-spacing: -0.03em;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
 }
 
 /* ======================== */
