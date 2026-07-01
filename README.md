@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=6C63FF&amp;height=200&amp;section=header&amp;text=OJEE-Tracker&amp;fontSize=72&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Your%20Premium%20JEE%20%26%20OJEE%20Study%20Command%20Centre&amp;descAlignY=60&amp;descSize=18" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=6C63FF&amp;height=200&amp;section=header&amp;text=OJEE-Tracker&amp;fontSize=72&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Your%20Premium%20JEE%20and%20OJEE%20Study%20Command%20Centre&amp;descAlignY=60&amp;descSize=18" width="100%"/>
 
 <br/>
 
@@ -8,7 +8,7 @@
 [![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-
+[![Google Auth](https://img.shields.io/badge/Google_Auth-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/identity)
 <br/>
 
 [![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&logoColor=white)](#)
@@ -17,7 +17,7 @@
 
 <br/>
 
-> **Offline-first. Premium glassmorphism. Built for JEE & OJEE aspirants who mean business.**
+> **Offline-first. Built for JEE aspirants who mean business.**
 
 <br/>
 
@@ -27,7 +27,7 @@
 
 ## ✨ What is OJEE-Tracker?
 
-**OJEE-Tracker** is a specialized, offline-first study planner and syllabus tracker designed for **JEE** and **OJEE** aspirants. Grounded in a high-density, premium glassmorphism design system, it enables students to:
+**OJEE-Tracker** is a specialized, offline-first study planner and syllabus tracker designed for **JEE** aspirants. Grounded in a high-density, premium glassmorphism design system, it enables students to:
 
 - ⏱️ **Log** active study time with precision
 - 📋 **Track** syllabus completion down to granular subtopics
@@ -223,7 +223,7 @@ pnpm build
 
 Join the community, share progress, and study together!
 
-[![Join our Discord](https://img.shields.io/badge/Join%20our%20Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite-link)
+[![Join our Discord](https://img.shields.io/badge/Join%20our%20Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/6dKrbVQU8W)
 
 </div>
 
