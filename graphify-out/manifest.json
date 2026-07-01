@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1782924019.0175374,
-    "ast_hash": "804cea27428ad8770456c01348db2033",
+    "mtime": 1782924220.048192,
+    "ast_hash": "61dbe4e518cbf3559d28db1c78b29253",
     "semantic_hash": ""
   },
   "src/features/community/components/DisconnectModal.tsx": {
@@ -200,8 +200,8 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/components/Dashboard.tsx": {
-    "mtime": 1782923988.5580533,
-    "ast_hash": "e44ecfff3712f9823c0954e6c2b8d9d0",
+    "mtime": 1782924190.4217496,
+    "ast_hash": "cb505b269796c1d835e9ee171c0874f9",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/DashboardNotificationCenter.tsx": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/Planner.tsx": {
-    "mtime": 1782923995.1955926,
-    "ast_hash": "df21e39135accd107214474cc413e0ae",
+    "mtime": 1782924201.0274036,
+    "ast_hash": "035dc7aaefe580b63bcb1a16166fa15a",
     "semantic_hash": ""
   },
   "src/features/planner/components/TaskLog.tsx": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
-    "mtime": 1782924011.9089558,
-    "ast_hash": "f35bba2f3b623612cb3c1886936f67d3",
+    "mtime": 1782924213.1789618,
+    "ast_hash": "9e7d5ae7dd61568f49f01835c4858ec6",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Presets/PresetManager.tsx": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/components/StudyClock.tsx": {
-    "mtime": 1782924001.3560944,
-    "ast_hash": "0aea2713598e7580bbf0f2622c3822cf",
+    "mtime": 1782924207.2396536,
+    "ast_hash": "e0aaa2400ef423abd7f05e742cec05a0",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Timer/ModeSelector.tsx": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "src/features/subjects/components/SubjectPage.tsx": {
-    "mtime": 1782923980.372389,
-    "ast_hash": "0deb2707e6550c625e8700a84b278e38",
+    "mtime": 1782924183.6056592,
+    "ast_hash": "2524f8c4da3f2b7cbde4ca073a80457b",
     "semantic_hash": ""
   },
   "src/features/subjects/hooks/useChapterSort.test.ts": {

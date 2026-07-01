@@ -530,19 +530,21 @@ export function Dashboard({
     hidden: {},
     show: {
       transition: {
-        staggerChildren: 0.08,
+        staggerChildren: 0.06,
+        delayChildren: 0.02,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 20 },
+    hidden: { y: 28, scale: 0.94 },
     show: {
       y: 0,
+      scale: 1,
       transition: {
         type: 'spring' as const,
-        duration: 0.6, // Increased duration
-        bounce: 0, // Critically damped to avoid bounciness and 'AI slop'
+        stiffness: 320,
+        damping: 26,
       },
     },
   };

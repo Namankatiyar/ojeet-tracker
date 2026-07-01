@@ -224,18 +224,22 @@ export function SubjectPage({
   const containerVariants = {
     hidden: {},
     show: {
-      transition: { staggerChildren: 0.08 },
+      transition: {
+        staggerChildren: 0.06,
+        delayChildren: 0.02,
+      },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 20 },
+    hidden: { y: 28, scale: 0.94 },
     show: {
       y: 0,
+      scale: 1,
       transition: {
         type: 'spring' as const,
-        duration: 0.6,
-        bounce: 0,
+        stiffness: 320,
+        damping: 26,
       },
     },
   };
