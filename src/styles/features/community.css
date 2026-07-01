@@ -1299,16 +1299,6 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: modal-fade-in var(--transition-normal) ease;
-  }
-
-  @keyframes modal-fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
   }
 
   .profile-edit-modal {
@@ -1323,18 +1313,6 @@
     -webkit-backdrop-filter: var(--panel-blur);
     border: 1px solid var(--panel-border);
     box-shadow: var(--panel-inner-glow), var(--panel-shadow);
-    animation: modal-slide-up var(--transition-normal) ease;
-  }
-
-  @keyframes modal-slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   .profile-edit-header {
@@ -1581,7 +1559,6 @@
     -webkit-backdrop-filter: var(--panel-blur);
     border: 1px solid var(--panel-border);
     box-shadow: var(--panel-inner-glow), var(--panel-shadow);
-    animation: modal-slide-up var(--transition-normal) ease;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);

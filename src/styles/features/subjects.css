@@ -1931,18 +1931,6 @@ td.material-cell .checkbox-container {
   flex-direction: column;
   gap: var(--space-2);
   border-left: 2px solid var(--accent);
-  animation: subtopicExpand var(--transition-fast);
-}
-
-@keyframes subtopicExpand {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .subtopic-material-row {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ChevronRight, Minus, Plus, X, Check } from 'lucide-react';
 import {
   Chapter,
@@ -447,8 +447,16 @@ export function ChapterDetailDrawer({
                           </div>
                         </div>
 
-                        {isExpanded && (
-                          <div className="subtopic-expand-content">
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div 
+                              className="subtopic-expand-content"
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              style={{ overflow: 'hidden' }}
+                            >
                             {materialNames.map((material) => {
                               const isChecked = !!subCompleted[material];
                               const attemptedValue = attempted[material] ?? 0;
@@ -544,8 +552,9 @@ export function ChapterDetailDrawer({
                                 )}
                               </div>
                             </div>
-                          </div>
-                        )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     );
                   })}
