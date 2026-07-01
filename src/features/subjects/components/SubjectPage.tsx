@@ -291,46 +291,55 @@ export function SubjectPage({
                 <th className="chapter-header">Chapter</th>
               </tr>
             </thead>
-            <Reorder.Group
-              as="tbody"
-              axis="y"
-              values={localChapters}
-              onReorder={isEditing && priorityFilter === 'all' ? setLocalChapters : () => {}}
-            >
-              {data &&
-                localChapters.map((chapter, index) => {
-                  const chProgress = progress[chapter.serial];
-                  const completed = chProgress?.completed || {};
-                  const completedCount = data.materialNames.filter((m) => completed[m]).length;
-                  const isFullyCompleted =
-                    completedCount === data.materialNames.length && data.materialNames.length > 0;
-                  const priority = chProgress?.priority || 'none';
-                  const priorityClass = isEditing
-                    ? ''
-                    : isFullyCompleted
-                      ? 'completed'
-                      : priority !== 'none'
-                        ? `priority-${priority}`
-                        : '';
+            {(() => {
+              const rows = data && localChapters.map((chapter, index) => {
+                const chProgress = progress[chapter.serial];
+                const completed = chProgress?.completed || {};
+                const completedCount = data.materialNames.filter((m) => completed[m]).length;
+                const isFullyCompleted =
+                  completedCount === data.materialNames.length && data.materialNames.length > 0;
+                const priority = chProgress?.priority || 'none';
+                const priorityClass = isEditing
+                  ? ''
+                  : isFullyCompleted
+                    ? 'completed'
+                    : priority !== 'none'
+                      ? `priority-${priority}`
+                      : '';
 
-                  return (
-                    <LeftChapterRow
-                      key={chapter.serial}
-                      chapter={chapter}
-                      index={index}
-                      progress={chProgress}
-                      isEditing={isEditing}
-                      onRename={(name) => onRenameChapter?.(chapter.serial, name)}
-                      onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
-                      isHovered={hoveredChapterSerial === chapter.serial}
-                      onMouseEnter={() => setHoveredChapterSerial(chapter.serial)}
-                      onMouseLeave={() => setHoveredChapterSerial(null)}
-                      priorityClass={priorityClass}
-                      onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
-                    />
-                  );
-                })}
-            </Reorder.Group>
+                return (
+                  <LeftChapterRow
+                    key={chapter.serial}
+                    chapter={chapter}
+                    index={index}
+                    progress={chProgress}
+                    isEditing={isEditing}
+                    onRename={(name) => onRenameChapter?.(chapter.serial, name)}
+                    onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+                    isHovered={hoveredChapterSerial === chapter.serial}
+                    onMouseEnter={() => setHoveredChapterSerial(chapter.serial)}
+                    onMouseLeave={() => setHoveredChapterSerial(null)}
+                    priorityClass={priorityClass}
+                    onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
+                  />
+                );
+              });
+
+              return isEditing && priorityFilter === 'all' ? (
+                <Reorder.Group
+                  as="tbody"
+                  axis="y"
+                  values={localChapters}
+                  onReorder={setLocalChapters}
+                >
+                  {rows}
+                </Reorder.Group>
+              ) : (
+                <tbody>
+                  {rows}
+                </tbody>
+              );
+            })()}
           </table>
         </div>
 
@@ -346,37 +355,53 @@ export function SubjectPage({
         >
           <table className="chapter-table" ref={tableRef}>
             <thead>
-              <Reorder.Group
-                as="tr"
-                axis="x"
-                values={localMaterials}
-                onReorder={isEditing ? setLocalMaterials : () => {}}
-              >
-                {data &&
-                  localMaterials.map((material) => (
-                    <Reorder.Item
-                      as="th"
-                      key={material}
-                      value={material}
-                      dragListener={isEditing}
-                      onDragEnd={() => onReorderMaterials?.(localMaterials)}
-                      className={`material-header ${isEditing ? 'material-header-draggable' : ''}`}
-                    >
-                      <div className="material-header-content">
-                        <span>{material}</span>
-                        {!isEditing && onRemoveMaterial && (
-                          <button
-                            className="remove-material-btn"
-                            onClick={() => setDeleteMaterialState({ isOpen: true, material })}
-                            title="Remove column"
-                          >
-                            <XIcon size={14} />
-                          </button>
-                        )}
-                      </div>
-                    </Reorder.Item>
-                  ))}
-              </Reorder.Group>
+              {isEditing ? (
+                <Reorder.Group
+                  as="tr"
+                  axis="x"
+                  values={localMaterials}
+                  onReorder={setLocalMaterials}
+                >
+                  {data &&
+                    localMaterials.map((material) => (
+                      <Reorder.Item
+                        as="th"
+                        key={material}
+                        value={material}
+                        dragListener={isEditing}
+                        onDragEnd={() => onReorderMaterials?.(localMaterials)}
+                        className={`material-header ${isEditing ? 'material-header-draggable' : ''}`}
+                      >
+                        <div className="material-header-content">
+                          <span>{material}</span>
+                        </div>
+                      </Reorder.Item>
+                    ))}
+                </Reorder.Group>
+              ) : (
+                <tr>
+                  {data &&
+                    localMaterials.map((material) => (
+                      <th
+                        key={material}
+                        className="material-header"
+                      >
+                        <div className="material-header-content">
+                          <span>{material}</span>
+                          {onRemoveMaterial && (
+                            <button
+                              className="remove-material-btn"
+                              onClick={() => setDeleteMaterialState({ isOpen: true, material })}
+                              title="Remove column"
+                            >
+                              <XIcon size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                </tr>
+              )}
             </thead>
             <tbody>
               {data &&
@@ -533,27 +558,44 @@ export function SubjectPage({
           ))}
         </div>
 
-        <Reorder.Group
-          as="div"
-          axis="y"
-          values={localChapters}
-          onReorder={isEditing && priorityFilter === 'all' ? setLocalChapters : () => {}}
-          className="mobile-chapter-list"
-        >
-          {localChapters.map((chapter, index) => (
-            <MobileChapterCard
-              key={chapter.serial}
-              chapter={chapter}
-              index={index}
-              materialNames={localMaterials}
-              progress={progress[chapter.serial]}
-              isEditing={isEditing}
-              canReorder={priorityFilter === 'all'}
-              onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
-              onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
-            />
-          ))}
-        </Reorder.Group>
+        {isEditing && priorityFilter === 'all' ? (
+          <Reorder.Group
+            as="div"
+            axis="y"
+            values={localChapters}
+            onReorder={setLocalChapters}
+            className="mobile-chapter-list"
+          >
+            {localChapters.map((chapter, index) => (
+              <MobileChapterCard
+                key={chapter.serial}
+                chapter={chapter}
+                index={index}
+                materialNames={localMaterials}
+                progress={progress[chapter.serial]}
+                isEditing={isEditing}
+                canReorder={true}
+                onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+                onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
+              />
+            ))}
+          </Reorder.Group>
+        ) : (
+          <div className="mobile-chapter-list">
+            {localChapters.map((chapter, index) => (
+              <MobileChapterCard
+                key={chapter.serial}
+                chapter={chapter}
+                index={index}
+                materialNames={localMaterials}
+                progress={progress[chapter.serial]}
+                isEditing={isEditing}
+                canReorder={false}
+                onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+              />
+            ))}
+          </div>
+        )}
       </motion.div>
 
       <motion.div className="legend" variants={itemVariants}>

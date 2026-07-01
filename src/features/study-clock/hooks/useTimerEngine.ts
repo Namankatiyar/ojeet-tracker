@@ -185,16 +185,23 @@ function loadState(): PersistedTimerState | null {
   }
 }
 
+let lastDispatchedStateSummary = '';
+
 function saveState(state: PersistedTimerState) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('jee-timer-state-change'));
+    const summary = `${state.engineState}|${state.phase}|${state.mode}|${state.runStartedAtMs}|${state.currentIntervalIndex}`;
+    if (summary !== lastDispatchedStateSummary) {
+      lastDispatchedStateSummary = summary;
+      window.dispatchEvent(new Event('jee-timer-state-change'));
+    }
   }
 }
 
 function clearState() {
   localStorage.removeItem(STORAGE_KEY);
   if (typeof window !== 'undefined') {
+    lastDispatchedStateSummary = '';
     window.dispatchEvent(new Event('jee-timer-state-change'));
   }
 }

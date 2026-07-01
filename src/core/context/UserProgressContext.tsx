@@ -284,9 +284,11 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   } = useProgress(progress, mergedSubjectData);
 
   const progressRef = useRef(progress);
+  const pendingProgressRef = useRef(progress);
   const plannerTasksRef = useRef(plannerTasks);
   useEffect(() => {
     progressRef.current = progress;
+    pendingProgressRef.current = progress;
   }, [progress]);
   useEffect(() => {
     plannerTasksRef.current = plannerTasks;
@@ -478,34 +480,68 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     ) => {
       const safeCount = Math.max(0, count);
 
+      const currentProgress = pendingProgressRef.current;
+      const subjectProgress = currentProgress[subject];
+      const chapterProgress = subjectProgress[chapterSerial] || {
+        completed: {},
+        priority: 'none' as Priority,
+      };
+      const subtopicStates = chapterProgress.subtopics || {};
+      const subState = subtopicStates[subtopicName] || { completed: {} };
+      const currentSubAttempted = subState.attemptedByMaterial || {};
+      const currentCount = currentSubAttempted[material] || 0;
+      const diff = safeCount - currentCount;
+
+      if (diff !== 0) {
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        setDailyQuestionLogs((prevLogs) => ({
+          ...prevLogs,
+          [todayStr]: (prevLogs[todayStr] || 0) + diff,
+        }));
+      }
+
+      // Update pendingProgressRef immediately so subsequent synchronous updates see it!
+      const nextProgress = {
+        ...currentProgress,
+        [subject]: {
+          ...subjectProgress,
+          [chapterSerial]: {
+            ...chapterProgress,
+            subtopics: {
+              ...subtopicStates,
+              [subtopicName]: {
+                ...subState,
+                attemptedByMaterial: {
+                  ...currentSubAttempted,
+                  [material]: safeCount,
+                },
+              },
+            },
+          },
+        },
+      };
+      pendingProgressRef.current = nextProgress;
+
       setProgress((prev) => {
-        const subjectProgress = prev[subject];
-        const chapterProgress = subjectProgress[chapterSerial] || {
+        const prevSubjectProgress = prev[subject];
+        const prevChapterProgress = prevSubjectProgress[chapterSerial] || {
           completed: {},
           priority: 'none' as Priority,
         };
-        const subtopicStates = chapterProgress.subtopics || {};
-        const subState = subtopicStates[subtopicName] || { completed: {} };
-        const currentSubAttempted = subState.attemptedByMaterial || {};
-        const currentCount = currentSubAttempted[material] || 0;
-        const diff = safeCount - currentCount;
-        if (diff !== 0) {
-          const todayStr = new Date().toLocaleDateString('en-CA');
-          setDailyQuestionLogs((prevLogs) => ({
-            ...prevLogs,
-            [todayStr]: (prevLogs[todayStr] || 0) + diff,
-          }));
-        }
+        const prevSubtopicStates = prevChapterProgress.subtopics || {};
+        const prevSubState = prevSubtopicStates[subtopicName] || { completed: {} };
+        const prevSubAttempted = prevSubState.attemptedByMaterial || {};
+
         const nextSubState = {
-          ...subState,
+          ...prevSubState,
           attemptedByMaterial: {
-            ...currentSubAttempted,
+            ...prevSubAttempted,
             [material]: safeCount,
           },
         };
 
         const nextSubtopics = {
-          ...subtopicStates,
+          ...prevSubtopicStates,
           [subtopicName]: nextSubState,
         };
 
@@ -532,14 +568,14 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           totalAttemptedByMaterial[mat] = sum;
         });
 
-        const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+        const currentDetail = prevChapterProgress.detail || { attemptedByMaterial: {} };
 
         return {
           ...prev,
           [subject]: {
-            ...subjectProgress,
+            ...prevSubjectProgress,
             [chapterSerial]: {
-              ...chapterProgress,
+              ...prevChapterProgress,
               detail: {
                 ...currentDetail,
                 attemptedByMaterial: totalAttemptedByMaterial,
@@ -633,43 +669,71 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const handleUpdateChapterDetail = useCallback(
     (subject: Subject, chapterSerial: number, patch: Partial<ChapterDetailProgress>) => {
+      const currentProgress = pendingProgressRef.current;
+      const subjectProgress = currentProgress[subject];
+      const chapterProgress = subjectProgress[chapterSerial] || {
+        completed: {},
+        priority: 'none' as Priority,
+      };
+      const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+      const currentAttempted = currentDetail.attemptedByMaterial || {};
+
+      if (patch.attemptedByMaterial) {
+        let diff = 0;
+        Object.entries(patch.attemptedByMaterial).forEach(([material, count]) => {
+          const safeCount = Math.max(0, count ?? 0);
+          const currentCount = currentAttempted[material] || 0;
+          diff += safeCount - currentCount;
+        });
+
+        if (diff !== 0) {
+          const todayStr = new Date().toLocaleDateString('en-CA');
+          setDailyQuestionLogs((prevLogs) => ({
+            ...prevLogs,
+            [todayStr]: (prevLogs[todayStr] || 0) + diff,
+          }));
+        }
+      }
+
+      // Update pendingProgressRef immediately so subsequent synchronous updates see it!
+      const nextProgress = {
+        ...currentProgress,
+        [subject]: {
+          ...subjectProgress,
+          [chapterSerial]: {
+            ...chapterProgress,
+            detail: {
+              ...currentDetail,
+              ...patch,
+              attemptedByMaterial: {
+                ...currentDetail.attemptedByMaterial,
+                ...patch.attemptedByMaterial,
+              },
+            },
+          },
+        },
+      };
+      pendingProgressRef.current = nextProgress;
+
       setProgress((prev) => {
-        const subjectProgress = prev[subject];
-        const chapterProgress = subjectProgress[chapterSerial] || {
+        const prevSubjectProgress = prev[subject];
+        const prevChapterProgress = prevSubjectProgress[chapterSerial] || {
           completed: {},
           priority: 'none' as Priority,
         };
-        const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
-        const currentAttempted = currentDetail.attemptedByMaterial || {};
-
-        if (patch.attemptedByMaterial) {
-          let diff = 0;
-          Object.entries(patch.attemptedByMaterial).forEach(([material, count]) => {
-            const safeCount = Math.max(0, count ?? 0);
-            const currentCount = currentAttempted[material] || 0;
-            diff += safeCount - currentCount;
-          });
-
-          if (diff !== 0) {
-            const todayStr = new Date().toLocaleDateString('en-CA');
-            setDailyQuestionLogs((prevLogs) => ({
-              ...prevLogs,
-              [todayStr]: (prevLogs[todayStr] || 0) + diff,
-            }));
-          }
-        }
+        const prevDetail = prevChapterProgress.detail || { attemptedByMaterial: {} };
 
         return {
           ...prev,
           [subject]: {
-            ...subjectProgress,
+            ...prevSubjectProgress,
             [chapterSerial]: {
-              ...chapterProgress,
+              ...prevChapterProgress,
               detail: {
-                ...currentDetail,
+                ...prevDetail,
                 ...patch,
                 attemptedByMaterial: {
-                  ...currentDetail.attemptedByMaterial,
+                  ...prevDetail.attemptedByMaterial,
                   ...patch.attemptedByMaterial,
                 },
               },
@@ -699,35 +763,72 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
 
       if (task.type === 'chapter' && task.subject && task.chapterSerial && task.material) {
+        const currentProgress = pendingProgressRef.current;
+        const subjectProgress = currentProgress[task.subject!];
+        const chapterProgress = subjectProgress[task.chapterSerial!] || {
+          completed: {},
+          priority: 'none',
+        };
+
+        let netChange = 0;
+        let newCount = 0;
+        const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
+        const currentAttempted = currentDetail.attemptedByMaterial || {};
+        const currentCount = currentAttempted[task.material!] || 0;
+
+        if (task.questions && task.questions > 0) {
+          const change = newStatus ? task.questions : -task.questions;
+          newCount = Math.max(0, currentCount + change);
+          netChange = newCount - currentCount;
+
+          if (netChange !== 0) {
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            setDailyQuestionLogs((prevLogs) => ({
+              ...prevLogs,
+              [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + netChange),
+            }));
+          }
+        }
+
+        // Update pendingProgressRef immediately so subsequent synchronous updates see it!
+        let updatedDetailForRef = chapterProgress.detail;
+        if (task.questions && task.questions > 0) {
+          updatedDetailForRef = {
+            ...currentDetail,
+            attemptedByMaterial: {
+              ...currentAttempted,
+              [task.material!]: newCount,
+            },
+          };
+        }
+        const nextProgress = {
+          ...currentProgress,
+          [task.subject!]: {
+            ...subjectProgress,
+            [task.chapterSerial!]: {
+              ...chapterProgress,
+              completed: { ...chapterProgress.completed, [task.material!]: newStatus },
+              detail: updatedDetailForRef,
+            },
+          },
+        };
+        pendingProgressRef.current = nextProgress;
+
         setProgress((prog) => {
-          const subjectProgress = prog[task.subject!];
-          const chapterProgress = subjectProgress[task.chapterSerial!] || {
+          const prevSubjectProgress = prog[task.subject!];
+          const prevChapterProgress = prevSubjectProgress[task.chapterSerial!] || {
             completed: {},
             priority: 'none',
           };
+          const prevDetail = prevChapterProgress.detail || { attemptedByMaterial: {} };
+          const prevAttempted = prevDetail.attemptedByMaterial || {};
 
-          let updatedDetail = chapterProgress.detail;
+          let updatedDetail = prevChapterProgress.detail;
           if (task.questions && task.questions > 0) {
-            const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
-            const currentAttempted = currentDetail.attemptedByMaterial || {};
-            const currentCount = currentAttempted[task.material!] || 0;
-
-            const change = newStatus ? task.questions : -task.questions;
-            const newCount = Math.max(0, currentCount + change);
-            const netChange = newCount - currentCount;
-
-            if (netChange !== 0) {
-              const todayStr = new Date().toLocaleDateString('en-CA');
-              setDailyQuestionLogs((prevLogs) => ({
-                ...prevLogs,
-                [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + netChange),
-              }));
-            }
-
             updatedDetail = {
-              ...currentDetail,
+              ...prevDetail,
               attemptedByMaterial: {
-                ...currentAttempted,
+                ...prevAttempted,
                 [task.material!]: newCount,
               },
             };
@@ -736,10 +837,10 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           return {
             ...prog,
             [task.subject!]: {
-              ...subjectProgress,
+              ...prevSubjectProgress,
               [task.chapterSerial!]: {
-                ...chapterProgress,
-                completed: { ...chapterProgress.completed, [task.material!]: newStatus },
+                ...prevChapterProgress,
+                completed: { ...prevChapterProgress.completed, [task.material!]: newStatus },
                 detail: updatedDetail,
               },
             },

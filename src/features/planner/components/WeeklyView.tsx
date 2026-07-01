@@ -1,11 +1,12 @@
 import { DayColumn } from './DayColumn';
-import { PlannerTask } from '../../../shared/types';
+import { PlannerTask, ExamEntry } from '../../../shared/types';
 import { formatDateLocal } from '../../../shared/utils/date';
 
 interface WeeklyViewProps {
   reorderedWeekDays: Date[];
   groupedTasks: Map<string, PlannerTask[]>;
   examDate: string;
+  examDates?: ExamEntry[];
   onAddTask: (date: string) => void;
   onEditTask: (task: PlannerTask) => void;
   onToggleTask: (id: string) => void;
@@ -18,6 +19,7 @@ export function WeeklyView({
   reorderedWeekDays,
   groupedTasks,
   examDate,
+  examDates = [],
   onAddTask,
   onEditTask,
   onToggleTask,
@@ -36,6 +38,10 @@ export function WeeklyView({
         const dayDate = new Date(day);
         dayDate.setHours(0, 0, 0, 0);
 
+        const matchingExam = examDates.find((exam) => exam.date === dateStr);
+        const isExamDay = !!matchingExam || dateStr === examDate;
+        const examName = matchingExam?.name || (dateStr === examDate ? 'JEE Main Exam' : undefined);
+
         return (
           <DayColumn
             key={day.toISOString()}
@@ -47,7 +53,8 @@ export function WeeklyView({
             onDeleteTask={onDeleteTask}
             onMoveTask={onMoveTask}
             onDuplicateTask={onDuplicateTask}
-            isExamDay={dateStr === examDate}
+            isExamDay={isExamDay}
+            examName={examName}
             isPastDay={dayDate.getTime() < today.getTime()}
           />
         );

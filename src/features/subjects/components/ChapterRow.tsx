@@ -181,66 +181,35 @@ export const LeftChapterRow = React.memo(
       leaveTimerRef.current = setTimeout(() => setHoverPos(null), 80);
     }, [onMouseLeave]);
 
-    return (
-      <>
-        <Reorder.Item
-          as="tr"
-          value={chapter}
-          dragListener={false}
-          dragControls={dragControls}
-          onDragEnd={isEditing ? onDragEnd : undefined}
-          style={{ userSelect: isEditing ? 'none' : 'auto' }}
-          className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
-          onClick={!isEditing ? onOpenDetails : undefined}
-          onKeyDown={
-            !isEditing
-              ? (e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onOpenDetails?.();
-                  }
-                }
-              : undefined
+    const rowClass = `chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`;
+    const rowProps = {
+      className: rowClass,
+      onClick: !isEditing ? onOpenDetails : undefined,
+      onKeyDown: !isEditing
+        ? (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onOpenDetails?.();
+            }
           }
-          role={!isEditing ? 'button' : undefined}
-          tabIndex={!isEditing ? 0 : undefined}
-          onMouseEnter={handleMouseEnterLocal}
-          onMouseLeave={handleMouseLeaveLocal}
-          onMouseMove={handleMouseMoveLocal}
-        >
-          <td className="serial-cell">
-            {isEditing ? (
-              <div 
-                className="grip-icon-wrapper"
-                onPointerDown={(e) => dragControls.start(e)}
-                style={{ cursor: 'grab', touchAction: 'none' }}
-              >
-                <GripVertical size={20} />
-              </div>
-            ) : index !== undefined ? (
-              index + 1
-            ) : (
-              chapter.serial
-            )}
-          </td>
-          <td className="chapter-cell">
-            {isEditing ? (
-              <input
-                type="text"
-                value={chapter.name}
-                onChange={(e) => onRename?.(e.target.value)}
-                onBlur={(e) => {
-                  onRename?.(e.target.value.trim());
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.currentTarget.blur();
-                  }
-                }}
-                className="modal-input chapter-edit-input"
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
+        : undefined,
+      role: !isEditing ? 'button' : undefined,
+      tabIndex: !isEditing ? 0 : undefined,
+      onMouseEnter: handleMouseEnterLocal,
+      onMouseLeave: handleMouseLeaveLocal,
+      onMouseMove: handleMouseMoveLocal,
+    };
+
+    if (!isEditing) {
+      return (
+        <>
+          <motion.tr
+            {...rowProps}
+          >
+            <td className="serial-cell">
+              {index !== undefined ? index + 1 : chapter.serial}
+            </td>
+            <td className="chapter-cell">
               <span className="chapter-name-wrap">
                 <span
                   className={
@@ -259,7 +228,56 @@ export const LeftChapterRow = React.memo(
                 )}
                 {priorityClass === 'completed' && <span className="completed-badge">✓</span>}
               </span>
-            )}
+            </td>
+          </motion.tr>
+          {hoverPos && (hasDetailData || priority !== 'none') && (
+            <HoverPanel
+              x={hoverPos.x}
+              y={hoverPos.y}
+              chapterName={chapter.name}
+              progress={progress}
+            />
+          )}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Reorder.Item
+          as="tr"
+          value={chapter}
+          dragListener={false}
+          dragControls={dragControls}
+          onDragEnd={onDragEnd}
+          style={{ userSelect: 'none' }}
+          {...rowProps}
+        >
+          <td className="serial-cell">
+            <div 
+              className="grip-icon-wrapper"
+              onPointerDown={(e) => dragControls.start(e)}
+              style={{ cursor: 'grab', touchAction: 'none' }}
+            >
+              <GripVertical size={20} />
+            </div>
+          </td>
+          <td className="chapter-cell">
+            <input
+              type="text"
+              value={chapter.name}
+              onChange={(e) => onRename?.(e.target.value)}
+              onBlur={(e) => {
+                onRename?.(e.target.value.trim());
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
+              className="modal-input chapter-edit-input"
+              onClick={(e) => e.stopPropagation()}
+            />
           </td>
         </Reorder.Item>
         {hoverPos && (hasDetailData || priority !== 'none') && (
@@ -345,7 +363,7 @@ export const MiddleChapterRow = React.memo(
 
     return (
       <motion.tr
-        layout
+        layout={isEditing ? 'position' : false}
         transition={{ type: "spring", stiffness: 350, damping: 25 }}
         className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
         onClick={!isEditing ? onOpenDetails : undefined}
@@ -426,7 +444,7 @@ export const RightChapterRow = React.memo(
 
     return (
       <motion.tr
-        layout
+        layout={isEditing ? 'position' : false}
         transition={{ type: "spring", stiffness: 350, damping: 25 }}
         className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
         onClick={!isEditing ? onOpenDetails : undefined}

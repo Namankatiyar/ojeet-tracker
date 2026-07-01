@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "src/core/App.tsx": {
-    "mtime": 1782922479.696764,
-    "ast_hash": "f7c39d896879816b14f1426829d62e8e",
+    "mtime": 1782925661.641716,
+    "ast_hash": "363fa0faffa7fb0463fb05b2e1b51473",
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1782828833.0139377,
-    "ast_hash": "51d7b08bfe7b193d71d6514a0c46a8a9",
+    "mtime": 1782925815.2212963,
+    "ast_hash": "97b2ef89d9090ee29caf9fd8f6eaf12a",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1782924220.048192,
-    "ast_hash": "61dbe4e518cbf3559d28db1c78b29253",
+    "mtime": 1782925241.5185332,
+    "ast_hash": "e4d01a7262551b4cf63ebe1367144afb",
     "semantic_hash": ""
   },
   "src/features/community/components/DisconnectModal.tsx": {
@@ -200,8 +200,8 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/components/Dashboard.tsx": {
-    "mtime": 1782924190.4217496,
-    "ast_hash": "cb505b269796c1d835e9ee171c0874f9",
+    "mtime": 1782925204.9264944,
+    "ast_hash": "2df41ef2591296180f826899879e8efa",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/DashboardNotificationCenter.tsx": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/DayColumn.tsx": {
-    "mtime": 1782828836.2449217,
-    "ast_hash": "f6dc41ab27002418a5ceb15ac4da7541",
+    "mtime": 1782925586.175494,
+    "ast_hash": "2618e2d4ead82d4095587bd2dbbcd2ef",
     "semantic_hash": ""
   },
   "src/features/planner/components/DayModal.tsx": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/Planner.tsx": {
-    "mtime": 1782924201.0274036,
-    "ast_hash": "035dc7aaefe580b63bcb1a16166fa15a",
+    "mtime": 1782925573.3103268,
+    "ast_hash": "1a3e844b61b31e382f42cc9cd177995b",
     "semantic_hash": ""
   },
   "src/features/planner/components/TaskLog.tsx": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/WeeklyView.tsx": {
-    "mtime": 1782828836.6379201,
-    "ast_hash": "6d6e4a77f0af8a4cbb7fb8aa5ef9c18b",
+    "mtime": 1782925577.3833783,
+    "ast_hash": "60ed4fad26279e452f2e81c85e1511c0",
     "semantic_hash": ""
   },
   "src/features/planner/hooks/useDateNavigator.ts": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
-    "mtime": 1782924213.1789618,
-    "ast_hash": "9e7d5ae7dd61568f49f01835c4858ec6",
+    "mtime": 1782925261.4710906,
+    "ast_hash": "13614bd98ad8489470d7a9d42a748841",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Presets/PresetManager.tsx": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/components/StudyClock.tsx": {
-    "mtime": 1782924207.2396536,
-    "ast_hash": "e0aaa2400ef423abd7f05e742cec05a0",
+    "mtime": 1782925220.4930637,
+    "ast_hash": "1b5d9cef62061bae8bd6068c18915fdc",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Timer/ModeSelector.tsx": {
@@ -400,8 +400,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/hooks/useTimerEngine.ts": {
-    "mtime": 1782828837.752916,
-    "ast_hash": "417d07d0adea6c979fa7801fa2a145a6",
+    "mtime": 1782925650.1415043,
+    "ast_hash": "508a75c012f4c86c4b9d3701bae693d1",
     "semantic_hash": ""
   },
   "src/features/study-clock/utils/timerAudio.ts": {
@@ -415,13 +415,13 @@
     "semantic_hash": ""
   },
   "src/features/subjects/components/ChapterRow.tsx": {
-    "mtime": 1782922479.7087643,
-    "ast_hash": "98ee835c9937d54e4c16431f1a4d7b57",
+    "mtime": 1782926398.984115,
+    "ast_hash": "44705a5e936048a131f462079e7f87ac",
     "semantic_hash": ""
   },
   "src/features/subjects/components/MobileChapterCard.tsx": {
-    "mtime": 1782922479.7087643,
-    "ast_hash": "6cc29a51ad0faba7af39d559ad24151e",
+    "mtime": 1782926403.0232937,
+    "ast_hash": "97ea4c3f09b55f91108f546bdb37a138",
     "semantic_hash": ""
   },
   "src/features/subjects/components/PriorityFilterDropdown.tsx": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "src/features/subjects/components/SubjectPage.tsx": {
-    "mtime": 1782924183.6056592,
-    "ast_hash": "2524f8c4da3f2b7cbde4ca073a80457b",
+    "mtime": 1782926420.8110836,
+    "ast_hash": "aad873045d7dda316c34136494fa3aad",
     "semantic_hash": ""
   },
   "src/features/subjects/hooks/useChapterSort.test.ts": {

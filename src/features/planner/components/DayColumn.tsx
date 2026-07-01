@@ -18,6 +18,7 @@ interface DayColumnProps {
   date: Date;
   tasks: PlannerTask[];
   isExamDay: boolean;
+  examName?: string;
   isPastDay: boolean;
   onAddTask: () => void;
   onEditTask: (task: PlannerTask) => void;
@@ -31,6 +32,7 @@ export function DayColumn({
   date,
   tasks = [],
   isExamDay,
+  examName,
   isPastDay,
   onAddTask,
   onEditTask,
@@ -130,7 +132,7 @@ export function DayColumn({
               <CalendarIcon size={20} />
             </div>
             <div className="exam-content">
-              <span className="exam-title">JEE Main Exam</span>
+              <span className="exam-title">{examName || 'Exam'}</span>
               <span className="exam-subtitle">Good Luck! 🎯</span>
             </div>
           </div>

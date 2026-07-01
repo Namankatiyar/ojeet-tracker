@@ -60,25 +60,23 @@ function MobileChapterCardComponent({
       ? `priority-${priority}`
       : '';
 
-  return (
-    <Reorder.Item
-      as="div"
-      value={chapter}
-      dragListener={false}
-      dragControls={dragControls}
-      onDragEnd={isEditing && canReorder ? onDragEnd : undefined}
-      style={{ userSelect: isEditing && canReorder ? 'none' : 'auto' }}
-      className={`mobile-chapter-card ${cardStateClass}`}
-      onClick={onOpenDetails}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onOpenDetails();
-      }}
-    >
+  const isDragEnabled = isEditing && canReorder;
+
+  const cardProps = {
+    className: `mobile-chapter-card ${cardStateClass}`,
+    onClick: onOpenDetails,
+    role: 'button',
+    tabIndex: 0,
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') onOpenDetails();
+    },
+  };
+
+  const innerContent = (
+    <>
       <div className="mobile-chapter-card-top">
         <div className="mobile-chapter-title-wrap">
-          {isEditing && canReorder && (
+          {isDragEnabled && (
             <span 
               className="mobile-chapter-drag-handle" 
               aria-hidden="true"
@@ -116,7 +114,31 @@ function MobileChapterCardComponent({
       <div className="mobile-progress-track" aria-hidden="true">
         <span className="mobile-progress-fill" style={{ width: `${completionPct}%` }} />
       </div>
-    </Reorder.Item>
+    </>
+  );
+
+  if (isDragEnabled) {
+    return (
+      <Reorder.Item
+        as="div"
+        value={chapter}
+        dragListener={false}
+        dragControls={dragControls}
+        onDragEnd={onDragEnd}
+        style={{ userSelect: 'none' }}
+        {...cardProps}
+      >
+        {innerContent}
+      </Reorder.Item>
+    );
+  }
+
+  return (
+    <div
+      {...cardProps}
+    >
+      {innerContent}
+    </div>
   );
 }
 

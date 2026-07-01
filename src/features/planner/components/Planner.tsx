@@ -198,6 +198,7 @@ export function Planner({
           reorderedWeekDays={dateNavigator.reorderedWeekDays}
           groupedTasks={groupedTasks}
           examDate={examDate}
+          examDates={examDates}
           onAddTask={handleAddTaskClick}
           onEditTask={handleEditClick}
           onToggleTask={onToggleTask}

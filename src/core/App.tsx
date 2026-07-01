@@ -23,6 +23,11 @@ import { MusicPlayerDrawer } from '../features/music/components/MusicPlayerDrawe
 
 type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject;
 
+function ProfileSyncManager() {
+  useProfileSync();
+  return null;
+}
+
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -128,10 +133,10 @@ function AppContent() {
   useGlobalShortcuts(handleQuickAddTask);
   useAutoShiftTasks(setPlannerTasks, disableAutoShift);
   useDocumentMetadata();
-  useProfileSync();
 
   return (
     <div className={`app ${enableAIAgent ? 'has-chat-fab' : ''}`}>
+      <ProfileSyncManager />
       <Header
         currentView={currentView}
         onNavigate={handleNavigate}
