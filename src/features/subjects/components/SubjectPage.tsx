@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import {
   Subject,
   SubjectData,
@@ -580,27 +581,29 @@ export function SubjectPage({
         onCancel={() => setIsAddChapterModalOpen(false)}
       />
 
-      {selectedChapter && (
-        <ChapterDetailDrawer
-          key={`${subject}-${selectedChapter.serial}`}
-          chapter={selectedChapter}
-          materialNames={data.materialNames}
-          progress={selectedChapterProgress}
-          onClose={() => setSelectedChapterSerial(null)}
-          onToggleMaterial={handleToggleMaterialWithConfetti}
-          onSetPriority={onSetPriority}
-          onUpdateDetail={onUpdateChapterDetail}
-          onToggleSubtopicMaterial={(subtopicName, material) =>
-            onToggleSubtopicMaterial(selectedChapter.serial, subtopicName, material)
-          }
-          onUpdateSubtopicAttempted={(subtopicName, material, count) =>
-            onUpdateSubtopicAttempted(selectedChapter.serial, subtopicName, material, count)
-          }
-          onSetSubtopicLastRevised={(subtopicName, date) =>
-            onSetSubtopicLastRevised(selectedChapter.serial, subtopicName, date)
-          }
-        />
-      )}
+      <AnimatePresence>
+        {selectedChapter && (
+          <ChapterDetailDrawer
+            key={`${subject}-${selectedChapter.serial}`}
+            chapter={selectedChapter}
+            materialNames={data.materialNames}
+            progress={selectedChapterProgress}
+            onClose={() => setSelectedChapterSerial(null)}
+            onToggleMaterial={handleToggleMaterialWithConfetti}
+            onSetPriority={onSetPriority}
+            onUpdateDetail={onUpdateChapterDetail}
+            onToggleSubtopicMaterial={(subtopicName, material) =>
+              onToggleSubtopicMaterial(selectedChapter.serial, subtopicName, material)
+            }
+            onUpdateSubtopicAttempted={(subtopicName, material, count) =>
+              onUpdateSubtopicAttempted(selectedChapter.serial, subtopicName, material, count)
+            }
+            onSetSubtopicLastRevised={(subtopicName, date) =>
+              onSetSubtopicLastRevised(selectedChapter.serial, subtopicName, date)
+            }
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

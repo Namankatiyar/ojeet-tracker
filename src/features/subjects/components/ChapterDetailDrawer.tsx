@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Calendar, ChevronRight, Minus, Plus, X, Check } from 'lucide-react';
 import {
   Chapter,
@@ -83,6 +84,13 @@ export function ChapterDetailDrawer({
   const detail = progress?.detail;
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [expandedSubtopics, setExpandedSubtopics] = useState<Set<string>>(new Set());
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -150,13 +158,23 @@ export function ChapterDetailDrawer({
 
   return (
     <>
-      <div className="chapter-drawer-overlay" onClick={onClose}>
-        <aside
-          className="chapter-drawer modern-drawer"
+      <motion.div 
+        className="chapter-drawer-overlay motion-animated" 
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.aside
+          className="chapter-drawer modern-drawer motion-animated"
           role="dialog"
           aria-modal="true"
           aria-labelledby="chapter-drawer-title"
           onClick={(event) => event.stopPropagation()}
+          initial={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
+          animate={{ x: 0, y: 0 }}
+          exit={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
+          transition={{ type: "spring", stiffness: 320, damping: 28 }}
         >
           <div className="chapter-drawer-header">
             <div>
@@ -548,8 +566,8 @@ export function ChapterDetailDrawer({
               />
             </div>
           </div>
-        </aside>
-      </div>
+        </motion.aside>
+      </motion.div>
 
       <DatePickerModal
         isOpen={isDatePickerOpen}

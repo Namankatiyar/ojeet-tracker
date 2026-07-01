@@ -38,6 +38,17 @@
   }
 }
 
+/* Helper override for Framer Motion components */
+.modal-overlay.motion-animated,
+.modal-backdrop.motion-animated,
+.modal-overlay.motion-animated .modal-container,
+.modal-overlay.motion-animated .modal-content,
+.modal-backdrop.motion-animated .modal-container,
+.modal-backdrop.motion-animated .modal-content {
+  animation: none !important;
+  transition: none !important;
+}
+
 /* ======================== */
 /* === Base Modal Overlay === */
 /* ======================== */

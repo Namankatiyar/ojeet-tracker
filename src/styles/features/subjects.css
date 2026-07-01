@@ -1012,20 +1012,7 @@ td.material-cell .checkbox-container {
   box-shadow: var(--panel-inner-glow), var(--panel-shadow);
   padding: var(--space-5);
   gap: var(--space-4);
-  animation: slideDrawerIn var(--transition-normal);
   letter-spacing: -0.015em;
-}
-
-@keyframes slideDrawerIn {
-  from {
-    opacity: 0;
-    transform: translateX(var(--space-8));
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
 
 .chapter-drawer-header {
@@ -1544,19 +1531,6 @@ td.material-cell .checkbox-container {
     border-top: 1px solid var(--panel-border);
     border-radius: var(--radius-md) var(--radius-md) 0 0;
     padding: var(--space-4);
-    animation-name: slideSheetIn;
-  }
-
-  @keyframes slideSheetIn {
-    from {
-      opacity: 0;
-      transform: translateY(var(--space-8));
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 }
 

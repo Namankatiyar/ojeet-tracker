@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme, Theme } from '../../../core/context/ThemeContext';
 import { Sun, Moon, Layers, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function ThemeOnboardingModal() {
   const { theme, setTheme } = useTheme();
@@ -17,7 +18,7 @@ export function ThemeOnboardingModal() {
     }
   }, [theme]);
 
-  if (!isOpen) return null;
+  // Render handled by AnimatePresence
 
   const handleSelect = (mode: Theme) => {
     setSelectedTheme(mode);
@@ -30,8 +31,22 @@ export function ThemeOnboardingModal() {
   };
 
   return createPortal(
-    <div className="modal-overlay onboarding-overlay">
-      <div className="modal-content onboarding-modal glass-panel">
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="modal-overlay onboarding-overlay motion-animated"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <motion.div
+            className="modal-content onboarding-modal glass-panel motion-animated"
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+          >
         <div className="onboarding-header">
           <h2 className="onboarding-title">Configure your study workspace</h2>
           <p className="onboarding-subtitle">
@@ -145,8 +160,10 @@ export function ThemeOnboardingModal() {
             Confirm & Enter Workspace
           </button>
         </div>
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>
+      )}
+    </AnimatePresence>,
     document.body
   );
 }
