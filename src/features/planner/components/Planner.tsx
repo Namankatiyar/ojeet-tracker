@@ -129,19 +129,16 @@ export function Planner({
     viewMode === 'monthly' ? dateNavigator.monthlyLabel : dateNavigator.weeklyLabel;
 
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: {},
     show: {
-      opacity: 1,
       transition: { staggerChildren: 0.08 },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    hidden: { y: 20 },
     show: {
-      opacity: 1,
       y: 0,
-      filter: 'blur(0px)',
       transition: {
         type: 'spring' as const,
         duration: 0.6,

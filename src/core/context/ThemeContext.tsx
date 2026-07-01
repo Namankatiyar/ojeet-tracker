@@ -203,6 +203,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       '--glass-refraction',
       `saturate(${saturation}%) brightness(${brightness}%) hue-rotate(${hueRotate}deg)`
     );
+
+    if (theme === 'dark-glass') {
+      const panelBlur = `blur(${blurValue}px) saturate(${saturation}%) brightness(${brightness}%) hue-rotate(${hueRotate}deg)`;
+      document.documentElement.style.setProperty('--panel-bg', `rgba(18, 18, 26, ${bgOpacity})`);
+      document.documentElement.style.setProperty('--panel-bg-hover', `rgba(26, 26, 40, ${bgOpacity + 0.1})`);
+      document.documentElement.style.setProperty('--panel-border', `rgba(255, 255, 255, ${borderOpacity})`);
+      document.documentElement.style.setProperty('--panel-border-light', `rgba(255, 255, 255, ${borderOpacity + 0.05})`);
+      document.documentElement.style.setProperty('--panel-blur', panelBlur);
+    } else {
+      document.documentElement.style.removeProperty('--panel-bg');
+      document.documentElement.style.removeProperty('--panel-bg-hover');
+      document.documentElement.style.removeProperty('--panel-border');
+      document.documentElement.style.removeProperty('--panel-border-light');
+      document.documentElement.style.removeProperty('--panel-blur');
+    }
   }, [effectiveBackgroundUrl, theme, useGridBackground, dimLevel, glassIntensity, glassRefraction]);
 
   return (
