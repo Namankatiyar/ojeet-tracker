@@ -239,6 +239,7 @@ All styles are organized into Cascade Layers. This controls precedence and resol
 ### 8.1 Allowed Animation Properties
 - `opacity`
 - `transform` (specifically `translateY`, `scale`)
+- `filter` (specifically `blur` for soft entrance focus)
 - `color`, `background-color`, `border-color`, `box-shadow` (for color morphing)
 - *Never animate `width`, `height`, `top`, `left`, `margin`, or `padding` as these trigger layout paint reflow.*
 
@@ -246,6 +247,12 @@ All styles are organized into Cascade Layers. This controls precedence and resol
 - Fast interactions (hovers, checkboxes, menu items): `150ms ease` (`var(--transition-fast)`).
 - Normal transitions (drawers, modals, card list additions): `250ms ease` (`var(--transition-normal)`).
 - Ambient entry (background image loads, sync alerts): `400ms ease` (`var(--transition-slow)`).
+
+### 8.3 Framer Motion Page Entrance Standard
+- Main view shells must use orchestrated staggered animations to cascade layout sections sequentially.
+- **Root Stagger**: Parent components must coordinate children using `staggerChildren: 0.08`.
+- **Entrance Physics**: Elements must slide up and fade/focus in using `initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}` to `animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}`.
+- **Spring Control**: Use `type: "spring", duration: 0.6, bounce: 0` (remembering to cast `type: "spring" as const` in TSX files) to create critically damped physics. This avoids wobbly, bouncy transitions that feel like "AI slop".
 
 ### 8.3 Reduced Motion Control
 All animations and keyframes must respect system-level preferences. Always wrap custom transitions in a media query:

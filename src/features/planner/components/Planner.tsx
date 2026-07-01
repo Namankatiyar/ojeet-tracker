@@ -202,7 +202,7 @@ export function Planner({
           onToggleTask={onToggleTask}
           onDeleteTask={onDeleteTask}
           onMoveTask={handleMoveTask}
-          onToggleTask={onToggleTask}
+          onDuplicateTask={handleDuplicateTask}
         />
         </motion.div>
       ) : (

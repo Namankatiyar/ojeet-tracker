@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1782828834.070932,
-    "ast_hash": "9f15dcfefd9dd29568c24a461603c137",
+    "mtime": 1782888969.43678,
+    "ast_hash": "1c5577b4d5ea1a3e2e9dd32aed3febc8",
     "semantic_hash": ""
   },
   "src/features/community/components/DisconnectModal.tsx": {
@@ -200,8 +200,8 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/components/Dashboard.tsx": {
-    "mtime": 1782828835.060927,
-    "ast_hash": "802fe199dfe7775d135400e2d5315f2b",
+    "mtime": 1782888956.4332635,
+    "ast_hash": "3f3c1853eee002f1f64988db95ab90c5",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/DashboardNotificationCenter.tsx": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/Planner.tsx": {
-    "mtime": 1782828836.462921,
-    "ast_hash": "0b1804d950f140846db2fbbedda0588e",
+    "mtime": 1782889037.6584854,
+    "ast_hash": "eb01661c7b79f0c883f43cfedb1cfca1",
     "semantic_hash": ""
   },
   "src/features/planner/components/TaskLog.tsx": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/components/StudyClock.tsx": {
-    "mtime": 1782828837.489917,
-    "ast_hash": "2db9fd2be95d73332ed0185a955951e8",
+    "mtime": 1782888966.8666778,
+    "ast_hash": "71913b4b858d6f5ea88fb1d900ae213c",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Timer/ModeSelector.tsx": {
@@ -410,18 +410,18 @@
     "semantic_hash": ""
   },
   "src/features/subjects/components/ChapterDetailDrawer.tsx": {
-    "mtime": 1782885442.398995,
-    "ast_hash": "4a236f0b3a82caa5f17eb689c73c382b",
+    "mtime": 1782886774.1478496,
+    "ast_hash": "6c2960942faddb6ff52ae03b45e88c0c",
     "semantic_hash": ""
   },
   "src/features/subjects/components/ChapterRow.tsx": {
-    "mtime": 1782828837.9839153,
-    "ast_hash": "1845a5fbfcdfa08bc289571b44fcbfcb",
+    "mtime": 1782887738.9434733,
+    "ast_hash": "98ee835c9937d54e4c16431f1a4d7b57",
     "semantic_hash": ""
   },
   "src/features/subjects/components/MobileChapterCard.tsx": {
-    "mtime": 1782828838.0179152,
-    "ast_hash": "7f49a6440a01082003dc8d1d4033178d",
+    "mtime": 1782887739.1634834,
+    "ast_hash": "6cc29a51ad0faba7af39d559ad24151e",
     "semantic_hash": ""
   },
   "src/features/subjects/components/PriorityFilterDropdown.tsx": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "src/features/subjects/components/SubjectPage.tsx": {
-    "mtime": 1782885470.1480737,
-    "ast_hash": "a6f71ed8a45ec6a01be2fa73c6c87396",
+    "mtime": 1782888960.1244102,
+    "ast_hash": "a81df463eb2ed6473e4dd3f967359314",
     "semantic_hash": ""
   },
   "src/features/subjects/hooks/useChapterSort.test.ts": {
@@ -447,11 +447,6 @@
   "src/features/subjects/hooks/useChapterSort.ts": {
     "mtime": 1782828838.2539144,
     "ast_hash": "5b78053bd157b92eae7cbbd4e7c32f16",
-    "semantic_hash": ""
-  },
-  "src/features/subjects/hooks/useReorderDrag.ts": {
-    "mtime": 1782828838.2749145,
-    "ast_hash": "5dc5e4c60a0616bcce7e56c390fea827",
     "semantic_hash": ""
   },
   "src/features/subjects/utils/chapterDetail.test.ts": {
@@ -545,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/shared/components/layout/Header.tsx": {
-    "mtime": 1782842071.3538296,
-    "ast_hash": "1ec88c603e8e96695db09aa56ca9dabc",
+    "mtime": 1782888175.4145641,
+    "ast_hash": "ce9f1324ffdd34e5bd957860fa2d9f44",
     "semantic_hash": ""
   },
   "src/shared/components/ui/Avatar.tsx": {
@@ -870,8 +865,8 @@
     "semantic_hash": ""
   },
   ".agents/skills/ojee-tracker-design/SKILL.md": {
-    "mtime": 1782841330.7600613,
-    "ast_hash": "660993ab9dfc4771b6dba0cf79f8b8a6",
+    "mtime": 1782889161.8053966,
+    "ast_hash": "c5ebc33a1e3743c5b78a9a78ff51734c",
     "semantic_hash": ""
   },
   ".agents/workflows/graphify.md": {
@@ -895,8 +890,8 @@
     "semantic_hash": ""
   },
   "DESIGN_SYSTEM.md": {
-    "mtime": 1782841320.1177557,
-    "ast_hash": "d2f6c6141c8db513e5dc170a999cdfff",
+    "mtime": 1782889161.7103927,
+    "ast_hash": "ae4c98cbe16b596b2f21941903a6e61a",
     "semantic_hash": ""
   },
   "OVERVIEW.md": {
