@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Download,
@@ -65,7 +66,7 @@ export function ProgressCardModal({
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  if (!isOpen) return null;
+  // Render handled by AnimatePresence
 
   // Calculate stats
   const highestMockScore = mockScores.reduce<{ total: number; max: number }>(
@@ -336,8 +337,24 @@ export function ProgressCardModal({
   };
 
   return createPortal(
-    <div className="modal-overlay progress-card-overlay" onClick={onClose}>
-      <div className="progress-card-modal" onClick={(e) => e.stopPropagation()}>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="modal-overlay progress-card-overlay motion-animated"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <motion.div
+            className="progress-card-modal motion-animated"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+          >
         <div className="modal-header">
           <h3>My Progress Card</h3>
           <div className="header-actions-group">
@@ -470,8 +487,10 @@ export function ProgressCardModal({
             {isDownloading ? 'Downloading...' : 'Download as PNG'}
           </button>
         </div>
-      </div>
-    </div>,
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
     document.body
   );
 }

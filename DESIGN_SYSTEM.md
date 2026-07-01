@@ -149,12 +149,17 @@ Accent tokens are dynamically written to the `:root` element by the theme provid
 
 ### 2.6 Motion
 
-Transitions strictly limit expensive browser paints. Only properties related to `transform`, `opacity`, and `color`/`background` are to be transitioned.
+Transitions strictly limit expensive browser paints. Only properties related to `transform`, `opacity`, `filter`, and `color`/`background` are to be transitioned.
 
 - `--transition-fast`: `150ms ease` (Hover feedbacks, toggles)
 - `--transition-normal`: `250ms ease` (Modal mounting, sidebar drawer reveals)
 - `--transition-slow`: `400ms ease` (Ambient entry, sync alerts)
 - **Tactile Hover Standard**: Interactive primary elements (cards, buttons) utilize `transform: translateY(-1px)` or `transform: scale(1.05)` rather than excessive glow injections to maintain minimal rendering strain.
+- **Framer Motion Page Entrance Standard**: 
+  - Main views (Dashboard, SubjectPage, Planner, StudyClock, CommunityPage) must use staggered animations for their core components to guide the eye and prevent cognitive overload.
+  - **Physics (Critically Damped Spring)**: Use `type: "spring", duration: 0.6, bounce: 0` (with `as const` in TSX) to prevent wobbly, bounce-heavy movements ("AI slop").
+  - **Cascade Stagger**: Parent containers must use `staggerChildren: 0.08` to sequence sibling reveals cleanly.
+  - **Blur & Slide Entrance**: Items must slide up slightly and fade/focus in using `initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}` to `animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}`.
 
 ---
 

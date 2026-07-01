@@ -2,41 +2,6 @@
 /* Consolidated modal styles - single source of truth */
 
 /* ======================== */
-/* === Animations === */
-/* ======================== */
-@keyframes modal-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modal-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes modal-slide-down {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* ======================== */
 /* === Base Modal Overlay === */
@@ -50,7 +15,6 @@
   align-items: center;
   justify-content: center;
   z-index: 1100;
-  animation: modal-fade-in 0.2s ease;
 }
 
 html[data-theme^='dark-'] .modal-overlay,
@@ -73,7 +37,6 @@ html[data-theme^='dark-'] .modal-backdrop {
   max-width: 400px;
   max-height: min(90vh, 90dvh);
   box-shadow: var(--shadow-lg);
-  animation: modal-slide-up 0.2s ease;
   overflow: auto;
 }
 
@@ -349,7 +312,6 @@ html[data-theme^='dark-'] .modal-content.input-modal .modal-footer {
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-lg);
-  animation: modal-slide-up 0.2s ease;
   overflow: hidden;
   padding: 0;
 }
@@ -385,7 +347,6 @@ html[data-theme^='dark-'] .settings-modal {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: modal-fade-in 0.2s ease;
 }
 
 html[data-theme^='dark-'] .distribution-modal-overlay {
@@ -403,7 +364,6 @@ html[data-theme^='dark-'] .distribution-modal-overlay {
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg), var(--shadow-glow);
-  animation: modal-slide-up 0.3s ease;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -848,7 +808,6 @@ html[data-theme^='dark-'] .distribution-modal {
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-lg);
-  animation: modal-slide-up 0.2s ease;
   overflow: hidden;
 }
 
@@ -1429,7 +1388,6 @@ html[data-theme^='dark-'] .onboarding-overlay {
   max-width: 760px !important;
   padding: var(--space-8) !important;
   border-radius: var(--radius-lg) !important;
-  animation: modal-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);

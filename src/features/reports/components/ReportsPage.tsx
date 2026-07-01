@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useStudyCoPilot } from '../../../shared/hooks/useStudyCoPilot';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { CoPilotNudgeRow } from './CoPilotNudgeRow';
@@ -22,14 +23,45 @@ export const ReportsPage: React.FC = () => {
 
   const isSyllabusEmpty = recommendations.length === 0;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring' as const,
+        duration: 0.6,
+        bounce: 0,
+      },
+    },
+  };
+
   return (
-    <div className="reports-page">
+    <motion.div
+      className="reports-page"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
       <h1 className="sr-only">Reports & Analysis</h1>
 
       {/* Daily Study History & Analytics Dashboard */}
-      <DailyAnalytics />
+      <motion.div variants={itemVariants}>
+        <DailyAnalytics />
+      </motion.div>
 
-      <div className="reports-header">
+      <motion.div className="reports-header" variants={itemVariants}>
         <div className="reports-title-container">
           <BarChart2 className="reports-icon" size={20} />
           <div>
@@ -42,9 +74,9 @@ export const ReportsPage: React.FC = () => {
             {activeRecommendations.length} Suggested
           </span>
         )}
-      </div>
+      </motion.div>
 
-      <div className="reports-content">
+      <motion.div className="reports-content" variants={itemVariants}>
         {isSyllabusEmpty ? (
           <div className="reports-empty-state glass-panel">
             <Sparkles className="empty-sparkle-icon" size={48} />
@@ -84,7 +116,7 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

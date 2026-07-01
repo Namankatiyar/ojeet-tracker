@@ -3,6 +3,7 @@
  * Phase 5: Glassmorphic sidebar chat drawer + FAB toggle
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Send,
@@ -328,6 +329,14 @@ function ApiKeyPanel({ onSaved }: ApiKeyPanelProps) {
 // ── Main Drawer Component ─────────────────────────────────────────────────────
 export function ChatDrawer() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [keyVersion, setKeyVersion] = useState(0);
   const [showApiKeyPanel, setShowApiKeyPanel] = useState(() => !loadApiKey());
   const [activeView, setActiveView] = useState<'chat' | 'history'>('chat');
@@ -436,20 +445,30 @@ export function ChatDrawer() {
 
   return (
     <>
-      {/* ── Overlay ──────────────────────────────────────────────── */}
-      <div
-        className={`chat-overlay ${isOpen ? 'chat-overlay--visible' : ''}`}
-        onClick={handleClose}
-        aria-hidden="true"
-      />
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* ── Overlay ──────────────────────────────────────────────── */}
+            <motion.div
+              className="chat-overlay motion-animated chat-overlay--visible"
+              onClick={handleClose}
+              aria-hidden="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
 
-      {/* ── Drawer Panel ──────────────────────────────────────────── */}
-      <div
-        className={`chat-drawer ${isOpen ? 'chat-drawer--open' : ''}`}
-        role="dialog"
-        aria-label="AI Study Assistant"
-        aria-modal="true"
-      >
+            {/* ── Drawer Panel ──────────────────────────────────────────── */}
+            <motion.div
+              className="chat-drawer motion-animated chat-drawer--open"
+              role="dialog"
+              aria-label="AI Study Assistant"
+              aria-modal="true"
+              initial={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
+              animate={{ x: 0, y: 0 }}
+              exit={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            >
         {/* Header */}
         <div className="chat-header">
           <div className="chat-header-avatar">
@@ -690,7 +709,10 @@ export function ChatDrawer() {
             )}
           </>
         )}
-      </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ── FAB ───────────────────────────────────────────────────── */}
       {!isOpen && (

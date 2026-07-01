@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Sparkles, Users, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DiscordInviteModalProps {
   isOpen: boolean;
@@ -23,13 +23,6 @@ export function DiscordIcon({ size = 20, className = '' }: { size?: number; clas
 }
 
 export function DiscordInviteModal({ isOpen, onClose }: DiscordInviteModalProps) {
-  const [shouldRender, setShouldRender] = useState(isOpen);
-
-  useEffect(() => {
-    setShouldRender(isOpen);
-  }, [isOpen]);
-
-  if (!shouldRender) return null;
 
   const handleJoin = () => {
     localStorage.setItem('ojee_discord_dismissed', 'true');
@@ -43,9 +36,25 @@ export function DiscordInviteModal({ isOpen, onClose }: DiscordInviteModalProps)
   };
 
   return createPortal(
-    <div className="modal-overlay" onClick={handleDismiss}>
-      <div className="modal-content discord-modal glass-panel" onClick={(e) => e.stopPropagation()}>
-        <button className="discord-close-btn" onClick={handleDismiss} aria-label="Close modal">
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="modal-overlay motion-animated"
+          onClick={handleDismiss}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <motion.div
+            className="modal-content discord-modal glass-panel motion-animated"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+          >
+            <button className="discord-close-btn" onClick={handleDismiss} aria-label="Close modal">
           <X size={18} />
         </button>
 
@@ -84,8 +93,10 @@ export function DiscordInviteModal({ isOpen, onClose }: DiscordInviteModalProps)
             </button>
           </div>
         </div>
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>
+      )}
+    </AnimatePresence>,
     document.body
   );
 }

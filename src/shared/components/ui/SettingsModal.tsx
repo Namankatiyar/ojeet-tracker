@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download,
   Upload,
@@ -225,7 +226,7 @@ export function SettingsModal({
 
   const modalRoot = document.getElementById('modal-root');
 
-  if (!isOpen || !modalRoot) return null;
+  if (!modalRoot) return null;
 
   const handleExport = () => {
     try {
@@ -434,8 +435,24 @@ export function SettingsModal({
   };
 
   const modalContent = (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content settings-modal" onClick={(e) => e.stopPropagation()}>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="modal-overlay motion-animated"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <motion.div
+            className="modal-content settings-modal motion-animated"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+          >
         <div className="modal-header">
           <h2>Settings</h2>
           <button className="close-btn" onClick={onClose}>
@@ -849,8 +866,10 @@ export function SettingsModal({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   return ReactDOM.createPortal(

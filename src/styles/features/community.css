@@ -139,6 +139,7 @@
   .invite-badge-wrapper {
     display: flex;
     align-items: center;
+    gap: var(--space-2);
   }
 
   .invite-badge-label-inside {
@@ -203,9 +204,61 @@
     background: var(--accent-hover);
   }
 
+  .invite-copy-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
   .invite-copy-btn.copied {
     background: var(--color-priority-low);
     color: var(--accent-text);
+  }
+
+  .invite-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-4);
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-family: inherit;
+    transition:
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      color var(--transition-fast),
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
+  }
+
+  .invite-link-btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--color-text-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .invite-link-btn:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  .invite-link-btn:active {
+    transform: translateY(0);
+  }
+
+  .invite-link-btn.copied {
+    background: var(--color-priority-low-bg) !important;
+    border-color: var(--color-priority-low) !important;
+    color: var(--color-priority-low) !important;
   }
 
   .discord-server-btn {
@@ -1299,16 +1352,6 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: modal-fade-in var(--transition-normal) ease;
-  }
-
-  @keyframes modal-fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
   }
 
   .profile-edit-modal {
@@ -1323,18 +1366,6 @@
     -webkit-backdrop-filter: var(--panel-blur);
     border: 1px solid var(--panel-border);
     box-shadow: var(--panel-inner-glow), var(--panel-shadow);
-    animation: modal-slide-up var(--transition-normal) ease;
-  }
-
-  @keyframes modal-slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   .profile-edit-header {
@@ -1581,7 +1612,6 @@
     -webkit-backdrop-filter: var(--panel-blur);
     border: 1px solid var(--panel-border);
     box-shadow: var(--panel-inner-glow), var(--panel-shadow);
-    animation: modal-slide-up var(--transition-normal) ease;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -1812,6 +1842,8 @@
 
     .community-invite-section {
       justify-content: center;
+      flex-wrap: wrap;
+      gap: var(--space-2);
     }
 
     /* Disable glassmorphism on mobile */

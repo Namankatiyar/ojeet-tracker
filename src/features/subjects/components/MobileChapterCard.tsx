@@ -1,4 +1,5 @@
 import React from 'react';
+import { Reorder, useDragControls } from 'framer-motion';
 import { Chapter, ChapterProgress, Priority } from '../../../shared/types';
 import { GripVertical, ChevronRight } from 'lucide-react';
 import { getTotalAttemptedQuestions, hasChapterDetailData } from '../utils/chapterDetail';
@@ -11,9 +12,7 @@ interface MobileChapterCardProps {
   isEditing: boolean;
   canReorder: boolean;
   onOpenDetails: () => void;
-  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragEnter?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: () => void;
 }
 
 function getPriorityLabel(priority: Priority): string {
@@ -29,10 +28,9 @@ function MobileChapterCardComponent({
   isEditing,
   canReorder,
   onOpenDetails,
-  onDragStart,
-  onDragEnter,
   onDragEnd,
 }: MobileChapterCardProps) {
+  const dragControls = useDragControls();
   const completed = progress?.completed || {};
   const priority = progress?.priority || 'none';
   const subtopics = chapter.subtopics || [];
@@ -63,7 +61,13 @@ function MobileChapterCardComponent({
       : '';
 
   return (
-    <div
+    <Reorder.Item
+      as="div"
+      value={chapter}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={isEditing && canReorder ? onDragEnd : undefined}
+      style={{ userSelect: isEditing && canReorder ? 'none' : 'auto' }}
       className={`mobile-chapter-card ${cardStateClass}`}
       onClick={onOpenDetails}
       role="button"
@@ -71,16 +75,16 @@ function MobileChapterCardComponent({
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onOpenDetails();
       }}
-      draggable={isEditing && canReorder}
-      onDragStart={isEditing && canReorder ? onDragStart : undefined}
-      onDragEnter={isEditing && canReorder ? onDragEnter : undefined}
-      onDragEnd={isEditing && canReorder ? onDragEnd : undefined}
-      onDragOver={isEditing && canReorder ? (e) => e.preventDefault() : undefined}
     >
       <div className="mobile-chapter-card-top">
         <div className="mobile-chapter-title-wrap">
           {isEditing && canReorder && (
-            <span className="mobile-chapter-drag-handle" aria-hidden="true">
+            <span 
+              className="mobile-chapter-drag-handle" 
+              aria-hidden="true"
+              onPointerDown={(e) => dragControls.start(e)}
+              style={{ touchAction: 'none' }}
+            >
               <GripVertical size={18} />
             </span>
           )}
@@ -112,7 +116,7 @@ function MobileChapterCardComponent({
       <div className="mobile-progress-track" aria-hidden="true">
         <span className="mobile-progress-fill" style={{ width: `${completionPct}%` }} />
       </div>
-    </div>
+    </Reorder.Item>
   );
 }
 

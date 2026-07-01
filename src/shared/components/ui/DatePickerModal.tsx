@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateLocal } from '../../utils/date.ts';
 
 interface DatePickerModalProps {
@@ -31,7 +32,7 @@ export function DatePickerModal({
     }
   }, [isOpen, selectedDate]);
 
-  if (!isOpen) return null;
+  // Render handled by AnimatePresence
 
   const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
@@ -119,56 +120,73 @@ export function DatePickerModal({
   };
 
   return (
-    <div className="dp-wrapper">
-      <div className="dp-backdrop" onClick={onClose} />
-      <div className="dp-panel">
-        {/* Header */}
-        <div className="dp-header">
-          <span className="dp-title">Select Date</span>
-          <button className="dp-close-btn" onClick={onClose} aria-label="Close">
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Month navigation */}
-        <div className="dp-nav">
-          <button className="dp-nav-btn" onClick={handlePrevMonth} aria-label="Previous month">
-            <ChevronLeft size={18} />
-          </button>
-          <span className="dp-month-label">
-            {monthNames[viewDate.getMonth()]} <em>{viewDate.getFullYear()}</em>
-          </span>
-          <button className="dp-nav-btn" onClick={handleNextMonth} aria-label="Next month">
-            <ChevronRight size={18} />
-          </button>
-        </div>
-
-        {/* Calendar */}
-        <div className="dp-grid">
-          {dayLabels.map((d) => (
-            <div key={d} className="dp-weekday">
-              {d}
-            </div>
-          ))}
-          {renderCalendarDays()}
-        </div>
-
-        {/* Footer */}
-        <div className="dp-footer">
-          <button className="dp-cancel-btn" onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            className="dp-today-btn"
-            onClick={() => {
-              onSelect(formatDateLocal(today));
-              onClose();
-            }}
+    <AnimatePresence>
+      {isOpen && (
+        <div className="dp-wrapper">
+          <motion.div
+            className="dp-backdrop motion-animated"
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          />
+          <motion.div
+            className="dp-panel motion-animated"
+            initial={{ opacity: 0, y: 10, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
           >
-            Today
-          </button>
+            {/* Header */}
+            <div className="dp-header">
+              <span className="dp-title">Select Date</span>
+              <button className="dp-close-btn" onClick={onClose} aria-label="Close">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Month navigation */}
+            <div className="dp-nav">
+              <button className="dp-nav-btn" onClick={handlePrevMonth} aria-label="Previous month">
+                <ChevronLeft size={18} />
+              </button>
+              <span className="dp-month-label">
+                {monthNames[viewDate.getMonth()]} <em>{viewDate.getFullYear()}</em>
+              </span>
+              <button className="dp-nav-btn" onClick={handleNextMonth} aria-label="Next month">
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            {/* Calendar */}
+            <div className="dp-grid">
+              {dayLabels.map((d) => (
+                <div key={d} className="dp-weekday">
+                  {d}
+                </div>
+              ))}
+              {renderCalendarDays()}
+            </div>
+
+            {/* Footer */}
+            <div className="dp-footer">
+              <button className="dp-cancel-btn" onClick={onClose}>
+                Cancel
+              </button>
+              <button
+                className="dp-today-btn"
+                onClick={() => {
+                  onSelect(formatDateLocal(today));
+                  onClose();
+                }}
+              >
+                Today
+              </button>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }

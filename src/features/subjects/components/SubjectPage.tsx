@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { AnimatePresence, Reorder, motion } from 'framer-motion';
 import {
   Subject,
   SubjectData,
@@ -16,7 +17,7 @@ import { triggerConfetti } from '../../../shared/utils/confetti';
 import { Plus, X as XIcon } from 'lucide-react';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
 import { useChapterSort } from '../hooks/useChapterSort';
-import { useReorderDrag } from '../hooks/useReorderDrag';
+
 import { useTheme } from '../../../core/context/ThemeContext';
 import { MobileChapterCard } from './MobileChapterCard';
 import { ChapterDetailDrawer } from './ChapterDetailDrawer';
@@ -136,23 +137,15 @@ export function SubjectPage({
     };
   }, [data, sortedChapters, isEditing, updateTableWidth]);
 
-  const chapterDrag = useReorderDrag<Chapter, HTMLTableRowElement>(
-    data?.chapters || [],
-    onReorderChapters,
-    isEditing && priorityFilter === 'all'
-  );
+  const [localChapters, setLocalChapters] = useState<Chapter[]>(sortedChapters);
+  useEffect(() => {
+    setLocalChapters(sortedChapters);
+  }, [sortedChapters]);
 
-  const chapterDragMobile = useReorderDrag<Chapter, HTMLDivElement>(
-    data?.chapters || [],
-    onReorderChapters,
-    isEditing && priorityFilter === 'all'
-  );
-
-  const materialDrag = useReorderDrag<string, HTMLTableHeaderCellElement>(
-    data?.materialNames || [],
-    onReorderMaterials,
-    isEditing
-  );
+  const [localMaterials, setLocalMaterials] = useState<string[]>(data?.materialNames || []);
+  useEffect(() => {
+    setLocalMaterials(data?.materialNames || []);
+  }, [data?.materialNames]);
 
   // Loading state
   if (!data) {
@@ -228,10 +221,38 @@ export function SubjectPage({
 
   const selectedChapterProgress = selectedChapter ? progress[selectedChapter.serial] : undefined;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring' as const,
+        duration: 0.6,
+        bounce: 0,
+      },
+    },
+  };
+
   return (
-    <div className="subject-page">
-      <SubjectHeader
-        subject={subject}
+    <motion.div
+      className="subject-page"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={itemVariants}>
+        <SubjectHeader
+          subject={subject}
         data={data}
         subjectProgress={subjectProgress}
         isEditing={isEditing}
@@ -240,9 +261,10 @@ export function SubjectPage({
         canAddMaterial={!!onAddMaterial}
         onAddMaterial={() => setIsAddMaterialModalOpen(true)}
       />
+      </motion.div>
 
       {hasScrollbar && (
-        <div className="double-scroll-row">
+        <motion.div className="double-scroll-row" variants={itemVariants}>
           <div className="left-scroll-spacer" />
           <div
             className="double-scroll-wrapper"
@@ -256,9 +278,9 @@ export function SubjectPage({
             <div style={{ width: tableWidth, height: '1px' }} />
           </div>
           <div className="right-scroll-spacer" />
-        </div>
+        </motion.div>
       )}
-      <div className="chapter-table-container desktop-chapter-table">
+      <motion.div className="chapter-table-container desktop-chapter-table" variants={itemVariants}>
         {/* Left Table: Serial & Chapter */}
         <div className="left-table-section">
           <table className="chapter-table">
@@ -268,9 +290,14 @@ export function SubjectPage({
                 <th className="chapter-header">Chapter</th>
               </tr>
             </thead>
-            <tbody>
+            <Reorder.Group
+              as="tbody"
+              axis="y"
+              values={localChapters}
+              onReorder={isEditing && priorityFilter === 'all' ? setLocalChapters : () => {}}
+            >
               {data &&
-                sortedChapters.map((chapter, index) => {
+                localChapters.map((chapter, index) => {
                   const chProgress = progress[chapter.serial];
                   const completed = chProgress?.completed || {};
                   const completedCount = data.materialNames.filter((m) => completed[m]).length;
@@ -298,13 +325,11 @@ export function SubjectPage({
                       onMouseEnter={() => setHoveredChapterSerial(chapter.serial)}
                       onMouseLeave={() => setHoveredChapterSerial(null)}
                       priorityClass={priorityClass}
-                      onDragStart={(e) => chapterDrag.onDragStart(e, index)}
-                      onDragEnter={(e) => chapterDrag.onDragEnter(e, index)}
-                      onDragEnd={chapterDrag.onDragEnd}
+                      onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
                     />
                   );
                 })}
-            </tbody>
+            </Reorder.Group>
           </table>
         </div>
 
@@ -320,17 +345,21 @@ export function SubjectPage({
         >
           <table className="chapter-table" ref={tableRef}>
             <thead>
-              <tr>
+              <Reorder.Group
+                as="tr"
+                axis="x"
+                values={localMaterials}
+                onReorder={isEditing ? setLocalMaterials : () => {}}
+              >
                 {data &&
-                  data.materialNames.map((material, mIndex) => (
-                    <th
+                  localMaterials.map((material) => (
+                    <Reorder.Item
+                      as="th"
                       key={material}
+                      value={material}
+                      dragListener={isEditing}
+                      onDragEnd={() => onReorderMaterials?.(localMaterials)}
                       className={`material-header ${isEditing ? 'material-header-draggable' : ''}`}
-                      draggable={isEditing}
-                      onDragStart={(e) => materialDrag.onDragStart(e, mIndex)}
-                      onDragEnter={(e) => materialDrag.onDragEnter(e, mIndex)}
-                      onDragEnd={materialDrag.onDragEnd}
-                      onDragOver={materialDrag.onDragOver}
                     >
                       <div className="material-header-content">
                         <span>{material}</span>
@@ -344,13 +373,13 @@ export function SubjectPage({
                           </button>
                         )}
                       </div>
-                    </th>
+                    </Reorder.Item>
                   ))}
-              </tr>
+              </Reorder.Group>
             </thead>
             <tbody>
               {data &&
-                sortedChapters.map((chapter) => {
+                localChapters.map((chapter) => {
                   const chProgress = progress[chapter.serial];
                   const completed = chProgress?.completed || {};
                   const completedCount = data.materialNames.filter((m) => completed[m]).length;
@@ -369,7 +398,7 @@ export function SubjectPage({
                     <MiddleChapterRow
                       key={chapter.serial}
                       chapter={chapter}
-                      materialNames={data.materialNames}
+                      materialNames={localMaterials}
                       progress={chProgress}
                       onToggleMaterial={handleToggleMaterialWithConfetti}
                       isHovered={hoveredChapterSerial === chapter.serial}
@@ -407,7 +436,7 @@ export function SubjectPage({
             </thead>
             <tbody>
               {data &&
-                sortedChapters.map((chapter) => {
+                localChapters.map((chapter) => {
                   const chProgress = progress[chapter.serial];
                   const completed = chProgress?.completed || {};
                   const completedCount = data.materialNames.filter((m) => completed[m]).length;
@@ -426,7 +455,7 @@ export function SubjectPage({
                     <RightChapterRow
                       key={chapter.serial}
                       chapter={chapter}
-                      materialNames={data.materialNames}
+                      materialNames={localMaterials}
                       progress={chProgress}
                       onSetPriority={onSetPriority}
                       isEditing={isEditing}
@@ -448,10 +477,10 @@ export function SubjectPage({
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
 
       {isEditing && (
-        <div className="edit-actions-container">
+        <motion.div className="edit-actions-container" variants={itemVariants}>
           <button
             onClick={() => setIsAddChapterModalOpen(true)}
             className="primary-btn add-chapter-btn-wrapper"
@@ -459,10 +488,10 @@ export function SubjectPage({
             <Plus size={18} />
             Add New Chapter
           </button>
-        </div>
+        </motion.div>
       )}
 
-      <div className="mobile-chapter-view">
+      <motion.div className="mobile-chapter-view" variants={itemVariants}>
         <div className="mobile-chapter-controls">
           <div className="mobile-priority-filter">
             <span className="mobile-control-label">Filter</span>
@@ -483,7 +512,7 @@ export function SubjectPage({
         </div>
 
         <div className="mobile-material-strip">
-          {data.materialNames.map((material) => (
+          {localMaterials.map((material) => (
             <button
               key={material}
               className="mobile-material-pill"
@@ -503,26 +532,30 @@ export function SubjectPage({
           ))}
         </div>
 
-        <div className="mobile-chapter-list">
-          {sortedChapters.map((chapter, index) => (
+        <Reorder.Group
+          as="div"
+          axis="y"
+          values={localChapters}
+          onReorder={isEditing && priorityFilter === 'all' ? setLocalChapters : () => {}}
+          className="mobile-chapter-list"
+        >
+          {localChapters.map((chapter, index) => (
             <MobileChapterCard
               key={chapter.serial}
               chapter={chapter}
               index={index}
-              materialNames={data.materialNames}
+              materialNames={localMaterials}
               progress={progress[chapter.serial]}
               isEditing={isEditing}
               canReorder={priorityFilter === 'all'}
               onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
-              onDragStart={(e) => chapterDragMobile.onDragStart(e, index)}
-              onDragEnter={(e) => chapterDragMobile.onDragEnter(e, index)}
-              onDragEnd={chapterDragMobile.onDragEnd}
+              onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
             />
           ))}
-        </div>
-      </div>
+        </Reorder.Group>
+      </motion.div>
 
-      <div className="legend">
+      <motion.div className="legend" variants={itemVariants}>
         <h4>Priority Legend</h4>
         <div className="legend-items">
           <div className="legend-item">
@@ -542,7 +575,7 @@ export function SubjectPage({
             <span>Completed</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Material Modals */}
       <ConfirmationModal
@@ -580,27 +613,29 @@ export function SubjectPage({
         onCancel={() => setIsAddChapterModalOpen(false)}
       />
 
-      {selectedChapter && (
-        <ChapterDetailDrawer
-          key={`${subject}-${selectedChapter.serial}`}
-          chapter={selectedChapter}
-          materialNames={data.materialNames}
-          progress={selectedChapterProgress}
-          onClose={() => setSelectedChapterSerial(null)}
-          onToggleMaterial={handleToggleMaterialWithConfetti}
-          onSetPriority={onSetPriority}
-          onUpdateDetail={onUpdateChapterDetail}
-          onToggleSubtopicMaterial={(subtopicName, material) =>
-            onToggleSubtopicMaterial(selectedChapter.serial, subtopicName, material)
-          }
-          onUpdateSubtopicAttempted={(subtopicName, material, count) =>
-            onUpdateSubtopicAttempted(selectedChapter.serial, subtopicName, material, count)
-          }
-          onSetSubtopicLastRevised={(subtopicName, date) =>
-            onSetSubtopicLastRevised(selectedChapter.serial, subtopicName, date)
-          }
-        />
-      )}
-    </div>
+      <AnimatePresence>
+        {selectedChapter && (
+          <ChapterDetailDrawer
+            key={`${subject}-${selectedChapter.serial}`}
+            chapter={selectedChapter}
+            materialNames={data.materialNames}
+            progress={selectedChapterProgress}
+            onClose={() => setSelectedChapterSerial(null)}
+            onToggleMaterial={handleToggleMaterialWithConfetti}
+            onSetPriority={onSetPriority}
+            onUpdateDetail={onUpdateChapterDetail}
+            onToggleSubtopicMaterial={(subtopicName, material) =>
+              onToggleSubtopicMaterial(selectedChapter.serial, subtopicName, material)
+            }
+            onUpdateSubtopicAttempted={(subtopicName, material, count) =>
+              onUpdateSubtopicAttempted(selectedChapter.serial, subtopicName, material, count)
+            }
+            onSetSubtopicLastRevised={(subtopicName, date) =>
+              onSetSubtopicLastRevised(selectedChapter.serial, subtopicName, date)
+            }
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

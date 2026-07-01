@@ -61,12 +61,6 @@
     inset: 0;
     z-index: 998;
     background: transparent;
-    pointer-events: none;
-    transition: background var(--transition-normal);
-  }
-
-  .music-overlay--visible {
-    background: transparent;
     pointer-events: all;
   }
 
@@ -88,15 +82,6 @@
     -webkit-backdrop-filter: var(--panel-blur);
     border-right: 1px solid var(--panel-border, var(--border));
     box-shadow: var(--panel-shadow, var(--shadow-lg)), var(--panel-inner-glow, none);
-
-    /* Slide-in animation */
-    transform: translateX(-100%);
-    transition: transform var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform;
-  }
-
-  .music-drawer--open {
-    transform: translateX(0);
   }
 
   /* ── Drawer Header ──────────────────────────────────────────────── */
@@ -234,18 +219,8 @@
 
   /* ── Collapsible Create Playlist ────────────────────────────────── */
   .music-create-playlist {
-    max-height: 0;
     overflow: hidden;
-    transition:
-      max-height var(--transition-normal) ease,
-      opacity var(--transition-normal) ease;
-    opacity: 0;
     flex-shrink: 0;
-  }
-
-  .music-create-playlist--open {
-    max-height: 44px;
-    opacity: 1;
   }
 
   .music-create-playlist-inner {
@@ -310,7 +285,7 @@
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-2) var(--space-5);
-    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--border);
     background: var(--accent-light);
     flex-shrink: 0;
   }
@@ -350,42 +325,10 @@
     background: currentColor;
     border-radius: var(--radius-full);
     transform-origin: center;
-    animation: fluid-wave 1s ease-in-out infinite;
-    will-change: transform;
   }
 
   .music-waveform--small .music-waveform-bar {
     width: 3px;
-  }
-
-  .music-waveform-bar:nth-child(1) {
-    height: 60%;
-    animation-delay: 0s;
-  }
-
-  .music-waveform-bar:nth-child(2) {
-    height: 100%;
-    animation-delay: 0.15s;
-  }
-
-  .music-waveform-bar:nth-child(3) {
-    height: 60%;
-    animation-delay: 0.3s;
-  }
-
-  @keyframes fluid-wave {
-    0%,
-    100% {
-      transform: scaleY(0.5);
-    }
-    50% {
-      transform: scaleY(1);
-    }
-  }
-
-  .music-waveform--paused .music-waveform-bar {
-    animation-play-state: paused;
-    transform: scaleY(0.5);
   }
 
   /* ── Source Logo Icon ───────────────────────────────────────────── */
@@ -422,18 +365,8 @@
 
   /* ── Collapsible Add Track ──────────────────────────────────────── */
   .music-add-track-collapse {
-    max-height: 0;
     overflow: hidden;
-    transition:
-      max-height var(--transition-normal) ease,
-      opacity var(--transition-normal) ease;
-    opacity: 0;
     flex-shrink: 0;
-  }
-
-  .music-add-track-collapse--open {
-    max-height: 280px;
-    opacity: 1;
   }
 
   .music-add-track-inner {
@@ -967,16 +900,11 @@
       top: auto;
       height: 85dvh;
       bottom: 0;
-      transform: translateY(100%);
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       /* Solid fallback for mobile performance */
       background: var(--bg-secondary);
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
-    }
-
-    .music-drawer--open {
-      transform: translateY(0);
     }
 
     .music-drawer::before {

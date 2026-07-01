@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { motion } from 'framer-motion';
 import { Subject, StudySession, MockScore, ProgressCardSettings } from '../../types';
 import {
   LayoutDashboard,
@@ -208,6 +209,13 @@ export function Header({
               className={`nav-item ${currentView === key ? 'active' : ''}`}
               onClick={() => onNavigate(key)}
             >
+              {currentView === key && (
+                <motion.div
+                  layoutId="activeNavIndicator"
+                  className="nav-item-active-bg"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
               <span className="nav-icon">{icon}</span>
               <span className="nav-label-wrapper">
                 <span className="nav-label">{label}</span>

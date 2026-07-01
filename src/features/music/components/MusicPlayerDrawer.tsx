@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import ReactPlayer from 'react-player';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Play,
@@ -86,13 +87,33 @@ function SourceIcon({ type }: { type: Track['type'] }) {
 
 /** Fluid waveform animation component */
 function FluidWaveform({ paused, small }: { paused?: boolean; small?: boolean }) {
+  const bars = [
+    { id: 0, height: '60%', duration: 0.9, values: [0.3, 1.1, 0.4, 0.9, 0.3] },
+    { id: 1, height: '100%', duration: 1.3, values: [0.2, 1.2, 0.3, 1.1, 0.2] },
+    { id: 2, height: '60%', duration: 1.0, values: [0.4, 1.0, 0.3, 0.8, 0.4] },
+  ];
+
   return (
     <div
-      className={`music-waveform ${paused ? 'music-waveform--paused' : ''} ${small ? 'music-waveform--small' : ''}`}
+      className={`music-waveform ${small ? 'music-waveform--small' : ''}`}
     >
-      <span className="music-waveform-bar" />
-      <span className="music-waveform-bar" />
-      <span className="music-waveform-bar" />
+      {bars.map((bar) => (
+        <motion.span
+          key={bar.id}
+          className="music-waveform-bar"
+          style={{ height: bar.height }}
+          animate={paused ? { scaleY: 0.3 } : { scaleY: bar.values }}
+          transition={
+            paused
+              ? { duration: 0.2 }
+              : {
+                  duration: bar.duration,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }
+          }
+        />
+      ))}
     </div>
   );
 }
@@ -121,6 +142,13 @@ export function MusicPlayerDrawer() {
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const [showAddTrack, setShowAddTrack] = useState(false);
   const [isSavingLocal, setIsSavingLocal] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Player state
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
@@ -397,7 +425,7 @@ export function MusicPlayerDrawer() {
           return `https://open.spotify.com/embed/${pathParts[0]}/${pathParts[1]}?utm_source=generator`;
         }
       }
-    } catch (e) {
+    } catch {
       // Invalid URL
     }
     return url;
@@ -425,15 +453,30 @@ export function MusicPlayerDrawer() {
         />
       )}
 
-      {/* Overlay */}
-      <div
-        className={`music-overlay ${isOpen ? 'music-overlay--visible' : ''}`}
-        onClick={handleClose}
-        aria-hidden="true"
-      />
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              className="music-overlay music-overlay--visible"
+              onClick={handleClose}
+              aria-hidden="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
 
-      {/* Drawer */}
-      <div className={`music-drawer ${isOpen ? 'music-drawer--open' : ''}`}>
+            {/* Drawer */}
+            <motion.div
+              className="music-drawer"
+              role="dialog"
+              aria-modal="true"
+              initial={isMobile ? { y: '100%', x: 0 } : { x: '-100%', y: 0 }}
+              animate={{ x: 0, y: 0 }}
+              exit={isMobile ? { y: '100%', x: 0 } : { x: '-100%', y: 0 }}
+              transition={{ type: 'spring', duration: 0.6, bounce: 0 }}
+            >
         {/* ─── Header ─────────────────────────────────────── */}
         <div className="music-header">
           <div className="music-header-title">
@@ -459,27 +502,36 @@ export function MusicPlayerDrawer() {
         </div>
 
         {/* ─── Collapsible Create Playlist ────────────────── */}
-        <div
-          className={`music-create-playlist ${showCreatePlaylist ? 'music-create-playlist--open' : ''}`}
-        >
-          <div className="music-create-playlist-inner">
-            <input
-              ref={createInputRef}
-              type="text"
-              placeholder="Playlist name"
-              value={newPlaylistName}
-              onChange={(e) => setNewPlaylistName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddPlaylist()}
-            />
-            <button
-              className="music-create-btn"
-              onClick={handleAddPlaylist}
-              disabled={!newPlaylistName.trim()}
+        <AnimatePresence initial={false}>
+          {showCreatePlaylist && (
+            <motion.div
+              className="music-create-playlist"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
             >
-              Create
-            </button>
-          </div>
-        </div>
+              <div className="music-create-playlist-inner">
+                <input
+                  ref={createInputRef}
+                  type="text"
+                  placeholder="Playlist name"
+                  value={newPlaylistName}
+                  onChange={(e) => setNewPlaylistName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddPlaylist()}
+                />
+                <button
+                  className="music-create-btn"
+                  onClick={handleAddPlaylist}
+                  disabled={!newPlaylistName.trim()}
+                >
+                  Create
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ─── Playlist Bar ───────────────────────────────── */}
         <div className="music-playlist-bar">
@@ -503,14 +555,7 @@ export function MusicPlayerDrawer() {
           </button>
         </div>
 
-        {/* ─── Now Playing (compact row) ──────────────────── */}
-        {currentTrack && (
-          <div className="music-now-playing">
-            <FluidWaveform paused={!playing || isBuffering} small />
-            <span className="music-now-playing-title">{currentTrack.title}</span>
-            <SourceIcon type={currentTrack.type} />
-          </div>
-        )}
+
 
         {/* ─── Track List Header + Add button ────────────── */}
         <div className="music-section-header">
@@ -526,67 +571,76 @@ export function MusicPlayerDrawer() {
         </div>
 
         {/* ─── Collapsible Add Track ───────────────────────── */}
-        <div
-          className={`music-add-track-collapse ${showAddTrack ? 'music-add-track-collapse--open' : ''}`}
-        >
-          <div className="music-add-track-inner">
-            <input
-              type="text"
-              placeholder="Track name (optional)"
-              value={newTrackTitle}
-              onChange={(e) => setNewTrackTitle(e.target.value)}
-            />
-            <div className="music-add-track-url-row">
-              <input
-                ref={addTrackUrlRef}
-                type="text"
-                placeholder="YouTube or Spotify URL"
-                value={newTrackUrl}
-                onChange={(e) => setNewTrackUrl(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddTrack()}
-              />
-              <button
-                className="music-create-btn"
-                onClick={handleAddTrack}
-                disabled={!newTrackUrl.trim()}
-              >
-                Add
-              </button>
-            </div>
-
-            <div className="music-add-track-divider">
-              <span>or</span>
-            </div>
-
-            <div
-              className="music-local-upload-zone"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleFileDrop}
+        <AnimatePresence initial={false}>
+          {showAddTrack && (
+            <motion.div
+              className="music-add-track-collapse"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
             >
-              <input
-                type="file"
-                accept="audio/*"
-                id="music-local-upload"
-                onChange={handleFileInput}
-                style={{ display: 'none' }}
-              />
-              <label htmlFor="music-local-upload" className="music-local-upload-label">
-                {isSavingLocal ? (
-                  <>
-                    <Loader2 size={16} className="music-spinner" />
-                    <span>Saving to device...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload size={16} />
-                    <span>Click or drag audio file here</span>
-                    <span className="music-upload-hint">Works offline</span>
-                  </>
-                )}
-              </label>
-            </div>
-          </div>
-        </div>
+              <div className="music-add-track-inner">
+                <input
+                  type="text"
+                  placeholder="Track name (optional)"
+                  value={newTrackTitle}
+                  onChange={(e) => setNewTrackTitle(e.target.value)}
+                />
+                <div className="music-add-track-url-row">
+                  <input
+                    ref={addTrackUrlRef}
+                    type="text"
+                    placeholder="YouTube or Spotify URL"
+                    value={newTrackUrl}
+                    onChange={(e) => setNewTrackUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddTrack()}
+                  />
+                  <button
+                    className="music-create-btn"
+                    onClick={handleAddTrack}
+                    disabled={!newTrackUrl.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <div className="music-add-track-divider">
+                  <span>or</span>
+                </div>
+
+                <div
+                  className="music-local-upload-zone"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleFileDrop}
+                >
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    id="music-local-upload"
+                    onChange={handleFileInput}
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="music-local-upload" className="music-local-upload-label">
+                    {isSavingLocal ? (
+                      <>
+                        <Loader2 size={16} className="music-spinner" />
+                        <span>Saving to device...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={16} />
+                        <span>Click or drag audio file here</span>
+                        <span className="music-upload-hint">Works offline</span>
+                      </>
+                    )}
+                  </label>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ─── Track List ─────────────────────────────────── */}
         <div className="music-track-list">
@@ -631,6 +685,15 @@ export function MusicPlayerDrawer() {
             })
           )}
         </div>
+
+        {/* ─── Now Playing (compact row) ──────────────────── */}
+        {currentTrack && (
+          <div className="music-now-playing">
+            <FluidWaveform paused={!playing || isBuffering} small />
+            <span className="music-now-playing-title">{currentTrack.title}</span>
+            <SourceIcon type={currentTrack.type} />
+          </div>
+        )}
 
         {/* ─── Spotify Embedded Player ─────────────────────── */}
         {currentTrack && isSpotify && showSpotifyEmbed && (
@@ -724,7 +787,10 @@ export function MusicPlayerDrawer() {
             </div>
           </div>
         )}
-      </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* FAB Toggle */}
       {!isOpen && (

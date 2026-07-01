@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, Reorder, useDragControls } from 'framer-motion';
 import { Chapter, ChapterProgress, Priority } from '../../../shared/types';
 import { PriorityPillSelector } from '../../../shared/components/ui/PriorityPillSelector';
 import { Trash2, GripVertical, Star } from 'lucide-react';
@@ -130,9 +131,7 @@ interface LeftChapterRowProps {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   priorityClass: string;
-  onDragStart?: (e: React.DragEvent<HTMLTableRowElement>) => void;
-  onDragEnter?: (e: React.DragEvent<HTMLTableRowElement>) => void;
-  onDragEnd?: (e: React.DragEvent<HTMLTableRowElement>) => void;
+  onDragEnd?: () => void;
 }
 
 export const LeftChapterRow = React.memo(
@@ -147,10 +146,9 @@ export const LeftChapterRow = React.memo(
     onMouseEnter,
     onMouseLeave,
     priorityClass,
-    onDragStart,
-    onDragEnter,
     onDragEnd,
   }: LeftChapterRowProps) => {
+    const dragControls = useDragControls();
     const hasDetailData = hasChapterDetailData(progress);
     const totalAttempted = getTotalAttemptedQuestions(progress);
     const priority = progress?.priority || 'none';
@@ -185,13 +183,14 @@ export const LeftChapterRow = React.memo(
 
     return (
       <>
-        <tr
-          className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
-          draggable={isEditing}
-          onDragStart={isEditing ? onDragStart : undefined}
-          onDragEnter={isEditing ? onDragEnter : undefined}
+        <Reorder.Item
+          as="tr"
+          value={chapter}
+          dragListener={false}
+          dragControls={dragControls}
           onDragEnd={isEditing ? onDragEnd : undefined}
-          onDragOver={isEditing ? (e) => e.preventDefault() : undefined}
+          style={{ userSelect: isEditing ? 'none' : 'auto' }}
+          className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
           onClick={!isEditing ? onOpenDetails : undefined}
           onKeyDown={
             !isEditing
@@ -205,14 +204,17 @@ export const LeftChapterRow = React.memo(
           }
           role={!isEditing ? 'button' : undefined}
           tabIndex={!isEditing ? 0 : undefined}
-          style={isEditing ? { cursor: 'grab' } : undefined}
           onMouseEnter={handleMouseEnterLocal}
           onMouseLeave={handleMouseLeaveLocal}
           onMouseMove={handleMouseMoveLocal}
         >
           <td className="serial-cell">
             {isEditing ? (
-              <div className="grip-icon-wrapper">
+              <div 
+                className="grip-icon-wrapper"
+                onPointerDown={(e) => dragControls.start(e)}
+                style={{ cursor: 'grab', touchAction: 'none' }}
+              >
                 <GripVertical size={20} />
               </div>
             ) : index !== undefined ? (
@@ -259,7 +261,7 @@ export const LeftChapterRow = React.memo(
               </span>
             )}
           </td>
-        </tr>
+        </Reorder.Item>
         {hoverPos && (hasDetailData || priority !== 'none') && (
           <HoverPanel
             x={hoverPos.x}
@@ -342,7 +344,9 @@ export const MiddleChapterRow = React.memo(
     };
 
     return (
-      <tr
+      <motion.tr
+        layout
+        transition={{ type: "spring", stiffness: 350, damping: 25 }}
         className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
         onClick={!isEditing ? onOpenDetails : undefined}
         onKeyDown={
@@ -384,7 +388,7 @@ export const MiddleChapterRow = React.memo(
             </td>
           );
         })}
-      </tr>
+      </motion.tr>
     );
   }
 );
@@ -421,7 +425,9 @@ export const RightChapterRow = React.memo(
     const percent = getChapterProgressPercent(progress, chapter, materialNames);
 
     return (
-      <tr
+      <motion.tr
+        layout
+        transition={{ type: "spring", stiffness: 350, damping: 25 }}
         className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
         onClick={!isEditing ? onOpenDetails : undefined}
         onKeyDown={
@@ -463,7 +469,7 @@ export const RightChapterRow = React.memo(
             </div>
           )}
         </td>
-      </tr>
+      </motion.tr>
     );
   }
 );

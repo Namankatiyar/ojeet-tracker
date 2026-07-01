@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import { useTheme } from '../../../core/context/ThemeContext';
 import {
@@ -440,9 +441,36 @@ export function StudyClock({
   // ── Main render ──
   const isIdle = engine.engineState === 'idle';
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring' as const,
+        duration: 0.6,
+        bounce: 0,
+      },
+    },
+  };
+
   return (
-    <div className="study-clock-page">
-      <div className="study-clock-header">
+    <motion.div
+      className="study-clock-page"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div className="study-clock-header" variants={itemVariants}>
         <h1>
           <Clock size={28} /> Study Clock
         </h1>
@@ -450,9 +478,9 @@ export function StudyClock({
           JEE Pomodoro Timer and Free Digital Study Stopwatch to log study hours for JEE Main exam
         </h2>
         <p>Track your study sessions and analyze your progress</p>
-      </div>
+      </motion.div>
 
-      <div className="study-clock-grid">
+      <motion.div className="study-clock-grid" variants={itemVariants}>
         <div className="timer-card horizontal">
           {/* Task selector - collapsible when timer is active */}
           <div className={`task-selector-section ${!isIdle ? 'collapsed' : ''}`}>
@@ -696,7 +724,7 @@ export function StudyClock({
         </div>
 
         {/* Statistics and Session Log */}
-        <div className="stats-and-log-row">
+        <motion.div className="stats-and-log-row" variants={itemVariants}>
           <SessionStatistics sessions={sessions} subjectData={subjectData} />
           <SessionHistory
             sessions={sessions}
@@ -705,8 +733,8 @@ export function StudyClock({
             onEditSession={onEditSession}
             onAddSession={onAddSession}
           />
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }

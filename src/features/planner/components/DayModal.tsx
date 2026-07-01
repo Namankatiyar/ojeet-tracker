@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { PlannerTask } from '../../../shared/types';
 import { X, Clock, CheckCircle2, Circle, Plus, Square, CheckSquare } from 'lucide-react';
 
@@ -30,7 +31,6 @@ export function DayModal({
   onToggleTask,
   onAddTask,
 }: DayModalProps) {
-  const [isClosing, setIsClosing] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -65,11 +65,7 @@ export function DayModal({
   }, [isOpen]);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      onClose();
-    }, 200);
+    onClose();
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -78,7 +74,7 @@ export function DayModal({
     }
   };
 
-  if (!isOpen || !date) return null;
+  if (!date) return null;
 
   const formattedDate = date.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -88,18 +84,25 @@ export function DayModal({
   });
 
   return (
-    <div
-      className={`day-modal-overlay ${isClosing ? 'closing' : ''}`}
+    <motion.div
+      className="day-modal-overlay motion-animated"
       ref={overlayRef}
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
       aria-label={`Tasks for ${formattedDate}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
     >
-      <div
-        className={`day-modal-content glass-panel ${isClosing ? 'closing' : ''}`}
+      <motion.div
+        className="day-modal-content glass-panel motion-animated"
         ref={modalRef}
         tabIndex={-1}
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 16, scale: 0.97 }}
+        transition={{ type: "spring", stiffness: 350, damping: 28 }}
       >
         {/* Header */}
         <div className="day-modal-header">
@@ -196,7 +199,7 @@ export function DayModal({
             <Plus size={16} /> Add Task
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

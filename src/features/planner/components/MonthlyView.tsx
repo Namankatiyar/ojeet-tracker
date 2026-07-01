@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { CalendarGrid } from './CalendarGrid';
 import { DayModal } from './DayModal';
 import { PlannerTask, StudySession, ExamEntry } from '../../../shared/types';
@@ -63,16 +64,20 @@ export function MonthlyView({
         onDayClick={handleDayClick}
       />
 
-      <DayModal
-        isOpen={selectedDateStr !== null}
-        date={selectedDate}
-        dateStr={selectedDateStr ?? ''}
-        tasks={selectedDayData.tasks}
-        totalStudySeconds={selectedDayData.totalStudySeconds}
-        onClose={handleCloseModal}
-        onToggleTask={onToggleTask}
-        onAddTask={onAddTask}
-      />
+      <AnimatePresence>
+        {selectedDateStr !== null && (
+          <DayModal
+            isOpen={true}
+            date={selectedDate}
+            dateStr={selectedDateStr ?? ''}
+            tasks={selectedDayData.tasks}
+            totalStudySeconds={selectedDayData.totalStudySeconds}
+            onClose={handleCloseModal}
+            onToggleTask={onToggleTask}
+            onAddTask={onAddTask}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

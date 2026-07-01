@@ -37,6 +37,13 @@ html[data-theme^='dark-'] .dp-backdrop {
   }
 }
 
+/* Helper override for Framer Motion DatePicker */
+.dp-backdrop.motion-animated,
+.dp-panel.motion-animated {
+  animation: none !important;
+  transition: none !important;
+}
+
 /* Panel */
 .dp-panel {
   position: relative;

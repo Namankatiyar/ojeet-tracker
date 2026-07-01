@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { UserProfileCard } from './UserProfileCard';
 import { SkeletonFriendCard } from './SkeletonFriendCard';
 import { InviteSection } from './InviteSection';
@@ -79,9 +80,36 @@ export function CommunityPage() {
     { key: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={14} />, disabled: true },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring' as const,
+        duration: 0.6,
+        bounce: 0,
+      },
+    },
+  };
+
   return (
-    <div className="community-page">
-      <div className="community-page-header">
+    <motion.div
+      className="community-page"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div className="community-page-header" variants={itemVariants}>
         <div className="community-page-title-group">
           <div className="community-page-title-header">
             <Users className="community-title-icon" size={24} />
@@ -98,10 +126,11 @@ export function CommunityPage() {
             onSignInClick={() => setIsSyncPromptOpen(true)}
           />
         </div>
-      </div>
+      </motion.div>
 
       {bannerMessage && (
-        <div
+        <motion.div
+          variants={itemVariants}
           className={`community-banner ${bannerMessage.type}`}
           style={{
             display: 'flex',
@@ -153,10 +182,10 @@ export function CommunityPage() {
           >
             <X size={16} />
           </button>
-        </div>
+        </motion.div>
       )}
 
-      <div className="community-tab-bar">
+      <motion.div className="community-tab-bar" variants={itemVariants}>
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -167,10 +196,10 @@ export function CommunityPage() {
             {tab.label}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {activeTab === 'friends' && (
-        <div className="community-profile-area">
+        <motion.div className="community-profile-area" variants={itemVariants}>
           <UserProfileCard onEditClick={() => setIsEditOpen(true)} />
 
           {friends.map((friend) => (
@@ -182,15 +211,15 @@ export function CommunityPage() {
           ))}
 
           {user && <SkeletonFriendCard onAddFriendClick={() => setIsInviteOpen(true)} />}
-        </div>
+        </motion.div>
       )}
 
       {activeTab === 'leaderboard' && (
-        <div className="community-coming-soon">
+        <motion.div className="community-coming-soon" variants={itemVariants}>
           <Trophy size={48} />
           <h2>Leaderboard</h2>
           <p>Compete with friends and track study rankings. Coming soon.</p>
-        </div>
+        </motion.div>
       )}
 
       <ProfileEditModal
@@ -224,6 +253,6 @@ export function CommunityPage() {
         onSignIn={handleGoogleSignIn}
         isBusy={isAuthBusy}
       />
-    </div>
+    </motion.div>
   );
 }
