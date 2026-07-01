@@ -1,7 +1,7 @@
 # Graph Report - ojee-tracker  (2026-07-01)
 
 ## Corpus Check
-- 195 files · ~164,243 words
+- 195 files · ~164,473 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `83614497`
+- Built from commit: `ee173b01`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -211,8 +211,8 @@ Cohesion: 0.21
 Nodes (9): DEFAULT_PLAYLIST, DEFAULT_TRACKS, MusicPlayerDrawer(), Playlist, Track, deleteAudioFile(), getAudioFile(), getDB() (+1 more)
 
 ### Community 22 - "Community 22"
-Cohesion: 0.26
-Nodes (7): CoPilotNudgeRow(), CoPilotNudgeRowProps, useSubjectData(), useAgentChat(), useAgentTools(), useStudyCoPilot(), ConfidenceLevel
+Cohesion: 0.32
+Nodes (6): defaultMockExamPresets, initialProgress, mockMergedSubjectData, UserProgressContext, UserProgressProvider(), useProgress()
 
 ### Community 23 - "Community 23"
 Cohesion: 0.13
@@ -331,16 +331,16 @@ Cohesion: 0.12
 Nodes (16): Field Descriptions, Grader Agent, Grading Criteria, Guidelines, Inputs, Output Format, Process, Role (+8 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.15
-Nodes (14): ReportsPage(), SubjectDataContext, SubjectDataProvider(), defaultMockExamPresets, initialProgress, mockMergedSubjectData, UserProgressContext, UserProgressProvider() (+6 more)
+Cohesion: 0.18
+Nodes (11): CoPilotNudgeRow(), CoPilotNudgeRowProps, ReportsPage(), SubjectDataContext, SubjectDataProvider(), useLocalStorage(), ConfidenceLevel, ChemistrySyllabus (+3 more)
 
 ### Community 69 - "Community 69"
 Cohesion: 0.16
 Nodes (12): CalendarGridProps, DashboardProps, MonthCell, MonthCellProps, MonthlyViewProps, CoPilotRecommendation, ImportSyncPageProps, OjeetSyncPayload (+4 more)
 
 ### Community 70 - "Community 70"
-Cohesion: 0.25
-Nodes (8): ChatSession, ConfirmActionPayload, getInitialSessions(), makeId(), makeMessage(), MessageRole, ChatTurn, buildAgentSystemPrompt()
+Cohesion: 0.17
+Nodes (12): useSubjectData(), ChatSession, ConfirmActionPayload, getInitialSessions(), makeId(), makeMessage(), MessageRole, useAgentChat() (+4 more)
 
 ### Community 71 - "Community 71"
 Cohesion: 0.13
@@ -402,7 +402,7 @@ Nodes (4): 0.0.8 (2026-01-31), Added, Changed, Fixed
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `StudySession` connect `Community 69` to `Community 2`, `Community 3`, `Community 4`, `Community 68`, `Community 6`, `Community 7`, `Community 73`, `Community 77`, `Community 78`, `Community 19`, `Community 52`, `Community 22`, `Community 27`?**
+- **Why does `StudySession` connect `Community 69` to `Community 2`, `Community 3`, `Community 4`, `Community 68`, `Community 6`, `Community 7`, `Community 70`, `Community 73`, `Community 77`, `Community 78`, `Community 19`, `Community 52`, `Community 22`, `Community 27`?**
   _High betweenness centrality (0.020) - this node is a cross-community bridge._
 - **Why does `createClient()` connect `Community 12` to `Community 53`?**
   _High betweenness centrality (0.018) - this node is a cross-community bridge._
