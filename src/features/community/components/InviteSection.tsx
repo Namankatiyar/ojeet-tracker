@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Copy, Check, UserPlus } from 'lucide-react';
+import { Copy, Check, UserPlus, Link } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DiscordIcon } from '../../../shared/components/ui/DiscordInviteModal';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 
@@ -14,16 +15,25 @@ export function InviteSection({
   onInviteFriendClick,
   onSignInClick,
 }: InviteSectionProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const { user } = useRemoteAuth();
 
   const inviteUrl = inviteCode ? `https://tracker.ojeet.tech/invite/${inviteCode}` : '';
 
-  const handleCopy = useCallback(() => {
+  const handleCopyCode = useCallback(() => {
+    if (!inviteCode) return;
+    navigator.clipboard.writeText(inviteCode).then(() => {
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    });
+  }, [inviteCode]);
+
+  const handleCopyLink = useCallback(() => {
     if (!inviteUrl) return;
     navigator.clipboard.writeText(inviteUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
     });
   }, [inviteUrl]);
 
@@ -37,13 +47,51 @@ export function InviteSection({
                 <span className="invite-badge-label-inside">INVITE CODE:</span>
                 <span className="invite-code-text">{inviteCode}</span>
                 <button
-                  className={`invite-copy-btn ${copied ? 'copied' : ''}`}
-                  onClick={handleCopy}
-                  title={copied ? 'Copy invite link' : 'Copy invite link'}
+                  type="button"
+                  className={`invite-copy-btn ${copiedCode ? 'copied' : ''}`}
+                  onClick={handleCopyCode}
+                  title={copiedCode ? 'Copied code!' : 'Copy invite code'}
                 >
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedCode ? <Check size={14} /> : <Copy size={14} />}
                 </button>
               </div>
+              <motion.button
+                type="button"
+                className={`invite-link-btn ${copiedLink ? 'copied' : ''}`}
+                onClick={handleCopyLink}
+                title={copiedLink ? 'Copied link!' : 'Copy invite link'}
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.15 }}
+              >
+                <AnimatePresence mode="wait">
+                  {copiedLink ? (
+                    <motion.span
+                      key="copied"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.12 }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
+                    >
+                      <Check size={14} />
+                      <span>Copied!</span>
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="copy"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.12 }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
+                    >
+                      <Link size={14} />
+                      <span>Copy link</span>
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
             </div>
           )}
 

@@ -1,16 +1,16 @@
 # Graph Report - ojee-tracker  (2026-07-01)
 
 ## Corpus Check
-- 195 files · ~164,473 words
+- 195 files · ~164,626 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1300 nodes · 2340 edges · 84 communities (75 shown, 9 thin omitted)
+- 1300 nodes · 2340 edges · 82 communities (73 shown, 9 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ee173b01`
+- Built from commit: `ee763f5d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -56,11 +56,9 @@
 - [[_COMMUNITY_Community 38|Community 38]]
 - [[_COMMUNITY_Community 39|Community 39]]
 - [[_COMMUNITY_Community 40|Community 40]]
-- [[_COMMUNITY_Community 41|Community 41]]
 - [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 43|Community 43]]
 - [[_COMMUNITY_Community 44|Community 44]]
-- [[_COMMUNITY_Community 45|Community 45]]
 - [[_COMMUNITY_Community 46|Community 46]]
 - [[_COMMUNITY_Community 47|Community 47]]
 - [[_COMMUNITY_Community 48|Community 48]]
@@ -120,7 +118,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (84 total, 9 thin omitted)
+## Communities (82 total, 9 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.12
@@ -163,8 +161,8 @@ Cohesion: 0.06
 Nodes (33): 10. Anti-Patterns (Banned Style Operations), 11. Quality Checklist, 1. Design Philosophy: Grounded in the Subject, 2.1 The Hero is a Thesis, 2.2 Typography with Personality, 2.3 Structure is Information, 2.4 Leverage Motion Deliberately, 2.5 Restraint: Spend Boldness in One Place (+25 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.07
-Nodes (26): [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22), [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22), [0.0.22](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.22) (2026-02-26) (+18 more)
+Cohesion: 0.06
+Nodes (32): 0.0.10 (2026-01-31), [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22), [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22) (+24 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.07
@@ -211,8 +209,8 @@ Cohesion: 0.21
 Nodes (9): DEFAULT_PLAYLIST, DEFAULT_TRACKS, MusicPlayerDrawer(), Playlist, Track, deleteAudioFile(), getAudioFile(), getDB() (+1 more)
 
 ### Community 22 - "Community 22"
-Cohesion: 0.32
-Nodes (6): defaultMockExamPresets, initialProgress, mockMergedSubjectData, UserProgressContext, UserProgressProvider(), useProgress()
+Cohesion: 0.26
+Nodes (7): CoPilotNudgeRow(), CoPilotNudgeRowProps, useSubjectData(), useAgentChat(), useAgentTools(), useStudyCoPilot(), ConfidenceLevel
 
 ### Community 23 - "Community 23"
 Cohesion: 0.13
@@ -282,10 +280,6 @@ Nodes (34): Advanced: Blind comparison, Anatomy of a Skill, Capture Intent, Clau
 Cohesion: 0.33
 Nodes (5): FINAL OUTPUT, GUIDELINES FOR THIS PROMPT, PHASE 1 — COMPONENT AUDIT, PHASE 2 — DIAGNOSIS, PHASE 3 — OVERHAUL PLAN
 
-### Community 41 - "Community 41"
-Cohesion: 0.67
-Nodes (3): 0.0.10 (2026-01-31), Added, Fixed
-
 ### Community 42 - "Community 42"
 Cohesion: 0.40
 Nodes (5): [0.0.20] - 2026-02-26 20:30, AI Maintenance Run, Architectural Changes, Feature-Level Changes, Suggested ADR Entries
@@ -293,10 +287,6 @@ Nodes (5): [0.0.20] - 2026-02-26 20:30, AI Maintenance Run, Architectural Change
 ### Community 43 - "Community 43"
 Cohesion: 0.40
 Nodes (5): 0.0.7 (2026-01-19), Added, Changed, Fixed, Removed
-
-### Community 45 - "Community 45"
-Cohesion: 0.67
-Nodes (3): [0.0.19](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-23), Performance & Refactoring, UI & Styling
 
 ### Community 46 - "Community 46"
 Cohesion: 0.50
@@ -331,16 +321,16 @@ Cohesion: 0.12
 Nodes (16): Field Descriptions, Grader Agent, Grading Criteria, Guidelines, Inputs, Output Format, Process, Role (+8 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.18
-Nodes (11): CoPilotNudgeRow(), CoPilotNudgeRowProps, ReportsPage(), SubjectDataContext, SubjectDataProvider(), useLocalStorage(), ConfidenceLevel, ChemistrySyllabus (+3 more)
+Cohesion: 0.15
+Nodes (14): ReportsPage(), SubjectDataContext, SubjectDataProvider(), defaultMockExamPresets, initialProgress, mockMergedSubjectData, UserProgressContext, UserProgressProvider() (+6 more)
 
 ### Community 69 - "Community 69"
 Cohesion: 0.16
 Nodes (12): CalendarGridProps, DashboardProps, MonthCell, MonthCellProps, MonthlyViewProps, CoPilotRecommendation, ImportSyncPageProps, OjeetSyncPayload (+4 more)
 
 ### Community 70 - "Community 70"
-Cohesion: 0.17
-Nodes (12): useSubjectData(), ChatSession, ConfirmActionPayload, getInitialSessions(), makeId(), makeMessage(), MessageRole, useAgentChat() (+4 more)
+Cohesion: 0.25
+Nodes (8): ChatSession, ConfirmActionPayload, getInitialSessions(), makeId(), makeMessage(), MessageRole, ChatTurn, buildAgentSystemPrompt()
 
 ### Community 71 - "Community 71"
 Cohesion: 0.13
@@ -402,7 +392,7 @@ Nodes (4): 0.0.8 (2026-01-31), Added, Changed, Fixed
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `StudySession` connect `Community 69` to `Community 2`, `Community 3`, `Community 4`, `Community 68`, `Community 6`, `Community 7`, `Community 70`, `Community 73`, `Community 77`, `Community 78`, `Community 19`, `Community 52`, `Community 22`, `Community 27`?**
+- **Why does `StudySession` connect `Community 69` to `Community 2`, `Community 3`, `Community 4`, `Community 68`, `Community 6`, `Community 7`, `Community 73`, `Community 77`, `Community 78`, `Community 19`, `Community 52`, `Community 22`, `Community 27`?**
   _High betweenness centrality (0.020) - this node is a cross-community bridge._
 - **Why does `createClient()` connect `Community 12` to `Community 53`?**
   _High betweenness centrality (0.018) - this node is a cross-community bridge._
