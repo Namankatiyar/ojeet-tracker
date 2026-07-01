@@ -50,6 +50,8 @@ interface HeaderProps {
   onEnableAIAgentChange: (value: boolean) => void;
   enableMusicPlayer: boolean;
   onEnableMusicPlayerChange: (value: boolean) => void;
+  dailyResetHour: number;
+  onDailyResetHourChange: (hour: number) => void;
   backgroundUrl: string;
   onBackgroundUrlChange: (url: string) => void;
   dimLevel: number;
@@ -99,6 +101,8 @@ export function Header({
   onEnableAIAgentChange,
   enableMusicPlayer,
   onEnableMusicPlayerChange,
+  dailyResetHour,
+  onDailyResetHourChange,
   backgroundUrl,
   onBackgroundUrlChange,
   dimLevel,
@@ -459,6 +463,8 @@ export function Header({
         onEnableAIAgentChange={onEnableAIAgentChange}
         enableMusicPlayer={enableMusicPlayer}
         onEnableMusicPlayerChange={onEnableMusicPlayerChange}
+        dailyResetHour={dailyResetHour}
+        onDailyResetHourChange={onDailyResetHourChange}
         backgroundUrl={backgroundUrl}
         onBackgroundUrlChange={onBackgroundUrlChange}
         useGridBackground={useGridBackground}

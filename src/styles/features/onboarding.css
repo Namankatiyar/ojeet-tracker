@@ -1,0 +1,781 @@
+/* ===== Onboarding Flow ===== */
+/* Full-screen first-run onboarding experience */
+/* Styled for dark-solid + light only — no glassmorphism */
+
+/* ======================== */
+/* === Root Container === */
+/* ======================== */
+.ob-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  z-index: 2000;
+  background: var(--bg-base);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ======================== */
+/* === Image Pane === */
+/* ======================== */
+.ob-image-pane {
+  flex: 0 0 45%;
+  position: relative;
+  overflow: hidden;
+}
+
+.ob-image-pane img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ======================== */
+/* === Form Pane === */
+/* ======================== */
+.ob-form-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: var(--space-8);
+  background: var(--bg-base);
+}
+
+.ob-form-inner {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ob-step-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  min-height: 320px;
+}
+
+/* ======================== */
+/* === Progress Bar === */
+/* ======================== */
+.ob-progress {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-10);
+}
+
+.ob-progress-segment {
+  flex: 1;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: var(--border);
+  transition: background-color var(--transition-normal);
+}
+
+.ob-progress-segment.completed,
+.ob-progress-segment.active {
+  background: var(--accent);
+}
+
+/* ======================== */
+/* === Step Content === */
+/* ======================== */
+.ob-step-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.ob-step-heading {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3) 0;
+  line-height: 1.2;
+}
+
+.ob-step-subtext {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  margin: 0 0 var(--space-8) 0;
+}
+
+/* ======================== */
+/* === Input Fields === */
+/* ======================== */
+.ob-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.ob-input-group {
+  margin-bottom: var(--space-4);
+}
+
+.ob-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ob-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
+}
+
+.ob-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ======================== */
+/* === Navigation Row === */
+/* ======================== */
+.ob-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-10);
+  gap: var(--space-4);
+}
+
+.ob-nav-row.end-only {
+  justify-content: flex-end;
+}
+
+/* ======================== */
+/* === Toggle Switch === */
+/* ======================== */
+.ob-toggle-track {
+  width: 44px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.ob-toggle-track:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+.ob-toggle-track.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.ob-toggle-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.ob-toggle-track.active .ob-toggle-thumb {
+  transform: translateX(20px);
+  background: var(--accent-text);
+}
+
+/* ======================== */
+/* === Toggle Row === */
+/* ======================== */
+.ob-toggles-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ob-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+}
+
+.ob-toggle-icon {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.ob-toggle-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ob-toggle-label {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.ob-toggle-desc {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ======================== */
+/* === Reset Time Grid === */
+/* ======================== */
+.ob-time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.ob-time-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ob-time-tile:hover {
+  border-color: var(--border-hover);
+  background: color-mix(in srgb, var(--bg-tertiary), var(--accent) 4%);
+}
+
+.ob-time-tile:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+.ob-time-tile.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 88%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent), transparent 60%) inset;
+}
+
+.ob-time-tile-value {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-fast);
+}
+
+.ob-time-tile.active .ob-time-tile-value {
+  color: var(--accent);
+}
+
+.ob-time-tile-desc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 400;
+  transition: color var(--transition-fast);
+}
+
+.ob-time-tile.active .ob-time-tile-desc {
+  color: color-mix(in srgb, var(--accent), var(--text-muted) 40%);
+}
+
+/* ======================== */
+/* === Custom Time Row === */
+/* ======================== */
+.ob-custom-row {
+  position: relative;
+  margin-bottom: var(--space-2);
+}
+
+.ob-custom-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ob-custom-trigger:hover {
+  border-color: var(--border-hover);
+}
+
+.ob-custom-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+.ob-custom-trigger.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 88%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent), transparent 60%) inset;
+}
+
+.ob-custom-trigger-icon {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.ob-custom-trigger.active .ob-custom-trigger-icon {
+  color: var(--accent);
+}
+
+.ob-custom-trigger-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.ob-custom-trigger.active .ob-custom-trigger-label {
+  color: color-mix(in srgb, var(--accent), var(--text-secondary) 50%);
+}
+
+.ob-custom-trigger-value {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  transition: color var(--transition-fast);
+}
+
+.ob-custom-trigger-value.is-custom {
+  color: var(--accent);
+}
+
+.ob-custom-chevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.ob-custom-chevron.open {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+/* ======================== */
+/* === Inline Time Picker === */
+/* ======================== */
+.ob-time-picker {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px color-mix(in srgb, var(--accent), transparent 80%) inset;
+}
+
+.ob-tp-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-3);
+}
+
+.ob-tp-columns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.ob-tp-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.ob-tp-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ob-tp-arrow:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 90%);
+  color: var(--accent);
+}
+
+.ob-tp-arrow:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent), transparent 60%);
+}
+
+.ob-tp-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  min-width: 2.4ch;
+  text-align: center;
+  line-height: 1;
+  padding: var(--space-2) var(--space-2);
+}
+
+.ob-tp-colon {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1;
+  padding-bottom: var(--space-1);
+  margin: 0 var(--space-1);
+}
+
+.ob-tp-period-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+}
+
+.ob-tp-period-btn {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ob-tp-period-btn:hover {
+  border-color: var(--border-hover);
+}
+
+.ob-tp-period-btn.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 85%);
+  color: var(--accent);
+}
+
+.ob-tp-period-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent), transparent 60%);
+}
+
+.ob-tp-confirm {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.ob-tp-confirm:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.ob-tp-confirm:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 60%);
+}
+
+/* ======================== */
+/* === Nav Buttons === */
+/* ======================== */
+.ob-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.ob-back-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.ob-back-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+.ob-back-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ob-continue-btn {
+  font-size: var(--text-sm);
+}
+
+[data-theme^='dark-'] .ob-continue-btn {
+  background: var(--accent);
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* ======================== */
+/* === Discord Card === */
+/* ======================== */
+.ob-discord-card {
+  padding: var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--bg-base);
+  text-align: center;
+}
+
+.ob-discord-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.ob-discord-desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-6) 0;
+  line-height: 1.5;
+}
+
+/* Discord brand color exception (like Google branding) */
+.ob-discord-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: #5865F2;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.ob-discord-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.ob-discord-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #5865F2, transparent 60%);
+}
+
+/* ======================== */
+/* === Auth Buttons === */
+/* ======================== */
+.ob-auth-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ob-auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.ob-auth-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.ob-auth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ob-auth-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+/* Google branding exception */
+.ob-google-btn {
+  background: #ffffff;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+}
+
+.ob-google-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+}
+
+.ob-offline-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.ob-offline-btn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+}
+
+.ob-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.ob-auth-divider::before,
+.ob-auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Signed-in confirmation */
+.ob-signed-in-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent), transparent 92%);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.ob-signed-in-badge .ob-signed-in-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.ob-signed-in-email {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ======================== */
+/* === Responsive === */
+/* ======================== */
+@media (max-width: 48rem) {
+  .ob-image-pane {
+    display: none;
+  }
+
+  .ob-form-pane {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .ob-form-inner {
+    max-width: none;
+  }
+
+  .ob-step-wrapper {
+    min-height: 280px;
+  }
+
+  .ob-time-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .ob-time-tile {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .ob-time-tile-value {
+    font-size: var(--text-sm);
+  }
+
+  .ob-tp-value {
+    font-size: 1.5rem;
+  }
+
+  .ob-tp-colon {
+    font-size: 1.5rem;
+  }
+}

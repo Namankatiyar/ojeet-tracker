@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "src/core/App.tsx": {
-    "mtime": 1782925661.641716,
-    "ast_hash": "363fa0faffa7fb0463fb05b2e1b51473",
+    "mtime": 1782927738.922226,
+    "ast_hash": "863f7823f0e0421a62d66b96c516b53d",
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1782925815.2212963,
-    "ast_hash": "97b2ef89d9090ee29caf9fd8f6eaf12a",
+    "mtime": 1782927322.5132961,
+    "ast_hash": "d5846286edfdaab31e970fc41a473d58",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "src/core/hooks/useAutoShiftTasks.ts": {
-    "mtime": 1782828833.0449374,
-    "ast_hash": "8673df5a35633c026d26a69a68887ce6",
+    "mtime": 1782927454.5801077,
+    "ast_hash": "1804e78f01bdd3727158a5fdbeb5a648",
     "semantic_hash": ""
   },
   "src/core/hooks/useDailyQuote.ts": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "src/core/hooks/useGlobalShortcuts.ts": {
-    "mtime": 1782828833.149937,
-    "ast_hash": "0c906791166f425c688edcdbeee8b980",
+    "mtime": 1782927442.718577,
+    "ast_hash": "b123f75df3fc511bc1e441e5b804082a",
     "semantic_hash": ""
   },
   "src/features/chat/components/ChatDrawer.tsx": {
@@ -175,8 +175,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/UserProfileCard.tsx": {
-    "mtime": 1782828834.47693,
-    "ast_hash": "35418b60ee29145c74a506b691dc0251",
+    "mtime": 1782927750.2247603,
+    "ast_hash": "fe670046a763d450e52894c82fc29b28",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useFriends.ts": {
@@ -200,8 +200,8 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/components/Dashboard.tsx": {
-    "mtime": 1782925204.9264944,
-    "ast_hash": "2df41ef2591296180f826899879e8efa",
+    "mtime": 1782927760.35424,
+    "ast_hash": "47314772ea57de43f75aba3a839fe207",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/DashboardNotificationCenter.tsx": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/components/StudyClock.tsx": {
-    "mtime": 1782925220.4930637,
-    "ast_hash": "1b5d9cef62061bae8bd6068c18915fdc",
+    "mtime": 1782927534.6857312,
+    "ast_hash": "a292f6f3d136566f7440730c808f8c67",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/Timer/ModeSelector.tsx": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/shared/components/layout/Header.tsx": {
-    "mtime": 1782922479.7097642,
-    "ast_hash": "ce9f1324ffdd34e5bd957860fa2d9f44",
+    "mtime": 1782927395.4744794,
+    "ast_hash": "8362b9f66dfe277899a9af43f7dd0af0",
     "semantic_hash": ""
   },
   "src/shared/components/ui/Avatar.tsx": {
@@ -625,13 +625,13 @@
     "semantic_hash": ""
   },
   "src/shared/components/ui/SettingsModal.test.tsx": {
-    "mtime": 1782922479.7137644,
-    "ast_hash": "49b23dfa82f14a98d6f284a427d083d3",
+    "mtime": 1782927649.8720462,
+    "ast_hash": "cfe67d29aba5d9aec66b13f9e2113677",
     "semantic_hash": ""
   },
   "src/shared/components/ui/SettingsModal.tsx": {
-    "mtime": 1782922479.7137644,
-    "ast_hash": "fa47f2b972cebb3a7ba880d653d80f54",
+    "mtime": 1782927369.158323,
+    "ast_hash": "792a41759f3461f819f3d474281b719a",
     "semantic_hash": ""
   },
   "src/shared/components/ui/TimePicker.tsx": {
@@ -680,13 +680,13 @@
     "semantic_hash": ""
   },
   "src/shared/utils/date.test.ts": {
-    "mtime": 1782828840.1259093,
-    "ast_hash": "b4dff4e91200121767cd2b6118868254",
+    "mtime": 1782927775.1969438,
+    "ast_hash": "45902df6028cb6005fb076e8740168d7",
     "semantic_hash": ""
   },
   "src/shared/utils/date.ts": {
-    "mtime": 1782828840.1589093,
-    "ast_hash": "0a7159a599cef1c9f3a70c27e564ca39",
+    "mtime": 1782927245.5639513,
+    "ast_hash": "cc80e1ee53d643b971d71c5af2cbf168",
     "semantic_hash": ""
   },
   "src/shared/utils/jsonParser.ts": {

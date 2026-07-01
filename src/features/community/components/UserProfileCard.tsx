@@ -12,7 +12,7 @@ import {
   RemoteProfile,
   LiveActivity,
 } from '../../../shared/types';
-import { formatDateLocal } from '../../../shared/utils/date';
+import { getLogicalTodayStr } from '../../../shared/utils/date';
 import {
   Pencil,
   GraduationCap,
@@ -83,7 +83,7 @@ export function UserProfileCard({
   remoteProfileData,
   onDisconnectClick,
 }: UserProfileCardProps) {
-  const { progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs } =
+  const { progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs, dailyResetHour } =
     useUserProgress();
 
   const { user, signInWithGoogle } = useRemoteAuth();
@@ -102,7 +102,7 @@ export function UserProfileCard({
     }
   };
 
-  const todayStr = formatDateLocal(new Date());
+  const todayStr = getLogicalTodayStr(dailyResetHour);
 
   const [localTimerState, setLocalTimerState] = useState<{ engineState: string } | null>(() => {
     try {

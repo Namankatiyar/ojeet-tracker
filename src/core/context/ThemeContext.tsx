@@ -39,7 +39,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return parsed as Theme;
       }
     } catch (e) {}
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark-glass' : 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark-solid' : 'light';
   };
 
   const [theme, setTheme] = useLocalStorage<Theme>('jee-tracker-theme', getInitialTheme());

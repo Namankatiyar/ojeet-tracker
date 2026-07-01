@@ -39,6 +39,8 @@ interface UserProgressContextType {
   setEnableAIAgent: (enable: boolean | ((prev: boolean) => boolean)) => void;
   enableMusicPlayer: boolean;
   setEnableMusicPlayer: (enable: boolean | ((prev: boolean) => boolean)) => void;
+  dailyResetHour: number;
+  setDailyResetHour: (hour: number | ((prev: number) => number)) => void;
   progressCardSettings: ProgressCardSettings;
   setProgressCardSettings: (
     settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)
@@ -246,6 +248,10 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [enableMusicPlayer, setEnableMusicPlayer] = useLocalStorage<boolean>(
     'jee-tracker-enable-music-player',
     true
+  );
+  const [dailyResetHour, setDailyResetHour] = useLocalStorage<number>(
+    'jee-tracker-daily-reset-hour',
+    0
   );
   const [progressCardSettings, setProgressCardSettings] = useLocalStorage<ProgressCardSettings>(
     'jee-tracker-progress-card',
@@ -1014,6 +1020,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         setEnableAIAgent,
         enableMusicPlayer,
         setEnableMusicPlayer,
+        dailyResetHour,
+        setDailyResetHour,
         progressCardSettings,
         setProgressCardSettings,
         dailyQuestionLogs,

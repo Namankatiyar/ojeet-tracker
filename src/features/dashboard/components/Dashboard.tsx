@@ -16,9 +16,10 @@ import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
 import { Atom, FlaskConical, Pi, Calendar, Check, Pencil } from 'lucide-react';
 import {
-  formatDateLocal,
   formatTime12Hour,
   calculateDaysRemaining,
+  getLogicalTodayStr,
+  getLogicalDate,
 } from '../../../shared/utils/date';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
@@ -120,7 +121,7 @@ export function Dashboard({
   const { user, isConfigured, isPromptDismissed, dismissPrompt, signInWithGoogle } =
     useRemoteAuth();
   const { remoteStudyAggregate } = useRemoteSync();
-  const { progress } = useUserProgress();
+  const { progress, dailyResetHour } = useUserProgress();
   const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
   const lastAcknowledgedReleaseId =
     notificationMeta.lastAcknowledgedReleaseId ??
@@ -318,7 +319,7 @@ export function Dashboard({
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const todayStr = formatDateLocal(new Date());
+  const todayStr = getLogicalTodayStr(dailyResetHour);
   const todaysTasks = useMemo(() => {
     return plannerTasks
       .filter((t) => t.date === todayStr)
@@ -628,7 +629,7 @@ export function Dashboard({
               )}
             </div>
             <p>
-              {new Date().toLocaleDateString('en-US', {
+              {getLogicalDate(dailyResetHour).toLocaleDateString('en-US', {
                 weekday: 'long',
                 month: 'long',
                 day: 'numeric',

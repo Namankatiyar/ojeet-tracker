@@ -56,6 +56,7 @@
 @import './features/support.css' layer(features);
 @import './features/community.css' layer(features);
 @import './features/chat.css' layer(features);
+@import './features/onboarding.css' layer(features);
 
 /* ======================== */
 /* === Layer: Utilities === */

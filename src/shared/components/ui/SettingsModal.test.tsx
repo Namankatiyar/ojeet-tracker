@@ -17,6 +17,7 @@ vi.mock('lucide-react', () => ({
   Trash2: () => <div data-testid="icon-trash" />,
   Cloud: () => <div data-testid="icon-cloud" />,
   LogOut: () => <div data-testid="icon-logout" />,
+  ChevronDown: () => <div data-testid="icon-chevron-down" />,
 }));
 
 // Mock Contexts
@@ -82,6 +83,8 @@ describe('SettingsModal', () => {
     onEnableAIAgentChange: vi.fn(),
     enableMusicPlayer: true,
     onEnableMusicPlayerChange: vi.fn(),
+    dailyResetHour: 0,
+    onDailyResetHourChange: vi.fn(),
     backgroundUrl: '',
     onBackgroundUrlChange: vi.fn(),
     useGridBackground: true,
@@ -258,5 +261,15 @@ describe('SettingsModal', () => {
     const signOutBtn = screen.getByText('Sign Out').closest('button');
     if (signOutBtn) fireEvent.click(signOutBtn);
     expect(mockSignOut).toHaveBeenCalled();
+  });
+
+  it('renders daily progress reset time setting', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+    expect(screen.getByText('Daily Progress Reset Time')).toBeDefined();
+    expect(screen.getByText('12:00 AM (Midnight - Default)')).toBeDefined();
   });
 });

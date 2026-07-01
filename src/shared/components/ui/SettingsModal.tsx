@@ -20,6 +20,7 @@ import { supabase } from '../../../shared/lib/supabase';
 import { runPwaRecoveryAndReload } from '../../utils/pwaBridge';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { ConfirmationModal } from './ConfirmationModal';
+import { CustomSelect } from './CustomSelect';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -36,6 +37,9 @@ interface SettingsModalProps {
   // Music Player
   enableMusicPlayer: boolean;
   onEnableMusicPlayerChange: (value: boolean) => void;
+  // Daily Reset Hour
+  dailyResetHour: number;
+  onDailyResetHourChange: (hour: number) => void;
   backgroundUrl: string;
   onBackgroundUrlChange: (url: string) => void;
   useGridBackground: boolean;
@@ -62,6 +66,7 @@ const STORAGE_KEYS = {
 
   // Core Progress
   progress: 'jee-tracker-progress',
+  dailyResetHour: 'jee-tracker-daily-reset-hour',
   subjectData: 'jee-tracker-subject-data',
   customColumns: 'jee-tracker-custom-columns',
   excludedColumns: 'jee-tracker-excluded-columns',
@@ -116,6 +121,8 @@ export function SettingsModal({
   onEnableAIAgentChange,
   enableMusicPlayer,
   onEnableMusicPlayerChange,
+  dailyResetHour,
+  onDailyResetHourChange,
   backgroundUrl,
   onBackgroundUrlChange,
   useGridBackground,
@@ -511,6 +518,29 @@ export function SettingsModal({
                 />
                 <span className="toggle-slider"></span>
               </label>
+            </div>
+            <div className="settings-row" style={{ marginTop: 'var(--space-4)' }}>
+              <div className="setting-info">
+                <span className="setting-label">Daily Progress Reset Time</span>
+                <span className="setting-description">
+                  Choose when your study day ends and rolls over to the next day
+                </span>
+              </div>
+              <div style={{ width: '230px', flexShrink: 0 }}>
+                <CustomSelect
+                  value={dailyResetHour}
+                  options={Array.from({ length: 24 }, (_, i) => {
+                    let label = '';
+                    if (i === 0) label = '12:00 AM (Midnight - Default)';
+                    else if (i < 12) label = `${i}:00 AM`;
+                    else if (i === 12) label = '12:00 PM (Noon)';
+                    else label = `${i - 12}:00 PM`;
+                    return { value: i, label };
+                  })}
+                  onChange={(val) => onDailyResetHourChange(Number(val))}
+                  size="small"
+                />
+              </div>
             </div>
           </div>
 

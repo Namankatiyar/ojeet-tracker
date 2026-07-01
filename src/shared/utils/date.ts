@@ -98,3 +98,16 @@ export const formatRelativeTime = (dateString: string): string => {
   const years = Math.floor(diffDays / 365);
   return `${years} ${years === 1 ? 'year' : 'years'} ago`;
 };
+
+export const getLogicalDate = (resetHour: number = 0, date: Date = new Date()): Date => {
+  const logical = new Date(date);
+  if (resetHour > 0 && logical.getHours() < resetHour) {
+    logical.setDate(logical.getDate() - 1);
+  }
+  return logical;
+};
+
+export const getLogicalTodayStr = (resetHour: number = 0): string => {
+  return formatDateLocal(getLogicalDate(resetHour, new Date()));
+};
+

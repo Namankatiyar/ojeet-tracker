@@ -6,6 +6,8 @@ import {
   format12hTo24h,
   calculateDaysRemaining,
   formatRelativeTime,
+  getLogicalDate,
+  getLogicalTodayStr,
 } from './date';
 
 describe('formatTime12Hour', () => {
@@ -161,3 +163,27 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime('2025-03-11')).toBe('in the future');
   });
 });
+
+describe('getLogicalDate and getLogicalTodayStr', () => {
+  it('should keep the same date when resetHour is 0', () => {
+    const date = new Date(2026, 6, 2, 2, 30); // July 2, 2026 at 2:30 AM
+    expect(formatDateLocal(getLogicalDate(0, date))).toBe('2026-07-02');
+  });
+
+  it('should shift date back by 1 day if current hour is before resetHour', () => {
+    const date = new Date(2026, 6, 2, 2, 30); // July 2, 2026 at 2:30 AM
+    expect(formatDateLocal(getLogicalDate(4, date))).toBe('2026-07-01');
+  });
+
+  it('should keep the same date if current hour is at or after resetHour', () => {
+    const date = new Date(2026, 6, 2, 4, 0); // July 2, 2026 at 4:00 AM
+    expect(formatDateLocal(getLogicalDate(4, date))).toBe('2026-07-02');
+  });
+
+  it('should return string formatted logical today', () => {
+    const res = getLogicalTodayStr(0);
+    expect(typeof res).toBe('string');
+    expect(res).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+

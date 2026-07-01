@@ -29,7 +29,8 @@ import {
   requestNotificationPermission,
   dispatchNotification,
 } from '../../../shared/utils/notifications';
-import { formatDateLocal } from '../../../shared/utils/date';
+import { formatDateLocal, getLogicalDate } from '../../../shared/utils/date';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 function plannerTaskSessionMeta(
   task: PlannerTask,
@@ -83,6 +84,7 @@ export function StudyClock({
   onToggleTask,
 }: StudyClockProps) {
   const { accentColor } = useTheme();
+  const { dailyResetHour } = useUserProgress();
 
   // ── Task selection state (Persisted for Pomodoro cycle transitions) ──
   const [taskType, setTaskType] = useLocalStorage<'chapter' | 'custom' | 'task'>(
@@ -213,7 +215,7 @@ export function StudyClock({
         type: sessionType,
         startTime: new Date(endAtMs - durationMs).toISOString(),
         endTime: new Date(endAtMs).toISOString(),
-        localDate: formatDateLocal(new Date(endAtMs)),
+        localDate: formatDateLocal(getLogicalDate(dailyResetHour, new Date(endAtMs))),
         duration: durationSec,
         timerMode: engine.mode,
       };
@@ -267,7 +269,7 @@ export function StudyClock({
           type: sessionType,
           startTime: new Date(Date.now() - latestElapsedMs).toISOString(),
           endTime: new Date().toISOString(),
-          localDate: formatDateLocal(new Date()),
+          localDate: formatDateLocal(getLogicalDate(dailyResetHour, new Date())),
           duration: elapsedSec,
           timerMode: engine.mode,
         };

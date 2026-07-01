@@ -1,16 +1,17 @@
 import { useEffect } from 'react';
-import { formatDateLocal, parseDateLocal } from '../../shared/utils/date';
+import { getLogicalTodayStr, getLogicalDate, parseDateLocal } from '../../shared/utils/date';
 import { PlannerTask } from '../../shared/types';
 
 export const useAutoShiftTasks = (
   setPlannerTasks: (tasks: PlannerTask[] | ((prev: PlannerTask[]) => PlannerTask[])) => void,
-  disableAutoShift: boolean
+  disableAutoShift: boolean,
+  dailyResetHour: number = 0
 ) => {
   useEffect(() => {
     if (disableAutoShift) return;
 
-    const todayStr = formatDateLocal(new Date());
-    const today = new Date();
+    const todayStr = getLogicalTodayStr(dailyResetHour);
+    const today = getLogicalDate(dailyResetHour);
     today.setHours(0, 0, 0, 0);
 
     setPlannerTasks((currentTasks) => {
@@ -28,5 +29,5 @@ export const useAutoShiftTasks = (
       });
       return shifted ? updatedTasks : currentTasks;
     });
-  }, [disableAutoShift, setPlannerTasks]);
+  }, [disableAutoShift, setPlannerTasks, dailyResetHour]);
 };

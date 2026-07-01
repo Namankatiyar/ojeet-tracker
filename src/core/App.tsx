@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../shared/components/layout/Header';
 import { Footer } from '../shared/components/layout/Footer';
 import { DiscordInviteModal } from '../shared/components/ui/DiscordInviteModal';
 import { ThemeOnboardingModal } from '../shared/components/ui/ThemeOnboardingModal';
 import { Subject } from '../shared/types';
-import { formatDateLocal } from '../shared/utils/date';
+import { getLogicalTodayStr } from '../shared/utils/date';
 
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { SubjectDataProvider } from './context/SubjectDataContext';
@@ -20,6 +20,12 @@ import { useProfileSync } from '../features/community/hooks/useProfileSync';
 import { AppRoutes } from './AppRoutes';
 import { ChatDrawer } from '../features/chat/components/ChatDrawer';
 import { MusicPlayerDrawer } from '../features/music/components/MusicPlayerDrawer';
+
+const OnboardingFlow = lazy(() =>
+  import('../features/onboarding/OnboardingFlow').then((m) => ({
+    default: m.OnboardingFlow,
+  }))
+);
 
 type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject;
 
@@ -61,6 +67,8 @@ function AppContent() {
     setEnableAIAgent,
     enableMusicPlayer,
     setEnableMusicPlayer,
+    dailyResetHour,
+    setDailyResetHour,
     physicsProgress,
     chemistryProgress,
     mathsProgress,
@@ -103,8 +111,8 @@ function AppContent() {
   );
 
   const onQuickAddTaskStatic = useCallback(() => {
-    handleQuickAddTask(formatDateLocal(new Date()));
-  }, [handleQuickAddTask]);
+    handleQuickAddTask(getLogicalTodayStr(dailyResetHour));
+  }, [handleQuickAddTask, dailyResetHour]);
 
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false);
 
@@ -131,7 +139,7 @@ function AppContent() {
 
   // Custom Hooks
   useGlobalShortcuts(handleQuickAddTask);
-  useAutoShiftTasks(setPlannerTasks, disableAutoShift);
+  useAutoShiftTasks(setPlannerTasks, disableAutoShift, dailyResetHour);
   useDocumentMetadata();
 
   return (
@@ -153,6 +161,8 @@ function AppContent() {
         onEnableAIAgentChange={setEnableAIAgent}
         enableMusicPlayer={enableMusicPlayer}
         onEnableMusicPlayerChange={setEnableMusicPlayer}
+        dailyResetHour={dailyResetHour}
+        onDailyResetHourChange={setDailyResetHour}
         backgroundUrl={backgroundUrl}
         onBackgroundUrlChange={setBackgroundUrl}
         dimLevel={dimLevel}
@@ -190,15 +200,33 @@ function AppContent() {
   );
 }
 
+function AppShell() {
+  const [onboardingComplete, setOnboardingComplete] = useState(() => {
+    return localStorage.getItem('jee-tracker-onboarding-complete') === 'true';
+  });
+
+  if (!onboardingComplete) {
+    return (
+      <Suspense fallback={null}>
+        <OnboardingFlow onComplete={() => setOnboardingComplete(true)} />
+      </Suspense>
+    );
+  }
+
+  return (
+    <RemoteSyncProvider>
+      <AppContent />
+    </RemoteSyncProvider>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
       <RemoteAuthProvider>
         <SubjectDataProvider>
           <UserProgressProvider>
-            <RemoteSyncProvider>
-              <AppContent />
-            </RemoteSyncProvider>
+            <AppShell />
           </UserProgressProvider>
         </SubjectDataProvider>
       </RemoteAuthProvider>
