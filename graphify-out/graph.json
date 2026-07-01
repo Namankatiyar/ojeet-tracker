@@ -4167,7 +4167,7 @@
       "label": "ReportsPage()",
       "file_type": "code",
       "source_file": "src/features/reports/components/ReportsPage.tsx",
-      "source_location": "L8",
+      "source_location": "L9",
       "_origin": "ast",
       "id": "components_reportspage_reportspage",
       "community": 68,
@@ -11420,7 +11420,7 @@
       "source_location": "L342",
       "_origin": "ast",
       "id": "changelog_0_0_19_https_github_com_namankatiyar_pcm_tracker_compare_v0_0_18_v0_0_19_2026_02_23",
-      "community": 10,
+      "community": 28,
       "norm_label": "[0.0.19](https://github.com/namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-23)"
     },
     {
@@ -11430,7 +11430,7 @@
       "source_location": "L344",
       "_origin": "ast",
       "id": "changelog_performance_refactoring",
-      "community": 10,
+      "community": 28,
       "norm_label": "performance & refactoring"
     },
     {
@@ -11440,7 +11440,7 @@
       "source_location": "L352",
       "_origin": "ast",
       "id": "changelog_ui_styling",
-      "community": 10,
+      "community": 28,
       "norm_label": "ui & styling"
     },
     {
@@ -11560,7 +11560,7 @@
       "source_location": "L411",
       "_origin": "ast",
       "id": "changelog_0_0_15_https_github_com_namankatiyar_pcm_tracker_compare_v0_0_14_v0_0_15_2026_02_03",
-      "community": 28,
+      "community": 10,
       "norm_label": "[0.0.15](https://github.com/namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)"
     },
     {
@@ -11570,7 +11570,7 @@
       "source_location": "L413",
       "_origin": "ast",
       "id": "changelog_features_413",
-      "community": 28,
+      "community": 10,
       "norm_label": "features"
     },
     {
@@ -11580,7 +11580,7 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "changelog_bug_fixes_425",
-      "community": 28,
+      "community": 10,
       "norm_label": "bug fixes"
     },
     {
@@ -37608,5 +37608,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ee763f5d5d0b4e6c4d4cc2d80fb53df97a16e954"
+  "built_at_commit": "181cffb28f3d8b854e7ceb9cf703d9c4c21b761d"
 }
