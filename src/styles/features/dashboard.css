@@ -1871,14 +1871,19 @@
     grid-template-columns: 1fr;
   }
 
+  body.has-mobile-drawer-open .dashboard-notifications-root {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .dashboard-notifications-root {
-    right: 0.75rem;
-    bottom: 0.75rem;
+    right: var(--space-4);
+    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
   }
 
   .has-chat-fab .dashboard-notifications-root {
     right: var(--space-4);
-    bottom: calc(var(--space-4) + 60px);
+    bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   .dashboard-notifications-bell {

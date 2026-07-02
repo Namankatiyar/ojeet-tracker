@@ -18,6 +18,8 @@ import {
   BarChart2,
   Heart,
   Users,
+  X,
+  BookOpen,
 } from 'lucide-react';
 import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
@@ -124,9 +126,23 @@ export function Header({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCustomColorModalOpen, setIsCustomColorModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSubjectsMenuOpen, setIsSubjectsMenuOpen] = useState(false);
   const [isProgressCardOpen, setIsProgressCardOpen] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const subjectsMenuRef = useRef<HTMLDivElement>(null);
+
+  // Manage body class for drawer open state so external FABs can adapt
+  useEffect(() => {
+    if (isMobileMenuOpen || isSubjectsMenuOpen) {
+      document.body.classList.add('has-mobile-drawer-open');
+    } else {
+      document.body.classList.remove('has-mobile-drawer-open');
+    }
+    return () => {
+      document.body.classList.remove('has-mobile-drawer-open');
+    };
+  }, [isMobileMenuOpen, isSubjectsMenuOpen]);
 
   // Close on outside click for Color Picker
   useEffect(() => {
@@ -147,25 +163,26 @@ export function Header({
   // Close on outside click for Mobile Menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Check if click is outside the mobile menu (and not on the toggle button itself)
       const target = event.target as Node;
-      // We assume the toggle button is outside the ref or we check explicitly
-      // Actually, best to wrap both in a container or check both refs if we separate them
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
-        // If it's the toggle button, let the onClick handler handle it (or check for it)
         if (!(target instanceof Element && target.closest('.mobile-menu-toggle'))) {
           setIsMobileMenuOpen(false);
         }
       }
+      if (subjectsMenuRef.current && !subjectsMenuRef.current.contains(target)) {
+        if (!(target instanceof Element && target.closest('.mobile-bottom-nav-item'))) {
+          setIsSubjectsMenuOpen(false);
+        }
+      }
     };
 
-    if (isMobileMenuOpen) {
+    if (isMobileMenuOpen || isSubjectsMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, isSubjectsMenuOpen]);
 
   const navItems: {
     key: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'community' | Subject;
@@ -337,7 +354,7 @@ export function Header({
             </button>
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* Tablet/Desktop Menu Toggle (Visible only between 48rem and 64rem) */}
           <button
             className="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -345,20 +362,219 @@ export function Header({
           >
             <Menu size={24} color="var(--text-primary)" />
           </button>
+        </div>
+      </div>
 
-          {/* Mobile Menu Dropdown */}
-          {/* Mobile Menu Dropdown */}
-          {isMobileMenuOpen &&
-            createPortal(
-              <>
-                <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)} />
-                <div className="mobile-menu-dropdown" ref={mobileMenuRef}>
-                  <div
-                    className="mobile-menu-item"
+      {/* Mobile Bottom Navigation Bar (Visible only on widths <= 48rem) */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+        <button
+          type="button"
+          className={`mobile-bottom-nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
+          onClick={() => {
+            onNavigate('dashboard');
+            setIsMobileMenuOpen(false);
+            setIsSubjectsMenuOpen(false);
+          }}
+        >
+          <LayoutDashboard size={20} />
+          <span>Dashboard</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav-item ${currentView === 'planner' ? 'active' : ''}`}
+          onClick={() => {
+            onNavigate('planner');
+            setIsMobileMenuOpen(false);
+            setIsSubjectsMenuOpen(false);
+          }}
+        >
+          <Calendar size={20} />
+          <span>Planner</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav-item ${currentView === 'studyclock' ? 'active' : ''}`}
+          onClick={() => {
+            onNavigate('studyclock');
+            setIsMobileMenuOpen(false);
+            setIsSubjectsMenuOpen(false);
+          }}
+        >
+          <Clock size={20} />
+          <span>Timer</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav-item ${['physics', 'chemistry', 'maths'].includes(currentView) || isSubjectsMenuOpen ? 'active' : ''}`}
+          onClick={() => {
+            setIsSubjectsMenuOpen(!isSubjectsMenuOpen);
+            setIsMobileMenuOpen(false);
+          }}
+        >
+          <BookOpen size={20} />
+          <span>Subjects</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav-item ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={() => {
+            setIsMobileMenuOpen(!isMobileMenuOpen);
+            setIsSubjectsMenuOpen(false);
+          }}
+        >
+          <Menu size={20} />
+          <span>Menu</span>
+        </button>
+      </nav>
+
+      {/* Mobile Subjects Bottom Sheet */}
+      {isSubjectsMenuOpen &&
+        createPortal(
+          <>
+            <div className="mobile-sidebar-overlay" onClick={() => setIsSubjectsMenuOpen(false)} />
+            <div className="mobile-subjects-sheet" ref={subjectsMenuRef}>
+              <div className="mobile-subjects-sheet-head">
+                <h4>Select Subject</h4>
+                <button
+                  type="button"
+                  className="mobile-sidebar-close"
+                  onClick={() => setIsSubjectsMenuOpen(false)}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="mobile-subjects-grid">
+                {[
+                  { key: 'physics' as const, label: 'Physics', icon: <Atom size={22} />, progress: physicsProgress, color: '#3b82f6' },
+                  { key: 'chemistry' as const, label: 'Chemistry', icon: <FlaskConical size={22} />, progress: chemistryProgress, color: '#f59e0b' },
+                  { key: 'maths' as const, label: 'Mathematics', icon: <Pi size={22} />, progress: mathsProgress, color: '#10b981' },
+                ].map(({ key, label, icon, progress, color }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`mobile-subject-card ${currentView === key ? 'active' : ''}`}
                     onClick={() => {
-                      onThemeToggle();
-                      setIsMobileMenuOpen(false);
+                      onNavigate(key);
+                      setIsSubjectsMenuOpen(false);
                     }}
+                  >
+                    <div className="mobile-subject-icon" style={{ color }}>{icon}</div>
+                    <div className="mobile-subject-info">
+                      <span className="mobile-subject-name">{label}</span>
+                      <div className="mobile-subject-progress-bar">
+                        <div className="mobile-subject-progress-fill" style={{ width: `${Math.min(100, Math.max(0, progress))}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                    <span className="mobile-subject-percent">{Math.round(progress)}%</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>,
+          document.body
+        )}
+
+      {/* Mobile Sidebar Navigation Drawer */}
+      {isMobileMenuOpen &&
+        createPortal(
+          <>
+            <div className="mobile-sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)} />
+            <div className="mobile-sidebar-drawer" ref={mobileMenuRef}>
+              <div className="mobile-sidebar-header">
+                <div className="mobile-sidebar-profile">
+                  <UserAvatar
+                    name={progressCardSettings.userName || 'Student'}
+                    size={40}
+                    customImageUrl={progressCardSettings.customAvatarUrl}
+                    accentColor={accentColor}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsProgressCardOpen(true);
+                    }}
+                  />
+                  <div>
+                    <h4 className="mobile-sidebar-user-name">{progressCardSettings.userName || 'Student'}</h4>
+                    <span className="mobile-sidebar-subtext">JEE 2026 Aspirant</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="mobile-sidebar-close"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label="Close navigation drawer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="mobile-sidebar-body">
+                <div className="mobile-sidebar-section">
+                  <span className="mobile-sidebar-label">Navigation</span>
+                  <div className="mobile-sidebar-list">
+                    {navItems.map(({ key, label, icon }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`mobile-sidebar-item ${currentView === key ? 'active' : ''}`}
+                        onClick={() => {
+                          onNavigate(key);
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <span className="mobile-sidebar-item-icon">{icon}</span>
+                        <span className="mobile-sidebar-item-label">{label}</span>
+                        {['physics', 'chemistry', 'maths'].includes(key) && (
+                          <span className="mobile-sidebar-item-badge">
+                            {key === 'physics' ? `${Math.round(physicsProgress)}%` : key === 'chemistry' ? `${Math.round(chemistryProgress)}%` : `${Math.round(mathsProgress)}%`}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mobile-sidebar-divider" />
+
+                <div className="mobile-sidebar-section">
+                  <span className="mobile-sidebar-label">Floating Assistants (FABs)</span>
+                  <div className="mobile-sidebar-toggles">
+                    <div className="mobile-sidebar-toggle-row">
+                      <div className="mobile-sidebar-toggle-info">
+                        <span className="mobile-sidebar-toggle-title">AI Study Agent</span>
+                        <span className="mobile-sidebar-toggle-desc">Bottom-right floating assistant</span>
+                      </div>
+                      <button
+                        type="button"
+                        className={`switch-pill ${enableAIAgent ? 'active' : ''}`}
+                        onClick={() => onEnableAIAgentChange(!enableAIAgent)}
+                      >
+                        <span className="switch-knob" />
+                      </button>
+                    </div>
+                    <div className="mobile-sidebar-toggle-row">
+                      <div className="mobile-sidebar-toggle-info">
+                        <span className="mobile-sidebar-toggle-title">Music Player</span>
+                        <span className="mobile-sidebar-toggle-desc">Bottom-left floating player</span>
+                      </div>
+                      <button
+                        type="button"
+                        className={`switch-pill ${enableMusicPlayer ? 'active' : ''}`}
+                        onClick={() => onEnableMusicPlayerChange(!enableMusicPlayer)}
+                      >
+                        <span className="switch-knob" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mobile-sidebar-divider" />
+
+                <div className="mobile-sidebar-section">
+                  <span className="mobile-sidebar-label">Appearance & Theme</span>
+                  <button
+                    type="button"
+                    className="mobile-sidebar-theme-btn"
+                    onClick={onThemeToggle}
                   >
                     <span>
                       {theme === 'light'
@@ -374,83 +590,83 @@ export function Header({
                     ) : (
                       <Sun size={18} />
                     )}
-                  </div>
+                  </button>
 
-                  <div
-                    className="mobile-menu-item"
-                    onClick={() => {
-                      onNavigate('support');
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <span>Support Project</span>
-                    <Heart
-                      size={18}
-                      color="#e63946"
-                      fill={currentView === 'support' ? '#e63946' : 'transparent'}
-                    />
-                  </div>
-
-                  <div
-                    className="mobile-menu-item"
-                    onClick={() => {
-                      setIsSettingsOpen(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <span>Settings</span>
-                    <Settings size={18} />
-                  </div>
-
-                  <div className="mobile-menu-divider"></div>
-
-                  <div className="mobile-menu-section">
-                    <span className="mobile-menu-label">Accent Color</span>
-                    <div className="mobile-color-grid">
-                      {ACCENT_COLORS.map((color) => (
-                        <button
-                          key={color.value}
-                          className={`color-option ${accentColor === color.value ? 'selected' : ''}`}
-                          style={{ backgroundColor: color.value }}
-                          onClick={() => {
-                            onAccentChange(color.value);
-                            setIsMobileMenuOpen(false);
-                          }}
-                        />
-                      ))}
+                  <span className="mobile-sidebar-label" style={{ marginTop: '1rem' }}>Accent Color</span>
+                  <div className="mobile-color-grid">
+                    {ACCENT_COLORS.map((color) => (
                       <button
-                        className={`color-option custom-color-option ${isCustomColor ? 'selected' : ''}`}
-                        style={
-                          isCustomColor
-                            ? { background: accentColor, border: '2px solid var(--text-primary)' }
-                            : {}
-                        }
+                        key={color.value}
+                        type="button"
+                        className={`color-option ${accentColor === color.value ? 'selected' : ''}`}
+                        style={{ backgroundColor: color.value }}
                         onClick={() => {
-                          setIsCustomColorModalOpen(true);
-                          setIsMobileMenuOpen(false);
+                          onAccentChange(color.value);
                         }}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      className={`color-option custom-color-option ${isCustomColor ? 'selected' : ''}`}
+                      style={
+                        isCustomColor
+                          ? { background: accentColor, border: '2px solid var(--text-primary)' }
+                          : {}
+                      }
+                      onClick={() => {
+                        setIsCustomColorModalOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#ffffff"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#ffffff"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 5v14M5 12h14" />
-                        </svg>
-                      </button>
-                    </div>
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-              </>,
-              document.body
-            )}
-        </div>
-      </div>
+
+                <div className="mobile-sidebar-divider" />
+
+                <div className="mobile-sidebar-section">
+                  <div className="mobile-sidebar-footer-actions">
+                    <button
+                      type="button"
+                      className="mobile-sidebar-action-btn"
+                      onClick={() => {
+                        onNavigate('support');
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <Heart size={18} color="#e63946" fill={currentView === 'support' ? '#e63946' : 'transparent'} />
+                      <span>Support Project</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="mobile-sidebar-action-btn"
+                      onClick={() => {
+                        setIsSettingsOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <Settings size={18} />
+                      <span>Settings</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>,
+          document.body
+        )}
 
       <SettingsModal
         isOpen={isSettingsOpen}

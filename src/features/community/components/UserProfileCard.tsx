@@ -136,7 +136,7 @@ export function UserProfileCard({
       const act = remoteProfileData.live_activity;
       if (!act) return 'offline';
       const actTime = new Date(act.updated_at).getTime();
-      const isFresh = !isNaN(actTime) && Date.now() - actTime < 60000;
+      const isFresh = !isNaN(actTime) && Date.now() - actTime < 300000;
       if (act.is_active && isFresh) return 'running';
       if (isFresh) {
         // If they have an active task/subject, it means the timer is paused (Idle)

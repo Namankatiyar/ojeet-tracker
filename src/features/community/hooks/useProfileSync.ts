@@ -202,6 +202,7 @@ export function useProfileSync() {
   const lastHeartbeatSentAtRef = useRef<number>(0);
   const heartbeatFailCountRef = useRef<number>(0);
   const heartbeatPausedUntilRef = useRef<number>(0);
+  const hasSentInitialHeartbeatRef = useRef<boolean>(false);
 
   useEffect(() => {
     const client = supabase;
@@ -302,7 +303,8 @@ export function useProfileSync() {
         const comparePayload = { ...payload, updated_at: null };
         const payloadStr = JSON.stringify(comparePayload);
 
-        if (!force && payloadStr === lastHeartbeatPayloadRef.current) {
+        const isPeriodicActiveUpdate = isActive && (now - lastHeartbeatSentAtRef.current >= 120000);
+        if (!force && !isPeriodicActiveUpdate && payloadStr === lastHeartbeatPayloadRef.current) {
           return;
         }
 
@@ -321,7 +323,12 @@ export function useProfileSync() {
       }
     };
 
-    sendHeartbeat(true);
+    if (!hasSentInitialHeartbeatRef.current) {
+      hasSentInitialHeartbeatRef.current = true;
+      sendHeartbeat(true);
+    } else {
+      sendHeartbeat(false);
+    }
 
     const handleTimerChange = () => {
       sendHeartbeat(false);
@@ -331,7 +338,7 @@ export function useProfileSync() {
       window.addEventListener('jee-timer-state-change', handleTimerChange);
     }
 
-    const intervalId = setInterval(() => sendHeartbeat(true), 60000);
+    const intervalId = setInterval(() => sendHeartbeat(false), 60000);
     return () => {
       clearInterval(intervalId);
       if (typeof window !== 'undefined') {
@@ -339,6 +346,11 @@ export function useProfileSync() {
       }
     };
   }, [user, isConfigured]);
+
+  const studySessionsRef = useRef(studySessions);
+  useEffect(() => {
+    studySessionsRef.current = studySessions;
+  }, [studySessions]);
 
   // 2. Debounced Profile Snapshot Sync
   const lastSnapshotRef = useRef<string | null>(null);
@@ -352,8 +364,9 @@ export function useProfileSync() {
     if (!user || !isConfigured || !client) return;
 
     const todayStr = new Date().toLocaleDateString('en-CA');
+    const currentStudySessions = studySessionsRef.current;
 
-    const todayStudyTimeSec = studySessions
+    const todayStudyTimeSec = currentStudySessions
       .filter((s) => getSessionDate(s) === todayStr)
       .reduce((acc, s) => acc + s.duration, 0);
 
@@ -396,7 +409,7 @@ export function useProfileSync() {
       d.setDate(d.getDate() - i);
       const dateStr = d.toLocaleDateString('en-CA');
       const dayOfWeek = d.getDay();
-      const seconds = studySessions
+      const seconds = currentStudySessions
         .filter((s) => getSessionDate(s) === dateStr)
         .reduce((acc, s) => acc + s.duration, 0);
       const hours = seconds / 3600;
@@ -410,7 +423,7 @@ export function useProfileSync() {
 
     // Compute daily study time to calculate the streak count
     const getDailyStudyTime = (dateStr: string) => {
-      return studySessions
+      return currentStudySessions
         .filter((s) => getSessionDate(s) === dateStr)
         .reduce((acc, s) => acc + s.duration, 0);
     };
@@ -532,7 +545,6 @@ export function useProfileSync() {
     user,
     isConfigured,
     progressCardSettings,
-    studySessions,
     plannerTasks,
     dailyQuestionLogs,
   ]);

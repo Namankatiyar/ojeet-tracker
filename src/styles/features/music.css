@@ -885,9 +885,14 @@
   }
 
   /* ── Mobile adjustments ─────────────────────────────────────────── */
-  @media (max-width: 47.9375rem) {
+  body.has-mobile-drawer-open .music-fab {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 48rem) {
     .music-fab {
-      bottom: var(--space-4);
+      bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
       left: var(--space-4);
       width: 48px;
       height: 48px;

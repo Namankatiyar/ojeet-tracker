@@ -875,18 +875,24 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
   const lastPushedAggregateRef = useRef<string | null>(null);
+  const remoteStudyAggregateRef = useRef(remoteStudyAggregate);
+  useEffect(() => {
+    remoteStudyAggregateRef.current = remoteStudyAggregate;
+  }, [remoteStudyAggregate]);
 
   useEffect(() => {
-    if (!user || !isConfigured || !remoteStudyAggregate || !supabase) return;
+    if (!user || !isConfigured || !supabase) return;
     const supabaseClient = supabase;
 
     const pushAggregate = async () => {
-      const currentStr = JSON.stringify(remoteStudyAggregate);
+      const currentAgg = remoteStudyAggregateRef.current;
+      if (!currentAgg) return;
+      const currentStr = JSON.stringify(currentAgg);
       if (currentStr === lastPushedAggregateRef.current) return;
 
       try {
         // Strip updated_at to ensure single query variant and faster execution
-        const { updated_at, ...upsertPayload } = remoteStudyAggregate;
+        const { updated_at, ...upsertPayload } = currentAgg;
 
         const { error } = await supabaseClient
           .from('user_study_aggregate')
@@ -906,7 +912,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       clearInterval(intervalId);
       window.removeEventListener('beforeunload', pushAggregate);
     };
-  }, [user, isConfigured, remoteStudyAggregate]);
+  }, [user, isConfigured]);
 
   // Focus/visibility-triggered syncs intentionally removed.
   // App follows a time-based polling model: sync on start, then every 10 minutes.

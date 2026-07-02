@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "src/core/context/RemoteSyncContext.tsx": {
-    "mtime": 1782932071.640348,
-    "ast_hash": "a421f452b4501b26c6742d33743ed920",
+    "mtime": 1783021353.4555612,
+    "ast_hash": "8776ec61a7892127ddaa0a14f6de9455",
     "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
@@ -175,18 +175,18 @@
     "semantic_hash": ""
   },
   "src/features/community/components/UserProfileCard.tsx": {
-    "mtime": 1782932071.669349,
-    "ast_hash": "fe670046a763d450e52894c82fc29b28",
+    "mtime": 1783021322.4812174,
+    "ast_hash": "bfb737b01952e4dcfec6df84aa577f23",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useFriends.ts": {
-    "mtime": 1783010426.2294402,
-    "ast_hash": "ea4cf8941b9a7256cc4016226ec8e0ef",
+    "mtime": 1783021338.3139033,
+    "ast_hash": "e389fa2487b2b469c521e8dd39f7de41",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
-    "mtime": 1783010407.1262634,
-    "ast_hash": "874045b1721372730319c166fe42de3a",
+    "mtime": 1783021309.390652,
+    "ast_hash": "b491c1132307cfa5f84265c3bc92526f",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/AddMockModal.tsx": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "src/shared/components/layout/Header.tsx": {
-    "mtime": 1782932071.7783523,
-    "ast_hash": "8362b9f66dfe277899a9af43f7dd0af0",
+    "mtime": 1783021359.7908368,
+    "ast_hash": "743f9fb5680a1504a278fa74fdc59628",
     "semantic_hash": ""
   },
   "src/shared/components/ui/Avatar.tsx": {
@@ -880,8 +880,8 @@
     "semantic_hash": ""
   },
   "BACKEND.md": {
-    "mtime": 1782932071.1917505,
-    "ast_hash": "8c3fdae89b2bb4efb2e43c9368ef4f7a",
+    "mtime": 1783011463.2514393,
+    "ast_hash": "2c2fe02a9b6a82e5cab21a0e20404ca0",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
@@ -900,13 +900,13 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1782932071.1933346,
-    "ast_hash": "4640a69bdd53abb8e27db6e12de9a384",
+    "mtime": 1783012918.2160223,
+    "ast_hash": "5d87c34842101207f868acc72eeb4161",
     "semantic_hash": ""
   },
   "SCHEMA.md": {
-    "mtime": 1782932071.1933346,
-    "ast_hash": "01b4e7ad90072b1658e49734f910e0d0",
+    "mtime": 1783011488.3843176,
+    "ast_hash": "43dddb6df44fb775f00f722ce28701a1",
     "semantic_hash": ""
   },
   "index.html": {
@@ -935,8 +935,8 @@
     "semantic_hash": ""
   },
   "public/og_image.jpg": {
-    "mtime": 1782932071.5813463,
-    "ast_hash": "c936d305018230aff26a266c1788f26e",
+    "mtime": 1783007184.8053982,
+    "ast_hash": "1b45e50c41e2b1b63a54e669eb5fc287",
     "semantic_hash": ""
   },
   "public/musicBot.png": {
@@ -1132,6 +1132,16 @@
   "public/onboardingImagePink.jpg": {
     "mtime": 1782912333.5768397,
     "ast_hash": "5978a1e86004ee0beb6008593e5a886e",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260702_perf_audit_fixes.sql": {
+    "mtime": 1783011270.1722233,
+    "ast_hash": "73385f9eed0e940c2cd54ce942433f1f",
+    "semantic_hash": ""
+  },
+  "LICENSE.txt": {
+    "mtime": 1783012872.6919012,
+    "ast_hash": "1ebbd3e34237af26da5dc08a4e440464",
     "semantic_hash": ""
   }
 }

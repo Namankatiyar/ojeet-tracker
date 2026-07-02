@@ -223,15 +223,20 @@ export function useFriends() {
   );
 
   useEffect(() => {
-    fetchFriends(false);
-  }, [fetchFriends, location.pathname]);
+    const now = Date.now();
+    if (globalLastFullFetchTime === 0 || now - globalLastFullFetchTime > 300000) {
+      fetchFriends(false);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const startPolling = () => {
       if (interval) clearInterval(interval);
-      interval = setInterval(pollLiveActivity, 30000);
+      if (friendIdsRef.current.length > 0) {
+        interval = setInterval(pollLiveActivity, 30000);
+      }
     };
 
     const stopPolling = () => {
