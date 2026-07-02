@@ -66,7 +66,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const effectiveAccentColor = supportOverride ? '#ff4d6d' : accentColor;
   const effectiveBackgroundUrl = supportOverride
-    ? 'https://images.unsplash.com/photo-1755958681554-e0689f85eda0?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+    ? 'https://images.unsplash.com/photo-1588414697983-11494810e306?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
     : backgroundUrl;
 
   const toggleTheme = () =>

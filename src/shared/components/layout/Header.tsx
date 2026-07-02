@@ -366,66 +366,69 @@ export function Header({
       </div>
 
       {/* Mobile Bottom Navigation Bar (Visible only on widths <= 48rem) */}
-      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
-        <button
-          type="button"
-          className={`mobile-bottom-nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
-          onClick={() => {
-            onNavigate('dashboard');
-            setIsMobileMenuOpen(false);
-            setIsSubjectsMenuOpen(false);
-          }}
-        >
-          <LayoutDashboard size={20} />
-          <span>Dashboard</span>
-        </button>
-        <button
-          type="button"
-          className={`mobile-bottom-nav-item ${currentView === 'planner' ? 'active' : ''}`}
-          onClick={() => {
-            onNavigate('planner');
-            setIsMobileMenuOpen(false);
-            setIsSubjectsMenuOpen(false);
-          }}
-        >
-          <Calendar size={20} />
-          <span>Planner</span>
-        </button>
-        <button
-          type="button"
-          className={`mobile-bottom-nav-item ${currentView === 'studyclock' ? 'active' : ''}`}
-          onClick={() => {
-            onNavigate('studyclock');
-            setIsMobileMenuOpen(false);
-            setIsSubjectsMenuOpen(false);
-          }}
-        >
-          <Clock size={20} />
-          <span>Timer</span>
-        </button>
-        <button
-          type="button"
-          className={`mobile-bottom-nav-item ${['physics', 'chemistry', 'maths'].includes(currentView) || isSubjectsMenuOpen ? 'active' : ''}`}
-          onClick={() => {
-            setIsSubjectsMenuOpen(!isSubjectsMenuOpen);
-            setIsMobileMenuOpen(false);
-          }}
-        >
-          <BookOpen size={20} />
-          <span>Subjects</span>
-        </button>
-        <button
-          type="button"
-          className={`mobile-bottom-nav-item ${isMobileMenuOpen ? 'active' : ''}`}
-          onClick={() => {
-            setIsMobileMenuOpen(!isMobileMenuOpen);
-            setIsSubjectsMenuOpen(false);
-          }}
-        >
-          <Menu size={20} />
-          <span>Menu</span>
-        </button>
-      </nav>
+      {createPortal(
+        <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+          <button
+            type="button"
+            className={`mobile-bottom-nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
+            onClick={() => {
+              onNavigate('dashboard');
+              setIsMobileMenuOpen(false);
+              setIsSubjectsMenuOpen(false);
+            }}
+          >
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-bottom-nav-item ${currentView === 'planner' ? 'active' : ''}`}
+            onClick={() => {
+              onNavigate('planner');
+              setIsMobileMenuOpen(false);
+              setIsSubjectsMenuOpen(false);
+            }}
+          >
+            <Calendar size={20} />
+            <span>Planner</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-bottom-nav-item ${currentView === 'studyclock' ? 'active' : ''}`}
+            onClick={() => {
+              onNavigate('studyclock');
+              setIsMobileMenuOpen(false);
+              setIsSubjectsMenuOpen(false);
+            }}
+          >
+            <Clock size={20} />
+            <span>Timer</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-bottom-nav-item ${['physics', 'chemistry', 'maths'].includes(currentView) || isSubjectsMenuOpen ? 'active' : ''}`}
+            onClick={() => {
+              setIsSubjectsMenuOpen(!isSubjectsMenuOpen);
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <BookOpen size={20} />
+            <span>Subjects</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-bottom-nav-item ${isMobileMenuOpen ? 'active' : ''}`}
+            onClick={() => {
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+              setIsSubjectsMenuOpen(false);
+            }}
+          >
+            <Menu size={20} />
+            <span>Menu</span>
+          </button>
+        </nav>,
+        document.body
+      )}
 
       {/* Mobile Subjects Bottom Sheet */}
       {isSubjectsMenuOpen &&
@@ -494,7 +497,6 @@ export function Header({
                   />
                   <div>
                     <h4 className="mobile-sidebar-user-name">{progressCardSettings.userName || 'Student'}</h4>
-                    <span className="mobile-sidebar-subtext">JEE 2026 Aspirant</span>
                   </div>
                 </div>
                 <button

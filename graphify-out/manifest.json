@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "src/core/context/ThemeContext.tsx": {
-    "mtime": 1782932071.640348,
-    "ast_hash": "a673fd0706e08501f2b920347e76edf7",
+    "mtime": 1783022069.5863576,
+    "ast_hash": "fb71260c4c4aeaff51425c5bcceb239e",
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.test.tsx": {
