@@ -13,7 +13,7 @@
 
 [![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&logoColor=white)](#)
 [![Discord](https://img.shields.io/badge/Join_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/6dKrbVQU8W)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/license-%20%20GNU%20GPLv3%20-green)](LICENSE)
 
 <br/>
 
