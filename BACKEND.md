@@ -61,7 +61,7 @@ _(Note: There are no traditional server API routes or Next.js server actions. Al
 - **Primary key:** `id`
 - **Important columns:** `user_id`, `client_id`, `session_id`, `action`, `payload`, `created_at`
 - **RLS:** Users can insert and read their own logs. Updates and deletes are disabled (`qual: false`).
-- **Constraints:** `action` is constrained to `'INSERT'` or `'DELETE'` via a CHECK. There is **no unique constraint on `(user_id, session_id)`** — duplicate prevention is handled client-side. There is no payload duration CHECK constraint.
+- **Constraints:** `action` is constrained to `'INSERT'` or `'DELETE'` via a CHECK. A `UNIQUE (user_id, session_id)` constraint (`unique_user_session`) prevents duplicate entries at the DB level. A `check_payload_duration` CHECK limits `payload->>'duration'` to ≤ 86 400 seconds.
 
 ### `user_data_blobs`
 
@@ -149,7 +149,7 @@ Study timer ends
 
 - **`before_upsert_user_study_aggregate()`**: Pre-processes analytics JSONB (validates structure, coerces types) before INSERT/UPDATE on `user_study_aggregate`.
 - **`compute_session_duration()`**: Helper for calculating study session duration from log entries.
-- **`merge_video_logs(new_logs jsonb)`**: RPC that merges incoming video watch entries into `video_watch_45d_json`, pruning entries older than 45 days. Called directly by the client.
+- **`merge_video_logs(new_logs jsonb)`**: RPC that merges incoming video watch entries into `video_watch_45d_json`, pruning entries older than 45 days. **Called by an external application — no call site exists in this frontend codebase.** The function exists in the DB and may be invoked via cron or a separate service.
 - **`prune_all_video_watch_logs()`**: Bulk-prunes all video watch log entries from `user_study_aggregate`.
 - **`prune_video_watch_entries()`**: Prunes individual stale video watch entries.
 
@@ -191,8 +191,8 @@ Study timer ends
 
 - **Account deletion is handled via Edge Function:** Previously, the client manually deleted rows across multiple tables. This has been patched to avoid orphaned data. The client now invokes the `delete-user-account` Edge Function which securely deletes the `auth.users` identity, triggering a robust PostgreSQL `ON DELETE CASCADE` across all user tables to atomically wipe all data.
 - **Analytics Payload Spoofing:** Fixed. Previously, malicious users could spoof focus scores. A `CHECK` constraint now strictly limits `payload->>'duration'` to realistic bounds (24 hours).
-- **Duplicate Session Logs:** Fixed. A unique constraint on `(user_id, session_id)` now ensures network retries don't duplicate study analytics.
-- **N+1 Performance Bottlenecks:** Fixed. The `are_users_peers()` function was removed from `profiles` and `live_activity` RLS policies to restore query performance.
+- **Duplicate Session Logs:** Fixed (re-applied 2026-07-02). A `UNIQUE (user_id, session_id)` constraint (`unique_user_session`) on `study_session_log` ensures network retries don't duplicate analytics. This was first attempted in `20260313_p1_backend_fixes.sql` but was not present on the live DB as of the 2026-07-02 audit.
+- **N+1 Performance Bottlenecks:** Fixed (2026-07-02). `are_users_peers()` is removed from all RLS policies. `profiles` SELECT is now open to all `authenticated` users (client-side peer filtering applies). `live_activity` SELECT uses an inline `EXISTS (SELECT 1 FROM peer_relationships …)` subquery gated on `status = 'accepted'` and the `peer_visibility_settings.show_agenda` flag — no function calls, peer-restricted visibility.
 
 ### Recommended improvements
 

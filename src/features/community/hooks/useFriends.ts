@@ -94,7 +94,7 @@ export function useFriends() {
       // If not forced and less than 5 minutes have passed, skip full fetch
       if (!force && globalLastFullFetchTime !== 0 && now - globalLastFullFetchTime < 300000) {
         // Still run live activity poll immediately to ensure live status is fresh on navigation
-        if (now - lastPollTimeRef.current > 5000) {
+        if (now - lastPollTimeRef.current > 60000) {
           pollLiveActivity();
         }
         setIsLoading(false);
@@ -247,8 +247,8 @@ export function useFriends() {
 
       if (isVisible && isFocused) {
         const now = Date.now();
-        // Throttle immediate re-fetch to once every 5 seconds
-        if (now - lastPollTimeRef.current > 5000) {
+        // Throttle immediate re-fetch to once every 60 seconds
+        if (now - lastPollTimeRef.current > 60000) {
           pollLiveActivity();
         }
 

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=6C63FF&amp;height=200&amp;section=header&amp;text=OJEE-Tracker&amp;fontSize=72&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Your%20Premium%20JEE%20and%20OJEE%20Study%20Command%20Centre&amp;descAlignY=60&amp;descSize=18" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=6C63FF&amp;height=200&amp;section=header&amp;text=OJEE-Tracker&amp;fontSize=72&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Your%20Premium%20JEE%20Study%20Command%20Centre&amp;descAlignY=60&amp;descSize=18" width="100%"/>
 
 <br/>
 

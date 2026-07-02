@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
@@ -22,7 +22,6 @@ export function useProfileSync() {
   } = useUserProgress();
   const { subjectData } = useSubjectData();
 
-  const [timerTick, setTimerTick] = useState(0);
   const subjectDataRef = useRef(subjectData);
   const plannerTasksRef = useRef(plannerTasks);
 
@@ -201,6 +200,8 @@ export function useProfileSync() {
   // 1. Live Activity Heartbeat
   const lastHeartbeatPayloadRef = useRef<string | null>(null);
   const lastHeartbeatSentAtRef = useRef<number>(0);
+  const heartbeatFailCountRef = useRef<number>(0);
+  const heartbeatPausedUntilRef = useRef<number>(0);
 
   useEffect(() => {
     const client = supabase;
@@ -209,8 +210,11 @@ export function useProfileSync() {
     const sendHeartbeat = async (force: boolean = false) => {
       try {
         const now = Date.now();
-        // Throttle to 15 seconds unless forced by interval
-        if (!force && now - lastHeartbeatSentAtRef.current < 15000) {
+        if (now < heartbeatPausedUntilRef.current) {
+          return;
+        }
+        // Throttle to 60 seconds unless forced by interval
+        if (!force && now - lastHeartbeatSentAtRef.current < 60000) {
           return;
         }
 
@@ -306,15 +310,20 @@ export function useProfileSync() {
         lastHeartbeatPayloadRef.current = payloadStr;
 
         await client.from('live_activity').upsert(payload, { onConflict: 'user_id' });
+        heartbeatFailCountRef.current = 0;
       } catch (err) {
         console.warn('Failed to send heartbeat', err);
+        heartbeatFailCountRef.current += 1;
+        if (heartbeatFailCountRef.current >= 2) {
+          console.warn('Heartbeat failed twice consecutively. Pausing heartbeats for 5 minutes.');
+          heartbeatPausedUntilRef.current = Date.now() + 300_000;
+        }
       }
     };
 
     sendHeartbeat(true);
 
     const handleTimerChange = () => {
-      setTimerTick((t) => t + 1);
       sendHeartbeat(false);
     };
 
@@ -322,7 +331,7 @@ export function useProfileSync() {
       window.addEventListener('jee-timer-state-change', handleTimerChange);
     }
 
-    const intervalId = setInterval(() => sendHeartbeat(true), 30000);
+    const intervalId = setInterval(() => sendHeartbeat(true), 60000);
     return () => {
       clearInterval(intervalId);
       if (typeof window !== 'undefined') {
@@ -336,6 +345,7 @@ export function useProfileSync() {
   const lastShowAgendaRef = useRef<boolean | null>(null);
   const debounceTimeoutRef = useRef<number | null>(null);
   const retryTimeoutRef = useRef<number | null>(null);
+  const retryAttemptRef = useRef<number>(0);
 
   useEffect(() => {
     const client = supabase;
@@ -478,6 +488,7 @@ export function useProfileSync() {
           const { error } = await client.from('profiles').update(diff).eq('id', user.id);
           if (error) throw error;
           lastSnapshotRef.current = snapshotStr;
+          retryAttemptRef.current = 0;
 
           if (lastShowAgendaRef.current !== currentShowAgenda) {
             await client.from('peer_visibility_settings').upsert(
@@ -492,9 +503,18 @@ export function useProfileSync() {
           }
         } catch (err) {
           console.warn('Failed to sync profile snapshot/privacy settings', err);
-          retryTimeoutRef.current = window.setTimeout(() => {
-            executeSync();
-          }, 10000); // 10 second retry on failure
+          retryAttemptRef.current += 1;
+          if (retryAttemptRef.current <= 4) {
+            const backoffDelay = Math.min(
+              10000 * 2 ** (retryAttemptRef.current - 1),
+              300000
+            );
+            retryTimeoutRef.current = window.setTimeout(() => {
+              executeSync();
+            }, backoffDelay);
+          } else {
+            console.warn('Max retry attempts reached for profile sync. Giving up until next change.');
+          }
         }
       };
       executeSync();
@@ -515,6 +535,5 @@ export function useProfileSync() {
     studySessions,
     plannerTasks,
     dailyQuestionLogs,
-    timerTick,
   ]);
 }

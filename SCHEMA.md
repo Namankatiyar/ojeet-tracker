@@ -1,6 +1,6 @@
 # Database Schema Reference
 
-> Auto-reconciled against live Supabase project `immvdbsmzfnbsfuhuknh` on 2026-06-30.
+> Auto-reconciled against live Supabase project `immvdbsmzfnbsfuhuknh` on 2026-07-02.
 > All column types, constraints, defaults, foreign keys, and indexes reflect the actual live database.
 
 ---
@@ -37,8 +37,7 @@
 
 - `profiles_pkey` — UNIQUE `(id)`
 - `profiles_username_key` — UNIQUE `(username)`
-- `profiles_invite_code_key` — UNIQUE `(invite_code)` _(duplicate of `idx_profiles_invite_code`; candidate for removal)_
-- `idx_profiles_invite_code` — `(invite_code)`
+- `profiles_invite_code_key` — UNIQUE `(invite_code)` _(enforced as a real constraint; the former plain B-tree `idx_profiles_invite_code` was dropped in migration 20260702)_
 
 ### Triggers
 
@@ -60,7 +59,9 @@
 ### Indexes
 
 - `subjects_pkey` — UNIQUE `(id)`
-- `subjects_name_key` — UNIQUE `(name)` _(0 scans; candidate for removal)_
+- `subjects_name_key` — UNIQUE `(name)` _(dropped in migration 20260702; table itself dropped — see note below)_
+
+> **Note (2026-07-02):** The `subjects` table was dropped. All syllabus data is served from `public/data/*.json` files; the DB table had 0 scans.
 
 ---
 
@@ -181,22 +182,7 @@
 
 ---
 
-## Table `sync_prune_audit_log`
-
-### Columns
-
-| Name             | Type          | Nullable | Default        | Constraints                      |
-| ---------------- | ------------- | -------- | -------------- | -------------------------------- |
-| `id`             | `int8`        | NO       | `nextval(...)` | **Primary Key** (auto-increment) |
-| `called_by`      | `uuid`        | NO       | —              |                                  |
-| `target_user_id` | `uuid`        | NO       | —              |                                  |
-| `keep_version`   | `int8`        | NO       | —              |                                  |
-| `rows_deleted`   | `int4`        | NO       | `0`            |                                  |
-| `pruned_at`      | `timestamptz` | NO       | `now()`        |                                  |
-
-### Indexes
-
-- `sync_prune_audit_log_pkey` — UNIQUE `(id)`
+> **Note (2026-07-02):** The `sync_prune_audit_log` table was dropped (0 seq_scans, 0 idx_scans; dead weight). Pruning activity is no longer audit-logged at DB level.
 
 ---
 
@@ -219,7 +205,7 @@
 - `study_session_log_pkey` — UNIQUE `(id)`
 - `idx_study_session_log_user_id_created_at_id` — `(user_id, created_at, id)`
 
-> **Note:** There is no unique constraint on `(user_id, session_id)`. Duplicate prevention relies on client-side deduplication and the `action` CHECK constraint. RLS prevents client-side UPDATE and DELETE.
+> **Note:** As of migration `20260702_perf_audit_fixes.sql`, a `UNIQUE (user_id, session_id)` constraint (`unique_user_session`) exists on this table. Duplicate prevention is now enforced at the DB level.
 
 ---
 

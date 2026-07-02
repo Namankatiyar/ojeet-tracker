@@ -742,7 +742,7 @@
 /* === Image Branding === */
 /* ======================== */
 .ob-branding {
-  --ob-brand-size: 48px;
+  --ob-brand-size: 32px;
   position: absolute;
   left: var(--space-6);
   bottom: var(--space-6);
