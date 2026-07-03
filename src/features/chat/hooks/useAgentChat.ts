@@ -170,6 +170,10 @@ export function useAgentChat() {
     'ojee_active_chat_session_id',
     ''
   );
+  const [parkedSessions] = useLocalStorage<any[]>(
+    'studyClock_parkedSessions',
+    []
+  );
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -191,6 +195,7 @@ export function useAgentChat() {
     chemistryProgress,
     mathsProgress,
     overallProgress,
+    lectureCounter,
   } = useUserProgress();
   const { mergedSubjectData: _sd } = useSubjectData();
   const { recommendations, studyShares, totalWeeklyHours } = useStudyCoPilot();
@@ -263,6 +268,8 @@ export function useAgentChat() {
       recommendations,
       studyShares,
       totalWeeklyHours,
+      lectureCounter,
+      parkedSessions,
     };
     return buildAgentSystemPrompt(ctx);
   }, [
@@ -278,6 +285,8 @@ export function useAgentChat() {
     recommendations,
     studyShares,
     totalWeeklyHours,
+    lectureCounter,
+    parkedSessions,
   ]);
 
   // ── Append UI message to Active Session ───────────────────────────────────

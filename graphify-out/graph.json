@@ -1880,7 +1880,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "context_subjectdatacontext_subjectdatacontexttype",
-      "community": 21,
+      "community": 27,
       "norm_label": "subjectdatacontexttype"
     },
     {
@@ -2540,7 +2540,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useagentchat",
-      "community": 91,
+      "community": 21,
       "norm_label": "useagentchat.ts"
     },
     {
@@ -2550,7 +2550,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "hooks_useagentchat_messagerole",
-      "community": 91,
+      "community": 21,
       "norm_label": "messagerole"
     },
     {
@@ -2560,7 +2560,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "hooks_useagentchat_confirmactionpayload",
-      "community": 91,
+      "community": 21,
       "norm_label": "confirmactionpayload"
     },
     {
@@ -2590,7 +2590,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "hooks_useagentchat_makeid",
-      "community": 91,
+      "community": 21,
       "norm_label": "makeid()"
     },
     {
@@ -2600,7 +2600,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "hooks_useagentchat_makemessage",
-      "community": 91,
+      "community": 21,
       "norm_label": "makemessage()"
     },
     {
@@ -2610,7 +2610,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "hooks_useagentchat_getinitialsessions",
-      "community": 91,
+      "community": 21,
       "norm_label": "getinitialsessions()"
     },
     {
@@ -2620,7 +2620,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "hooks_useagentchat_getfriendlyerrormessage",
-      "community": 91,
+      "community": 21,
       "norm_label": "getfriendlyerrormessage()"
     },
     {
@@ -2630,7 +2630,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "hooks_useagentchat_gettoolprocessingmessage",
-      "community": 91,
+      "community": 21,
       "norm_label": "gettoolprocessingmessage()"
     },
     {
@@ -2640,7 +2640,7 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "hooks_useagentchat_useagentchat",
-      "community": 91,
+      "community": 21,
       "norm_label": "useagentchat()"
     },
     {
@@ -2650,7 +2650,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useagenttools",
-      "community": 91,
+      "community": 21,
       "norm_label": "useagenttools.ts"
     },
     {
@@ -2660,7 +2660,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "hooks_useagenttools_fuzzyfindsubtopic",
-      "community": 91,
+      "community": 21,
       "norm_label": "fuzzyfindsubtopic()"
     },
     {
@@ -2670,7 +2670,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "hooks_useagenttools_fuzzyfindchapter",
-      "community": 91,
+      "community": 21,
       "norm_label": "fuzzyfindchapter()"
     },
     {
@@ -2680,7 +2680,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "hooks_useagenttools_ok",
-      "community": 91,
+      "community": 21,
       "norm_label": "ok()"
     },
     {
@@ -2690,7 +2690,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "hooks_useagenttools_err",
-      "community": 91,
+      "community": 21,
       "norm_label": "err()"
     },
     {
@@ -2700,7 +2700,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "hooks_useagenttools_useagenttools",
-      "community": 91,
+      "community": 21,
       "norm_label": "useagenttools()"
     },
     {
@@ -2710,7 +2710,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder",
-      "community": 91,
+      "community": 21,
       "norm_label": "agentpromptbuilder.ts"
     },
     {
@@ -2720,7 +2720,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder_agentcontext",
-      "community": 91,
+      "community": 21,
       "norm_label": "agentcontext"
     },
     {
@@ -2730,7 +2730,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder_formatduration",
-      "community": 91,
+      "community": 21,
       "norm_label": "formatduration()"
     },
     {
@@ -2740,7 +2740,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder_buildagentsystemprompt",
-      "community": 91,
+      "community": 21,
       "norm_label": "buildagentsystemprompt()"
     },
     {
@@ -3807,7 +3807,7 @@
       "label": "SourceIcon()",
       "file_type": "code",
       "source_file": "src/features/music/components/MusicPlayerDrawer.tsx",
-      "source_location": "L120",
+      "source_location": "L124",
       "_origin": "ast",
       "id": "components_musicplayerdrawer_sourceicon",
       "community": 19,
@@ -3817,7 +3817,7 @@
       "label": "FluidWaveform()",
       "file_type": "code",
       "source_file": "src/features/music/components/MusicPlayerDrawer.tsx",
-      "source_location": "L134",
+      "source_location": "L138",
       "_origin": "ast",
       "id": "components_musicplayerdrawer_fluidwaveform",
       "community": 19,
@@ -3827,7 +3827,7 @@
       "label": "MusicPlayerDrawer()",
       "file_type": "code",
       "source_file": "src/features/music/components/MusicPlayerDrawer.tsx",
-      "source_location": "L167",
+      "source_location": "L171",
       "_origin": "ast",
       "id": "components_musicplayerdrawer_musicplayerdrawer",
       "community": 19,
@@ -4590,7 +4590,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_planner",
-      "community": 27,
+      "community": 52,
       "norm_label": "planner.tsx"
     },
     {
@@ -4610,7 +4610,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "components_planner_viewmode",
-      "community": 27,
+      "community": 52,
       "norm_label": "viewmode"
     },
     {
@@ -4620,7 +4620,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "components_planner_planner",
-      "community": 27,
+      "community": 52,
       "norm_label": "planner()"
     },
     {
@@ -4780,7 +4780,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "hooks_usedatenavigator_usedatenavigator",
-      "community": 27,
+      "community": 52,
       "norm_label": "usedatenavigator()"
     },
     {
@@ -4820,7 +4820,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useplannerdata_test",
-      "community": 27,
+      "community": 52,
       "norm_label": "useplannerdata.test.ts"
     },
     {
@@ -4830,7 +4830,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useplannerdata",
-      "community": 27,
+      "community": 52,
       "norm_label": "useplannerdata.ts"
     },
     {
@@ -4840,7 +4840,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "hooks_useplannerdata_sorttasks",
-      "community": 27,
+      "community": 52,
       "norm_label": "sorttasks()"
     },
     {
@@ -4850,7 +4850,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "hooks_useplannerdata_useplannerdata",
-      "community": 27,
+      "community": 52,
       "norm_label": "useplannerdata()"
     },
     {
@@ -4900,7 +4900,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_copilotnudgerow",
-      "community": 91,
+      "community": 21,
       "norm_label": "copilotnudgerow.tsx"
     },
     {
@@ -4910,7 +4910,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "components_copilotnudgerow_copilotnudgerowprops",
-      "community": 91,
+      "community": 21,
       "norm_label": "copilotnudgerowprops"
     },
     {
@@ -4920,7 +4920,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "components_copilotnudgerow_copilotnudgerow",
-      "community": 91,
+      "community": 21,
       "norm_label": "copilotnudgerow()"
     },
     {
@@ -5010,7 +5010,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_reportspage",
-      "community": 91,
+      "community": 21,
       "norm_label": "reportspage.tsx"
     },
     {
@@ -5020,7 +5020,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "components_reportspage_reportspage",
-      "community": 91,
+      "community": 21,
       "norm_label": "reportspage()"
     },
     {
@@ -5100,7 +5100,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_sessionstatistics",
-      "community": 89,
+      "community": 27,
       "norm_label": "sessionstatistics.tsx"
     },
     {
@@ -5110,7 +5110,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "components_sessionstatistics_sessionstatisticsprops",
-      "community": 89,
+      "community": 27,
       "norm_label": "sessionstatisticsprops"
     },
     {
@@ -5130,7 +5130,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "components_sessionstatistics_getsessiondate",
-      "community": 89,
+      "community": 27,
       "norm_label": "getsessiondate()"
     },
     {
@@ -5920,7 +5920,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_subjectheader",
-      "community": 68,
+      "community": 27,
       "norm_label": "subjectheader.tsx"
     },
     {
@@ -5930,7 +5930,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "components_subjectheader_subjectconfig",
-      "community": 68,
+      "community": 27,
       "norm_label": "subjectconfig"
     },
     {
@@ -5940,7 +5940,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "components_subjectheader_subjectheaderprops",
-      "community": 68,
+      "community": 27,
       "norm_label": "subjectheaderprops"
     },
     {
@@ -7540,7 +7540,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useprogress",
-      "community": 21,
+      "community": 27,
       "norm_label": "useprogress.ts"
     },
     {
@@ -7560,7 +7560,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usestudycopilot",
-      "community": 91,
+      "community": 21,
       "norm_label": "usestudycopilot.ts"
     },
     {
@@ -7570,7 +7570,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "hooks_usestudycopilot_copilotrecommendation",
-      "community": 91,
+      "community": 21,
       "norm_label": "copilotrecommendation"
     },
     {
@@ -7580,7 +7580,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "hooks_usestudycopilot_usestudycopilot",
-      "community": 91,
+      "community": 21,
       "norm_label": "usestudycopilot()"
     },
     {
@@ -7760,7 +7760,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "types_index_subject",
-      "community": 91,
+      "community": 27,
       "norm_label": "subject"
     },
     {
@@ -7810,7 +7810,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "types_index_confidencelevel",
-      "community": 91,
+      "community": 21,
       "norm_label": "confidencelevel"
     },
     {
@@ -25733,9 +25733,9 @@
       "source_file": "src/features/music/components/MusicPlayerDrawer.tsx",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_musicplayerdrawer",
-      "target": "components_musicplayerdrawer_fetchyoutubeplaylisttracks",
-      "confidence_score": 1.0
+      "target": "components_musicplayerdrawer_fetchyoutubeplaylisttracks"
     },
     {
       "relation": "contains",
@@ -25753,9 +25753,9 @@
       "source_file": "src/features/music/components/MusicPlayerDrawer.tsx",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_musicplayerdrawer",
-      "target": "components_musicplayerdrawer_getyoutubeplaylistid",
-      "confidence_score": 1.0
+      "target": "components_musicplayerdrawer_getyoutubeplaylistid"
     },
     {
       "relation": "contains",
@@ -42844,5 +42844,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b8c27a153a556f031ee5ddc8d6ce723740b0df06"
+  "built_at_commit": "cae97fc57e3eaf03bdf77fd4c49a8f08f517771f"
 }

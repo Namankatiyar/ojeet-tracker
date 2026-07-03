@@ -55,6 +55,7 @@ interface UserProgressContextType {
   chemistryProgress: number;
   mathsProgress: number;
   overallProgress: number;
+  lectureCounter: number;
   calculateSubjectProgress: (subject: Subject) => number;
 
   // Handlers
@@ -123,6 +124,7 @@ interface ProgressDataContextType {
   chemistryProgress: number;
   mathsProgress: number;
   overallProgress: number;
+  lectureCounter: number;
   calculateSubjectProgress: (subject: Subject) => number;
   handleToggleMaterial: (subject: Subject, chapterSerial: number, material: string) => void;
   handleSetPriority: (subject: Subject, chapterSerial: number, priority: Priority) => void;
@@ -354,6 +356,20 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     overallProgress,
     calculateSubjectProgress,
   } = useProgress(progress, mergedSubjectData);
+
+  const lectureCounter = useMemo(() => {
+    let count = 0;
+    (['physics', 'chemistry', 'maths'] as Subject[]).forEach((sub) => {
+      const subProg = progress[sub];
+      if (!subProg) return;
+      Object.values(subProg).forEach((chProg) => {
+        if (chProg?.detail?.lectureCount) {
+          count += chProg.detail.lectureCount;
+        }
+      });
+    });
+    return count;
+  }, [progress]);
 
   const progressRef = useRef(progress);
   const pendingProgressRef = useRef(progress);
@@ -1292,6 +1308,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       chemistryProgress,
       mathsProgress,
       overallProgress,
+      lectureCounter,
       calculateSubjectProgress,
       handleToggleMaterial,
       handleSetPriority,
@@ -1331,6 +1348,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       chemistryProgress,
       mathsProgress,
       overallProgress,
+      lectureCounter,
       calculateSubjectProgress,
       handleToggleMaterial,
       handleSetPriority,

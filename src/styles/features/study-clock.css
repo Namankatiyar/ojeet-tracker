@@ -1804,6 +1804,107 @@ body.hide-global-fabs .music-fab {
   letter-spacing: 0.3px;
 }
 
+/* Parked Sessions UI */
+.parked-sessions-section {
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-6);
+  box-shadow: var(--panel-inner-glow), var(--panel-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.parked-sessions-section .section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.parked-sessions-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.parked-sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.parked-session-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+.parked-session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.parked-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.parked-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.parked-time {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.parked-session-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.resume-btn {
+  height: 24px;
+  width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: var(--radius-xs);
+}
+
+.discard-btn {
+  color: var(--text-muted);
+  border-radius: var(--radius-xs);
+}
+
+.discard-btn:hover {
+  color: var(--priority-high);
+  background: var(--priority-high-bg);
+}
+
 /* Responsive */
 @media (max-width: 64rem) {
   .timer-card.horizontal {

@@ -16,6 +16,7 @@ export interface AgentContext {
   chemistryProgress: number;
   mathsProgress: number;
   overallProgress: number;
+  lectureCounter: number;
 
   // Live App State
   plannerTasks: PlannerTask[];
@@ -23,6 +24,7 @@ export interface AgentContext {
   studySessions: StudySession[];
   examDates: ExamEntry[];
   recommendations: CoPilotRecommendation[];
+  parkedSessions: any[];
 
   // Metrics
   studyShares: Record<Subject, number>;
@@ -113,6 +115,12 @@ SYLLABUS PROGRESS:
 - Chemistry: ${ctx.chemistryProgress.toFixed(1)}%
 - Maths: ${ctx.mathsProgress.toFixed(1)}%
 - Overall: ${ctx.overallProgress.toFixed(1)}%
+- Lectures Completed (Overall): ${ctx.lectureCounter}
+
+SUSPENDED (PARKED) TASKS:
+${ctx.parkedSessions.length > 0 
+  ? ctx.parkedSessions.map(s => `  • ${s.title} [${s.timerState.mode}] (elapsed: ${formatDuration(Math.floor(s.timerState.accumulatedActiveMs / 1000))})`).join('\n')
+  : '  (none)'}
 
 WEEKLY STUDY DISTRIBUTION (last 7 days, total: ${ctx.totalWeeklyHours.toFixed(1)}h):
 - Physics: ${(ctx.studyShares.physics * 100).toFixed(0)}%

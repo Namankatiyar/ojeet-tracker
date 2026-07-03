@@ -1,16 +1,16 @@
 # Graph Report - ojee-tracker  (2026-07-03)
 
 ## Corpus Check
-- 222 files · ~285,665 words
+- 222 files · ~285,699 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1516 nodes · 2637 edges · 92 communities (81 shown, 11 thin omitted)
+- 1516 nodes · 2637 edges · 91 communities (80 shown, 11 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b8c27a15`
+- Built from commit: `cae97fc5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -91,7 +91,6 @@
 - [[_COMMUNITY_Community 88|Community 88]]
 - [[_COMMUNITY_Community 89|Community 89]]
 - [[_COMMUNITY_Community 90|Community 90]]
-- [[_COMMUNITY_Community 91|Community 91]]
 - [[_COMMUNITY_Community 92|Community 92]]
 - [[_COMMUNITY_Community 96|Community 96]]
 - [[_COMMUNITY_Community 98|Community 98]]
@@ -126,7 +125,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (92 total, 11 thin omitted)
+## Communities (91 total, 11 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.12
@@ -213,8 +212,8 @@ Cohesion: 0.11
 Nodes (17): 1. 📥 Installation, 2. 🔑 Configure Environment Variables, 3. ⚡ Start Development, 4. 📦 Build for Production, 🏗️ Architecture, 🌐 Community, 🛠️ Getting Started, 🚀 Key Features (+9 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.11
-Nodes (24): ManageMockPresetsModal(), ManageMockPresetsModalProps, RemoteSyncProvider(), SubjectDataContext, SubjectDataContextType, SubjectDataProvider(), useSubjectData(), ThemeProvider() (+16 more)
+Cohesion: 0.07
+Nodes (38): CoPilotNudgeRow(), CoPilotNudgeRowProps, ManageMockPresetsModal(), ManageMockPresetsModalProps, ReportsPage(), RemoteSyncProvider(), SubjectDataContext, SubjectDataProvider() (+30 more)
 
 ### Community 22 - "Community 22"
 Cohesion: 0.06
@@ -237,8 +236,8 @@ Cohesion: 0.25
 Nodes (7): 1. Project Overview, 2. Recent Implementation: Subtopics Tracking & Chapter Workspace (V2), Directory Structure, Key Implementations & Architecture, Project Overview & Context: ojee-tracker, Tech Stack, Use the caveman skill and ponytail skill whenever required without fail.
 
 ### Community 27 - "Community 27"
-Cohesion: 0.14
-Nodes (16): DashboardProps, Planner(), PlannerProps, ViewMode, SessionHistoryProps, StudyClockProps, TaskModal(), TaskModalProps (+8 more)
+Cohesion: 0.15
+Nodes (17): DashboardProps, PlannerProps, SessionHistoryProps, SessionStatisticsProps, StudyClockProps, subjectConfig, SubjectHeaderProps, TaskModal() (+9 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.06
@@ -325,8 +324,8 @@ Cohesion: 0.67
 Nodes (3): 0.0.13 (2026-02-02), Added, Fixed
 
 ### Community 52 - "Community 52"
-Cohesion: 0.12
-Nodes (22): CalendarGrid(), CalendarGridProps, WEEKDAY_HEADERS, DayColumn(), DayColumnProps, DayModal(), DayModalProps, formatStudyTime() (+14 more)
+Cohesion: 0.10
+Nodes (26): CalendarGrid(), CalendarGridProps, WEEKDAY_HEADERS, DayColumn(), DayColumnProps, DayModal(), DayModalProps, formatStudyTime() (+18 more)
 
 ### Community 53 - "Community 53"
 Cohesion: 0.14
@@ -337,8 +336,8 @@ Cohesion: 0.15
 Nodes (19): build_run(), embed_file(), find_runs(), _find_runs_recursive(), generate_html(), get_mime_type(), _kill_port(), load_previous_iteration() (+11 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.16
-Nodes (16): FILTER_OPTIONS, PriorityFilterDropdown(), PriorityFilterDropdownProps, subjectConfig, SubjectHeader(), SubjectHeaderProps, SubjectPage(), SubjectPageProps (+8 more)
+Cohesion: 0.19
+Nodes (14): FILTER_OPTIONS, PriorityFilterDropdown(), PriorityFilterDropdownProps, SubjectHeader(), SubjectPage(), SubjectPageProps, useChapterSort(), ChapterDetailProgress (+6 more)
 
 ### Community 71 - "Community 71"
 Cohesion: 0.16
@@ -389,16 +388,12 @@ Cohesion: 0.20
 Nodes (9): analysis.json, benchmark.json, comparison.json, evals.json, grading.json, history.json, JSON Schemas, metrics.json (+1 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.13
-Nodes (14): MonthCell, MonthCellProps, SessionStatisticsProps, UserProgressContextType, ACCENT_COLORS, HeaderProps, ImportSyncPageProps, OjeetSyncPayload (+6 more)
+Cohesion: 0.15
+Nodes (13): MonthCell, MonthCellProps, UserProgressContextType, ACCENT_COLORS, HeaderProps, ImportSyncPageProps, OjeetSyncPayload, VALID_SUBJECTS (+5 more)
 
 ### Community 90 - "Community 90"
 Cohesion: 0.16
 Nodes (12): AnalyticsPanels(), useRemoteSync(), ConfirmationModal(), ConfirmationModalProps, SettingsModal(), SettingsModalProps, STORAGE_KEYS, mockNavigate (+4 more)
-
-### Community 91 - "Community 91"
-Cohesion: 0.15
-Nodes (16): CoPilotNudgeRow(), CoPilotNudgeRowProps, ReportsPage(), ConfirmActionPayload, getInitialSessions(), makeId(), makeMessage(), MessageRole (+8 more)
 
 ### Community 92 - "Community 92"
 Cohesion: 0.50
@@ -424,11 +419,11 @@ Nodes (3): [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14.
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useUserProgress()` connect `Community 21` to `Community 1`, `Community 3`, `Community 4`, `Community 6`, `Community 7`, `Community 41`, `Community 77`, `Community 78`, `Community 19`, `Community 22`, `Community 91`?**
+- **Why does `useUserProgress()` connect `Community 21` to `Community 1`, `Community 3`, `Community 4`, `Community 6`, `Community 7`, `Community 41`, `Community 77`, `Community 78`, `Community 19`, `Community 22`?**
   _High betweenness centrality (0.017) - this node is a cross-community bridge._
-- **Why does `PlannerTask` connect `Community 52` to `Community 2`, `Community 4`, `Community 68`, `Community 7`, `Community 91`, `Community 78`, `Community 21`, `Community 89`, `Community 27`?**
+- **Why does `PlannerTask` connect `Community 52` to `Community 2`, `Community 4`, `Community 68`, `Community 7`, `Community 78`, `Community 21`, `Community 89`, `Community 27`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `Subject` connect `Community 91` to `Community 1`, `Community 2`, `Community 4`, `Community 68`, `Community 6`, `Community 7`, `Community 77`, `Community 19`, `Community 21`, `Community 89`, `Community 27`?**
+- **Why does `Subject` connect `Community 27` to `Community 1`, `Community 2`, `Community 4`, `Community 68`, `Community 6`, `Community 7`, `Community 77`, `Community 19`, `Community 52`, `Community 21`, `Community 89`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **What connects `Recursively find directories that contain an outputs/ subdirectory.`, `Build a run dict with prompt, outputs, and grading data.`, `Read a file and return an embedded representation.` to the rest of the system?**
   _740 weakly-connected nodes found - possible documentation gaps or missing edges._

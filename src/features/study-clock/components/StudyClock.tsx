@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock } from 'lucide-react';
+import { Clock, Trash2, Play } from 'lucide-react';
 import { useTheme } from '../../../core/context/ThemeContext';
 import {
   Subject,
@@ -18,7 +18,7 @@ import {
   playPauseSound,
   playSaveAndEndSound,
 } from '../utils/timerAudio';
-import { useTimerEngine, TimerPhase } from '../hooks/useTimerEngine';
+import { useTimerEngine, TimerPhase, PersistedTimerState } from '../hooks/useTimerEngine';
 import { TimerControls } from './Timer/TimerControls';
 import { ModeSelector } from './Timer/ModeSelector';
 import { PresetManager } from './Presets/PresetManager';
@@ -60,6 +60,21 @@ function plannerTaskSessionMeta(
     sessionSubject: task.subject,
     sessionType: 'custom',
   };
+}
+
+interface ParkedSession {
+  id: string;
+  parkedAtMs: number;
+  title: string;
+  taskMetadata: {
+    taskType: 'chapter' | 'custom' | 'task';
+    selectedSubject: Subject | '';
+    selectedChapter: number | '';
+    selectedMaterial: string;
+    customTitle: string;
+    selectedTaskId: string;
+  };
+  timerState: PersistedTimerState;
 }
 
 interface StudyClockProps {
@@ -107,6 +122,10 @@ export function StudyClock({
   const [selectedTaskId, setSelectedTaskId] = useLocalStorage<string>(
     'studyClock_selectedTaskId',
     ''
+  );
+  const [parkedSessions, setParkedSessions] = useLocalStorage<ParkedSession[]>(
+    'studyClock_parkedSessions',
+    []
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -314,6 +333,57 @@ export function StudyClock({
     setCustomTitle('');
     setSelectedTaskId('');
   }, [engine]);
+
+  const handlePark = useCallback(() => {
+    if (engine.engineState === 'idle') return;
+    
+    // Create snapshot
+    const timerStateSnapshot = engine.getSnapshot();
+    
+    const parkedSession: ParkedSession = {
+      id: crypto.randomUUID(),
+      parkedAtMs: Date.now(),
+      title: getTaskTitle(),
+      taskMetadata: {
+        taskType,
+        selectedSubject,
+        selectedChapter,
+        selectedMaterial,
+        customTitle,
+        selectedTaskId
+      },
+      timerState: timerStateSnapshot
+    };
+    
+    setParkedSessions(prev => [parkedSession, ...prev]);
+    handleDiscard();
+  }, [
+    engine, getTaskTitle, taskType, selectedSubject, selectedChapter, 
+    selectedMaterial, customTitle, selectedTaskId, setParkedSessions, handleDiscard
+  ]);
+
+  const handleResumeParked = useCallback((session: ParkedSession) => {
+    // If currently running/paused with elapsed time, park it first
+    if (engine.engineState !== 'idle' && engine.elapsedMs > 0) {
+      handlePark();
+    } else {
+      engine.reset(); // clear any idle state
+    }
+    
+    // Restore metadata
+    setTaskType(session.taskMetadata.taskType);
+    setSelectedSubject(session.taskMetadata.selectedSubject);
+    setSelectedChapter(session.taskMetadata.selectedChapter);
+    setSelectedMaterial(session.taskMetadata.selectedMaterial);
+    setCustomTitle(session.taskMetadata.customTitle);
+    setSelectedTaskId(session.taskMetadata.selectedTaskId);
+    
+    // Restore timer engine state
+    engine.restoreSnapshot(session.timerState);
+    
+    // Remove from parked list
+    setParkedSessions(prev => prev.filter(s => s.id !== session.id));
+  }, [engine, handlePark, setTaskType, setSelectedSubject, setSelectedChapter, setSelectedMaterial, setCustomTitle, setSelectedTaskId, setParkedSessions]);
 
   const handleMarkComplete = useCallback(
     (e?: React.MouseEvent) => {
@@ -722,9 +792,54 @@ export function StudyClock({
               onMarkComplete={handleMarkComplete}
               onSkipBreak={engine.skipBreak}
               onResetCycle={engine.resetCycle}
+              onPark={handlePark}
             />
           </div>
         </div>
+
+        {/* Parked Sessions UI */}
+        {parkedSessions.length > 0 && (
+          <motion.div className="parked-sessions-section" variants={itemVariants}>
+            <div className="section-header">
+              <h3>Suspended Tasks</h3>
+              <span className="badge">{parkedSessions.length}</span>
+            </div>
+            <div className="parked-sessions-grid">
+              {parkedSessions.map(session => (
+                <div key={session.id} className="glass-card parked-session-card">
+                  <div className="parked-session-info">
+                    <h4 className="parked-title">{session.title}</h4>
+                    <div className="parked-meta">
+                      <span className="parked-mode badge outline">
+                        {session.timerState.mode.charAt(0).toUpperCase() + session.timerState.mode.slice(1)}
+                      </span>
+                      <span className="parked-time">
+                        <Clock size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />
+                        {engine.formatTime(session.timerState.accumulatedActiveMs)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="parked-session-actions">
+                    <button 
+                      className="primary-btn resume-btn"
+                      onClick={() => handleResumeParked(session)}
+                      title="Resume Session"
+                    >
+                      <Play size={12} fill="currentColor" />
+                    </button>
+                    <button 
+                      className="icon-btn-small discard-btn"
+                      onClick={() => setParkedSessions(prev => prev.filter(s => s.id !== session.id))}
+                      title="Discard Parked Session"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Statistics and Session Log */}
         <motion.div className="stats-and-log-row" variants={itemVariants}>

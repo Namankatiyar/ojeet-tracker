@@ -47,7 +47,7 @@ export const DEFAULT_POMODORO: PomodoroConfig = {
   cyclesBeforeLongBreak: 4,
 };
 
-interface PersistedTimerState {
+export interface PersistedTimerState {
   version: 2;
   mode: TimerMode;
   engineState: EngineState;
@@ -481,6 +481,8 @@ export interface UseTimerEngineReturn {
   loadPreset: (preset: TimerPreset) => void;
   deletePreset: (id: string) => void;
   formatTime: (ms: number) => string;
+  getSnapshot: () => PersistedTimerState;
+  restoreSnapshot: (state: PersistedTimerState) => void;
 }
 
 export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEngineReturn {
@@ -823,12 +825,8 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
     [presets]
   );
 
-  const isCountingDown = timerState.mode !== 'stopwatch';
-  const remainingMs = isCountingDown ? Math.max(0, timerState.durationMs - elapsedMs) : 0;
-  const progress =
-    isCountingDown && timerState.durationMs > 0
-      ? Math.min(1, elapsedMs / timerState.durationMs)
-      : 0;
+
+
 
   const formatTime = useCallback((ms: number): string => {
     const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -839,17 +837,30 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }, []);
 
+  const getSnapshot = useCallback(() => {
+    return normaliseRunningState(timerStateRef.current, Date.now());
+  }, []);
+
+  const restoreSnapshot = useCallback(
+    (state: PersistedTimerState) => {
+      setTimerStateImmediate(state);
+      persistSnapshot(state, Date.now());
+      setElapsedMs(getElapsedMsAt(state, Date.now()));
+    },
+    [setTimerStateImmediate, persistSnapshot]
+  );
+
   return {
-    mode: timerState.mode,
+    mode: timerState.config.mode,
     engineState: timerState.engineState,
     phase: timerState.phase,
     elapsedMs,
-    remainingMs,
-    progress,
+    remainingMs: Math.max(0, timerState.durationMs - elapsedMs),
+    progress: timerState.durationMs > 0 ? Math.min(1, elapsedMs / timerState.durationMs) : 0,
     durationMs: timerState.durationMs,
     cycleCount: timerState.cycleCount,
     config: timerState.config,
-    isCountingDown,
+    isCountingDown: timerState.mode !== 'stopwatch',
     start,
     pause,
     resume,
@@ -863,5 +874,7 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
     loadPreset,
     deletePreset,
     formatTime,
+    getSnapshot,
+    restoreSnapshot,
   };
 }

@@ -1,4 +1,4 @@
-import { Play, Pause, Trash2, CheckCircle2, SkipForward, RotateCcw } from 'lucide-react';
+import { Play, Pause, Trash2, CheckCircle2, SkipForward, RotateCcw, ClockArrowDown } from 'lucide-react';
 import { EngineState, TimerPhase, TimerMode } from '../../hooks/useTimerEngine';
 
 interface TimerControlsProps {
@@ -14,6 +14,7 @@ interface TimerControlsProps {
   onMarkComplete: (e?: React.MouseEvent) => void;
   onSkipBreak: () => void;
   onResetCycle: () => void;
+  onPark: () => void;
 }
 
 export function TimerControls({
@@ -29,6 +30,7 @@ export function TimerControls({
   onMarkComplete,
   onSkipBreak,
   onResetCycle,
+  onPark,
 }: TimerControlsProps) {
   const isBreak = phase === 'shortBreak' || phase === 'longBreak';
   const showSkipBreak = isBreak && (mode === 'pomodoro' || mode === 'custom');
@@ -52,6 +54,9 @@ export function TimerControls({
               <SkipForward size={18} />
             </button>
           )}
+          <button className="timer-btn park" onClick={onPark} title="Suspend Session (Park)">
+            <ClockArrowDown size={18} />
+          </button>
           <button className="timer-btn end" onClick={(e) => onEnd(e)} title="End Session">
             <CheckCircle2 size={18} />
           </button>
@@ -76,6 +81,9 @@ export function TimerControls({
               <CheckCircle2 size={18} />
             </button>
           )}
+          <button className="timer-btn park" onClick={onPark} title="Suspend Session (Park)">
+            <ClockArrowDown size={18} />
+          </button>
           <button className="timer-btn discard" onClick={onDiscard} title="Discard Session">
             <Trash2 size={18} />
           </button>
