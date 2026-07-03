@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
@@ -12,27 +12,27 @@ export type FriendProfile = RemoteProfile & {
   peer_visibility_settings?: { show_agenda: boolean } | null;
 };
 
-// ponytail: Sort online users first, then by last seen activity time (most recent first)
-const sortFriends = (list: FriendProfile[]): FriendProfile[] => {
+// ponytail: Sort online users first, then by last seen activity time (most recent first), respecting pinned friends
+const sortFriends = (list: FriendProfile[], pinnedIds: string[]): FriendProfile[] => {
   const now = Date.now();
-  const isOnline = (f: FriendProfile) => {
+  const pinnedSet = new Set(pinnedIds);
+
+  const enriched = list.map((f) => {
     const act = f.live_activity;
-    if (!act) return false;
-    const actTime = new Date(act.updated_at).getTime();
-    return !isNaN(actTime) && now - actTime < 300000;
-  };
-  const getLastSeenTime = (f: FriendProfile) => {
-    const t1 = f.live_activity?.updated_at ? new Date(f.live_activity.updated_at).getTime() : 0;
+    const actTime = act?.updated_at ? new Date(act.updated_at).getTime() : 0;
+    const isOnline = Boolean(act && !isNaN(actTime) && now - actTime < 300000);
     const t2 = f.updated_at ? new Date(f.updated_at).getTime() : 0;
-    const t = Math.max(isNaN(t1) ? 0 : t1, isNaN(t2) ? 0 : t2);
-    return t;
-  };
-  return [...list].sort((a, b) => {
-    const aOnline = isOnline(a);
-    const bOnline = isOnline(b);
-    if (aOnline !== bOnline) return aOnline ? -1 : 1;
-    return getLastSeenTime(b) - getLastSeenTime(a);
+    const lastSeenTime = Math.max(isNaN(actTime) ? 0 : actTime, isNaN(t2) ? 0 : t2);
+    return { f, isPinned: pinnedSet.has(f.id), isOnline, lastSeenTime };
   });
+
+  enriched.sort((a, b) => {
+    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+    if (a.isOnline !== b.isOnline) return a.isOnline ? -1 : 1;
+    return b.lastSeenTime - a.lastSeenTime;
+  });
+
+  return enriched.map((item) => item.f);
 };
 
 export function useFriends() {
@@ -41,7 +41,7 @@ export function useFriends() {
   const [friends, setFriends] = useState<FriendProfile[]>(() => {
     try {
       const cached = localStorage.getItem('jee-community-friends-cache');
-      return cached ? sortFriends(JSON.parse(cached)) : [];
+      return cached ? JSON.parse(cached) : [];
     } catch {
       return [];
     }
@@ -96,9 +96,8 @@ export function useFriends() {
           const updatedLive = data.find((l) => l.user_id === f.id);
           return updatedLive ? { ...f, live_activity: updatedLive } : f;
         });
-        const sorted = sortFriends(updated);
-        localStorage.setItem('jee-community-friends-cache', JSON.stringify(sorted));
-        return sorted;
+        localStorage.setItem('jee-community-friends-cache', JSON.stringify(updated));
+        return updated;
       });
       lastPollTimeRef.current = Date.now();
     } catch (err) {
@@ -232,9 +231,8 @@ export function useFriends() {
           };
         });
 
-        const sorted = sortFriends(merged);
-        setFriends(sorted);
-        localStorage.setItem('jee-community-friends-cache', JSON.stringify(sorted));
+        setFriends(merged);
+        localStorage.setItem('jee-community-friends-cache', JSON.stringify(merged));
         globalLastFullFetchTime = Date.now();
         // Stamp the poll time so the visibility effect's initial call is skipped
         // (fetchFriends already fetched live_activity inside Promise.all).
@@ -335,11 +333,34 @@ export function useFriends() {
     [user, isConfigured, fetchFriends]
   );
 
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    try {
+      const cached = localStorage.getItem('jee-community-pinned-friends');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const togglePin = useCallback((id: string) => {
+    setPinnedIds((prev) => {
+      const updated = prev.includes(id) ? prev.filter((pId) => pId !== id) : [...prev, id];
+      localStorage.setItem('jee-community-pinned-friends', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const sortedFriends = useMemo(() => {
+    return sortFriends(friends, pinnedIds);
+  }, [friends, pinnedIds]);
+
   return {
-    friends,
+    friends: sortedFriends,
     isLoading,
     error,
     refresh: fetchFriends,
     disconnectFriend,
+    pinnedIds,
+    togglePin,
   };
 }

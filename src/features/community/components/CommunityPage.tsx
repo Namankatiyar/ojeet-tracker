@@ -29,7 +29,7 @@ export function CommunityPage() {
     useState<FriendProfile | null>(null);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const { progressCardSettings, setProgressCardSettings } = useUserProgress();
-  const { friends, refresh: refreshFriends, disconnectFriend } = useFriends();
+  const { friends, refresh: refreshFriends, disconnectFriend, pinnedIds, togglePin } = useFriends();
   const { signInWithGoogle, user } = useRemoteAuth();
   const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
   const [isAuthBusy, setIsAuthBusy] = useState(false);
@@ -213,6 +213,8 @@ export function CommunityPage() {
               key={friend.id}
               remoteProfileData={friend}
               onDisconnectClick={() => setSelectedFriendForDisconnect(friend)}
+              isPinned={pinnedIds?.includes(friend.id)}
+              onPinToggle={() => togglePin(friend.id)}
             />
           ))}
 

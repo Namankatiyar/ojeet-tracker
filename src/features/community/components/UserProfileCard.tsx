@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useTheme } from '../../../core/context/ThemeContext';
@@ -23,6 +23,7 @@ import {
   Plus,
   EyeOff,
   UserMinus,
+  Pin,
 } from 'lucide-react';
 
 interface UserProfileCardProps {
@@ -34,6 +35,8 @@ interface UserProfileCardProps {
     peer_visibility_settings?: { show_agenda: boolean } | null;
   };
   onDisconnectClick?: () => void;
+  isPinned?: boolean;
+  onPinToggle?: () => void;
 }
 
 /* ── Helpers ── */
@@ -76,12 +79,14 @@ const formatLastSeen = (updatedAtStr?: string): string => {
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-export function UserProfileCard({
+export const UserProfileCard = memo(function UserProfileCard({
   onEditClick,
   previewSettings,
   previewMode = false,
   remoteProfileData,
   onDisconnectClick,
+  isPinned = false,
+  onPinToggle,
 }: UserProfileCardProps) {
   const { progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs, dailyResetHour } =
     useUserProgress();
@@ -350,6 +355,18 @@ export function UserProfileCard({
             Edit
           </button>
         )}
+        {remoteProfileData && onPinToggle && (
+          <button
+            className={`profile-card-pin-btn ${isPinned ? 'pinned' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPinToggle();
+            }}
+            title={isPinned ? 'Unpin Friend' : 'Pin Friend'}
+          >
+            <Pin size={14} />
+          </button>
+        )}
         {remoteProfileData && onDisconnectClick && (
           <button
             className="profile-card-disconnect-btn"
@@ -555,4 +572,11 @@ export function UserProfileCard({
       )}
     </div>
   );
-}
+}, (prev, next) => {
+  return (
+    prev.remoteProfileData === next.remoteProfileData &&
+    prev.isPinned === next.isPinned &&
+    prev.previewMode === next.previewMode &&
+    prev.previewSettings === next.previewSettings
+  );
+});

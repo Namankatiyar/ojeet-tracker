@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "src/core/context/RemoteSyncContext.tsx": {
-    "mtime": 1783021353.4555612,
-    "ast_hash": "8776ec61a7892127ddaa0a14f6de9455",
+    "mtime": 1783092363.22964,
+    "ast_hash": "92b4c3006f56f00adf645fc5166276ff",
     "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1783066875.910382,
-    "ast_hash": "a745ed5d440d4fd3eb86812495501b61",
+    "mtime": 1783094876.133458,
+    "ast_hash": "f9a7316288824097f51def12c45166b4",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1783066864.78488,
-    "ast_hash": "d248a3f5c8b068b0970e3f87e09ca802",
+    "mtime": 1783096015.976139,
+    "ast_hash": "c314dcc2370973c7992b7adbfc8848ce",
     "semantic_hash": ""
   },
   "src/features/community/components/DisconnectModal.tsx": {
@@ -175,13 +175,13 @@
     "semantic_hash": ""
   },
   "src/features/community/components/UserProfileCard.tsx": {
-    "mtime": 1783066396.8938384,
-    "ast_hash": "88652aac846b40853e750181b8cdce76",
+    "mtime": 1783096822.0363894,
+    "ast_hash": "b7e0b87c012d9f6576f21b7d3a620167",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useFriends.ts": {
-    "mtime": 1783021338.3139033,
-    "ast_hash": "e389fa2487b2b469c521e8dd39f7de41",
+    "mtime": 1783096786.6779373,
+    "ast_hash": "e588b1ba7a737d3b5c3961cae162858a",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/TaskModal.tsx": {
-    "mtime": 1782932071.7193503,
-    "ast_hash": "3b5ed3cb5e01ea479989af52764b72e2",
+    "mtime": 1783095196.0502076,
+    "ast_hash": "8a1a85ba8773955096f2b9bc52125416",
     "semantic_hash": ""
   },
   "src/features/planner/components/WeeklyView.tsx": {
@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/hooks/useTaskForm.ts": {
-    "mtime": 1782932071.7283506,
-    "ast_hash": "b0b077c558595813a21868ca4ee0aabd",
+    "mtime": 1783094856.6755488,
+    "ast_hash": "570106cf5142a45565507ce70c428266",
     "semantic_hash": ""
   },
   "src/features/reports/components/CoPilotNudgeRow.tsx": {
@@ -410,13 +410,13 @@
     "semantic_hash": ""
   },
   "src/features/subjects/components/ChapterDetailDrawer.tsx": {
-    "mtime": 1783065984.0605066,
-    "ast_hash": "0b2983637301650ea695360018308a66",
+    "mtime": 1783095185.6617334,
+    "ast_hash": "6a78e3698a08105d582fc87220a69908",
     "semantic_hash": ""
   },
   "src/features/subjects/components/ChapterRow.tsx": {
-    "mtime": 1783065240.2848141,
-    "ast_hash": "294b92ae5488e4205f7d21bef119dd8c",
+    "mtime": 1783095254.8798888,
+    "ast_hash": "2d1e7422bbfce9813cb2bfbc4e772e3f",
     "semantic_hash": ""
   },
   "src/features/subjects/components/MobileChapterCard.tsx": {
@@ -455,8 +455,8 @@
     "semantic_hash": ""
   },
   "src/features/subjects/utils/chapterDetail.ts": {
-    "mtime": 1782932071.7593517,
-    "ast_hash": "72821fbc361794ff1e6cc10abef1915b",
+    "mtime": 1783094878.839584,
+    "ast_hash": "bf5d4481dbd58fff86f9061ce215501a",
     "semantic_hash": ""
   },
   "src/features/support/components/SupportPage.tsx": {
@@ -645,8 +645,8 @@
     "semantic_hash": ""
   },
   "src/shared/hooks/useLocalStorage.ts": {
-    "mtime": 1783065935.6513822,
-    "ast_hash": "62eec3d2712b767e072966c0132c0ee6",
+    "mtime": 1783092311.985603,
+    "ast_hash": "8185dd27c68f48765c2c5055891a77db",
     "semantic_hash": ""
   },
   "src/shared/hooks/useProgress.ts": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "src/shared/types/index.ts": {
-    "mtime": 1782932071.807353,
-    "ast_hash": "d576fc75aa6a8106e035415351dbbf9e",
+    "mtime": 1783094850.754272,
+    "ast_hash": "f1a7f25a6efc176a784009521b69beb3",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {
@@ -1145,8 +1145,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useActivityHeartbeat.ts": {
-    "mtime": 1783066526.1336315,
-    "ast_hash": "63c7dcb78e6061e7574e15454c18b430",
+    "mtime": 1783092389.6886964,
+    "ast_hash": "0817a618881aa204339e821be1b21427",
     "semantic_hash": ""
   },
   ".agents/rules/caveman-activate.md": {
@@ -1182,6 +1182,21 @@
   ".agents/workflows/ponytail.md": {
     "mtime": 1783062298.7407784,
     "ast_hash": "24f057288b7a18fc4105aaa118a8ef7a",
+    "semantic_hash": ""
+  },
+  "har_extract.json": {
+    "mtime": 1783091585.6621702,
+    "ast_hash": "9f16dcf8a2256c028f47eaaf83acb47d",
+    "semantic_hash": ""
+  },
+  "src/features/community/hooks/useFriends.test.tsx": {
+    "mtime": 1783096023.5944796,
+    "ast_hash": "78e0782869d1cbb71058e02410cc99de",
+    "semantic_hash": ""
+  },
+  "src/features/community/hooks/useProfileSync.test.tsx": {
+    "mtime": 1783094961.8484437,
+    "ast_hash": "fa2a5773cbd4b8189c30f8c8e402f9dd",
     "semantic_hash": ""
   }
 }

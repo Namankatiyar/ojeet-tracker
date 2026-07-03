@@ -180,4 +180,65 @@ describe('useFriends Hook', () => {
       'friend-offline-stalest',
     ]);
   });
+
+  it('should sort pinned friends to the top regardless of active/last seen status', async () => {
+    const now = Date.now();
+    const onlineFresh = new Date(now - 10000).toISOString(); // 10s ago (online)
+    const onlineStaler = new Date(now - 120000).toISOString(); // 2m ago (online)
+    const offlineStaler = new Date(now - 600000).toISOString(); // 10m ago (offline)
+    const offlineStalest = new Date(now - 1000000).toISOString(); // 16m ago (offline)
+
+    const unsortedFriends = [
+      {
+        id: 'friend-offline-staler',
+        username: 'off_staler',
+        updated_at: offlineStaler,
+        live_activity: { user_id: 'friend-offline-staler', is_active: false, updated_at: offlineStaler },
+      },
+      {
+        id: 'friend-online-staler',
+        username: 'on_staler',
+        live_activity: { user_id: 'friend-online-staler', is_active: true, updated_at: onlineStaler },
+      },
+      {
+        id: 'friend-offline-stalest',
+        username: 'off_stalest',
+        updated_at: offlineStalest,
+        live_activity: { user_id: 'friend-offline-stalest', is_active: false, updated_at: offlineStalest },
+      },
+      {
+        id: 'friend-online-fresh',
+        username: 'on_fresh',
+        live_activity: { user_id: 'friend-online-fresh', is_active: true, updated_at: onlineFresh },
+      },
+    ];
+
+    localStorage.setItem('jee-community-friends-cache', JSON.stringify(unsortedFriends));
+    // Pin the stalest offline friend
+    localStorage.setItem('jee-community-pinned-friends', JSON.stringify(['friend-offline-stalest']));
+
+    const { result } = renderHook(() => useFriends());
+
+    expect(result.current.friends.map((f: any) => f.id)).toEqual([
+      'friend-offline-stalest',
+      'friend-online-fresh',
+      'friend-online-staler',
+      'friend-offline-staler',
+    ]);
+
+    // Test togglePin callback
+    await act(async () => {
+      result.current.togglePin('friend-online-staler');
+    });
+
+    // Both friend-offline-stalest and friend-online-staler are pinned.
+    // Pinned group is sorted by online status, then last seen.
+    // So friend-online-staler (online) comes before friend-offline-stalest (offline).
+    expect(result.current.friends.map((f: any) => f.id)).toEqual([
+      'friend-online-staler',
+      'friend-offline-stalest',
+      'friend-online-fresh',
+      'friend-offline-staler',
+    ]);
+  });
 });
