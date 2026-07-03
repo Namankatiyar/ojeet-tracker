@@ -135,4 +135,49 @@ describe('useFriends Hook', () => {
 
     expect(supabase!.rpc).toHaveBeenCalledWith('disconnect_peer', { friend_id: 'friend-1' });
   });
+
+  it('should sort friends: online first, then by last seen descending', () => {
+    const now = Date.now();
+    const onlineFresh = new Date(now - 10000).toISOString(); // 10s ago (online)
+    const onlineStaler = new Date(now - 120000).toISOString(); // 2m ago (online)
+    const offlineStaler = new Date(now - 600000).toISOString(); // 10m ago (offline)
+    const offlineStalest = new Date(now - 1000000).toISOString(); // 16m ago (offline)
+
+    const unsortedFriends = [
+      {
+        id: 'friend-offline-staler',
+        username: 'off_staler',
+        updated_at: offlineStaler,
+        live_activity: { user_id: 'friend-offline-staler', is_active: false, updated_at: offlineStaler },
+      },
+      {
+        id: 'friend-online-staler',
+        username: 'on_staler',
+        live_activity: { user_id: 'friend-online-staler', is_active: true, updated_at: onlineStaler },
+      },
+      {
+        id: 'friend-offline-stalest',
+        username: 'off_stalest',
+        updated_at: offlineStalest,
+        live_activity: { user_id: 'friend-offline-stalest', is_active: false, updated_at: offlineStalest },
+      },
+      {
+        id: 'friend-online-fresh',
+        username: 'on_fresh',
+        live_activity: { user_id: 'friend-online-fresh', is_active: true, updated_at: onlineFresh },
+      },
+    ];
+
+    localStorage.setItem('jee-community-friends-cache', JSON.stringify(unsortedFriends));
+
+    const { result } = renderHook(() => useFriends());
+
+    const sortedIds = result.current.friends.map((f: any) => f.id);
+    expect(sortedIds).toEqual([
+      'friend-online-fresh',
+      'friend-online-staler',
+      'friend-offline-staler',
+      'friend-offline-stalest',
+    ]);
+  });
 });

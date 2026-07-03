@@ -12,13 +12,36 @@ export type FriendProfile = RemoteProfile & {
   peer_visibility_settings?: { show_agenda: boolean } | null;
 };
 
+// ponytail: Sort online users first, then by last seen activity time (most recent first)
+const sortFriends = (list: FriendProfile[]): FriendProfile[] => {
+  const now = Date.now();
+  const isOnline = (f: FriendProfile) => {
+    const act = f.live_activity;
+    if (!act) return false;
+    const actTime = new Date(act.updated_at).getTime();
+    return !isNaN(actTime) && now - actTime < 300000;
+  };
+  const getLastSeenTime = (f: FriendProfile) => {
+    const t1 = f.live_activity?.updated_at ? new Date(f.live_activity.updated_at).getTime() : 0;
+    const t2 = f.updated_at ? new Date(f.updated_at).getTime() : 0;
+    const t = Math.max(isNaN(t1) ? 0 : t1, isNaN(t2) ? 0 : t2);
+    return t;
+  };
+  return [...list].sort((a, b) => {
+    const aOnline = isOnline(a);
+    const bOnline = isOnline(b);
+    if (aOnline !== bOnline) return aOnline ? -1 : 1;
+    return getLastSeenTime(b) - getLastSeenTime(a);
+  });
+};
+
 export function useFriends() {
   const location = useLocation();
   const { user, isConfigured, isLoading: isAuthLoading } = useRemoteAuth();
   const [friends, setFriends] = useState<FriendProfile[]>(() => {
     try {
       const cached = localStorage.getItem('jee-community-friends-cache');
-      return cached ? JSON.parse(cached) : [];
+      return cached ? sortFriends(JSON.parse(cached)) : [];
     } catch {
       return [];
     }
@@ -73,9 +96,9 @@ export function useFriends() {
           const updatedLive = data.find((l) => l.user_id === f.id);
           return updatedLive ? { ...f, live_activity: updatedLive } : f;
         });
-
-        localStorage.setItem('jee-community-friends-cache', JSON.stringify(updated));
-        return updated;
+        const sorted = sortFriends(updated);
+        localStorage.setItem('jee-community-friends-cache', JSON.stringify(sorted));
+        return sorted;
       });
       lastPollTimeRef.current = Date.now();
     } catch (err) {
@@ -209,8 +232,9 @@ export function useFriends() {
           };
         });
 
-        setFriends(merged);
-        localStorage.setItem('jee-community-friends-cache', JSON.stringify(merged));
+        const sorted = sortFriends(merged);
+        setFriends(sorted);
+        localStorage.setItem('jee-community-friends-cache', JSON.stringify(sorted));
         globalLastFullFetchTime = Date.now();
         // Stamp the poll time so the visibility effect's initial call is skipped
         // (fetchFriends already fetched live_activity inside Promise.all).
