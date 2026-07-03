@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "caveman": {
+      "source": "juliusbrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman/SKILL.md",
+      "computedHash": "1902fa0b569912d0c05736d8d98a72097d9b82719aac88c0c1d03bb546f9176d"
+    },
+    "ponytail": {
+      "source": "dietrichgebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail/SKILL.md",
+      "computedHash": "4503a9dba2dca5836469a104c90e0c32ae9cb8bb97d02806e6fa06d15ceed56a"
+    },
     "skill-creator": {
       "source": "anthropics/skills",
       "sourceType": "github",

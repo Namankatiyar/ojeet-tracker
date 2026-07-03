@@ -125,10 +125,10 @@ interface LeftChapterRowProps {
   index?: number;
   progress: ChapterProgress | undefined;
   isEditing?: boolean;
-  onRename?: (newName: string) => void;
-  onOpenDetails?: () => void;
+  onRename?: (serial: number, newName: string) => void;
+  onOpenDetails?: (serial: number) => void;
   isHovered: boolean;
-  onMouseEnter: () => void;
+  onMouseEnter: (serial: number) => void;
   onMouseLeave: () => void;
   priorityClass: string;
   onDragEnd?: () => void;
@@ -158,13 +158,13 @@ export const LeftChapterRow = React.memo(
 
     const handleMouseEnterLocal = useCallback(
       (e: React.MouseEvent) => {
-        onMouseEnter();
+        onMouseEnter(chapter.serial);
         if (isEditing) return;
         if (!hasDetailData && priority === 'none') return;
         if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
         setHoverPos({ x: e.clientX, y: e.clientY });
       },
-      [isEditing, hasDetailData, priority, onMouseEnter]
+      [isEditing, hasDetailData, priority, onMouseEnter, chapter.serial]
     );
 
     const handleMouseMoveLocal = useCallback(
@@ -184,12 +184,12 @@ export const LeftChapterRow = React.memo(
     const rowClass = `chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`;
     const rowProps = {
       className: rowClass,
-      onClick: !isEditing ? onOpenDetails : undefined,
+      onClick: !isEditing && onOpenDetails ? () => onOpenDetails(chapter.serial) : undefined,
       onKeyDown: !isEditing
         ? (e: React.KeyboardEvent) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              onOpenDetails?.();
+              onOpenDetails?.(chapter.serial);
             }
           }
         : undefined,
@@ -266,9 +266,9 @@ export const LeftChapterRow = React.memo(
             <input
               type="text"
               value={chapter.name}
-              onChange={(e) => onRename?.(e.target.value)}
+              onChange={(e) => onRename?.(chapter.serial, e.target.value)}
               onBlur={(e) => {
-                onRename?.(e.target.value.trim());
+                onRename?.(chapter.serial, e.target.value.trim());
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -324,10 +324,10 @@ interface MiddleChapterRowProps {
   progress: ChapterProgress | undefined;
   onToggleMaterial: (chapterSerial: number, material: string) => void;
   isHovered: boolean;
-  onMouseEnter: () => void;
+  onMouseEnter: (serial: number) => void;
   onMouseLeave: () => void;
   priorityClass: string;
-  onOpenDetails?: () => void;
+  onOpenDetails?: (serial: number) => void;
   isEditing?: boolean;
 }
 
@@ -366,20 +366,20 @@ export const MiddleChapterRow = React.memo(
         layout={isEditing ? 'position' : false}
         transition={{ type: "spring", stiffness: 350, damping: 25 }}
         className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
-        onClick={!isEditing ? onOpenDetails : undefined}
+        onClick={!isEditing && onOpenDetails ? () => onOpenDetails(chapter.serial) : undefined}
         onKeyDown={
           !isEditing
             ? (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  onOpenDetails?.();
+                  onOpenDetails?.(chapter.serial);
                 }
               }
             : undefined
         }
         role={!isEditing ? 'button' : undefined}
         tabIndex={!isEditing ? 0 : undefined}
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={() => onMouseEnter(chapter.serial)}
         onMouseLeave={onMouseLeave}
       >
         {materialNames.map((material) => {
@@ -417,12 +417,12 @@ interface RightChapterRowProps {
   progress: ChapterProgress | undefined;
   onSetPriority: (chapterSerial: number, priority: Priority) => void;
   isEditing?: boolean;
-  onDelete?: () => void;
+  onDelete?: (serial: number, name: string) => void;
   isHovered: boolean;
-  onMouseEnter: () => void;
+  onMouseEnter: (serial: number) => void;
   onMouseLeave: () => void;
   priorityClass: string;
-  onOpenDetails?: () => void;
+  onOpenDetails?: (serial: number) => void;
 }
 
 export const RightChapterRow = React.memo(
@@ -447,20 +447,20 @@ export const RightChapterRow = React.memo(
         layout={isEditing ? 'position' : false}
         transition={{ type: "spring", stiffness: 350, damping: 25 }}
         className={`chapter-row ${priorityClass} ${isHovered ? 'hovered' : ''}`}
-        onClick={!isEditing ? onOpenDetails : undefined}
+        onClick={!isEditing && onOpenDetails ? () => onOpenDetails(chapter.serial) : undefined}
         onKeyDown={
           !isEditing
             ? (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  onOpenDetails?.();
+                  onOpenDetails?.(chapter.serial);
                 }
               }
             : undefined
         }
         role={!isEditing ? 'button' : undefined}
         tabIndex={!isEditing ? 0 : undefined}
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={() => onMouseEnter(chapter.serial)}
         onMouseLeave={onMouseLeave}
       >
         <td className="priority-cell" onClick={(e) => e.stopPropagation()}>
@@ -468,7 +468,7 @@ export const RightChapterRow = React.memo(
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete?.();
+                onDelete?.(chapter.serial, chapter.name);
               }}
               className="chapter-delete-btn"
             >

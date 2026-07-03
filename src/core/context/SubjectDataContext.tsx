@@ -306,27 +306,47 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     [setSubjectData]
   );
 
+  const contextValue = useMemo(
+    () => ({
+      subjectData,
+      setSubjectData,
+      mergedSubjectData,
+      customColumns,
+      setCustomColumns,
+      excludedColumns,
+      setExcludedColumns,
+      materialOrder,
+      setMaterialOrder,
+      handleAddColumn,
+      handleRemoveColumn,
+      handleReorderMaterials,
+      handleAddChapter,
+      handleRemoveChapter,
+      handleRenameChapter,
+      handleReorderChapters,
+    }),
+    [
+      subjectData,
+      setSubjectData,
+      mergedSubjectData,
+      customColumns,
+      setCustomColumns,
+      excludedColumns,
+      setExcludedColumns,
+      materialOrder,
+      setMaterialOrder,
+      handleAddColumn,
+      handleRemoveColumn,
+      handleReorderMaterials,
+      handleAddChapter,
+      handleRemoveChapter,
+      handleRenameChapter,
+      handleReorderChapters,
+    ]
+  );
+
   return (
-    <SubjectDataContext.Provider
-      value={{
-        subjectData,
-        setSubjectData,
-        mergedSubjectData,
-        customColumns,
-        setCustomColumns,
-        excludedColumns,
-        setExcludedColumns,
-        materialOrder,
-        setMaterialOrder,
-        handleAddColumn,
-        handleRemoveColumn,
-        handleReorderMaterials,
-        handleAddChapter,
-        handleRemoveChapter,
-        handleRenameChapter,
-        handleReorderChapters,
-      }}
-    >
+    <SubjectDataContext.Provider value={contextValue}>
       {children}
     </SubjectDataContext.Provider>
   );

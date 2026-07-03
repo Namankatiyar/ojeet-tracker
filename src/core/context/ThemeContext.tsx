@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback, useMemo } from 'react';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 
 export type Theme = 'light' | 'dark-glass' | 'dark-solid';
@@ -69,12 +69,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ? 'https://images.unsplash.com/photo-1588414697983-11494810e306?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
     : backgroundUrl;
 
-  const toggleTheme = () =>
-    setTheme((prev) => {
-      if (prev === 'light') return 'dark-solid';
-      if (prev === 'dark-solid') return 'dark-glass';
-      return 'light';
-    });
+  const toggleTheme = useCallback(
+    () =>
+      setTheme((prev) => {
+        if (prev === 'light') return 'dark-solid';
+        if (prev === 'dark-solid') return 'dark-glass';
+        return 'light';
+      }),
+    [setTheme]
+  );
 
   // Apply theme
   useLayoutEffect(() => {
@@ -220,27 +223,47 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [effectiveBackgroundUrl, theme, useGridBackground, dimLevel, glassIntensity, glassRefraction]);
 
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      accentColor: effectiveAccentColor,
+      setAccentColor,
+      backgroundUrl: effectiveBackgroundUrl,
+      setBackgroundUrl,
+      dimLevel,
+      setDimLevel,
+      glassIntensity,
+      setGlassIntensity,
+      glassRefraction,
+      setGlassRefraction,
+      useGridBackground,
+      setUseGridBackground,
+      toggleTheme,
+      setSupportOverride,
+    }),
+    [
+      theme,
+      setTheme,
+      effectiveAccentColor,
+      setAccentColor,
+      effectiveBackgroundUrl,
+      setBackgroundUrl,
+      dimLevel,
+      setDimLevel,
+      glassIntensity,
+      setGlassIntensity,
+      glassRefraction,
+      setGlassRefraction,
+      useGridBackground,
+      setUseGridBackground,
+      toggleTheme,
+      setSupportOverride,
+    ]
+  );
+
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        setTheme,
-        accentColor: effectiveAccentColor,
-        setAccentColor,
-        backgroundUrl: effectiveBackgroundUrl,
-        setBackgroundUrl,
-        dimLevel,
-        setDimLevel,
-        glassIntensity,
-        setGlassIntensity,
-        glassRefraction,
-        setGlassRefraction,
-        useGridBackground,
-        setUseGridBackground,
-        toggleTheme,
-        setSupportOverride,
-      }}
-    >
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

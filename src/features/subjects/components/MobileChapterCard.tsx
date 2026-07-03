@@ -11,7 +11,7 @@ interface MobileChapterCardProps {
   progress: ChapterProgress | undefined;
   isEditing: boolean;
   canReorder: boolean;
-  onOpenDetails: () => void;
+  onOpenDetails: (serial: number) => void;
   onDragEnd?: () => void;
 }
 
@@ -64,11 +64,11 @@ function MobileChapterCardComponent({
 
   const cardProps = {
     className: `mobile-chapter-card ${cardStateClass}`,
-    onClick: onOpenDetails,
+    onClick: () => onOpenDetails(chapter.serial),
     role: 'button',
     tabIndex: 0,
     onKeyDown: (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') onOpenDetails();
+      if (e.key === 'Enter' || e.key === ' ') onOpenDetails(chapter.serial);
     },
   };
 

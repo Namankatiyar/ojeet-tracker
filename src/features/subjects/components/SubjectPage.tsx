@@ -147,15 +147,6 @@ export function SubjectPage({
     setLocalMaterials(data?.materialNames || []);
   }, [data?.materialNames]);
 
-  // Loading state
-  if (!data) {
-    return (
-      <div className="subject-page loading">
-        <div className="loader"></div>
-        <p>Loading chapters...</p>
-      </div>
-    );
-  }
 
   // Stabilized callbacks for ChapterRow memoization
   const handleToggleMaterialWithConfetti = useCallback(
@@ -213,6 +204,47 @@ export function SubjectPage({
     }
     setChapterToDelete({ isOpen: false, serial: null, name: '' });
   }, [onRemoveChapter, chapterToDelete.serial]);
+
+  const localChaptersRef = useRef(localChapters);
+  useEffect(() => {
+    localChaptersRef.current = localChapters;
+  }, [localChapters]);
+
+  const handleOpenDetails = useCallback((serial: number) => {
+    setSelectedChapterSerial(serial);
+  }, []);
+
+  const handleMouseEnterRow = useCallback((serial: number) => {
+    setHoveredChapterSerial(serial);
+  }, []);
+
+  const handleMouseLeaveRow = useCallback(() => {
+    setHoveredChapterSerial(null);
+  }, []);
+
+  const handleDeleteClick = useCallback((serial: number, name: string) => {
+    setChapterToDelete({
+      isOpen: true,
+      serial,
+      name,
+    });
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    if (onReorderChapters) {
+      onReorderChapters(localChaptersRef.current);
+    }
+  }, [onReorderChapters]);
+
+  // Loading state
+  if (!data) {
+    return (
+      <div className="subject-page loading">
+        <div className="loader"></div>
+        <p>Loading chapters...</p>
+      </div>
+    );
+  }
 
   const selectedChapter =
     selectedChapterSerial !== null
@@ -314,13 +346,13 @@ export function SubjectPage({
                     index={index}
                     progress={chProgress}
                     isEditing={isEditing}
-                    onRename={(name) => onRenameChapter?.(chapter.serial, name)}
-                    onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+                    onRename={onRenameChapter}
+                    onOpenDetails={handleOpenDetails}
                     isHovered={hoveredChapterSerial === chapter.serial}
-                    onMouseEnter={() => setHoveredChapterSerial(chapter.serial)}
-                    onMouseLeave={() => setHoveredChapterSerial(null)}
+                    onMouseEnter={handleMouseEnterRow}
+                    onMouseLeave={handleMouseLeaveRow}
                     priorityClass={priorityClass}
-                    onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
+                    onDragEnd={onReorderChapters ? handleDragEnd : undefined}
                   />
                 );
               });
@@ -428,10 +460,10 @@ export function SubjectPage({
                       progress={chProgress}
                       onToggleMaterial={handleToggleMaterialWithConfetti}
                       isHovered={hoveredChapterSerial === chapter.serial}
-                      onMouseEnter={() => setHoveredChapterSerial(chapter.serial)}
-                      onMouseLeave={() => setHoveredChapterSerial(null)}
+                      onMouseEnter={handleMouseEnterRow}
+                      onMouseLeave={handleMouseLeaveRow}
                       priorityClass={priorityClass}
-                      onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+                      onOpenDetails={handleOpenDetails}
                       isEditing={isEditing}
                     />
                   );
@@ -485,18 +517,12 @@ export function SubjectPage({
                       progress={chProgress}
                       onSetPriority={onSetPriority}
                       isEditing={isEditing}
-                      onDelete={() =>
-                        setChapterToDelete({
-                          isOpen: true,
-                          serial: chapter.serial,
-                          name: chapter.name,
-                        })
-                      }
+                      onDelete={handleDeleteClick}
                       isHovered={hoveredChapterSerial === chapter.serial}
-                      onMouseEnter={() => setHoveredChapterSerial(chapter.serial)}
-                      onMouseLeave={() => setHoveredChapterSerial(null)}
+                      onMouseEnter={handleMouseEnterRow}
+                      onMouseLeave={handleMouseLeaveRow}
                       priorityClass={priorityClass}
-                      onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+                      onOpenDetails={handleOpenDetails}
                     />
                   );
                 })}
@@ -575,8 +601,8 @@ export function SubjectPage({
                 progress={progress[chapter.serial]}
                 isEditing={isEditing}
                 canReorder={true}
-                onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
-                onDragEnd={onReorderChapters ? () => onReorderChapters(localChapters) : undefined}
+                onOpenDetails={handleOpenDetails}
+                onDragEnd={onReorderChapters ? handleDragEnd : undefined}
               />
             ))}
           </Reorder.Group>
@@ -591,7 +617,7 @@ export function SubjectPage({
                 progress={progress[chapter.serial]}
                 isEditing={isEditing}
                 canReorder={false}
-                onOpenDetails={() => setSelectedChapterSerial(chapter.serial)}
+                onOpenDetails={handleOpenDetails}
               />
             ))}
           </div>
