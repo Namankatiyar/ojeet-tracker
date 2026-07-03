@@ -341,6 +341,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const skipNextSessionsSyncRef = useRef(false);
   // Always-current mirror of studySessions so runSync never reads a stale closure value.
   const latestStudySessionsRef = useRef(studySessions);
+  // Stable refs for runSync/user/isConfigured so scheduleSync closure never goes stale
+  // without recreating the callback itself (which would re-fire the startup useEffect).
+  const runSyncRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const userRef = useRef(user);
+  const isConfiguredRef = useRef(isConfigured);
 
   const clientIdRef = useRef<string>(Math.random().toString(36).substring(2, 15));
   const pendingSessionLogsRef = useRef<
@@ -741,9 +746,19 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     user,
   ]);
 
+  // Keep the stable refs current every render so the scheduleSync closure below
+  // always invokes the latest runSync without capturing stale values.
+  useEffect(() => {
+    runSyncRef.current = runSync;
+  }, [runSync]);
+  useEffect(() => {
+    userRef.current = user;
+    isConfiguredRef.current = isConfigured;
+  }, [user, isConfigured]);
+
   const scheduleSync = useCallback(
     (delayMs: number) => {
-      if (!user || !isConfigured) return;
+      if (!userRef.current || !isConfiguredRef.current) return;
       const dueAt = Date.now() + Math.max(0, delayMs);
       const currentDueAt = scheduledDueAtRef.current;
 
@@ -759,7 +774,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           scheduledDueAtRef.current = null;
 
           try {
-            await runSync();
+            await runSyncRef.current();
             scheduleSync(SYNC_BATCH_INTERVAL_MS);
           } catch (error) {
             // If sync fails with a "Payload version mismatch" or similar permanent-looking error,
@@ -779,7 +794,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         Math.max(0, delayMs)
       );
     },
-    [clearScheduledSync, isConfigured, runSync, user]
+    [clearScheduledSync] // ponytail: stable reference — reads user/isConfigured/runSync via refs
   );
 
   // Track which domains have been locally edited so the merge policy can decide
@@ -846,10 +861,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [studySessions]);
 
   const syncNow = useCallback(async () => {
-    if (!user || !isConfigured) return;
+    if (!userRef.current || !isConfiguredRef.current) return;
     clearScheduledSync();
     try {
-      await runSync();
+      await runSyncRef.current();
       scheduleSync(SYNC_BATCH_INTERVAL_MS);
     } catch {
       const backoffDelay = Math.min(
@@ -858,7 +873,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       );
       scheduleSync(backoffDelay);
     }
-  }, [clearScheduledSync, isConfigured, runSync, scheduleSync, user]);
+  }, [clearScheduledSync, scheduleSync]);
 
   useEffect(() => {
     if (!user || !isConfigured) {
@@ -871,7 +886,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return () => {
       clearScheduledSync();
     };
-  }, [clearScheduledSync, isConfigured, scheduleSync, user]);
+    // ponytail: scheduleSync intentionally omitted — it is now stable (depends only on
+    // clearScheduledSync). Including it would re-fire on every sync cycle's state update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clearScheduledSync, isConfigured, user]);
 
   // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
   const lastPushedAggregateRef = useRef<string | null>(null);

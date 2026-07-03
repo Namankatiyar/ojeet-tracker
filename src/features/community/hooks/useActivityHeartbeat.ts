@@ -27,7 +27,11 @@ export function useActivityHeartbeat() {
     plannerTasksRef.current = plannerTasks;
   }, [plannerTasks]);
 
-  const lastHeartbeatPayloadRef = useRef<string | null>(null);
+  const lastHeartbeatPayloadRef = useRef<string | null>(
+    // Persist across Community page unmount/remount within the same browser session
+    // so navigating back doesn't force a redundant is_active:false upsert.
+    typeof window !== 'undefined' ? sessionStorage.getItem('ojee-last-heartbeat-payload') : null
+  );
   const lastHeartbeatSentAtRef = useRef<number>(0);
   const heartbeatFailCountRef = useRef<number>(0);
   const heartbeatPausedUntilRef = useRef<number>(0);
@@ -139,6 +143,9 @@ export function useActivityHeartbeat() {
 
         lastHeartbeatSentAtRef.current = now;
         lastHeartbeatPayloadRef.current = payloadStr;
+        try {
+          sessionStorage.setItem('ojee-last-heartbeat-payload', payloadStr);
+        } catch { /* quota exceeded – non-fatal */ }
 
         await client.from('live_activity').upsert(payload, { onConflict: 'user_id' });
         heartbeatFailCountRef.current = 0;

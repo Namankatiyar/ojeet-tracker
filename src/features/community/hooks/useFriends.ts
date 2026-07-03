@@ -212,6 +212,9 @@ export function useFriends() {
         setFriends(merged);
         localStorage.setItem('jee-community-friends-cache', JSON.stringify(merged));
         globalLastFullFetchTime = Date.now();
+        // Stamp the poll time so the visibility effect's initial call is skipped
+        // (fetchFriends already fetched live_activity inside Promise.all).
+        lastPollTimeRef.current = Date.now();
       } catch (err: any) {
         console.error('Failed to fetch friends', err);
         setError(err.message || 'Failed to fetch friends');
@@ -268,7 +271,11 @@ export function useFriends() {
 
     // Initial setup
     if (document.visibilityState === 'visible' && document.hasFocus()) {
-      pollLiveActivity();
+      // Only fire an extra pollLiveActivity if fetchFriends hasn't already fetched
+      // live_activity recently (it stamps lastPollTimeRef on success).
+      if (Date.now() - lastPollTimeRef.current > 60000) {
+        pollLiveActivity();
+      }
       startPolling();
     } else if (document.visibilityState === 'visible') {
       startPolling();
