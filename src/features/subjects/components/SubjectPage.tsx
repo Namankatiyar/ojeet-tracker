@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { AnimatePresence, Reorder, motion } from 'framer-motion';
+import { AnimatePresence, Reorder } from 'framer-motion';
 import {
   Subject,
   SubjectData,
@@ -253,37 +253,9 @@ export function SubjectPage({
 
   const selectedChapterProgress = selectedChapter ? progress[selectedChapter.serial] : undefined;
 
-  const containerVariants = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.06,
-        delayChildren: 0.02,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 28, scale: 0.94 },
-    show: {
-      y: 0,
-      scale: 1,
-      transition: {
-        type: 'spring' as const,
-        stiffness: 320,
-        damping: 26,
-      },
-    },
-  };
-
   return (
-    <motion.div
-      className="subject-page"
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-    >
-      <motion.div variants={itemVariants}>
+    <div className="subject-page">
+      <div>
         <SubjectHeader
           subject={subject}
         data={data}
@@ -294,10 +266,10 @@ export function SubjectPage({
         canAddMaterial={!!onAddMaterial}
         onAddMaterial={() => setIsAddMaterialModalOpen(true)}
       />
-      </motion.div>
+      </div>
 
       {hasScrollbar && (
-        <motion.div className="double-scroll-row" variants={itemVariants}>
+        <div className="double-scroll-row">
           <div className="left-scroll-spacer" />
           <div
             className="double-scroll-wrapper"
@@ -311,9 +283,9 @@ export function SubjectPage({
             <div style={{ width: tableWidth, height: '1px' }} />
           </div>
           <div className="right-scroll-spacer" />
-        </motion.div>
+        </div>
       )}
-      <motion.div className="chapter-table-container desktop-chapter-table" variants={itemVariants}>
+      <div className="chapter-table-container desktop-chapter-table">
         {/* Left Table: Serial & Chapter */}
         <div className="left-table-section">
           <table className="chapter-table">
@@ -529,10 +501,10 @@ export function SubjectPage({
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </div>
 
       {isEditing && (
-        <motion.div className="edit-actions-container" variants={itemVariants}>
+        <div className="edit-actions-container">
           <button
             onClick={() => setIsAddChapterModalOpen(true)}
             className="primary-btn add-chapter-btn-wrapper"
@@ -540,10 +512,10 @@ export function SubjectPage({
             <Plus size={18} />
             Add New Chapter
           </button>
-        </motion.div>
+        </div>
       )}
 
-      <motion.div className="mobile-chapter-view" variants={itemVariants}>
+      <div className="mobile-chapter-view">
         <div className="mobile-chapter-controls">
           <div className="mobile-priority-filter">
             <span className="mobile-control-label">Filter</span>
@@ -622,9 +594,9 @@ export function SubjectPage({
             ))}
           </div>
         )}
-      </motion.div>
+      </div>
 
-      <motion.div className="legend" variants={itemVariants}>
+      <div className="legend">
         <h4>Priority Legend</h4>
         <div className="legend-items">
           <div className="legend-item">
@@ -644,7 +616,7 @@ export function SubjectPage({
             <span>Completed</span>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Material Modals */}
       <ConfirmationModal
@@ -705,6 +677,6 @@ export function SubjectPage({
           />
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

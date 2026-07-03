@@ -27,21 +27,21 @@ export const ReportsPage: React.FC = () => {
     hidden: {},
     show: {
       transition: {
-        staggerChildren: 0.06,
+        staggerChildren: 0.04,
         delayChildren: 0.02,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 28, scale: 0.94 },
+    hidden: { opacity: 0, y: 12 },
     show: {
+      opacity: 1,
       y: 0,
-      scale: 1,
       transition: {
         type: 'spring' as const,
-        stiffness: 320,
-        damping: 26,
+        stiffness: 260,
+        damping: 30,
       },
     },
   };

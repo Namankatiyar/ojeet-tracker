@@ -1,16 +1,16 @@
 # Graph Report - ojee-tracker  (2026-07-03)
 
 ## Corpus Check
-- 211 files · ~276,179 words
+- 219 files · ~279,653 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1474 nodes · 2568 edges · 96 communities (85 shown, 11 thin omitted)
+- 1511 nodes · 2622 edges · 107 communities (95 shown, 12 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fbfc08ff`
+- Built from commit: `62cafa04`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -104,35 +104,44 @@
 - [[_COMMUNITY_Community 93|Community 93]]
 - [[_COMMUNITY_Community 94|Community 94]]
 - [[_COMMUNITY_Community 95|Community 95]]
+- [[_COMMUNITY_Community 96|Community 96]]
+- [[_COMMUNITY_Community 97|Community 97]]
+- [[_COMMUNITY_Community 98|Community 98]]
+- [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
+- [[_COMMUNITY_Community 101|Community 101]]
+- [[_COMMUNITY_Community 102|Community 102]]
+- [[_COMMUNITY_Community 103|Community 103]]
+- [[_COMMUNITY_Community 104|Community 104]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `StudySession` - 46 edges
-2. `Subject` - 44 edges
-3. `PlannerTask` - 44 edges
-4. `useUserProgress()` - 36 edges
+1. `StudySession` - 47 edges
+2. `Subject` - 46 edges
+3. `PlannerTask` - 45 edges
+4. `useUserProgress()` - 38 edges
 5. `Changelog` - 31 edges
 6. `formatDateLocal()` - 30 edges
-7. `SubjectData` - 27 edges
-8. `useRemoteAuth()` - 25 edges
-9. `useTheme()` - 25 edges
-10. `MockScore` - 25 edges
+7. `useRemoteAuth()` - 27 edges
+8. `SubjectData` - 27 edges
+9. `MockScore` - 26 edges
+10. `useTheme()` - 25 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `handler()` --calls--> `createClient()`  [INFERRED]
-  api/invite-page.js → src/shared/lib/gemini.ts
-- `handler()` --calls--> `createClient()`  [INFERRED]
   api/invite-image.js → src/shared/lib/gemini.ts
-- `ProfileEditModalProps` --references--> `ProgressCardSettings`  [EXTRACTED]
-  src/features/community/components/ProfileEditModal.tsx → src/shared/types/index.ts
+- `handler()` --calls--> `createClient()`  [INFERRED]
+  api/invite-page.js → src/shared/lib/gemini.ts
+- `ProfileSyncManager()` --calls--> `useProfileSync()`  [EXTRACTED]
+  src/core/App.tsx → src/features/community/hooks/useProfileSync.ts
+- `StudySessionContextType` --references--> `StudySession`  [EXTRACTED]
+  src/core/context/UserProgressContext.tsx → src/shared/types/index.ts
 - `ExamCountdownModalProps` --references--> `ExamEntry`  [EXTRACTED]
   src/features/dashboard/components/ExamCountdownModal.tsx → src/shared/types/index.ts
-- `StudyTimePanelProps` --references--> `StudySession`  [EXTRACTED]
-  src/features/dashboard/components/StudyTimePanel.tsx → src/shared/types/index.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (96 total, 11 thin omitted)
+## Communities (107 total, 12 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.12
@@ -140,23 +149,23 @@ Nodes (15): 1. Switch to Mobile-First Breakpoints, 2. Flex/Grid Column Stacking,
 
 ### Community 1 - "Community 1"
 Cohesion: 0.12
-Nodes (16): AppRoutes(), AppRoutesProps, ChangelogPage, CommunityPage, Dashboard, ImportSyncPage, InviteHandler, Planner (+8 more)
+Nodes (15): AppRoutesProps, ChangelogPage, CommunityPage, Dashboard, ImportSyncPage, InviteHandler, Planner, PrivacyPolicyPage (+7 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.39
 Nodes (7): createLocalPayload(), buildSyncPayload(), clampPlannerHistoryDays(), filterPlannerTasksForSync(), baseProgress, progressCardSettings, toSyncedProgressCardSettings()
 
 ### Community 3 - "Community 3"
-Cohesion: 0.08
-Nodes (46): AddMockModal(), AddMockModalProps, createEmptySubjectMarks(), AnalyticsPanelsProps, ManageMockPresetsModal(), ManageMockPresetsModalProps, MockScoresPanel(), MockScoresPanelProps (+38 more)
+Cohesion: 0.09
+Nodes (39): AddMockModal(), AddMockModalProps, createEmptySubjectMarks(), AnalyticsPanelsProps, ManageMockPresetsModal(), ManageMockPresetsModalProps, MockScoresPanel(), MockScoresPanelProps (+31 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.06
-Nodes (47): SessionHistory(), formatDuration(), SessionStatistics(), buildCountdownCompletionState(), buildNextPhaseState(), clampDeltaMs(), CountdownConfig, createIdleState() (+39 more)
+Cohesion: 0.17
+Nodes (15): buildCountdownCompletionState(), buildNextPhaseState(), clampDeltaMs(), createIdleState(), getElapsedMsAt(), getPhaseDurationMs(), LegacyPersistedTimerState, loadState() (+7 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.09
-Nodes (37): ChapterDetailDrawer(), ChapterDetailDrawerProps, confidenceColorsList, formatDateDisplay(), getConfidenceLabel(), todayString(), HoverPanel(), HoverPanelProps (+29 more)
+Cohesion: 0.08
+Nodes (40): ChapterDetailDrawer(), ChapterDetailDrawerProps, confidenceColorsList, formatDateDisplay(), getConfidenceLabel(), SubtopicRow, SubtopicRowProps, todayString() (+32 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.12
@@ -164,7 +173,7 @@ Nodes (20): AGGREGATE_SELECT_COLUMNS, DEFAULT_DELTA_CURSOR, DeltaCursor, domainK
 
 ### Community 7 - "Community 7"
 Cohesion: 0.06
-Nodes (45): AnalyticsPanels(), Dashboard(), DashboardNotificationAction, DashboardNotificationCenter(), DashboardNotificationCenterProps, DashboardNotificationItem, DayColumn(), DayColumnProps (+37 more)
+Nodes (47): AnalyticsPanels(), Dashboard(), DashboardNotificationAction, DashboardNotificationCenter(), DashboardNotificationCenterProps, DashboardNotificationItem, ExamCountdownModal(), ExamCountdownModalProps (+39 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.05
@@ -176,15 +185,15 @@ Nodes (33): 10. Anti-Patterns (Banned Style Operations), 11. Quality Checklist, 
 
 ### Community 10 - "Community 10"
 Cohesion: 0.06
-Nodes (32): 0.0.10 (2026-01-31), [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22) (+24 more)
+Nodes (32): 0.0.10 (2026-01-31), [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22), [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22) (+24 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.07
 Nodes (27): ..., 1. Project Essence & Objective, 2. Technical Architecture, 3.1 ThemeContext, 3.2 SubjectDataContext, 3.3 UserProgressContext, 3. State Management (Context API), 4.1 Glassmorphism Engine (+19 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.12
-Nodes (19): config, handler(), ApiKeyPanel(), ApiKeyPanelProps, BubbleProps, ChatDrawer(), ConfirmCardProps, MessageBubble() (+11 more)
+Cohesion: 0.11
+Nodes (21): config, handler(), handler(), replaceMeta(), ApiKeyPanel(), ApiKeyPanelProps, BubbleProps, ChatDrawer() (+13 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.07
@@ -211,8 +220,8 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleDetection, moduleResolution (+11 more)
 
 ### Community 19 - "Community 19"
-Cohesion: 0.14
-Nodes (16): RemoteSyncProvider(), useUserProgress(), AppContent(), OnboardingFlow, ProfileSyncManager(), View, useAutoShiftTasks(), useDocumentMetadata() (+8 more)
+Cohesion: 0.11
+Nodes (16): AppContent(), ChatDrawer, MusicPlayerDrawer, OnboardingFlow, ProfileSyncManager(), View, useAutoShiftTasks(), PageMeta (+8 more)
 
 ### Community 20 - "Community 20"
 Cohesion: 0.11
@@ -220,11 +229,11 @@ Nodes (17): 1. 📥 Installation, 2. 🔑 Configure Environment Variables, 3. �
 
 ### Community 21 - "Community 21"
 Cohesion: 0.22
-Nodes (9): MusicPlayerDrawer(), ReportsPage(), SubjectDataProvider(), initialProgress, mockMergedSubjectData, UserProgressContext, UserProgressProvider(), useLocalStorage() (+1 more)
+Nodes (9): initialProgress, ProgressDataContext, SettingsContext, StudySessionContext, StudySessionContextType, mockMergedSubjectData, UserProgressContext, UserProgressProvider() (+1 more)
 
 ### Community 22 - "Community 22"
 Cohesion: 0.06
-Nodes (35): OnboardingData, OnboardingFlow(), OnboardingFlowProps, stepTransition, stepVariants, OnboardingLayout(), OnboardingLayoutProps, OnboardingProgress() (+27 more)
+Nodes (35): OnboardingData, OnboardingFlowProps, stepTransition, stepVariants, OnboardingLayout(), OnboardingLayoutProps, OnboardingProgress(), OnboardingProgressProps (+27 more)
 
 ### Community 23 - "Community 23"
 Cohesion: 0.13
@@ -239,8 +248,8 @@ Cohesion: 0.18
 Nodes (11): scripts, build, dev, format, format:check, lint, package, preview (+3 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.20
-Nodes (9): 1. Project Overview, 2. Recent Implementation: Subtopics Tracking & Chapter Workspace (V2), 3. Recent Implementation: Daily Study Analytics & Bento Dashboard, Directory Structure, Key Implementations & Architecture, Layout & Architecture, Project Overview & Context: ojee-tracker, Tech Stack (+1 more)
+Cohesion: 0.25
+Nodes (7): 1. Project Overview, 2. Recent Implementation: Subtopics Tracking & Chapter Workspace (V2), Directory Structure, Key Implementations & Architecture, Project Overview & Context: ojee-tracker, Tech Stack, Use the caveman skill and ponytail skill whenever required without fail.
 
 ### Community 27 - "Community 27"
 Cohesion: 0.25
@@ -295,8 +304,8 @@ Cohesion: 0.33
 Nodes (5): FINAL OUTPUT, GUIDELINES FOR THIS PROMPT, PHASE 1 — COMPONENT AUDIT, PHASE 2 — DIAGNOSIS, PHASE 3 — OVERHAUL PLAN
 
 ### Community 41 - "Community 41"
-Cohesion: 0.17
-Nodes (12): useSubjectData(), ChatSession, ConfirmActionPayload, getInitialSessions(), makeId(), makeMessage(), MessageRole, useAgentChat() (+4 more)
+Cohesion: 0.25
+Nodes (8): ChatSession, ConfirmActionPayload, getInitialSessions(), makeId(), makeMessage(), MessageRole, ChatTurn, buildAgentSystemPrompt()
 
 ### Community 42 - "Community 42"
 Cohesion: 0.40
@@ -331,8 +340,8 @@ Cohesion: 0.67
 Nodes (3): 0.0.13 (2026-02-02), Added, Fixed
 
 ### Community 52 - "Community 52"
-Cohesion: 0.18
-Nodes (15): CalendarGrid(), WEEKDAY_HEADERS, DayModal(), DayModalProps, formatStudyTime(), DayTile, DayTileComponent(), DayTileProps (+7 more)
+Cohesion: 0.29
+Nodes (8): CalendarGrid(), WEEKDAY_HEADERS, DayModal(), DayModalProps, formatStudyTime(), MonthlyView(), DayData, useMonthlyData()
 
 ### Community 53 - "Community 53"
 Cohesion: 0.19
@@ -344,31 +353,31 @@ Nodes (19): build_run(), embed_file(), find_runs(), _find_runs_recursive(), gene
 
 ### Community 68 - "Community 68"
 Cohesion: 0.17
-Nodes (20): DashboardProps, PlannerProps, SessionHistoryProps, SessionStatisticsProps, StudyClockProps, subjectConfig, SubjectHeaderProps, TaskModalProps (+12 more)
+Nodes (18): PlannerProps, SessionHistoryProps, SessionStatisticsProps, StudyClockProps, subjectConfig, SubjectHeaderProps, TaskModal(), TaskModalProps (+10 more)
 
 ### Community 69 - "Community 69"
-Cohesion: 0.17
-Nodes (11): CalendarGridProps, MonthCell, MonthCellProps, MonthlyViewProps, UserProgressContextType, ImportSyncPageProps, OjeetSyncPayload, VALID_SUBJECTS (+3 more)
+Cohesion: 0.16
+Nodes (9): MonthCell, MonthCellProps, formatDuration(), SessionStatistics(), HeaderProps, ImportSyncPageProps, OjeetSyncPayload, VALID_SUBJECTS (+1 more)
 
 ### Community 70 - "Community 70"
 Cohesion: 0.27
-Nodes (6): Planner(), ViewMode, WeeklyView(), WeeklyViewProps, useDateNavigator(), usePlannerData()
+Nodes (5): Planner(), ViewMode, WeeklyView(), useDateNavigator(), usePlannerData()
 
 ### Community 71 - "Community 71"
 Cohesion: 0.16
 Nodes (18): build_run(), embed_file(), find_runs(), _find_runs_recursive(), generate_html(), get_mime_type(), _kill_port(), load_previous_iteration() (+10 more)
 
 ### Community 72 - "Community 72"
-Cohesion: 0.31
-Nodes (6): generateColorsFromAccent(), UserAvatar(), UserAvatarProps, triggerConfetti(), triggerMassiveConfetti(), triggerSmallConfetti()
+Cohesion: 0.21
+Nodes (9): ACCENT_COLORS, Header(), generateColorsFromAccent(), UserAvatar(), UserAvatarProps, ColorPickerModal(), ColorPickerModalProps, hslToHex() (+1 more)
 
 ### Community 73 - "Community 73"
-Cohesion: 0.23
-Nodes (8): DEFAULT_PLAYLIST, DEFAULT_TRACKS, Playlist, Track, deleteAudioFile(), getAudioFile(), getDB(), saveAudioFile()
+Cohesion: 0.21
+Nodes (9): DEFAULT_PLAYLIST, DEFAULT_TRACKS, MusicPlayerDrawer(), Playlist, Track, deleteAudioFile(), getAudioFile(), getDB() (+1 more)
 
 ### Community 74 - "Community 74"
-Cohesion: 0.20
-Nodes (11): InviteFriendModal(), InviteFriendModalProps, InviteHandler(), StudyClock(), SupportPage(), Theme, ThemeContext, ThemeContextType (+3 more)
+Cohesion: 0.23
+Nodes (10): InviteFriendModal(), InviteFriendModalProps, InviteHandler(), Theme, ThemeContext, ThemeContextType, useTheme(), ThemeOnboardingModal() (+2 more)
 
 ### Community 75 - "Community 75"
 Cohesion: 0.12
@@ -383,8 +392,8 @@ Cohesion: 0.43
 Nodes (6): DailyAnalytics(), formatDateDisplay(), formatHourLabel(), formatSmartDuration(), formatStatValue(), getLocalDateString()
 
 ### Community 78 - "Community 78"
-Cohesion: 0.24
-Nodes (8): DAY_LABELS, formatLastSeen(), formatSmartDuration(), UserProfileCard(), UserProfileCardProps, FriendProfile, LiveActivity, RemoteProfile
+Cohesion: 0.16
+Nodes (14): EXAM_OPTIONS, GRADE_OPTIONS, ProfileEditModal(), ProfileEditModalProps, DAY_LABELS, formatLastSeen(), formatSmartDuration(), UserProfileCard() (+6 more)
 
 ### Community 79 - "Community 79"
 Cohesion: 0.31
@@ -395,16 +404,16 @@ Cohesion: 0.18
 Nodes (9): MergeOptions, mergePayloadDomainsWithPolicy(), SyncDomain, EncodedPayload, EncodedPayloadChunked, EncodedPayloadInline, SYNC_SCHEMA_VERSION, SyncChunkRow (+1 more)
 
 ### Community 81 - "Community 81"
-Cohesion: 0.15
-Nodes (5): AMOUNTS, CloudSyncPromptModal(), CloudSyncPromptModalProps, GoogleSignInButton(), GoogleSignInButtonProps
+Cohesion: 0.14
+Nodes (6): AMOUNTS, SupportPage(), CloudSyncPromptModal(), CloudSyncPromptModalProps, GoogleSignInButton(), GoogleSignInButtonProps
 
 ### Community 82 - "Community 82"
-Cohesion: 0.17
-Nodes (14): CommunityPage(), CommunityTab, DisconnectModal(), DisconnectModalProps, InviteSection(), InviteSectionProps, EXAM_OPTIONS, GRADE_OPTIONS (+6 more)
+Cohesion: 0.21
+Nodes (9): CommunityPage(), CommunityTab, DisconnectModal(), DisconnectModalProps, InviteSection(), InviteSectionProps, SkeletonFriendCard(), SkeletonFriendCardProps (+1 more)
 
 ### Community 83 - "Community 83"
-Cohesion: 0.33
-Nodes (3): PageMeta, routeMetadata, Window
+Cohesion: 0.21
+Nodes (12): StudyClock(), TimerPreset, useTimerEngine(), PresetManager(), PresetManagerProps, dispatchNotification(), requestNotificationPermission(), getAudioContext() (+4 more)
 
 ### Community 84 - "Community 84"
 Cohesion: 0.12
@@ -427,44 +436,76 @@ Cohesion: 0.20
 Nodes (9): analysis.json, benchmark.json, comparison.json, evals.json, grading.json, history.json, JSON Schemas, metrics.json (+1 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.19
-Nodes (6): TaskModal(), TaskType, useTaskForm(), TimePicker, TimePickerHandle, TimePickerProps
+Cohesion: 0.26
+Nodes (11): CalendarGridProps, DashboardProps, DayColumn(), DayColumnProps, MonthlyViewProps, WeeklyViewProps, UserProgressContextType, CoPilotRecommendation (+3 more)
 
 ### Community 90 - "Community 90"
 Cohesion: 0.18
-Nodes (10): ConfirmationModal(), ConfirmationModalProps, SettingsModal(), SettingsModalProps, STORAGE_KEYS, mockNavigate, mockResetPrompt, mockSignInWithGoogle (+2 more)
+Nodes (9): ConfirmationModal(), ConfirmationModalProps, SettingsModalProps, STORAGE_KEYS, mockNavigate, mockResetPrompt, mockSignInWithGoogle, mockSignOut (+1 more)
 
 ### Community 91 - "Community 91"
-Cohesion: 0.57
-Nodes (4): CoPilotNudgeRow(), CoPilotNudgeRowProps, CoPilotRecommendation, ConfidenceLevel
+Cohesion: 0.27
+Nodes (3): CoPilotNudgeRow(), CoPilotNudgeRowProps, ConfidenceLevel
 
 ### Community 92 - "Community 92"
 Cohesion: 0.50
 Nodes (4): 0.0.8 (2026-01-31), Added, Changed, Fixed
 
 ### Community 93 - "Community 93"
+Cohesion: 0.30
+Nodes (12): useRemoteAuth(), RemoteSyncProvider(), useSubjectData(), useUserProgress(), AppRoutes(), useActivityHeartbeat(), useAgentChat(), useAgentTools() (+4 more)
+
+### Community 95 - "Community 95"
+Cohesion: 0.21
+Nodes (9): ReportsPage(), SubjectDataContext, SubjectDataProvider(), ThemeProvider(), useLocalStorage(), ChemistrySyllabus, JSONUnit, parseSubjectJSON() (+1 more)
+
+### Community 96 - "Community 96"
+Cohesion: 0.17
+Nodes (10): caveman, Example output, How to invoke, See also, What it does, Auto-Clarity, Boundaries, Intensity (+2 more)
+
+### Community 97 - "Community 97"
+Cohesion: 0.18
+Nodes (8): CountdownConfig, CustomConfig, CustomInterval, DEFAULT_POMODORO, PomodoroConfig, TimerConfig, ModeSelector(), ModeSelectorProps
+
+### Community 98 - "Community 98"
+Cohesion: 0.22
+Nodes (8): Boundaries, Intensity, Output, Persistence, Ponytail, Rules, The ladder, When NOT to be lazy
+
+### Community 99 - "Community 99"
+Cohesion: 0.29
+Nodes (6): DayTile, DayTileComponent(), DayTileProps, formatStudyTime(), HoverPanelProps, SUBJECT_COLORS
+
+### Community 100 - "Community 100"
+Cohesion: 0.33
+Nodes (5): CustomSelect(), CustomSelectProps, Option, PrioritySelector(), PrioritySelectorProps
+
+### Community 101 - "Community 101"
+Cohesion: 0.53
+Nodes (5): EngineState, TimerMode, TimerPhase, TimerControls(), TimerControlsProps
+
+### Community 102 - "Community 102"
 Cohesion: 0.67
-Nodes (3): [0.0.19](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-23), Performance & Refactoring, UI & Styling
+Nodes (3): [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03), Bug Fixes, Features
 
 ## Knowledge Gaps
-- **702 isolated node(s):** `config`, `name`, `version`, `type`, `bin` (+697 more)
+- **726 isolated node(s):** `config`, `name`, `version`, `type`, `bin` (+721 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useUserProgress()` connect `Community 19` to `Community 1`, `Community 3`, `Community 4`, `Community 6`, `Community 7`, `Community 41`, `Community 74`, `Community 77`, `Community 78`, `Community 82`, `Community 21`, `Community 22`, `Community 91`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
-- **Why does `PlannerTask` connect `Community 52` to `Community 3`, `Community 4`, `Community 68`, `Community 69`, `Community 70`, `Community 7`, `Community 41`, `Community 27`, `Community 78`, `Community 80`, `Community 21`, `Community 89`, `Community 91`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Why does `Subject` connect `Community 68` to `Community 1`, `Community 3`, `Community 4`, `Community 5`, `Community 70`, `Community 7`, `Community 69`, `Community 41`, `Community 27`, `Community 77`, `Community 80`, `Community 19`, `Community 53`, `Community 21`, `Community 89`, `Community 91`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `useUserProgress()` connect `Community 93` to `Community 1`, `Community 3`, `Community 6`, `Community 7`, `Community 41`, `Community 77`, `Community 78`, `Community 82`, `Community 83`, `Community 19`, `Community 21`, `Community 22`, `Community 91`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `StudySession` connect `Community 69` to `Community 3`, `Community 68`, `Community 70`, `Community 7`, `Community 6`, `Community 72`, `Community 77`, `Community 78`, `Community 83`, `Community 52`, `Community 53`, `Community 21`, `Community 89`, `Community 91`, `Community 93`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
+- **Why does `PlannerTask` connect `Community 89` to `Community 99`, `Community 68`, `Community 69`, `Community 70`, `Community 7`, `Community 27`, `Community 3`, `Community 78`, `Community 80`, `Community 83`, `Community 52`, `Community 21`, `Community 91`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **What connects `Recursively find directories that contain an outputs/ subdirectory.`, `Build a run dict with prompt, outputs, and grading data.`, `Read a file and return an embedded representation.` to the rest of the system?**
-  _716 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _740 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.11578947368421053 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11695906432748537 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09494949494949495 - nodes in this community are weakly interconnected._

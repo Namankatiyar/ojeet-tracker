@@ -104,25 +104,32 @@ export function UserProfileCard({
 
   const todayStr = getLogicalTodayStr(dailyResetHour);
 
-  const [localTimerState, setLocalTimerState] = useState<{ engineState: string } | null>(() => {
+  // PERF-005: Read all timer-related localStorage keys in one place (initializer + event handler).
+  // This eliminates synchronous localStorage.getItem calls from the useMemo render path.
+  const readLocalTimerState = (): { engineState: string; taskType?: string; taskId?: string } | null => {
     try {
       const raw = localStorage.getItem('jee-timer-engine');
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const rawType = localStorage.getItem('studyClock_taskType');
+      const rawTaskId = localStorage.getItem('studyClock_selectedTaskId');
+      return {
+        engineState: parsed.engineState,
+        taskType: rawType ? JSON.parse(rawType) : undefined,
+        taskId: rawTaskId ? JSON.parse(rawTaskId) : undefined,
+      };
     } catch {
       return null;
     }
-  });
+  };
+
+  const [localTimerState, setLocalTimerState] = useState(readLocalTimerState);
 
   useEffect(() => {
     if (remoteProfileData) return;
 
     const handleTimerChange = () => {
-      try {
-        const raw = localStorage.getItem('jee-timer-engine');
-        setLocalTimerState(raw ? JSON.parse(raw) : null);
-      } catch {
-        setLocalTimerState(null);
-      }
+      setLocalTimerState(readLocalTimerState());
     };
 
     window.addEventListener('jee-timer-state-change', handleTimerChange);
@@ -206,24 +213,12 @@ export function UserProfileCard({
     return count;
   }, [remoteProfileData, studySessions, isSignedOutCurrentUser]);
 
-  /* ── Active Task ID from Study Clock ── */
+  /* ── Active Task ID from Study Clock — pure derivation, zero IO ── */
   const activeTaskId = useMemo<string | null>(() => {
-    if (remoteProfileData) return null;
-    if (!localTimerState) return null;
-    if (localTimerState.engineState !== 'running' && localTimerState.engineState !== 'paused') {
-      return null;
-    }
-    try {
-      const rawType = localStorage.getItem('studyClock_taskType');
-      const rawTaskId = localStorage.getItem('studyClock_selectedTaskId');
-      if (!rawType || !rawTaskId) return null;
-
-      const taskType = JSON.parse(rawType);
-      const taskId = JSON.parse(rawTaskId);
-      return taskType === 'task' && taskId ? taskId : null;
-    } catch {
-      return null;
-    }
+    if (remoteProfileData || !localTimerState) return null;
+    const { engineState, taskType, taskId } = localTimerState;
+    if (engineState !== 'running' && engineState !== 'paused') return null;
+    return taskType === 'task' && taskId ? taskId : null;
   }, [remoteProfileData, localTimerState]);
 
   /* ── Today's tasks ── */

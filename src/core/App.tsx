@@ -18,8 +18,14 @@ import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 import { useProfileSync } from '../features/community/hooks/useProfileSync';
 
 import { AppRoutes } from './AppRoutes';
-import { ChatDrawer } from '../features/chat/components/ChatDrawer';
-import { MusicPlayerDrawer } from '../features/music/components/MusicPlayerDrawer';
+const ChatDrawer = lazy(() =>
+  import('../features/chat/components/ChatDrawer').then((m) => ({ default: m.ChatDrawer }))
+);
+const MusicPlayerDrawer = lazy(() =>
+  import('../features/music/components/MusicPlayerDrawer').then((m) => ({
+    default: m.MusicPlayerDrawer,
+  }))
+);
 
 const OnboardingFlow = lazy(() =>
   import('../features/onboarding/OnboardingFlow').then((m) => ({
@@ -194,8 +200,16 @@ function AppContent() {
         onClose={() => setIsDiscordModalOpen(false)}
       />
       <ThemeOnboardingModal />
-      {enableAIAgent && <ChatDrawer />}
-      {enableMusicPlayer && <MusicPlayerDrawer />}
+      {enableAIAgent && (
+        <Suspense fallback={null}>
+          <ChatDrawer />
+        </Suspense>
+      )}
+      {enableMusicPlayer && (
+        <Suspense fallback={null}>
+          <MusicPlayerDrawer />
+        </Suspense>
+      )}
     </div>
   );
 }

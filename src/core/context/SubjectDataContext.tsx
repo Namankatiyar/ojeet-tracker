@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { Subject, SubjectData } from '../../shared/types';
 import { parseSubjectJSON } from '../../shared/utils/jsonParser';
@@ -95,7 +95,13 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   );
 
   // Load JSON data if not in local storage, or merge subtopics if missing
+  // PERF-004: Only fetch subjects that aren't already cached in localStorage.
+  // The ref latch prevents re-triggering when subjectData changes after a merge.
+  const hasLoadedRef = useRef(false);
   useEffect(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
     const loadSubjectData = async (subject: Subject) => {
       try {
         const data = await parseSubjectJSON(subject);
@@ -135,10 +141,10 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     };
 
-    loadSubjectData('physics');
-    loadSubjectData('chemistry');
-    loadSubjectData('maths');
-  }, []);
+    if (!subjectData.physics) loadSubjectData('physics');
+    if (!subjectData.chemistry) loadSubjectData('chemistry');
+    if (!subjectData.maths) loadSubjectData('maths');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge CSV data with custom columns and filter excluded ones
   const mergedSubjectData = useMemo(() => {

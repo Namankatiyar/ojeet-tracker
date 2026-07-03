@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ChevronRight, Minus, Plus, X, Check } from 'lucide-react';
 import {
@@ -66,6 +66,167 @@ function formatDateDisplay(dateString: string | undefined) {
     year: 'numeric',
   });
 }
+
+// ── Memoized subtopic row to avoid full-list re-renders on each interaction ──
+interface SubtopicRowProps {
+  subtopic: string;
+  materialNames: string[];
+  subState: { completed: Record<string, boolean>; attemptedByMaterial?: Record<string, number>; lastRevised?: string };
+  isExpanded: boolean;
+  onToggleExpand: (subtopic: string) => void;
+  onToggleMaterial: (subtopic: string, material: string) => void;
+  onUpdateAttempted: (subtopic: string, material: string, count: number) => void;
+  onSetRevised: (subtopic: string, date: string | undefined) => void;
+}
+
+const SubtopicRow = memo(function SubtopicRow({
+  subtopic,
+  materialNames,
+  subState,
+  isExpanded,
+  onToggleExpand,
+  onToggleMaterial,
+  onUpdateAttempted,
+  onSetRevised,
+}: SubtopicRowProps) {
+  const subCompleted = subState.completed || {};
+  const attempted = subState.attemptedByMaterial || {};
+  const lastRevised = subState.lastRevised;
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const isOverdueRevision = lastRevised && new Date(lastRevised) < thirtyDaysAgo;
+  const completedMaterialCount = materialNames.filter((m) => !!subCompleted[m]).length;
+
+  return (
+    <div className={`subtopic-row ${isExpanded ? 'subtopic-row--expanded' : ''}`}>
+      <div
+        className="subtopic-row-header"
+        onClick={() => onToggleExpand(subtopic)}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onToggleExpand(subtopic);
+          }
+        }}
+      >
+        <ChevronRight size={14} className="subtopic-expand-chevron" />
+        <span className="subtopic-row-name">{subtopic}</span>
+        <div className="subtopic-row-meta">
+          {isOverdueRevision && (
+            <span className="revision-warning-badge" title="Not revised in 30+ days">⚠️</span>
+          )}
+          <div className="subtopic-progress-dots">
+            {materialNames.map((m) => (
+              <span
+                key={m}
+                className={`subtopic-progress-dot ${subCompleted[m] ? 'filled' : ''}`}
+                title={`${m}: ${subCompleted[m] ? 'Done' : 'Pending'}`}
+              />
+            ))}
+          </div>
+          <span className="subtopic-row-count">
+            {completedMaterialCount}/{materialNames.length}
+          </span>
+        </div>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            className="subtopic-expand-content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            {materialNames.map((material) => {
+              const isChecked = !!subCompleted[material];
+              const attemptedValue = attempted[material] ?? 0;
+              return (
+                <div
+                  key={material}
+                  className={`subtopic-material-row ${isChecked ? 'active' : ''}`}
+                >
+                  <div
+                    className="subtopic-material-toggle"
+                    onClick={() => onToggleMaterial(subtopic, material)}
+                  >
+                    <div className={`modern-toggle ${isChecked ? 'checked' : ''}`}>
+                      {isChecked && <Check size={10} strokeWidth={3} />}
+                    </div>
+                    <span className="subtopic-material-name">{material}</span>
+                  </div>
+
+                  <div className="subtopic-material-qs">
+                    <span className="q-label">Qs:</span>
+                    <div className="modern-stepper--compact">
+                      <button
+                        type="button"
+                        onClick={() => onUpdateAttempted(subtopic, material, attemptedValue - 1)}
+                        disabled={attemptedValue <= 0}
+                        aria-label={`Decrease ${subtopic} ${material} questions`}
+                      >
+                        <Minus size={10} />
+                      </button>
+                      <input
+                        type="number"
+                        min={0}
+                        value={attemptedValue}
+                        onChange={(e) =>
+                          onUpdateAttempted(subtopic, material, parseInt(e.target.value) || 0)
+                        }
+                        aria-label={`${subtopic} ${material} attempted questions`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => onUpdateAttempted(subtopic, material, attemptedValue + 1)}
+                        aria-label={`Increase ${subtopic} ${material} questions`}
+                      >
+                        <Plus size={10} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="subtopic-revision-row">
+              <span className="subtopic-revised-label">Revised:</span>
+              <span className={`subtopic-revised-val ${isOverdueRevision ? 'overdue' : ''}`}>
+                {lastRevised ? formatDateDisplay(lastRevised) : 'Never'}
+              </span>
+              <div className="subtopic-revision-actions">
+                <button
+                  type="button"
+                  className="subtopic-mark-btn"
+                  onClick={() => onSetRevised(subtopic, todayString())}
+                >
+                  Mark today
+                </button>
+                {lastRevised && (
+                  <button
+                    type="button"
+                    className="icon-btn-reset"
+                    onClick={() => onSetRevised(subtopic, undefined)}
+                    title="Clear revision date"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
 
 export function ChapterDetailDrawer({
   chapter,
@@ -387,177 +548,22 @@ export function ChapterDetailDrawer({
                   )}
                 </div>
                 <div className="subtopics-container">
-                  {chapter.subtopics.map((subtopic) => {
-                    const subState = progress?.subtopics?.[subtopic] || { completed: {} };
-                    const subCompleted = subState.completed || {};
-                    const attempted = subState.attemptedByMaterial || {};
-                    const lastRevised = subState.lastRevised;
-                    const isExpanded = expandedSubtopics.has(subtopic);
-
-                    const thirtyDaysAgo = new Date();
-                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    const isOverdueRevision = lastRevised && new Date(lastRevised) < thirtyDaysAgo;
-
-                    // Count completed materials for this subtopic
-                    const completedMaterialCount = materialNames.filter(
-                      (m) => !!subCompleted[m]
-                    ).length;
-
-                    return (
-                      <div
-                        key={subtopic}
-                        className={`subtopic-row ${isExpanded ? 'subtopic-row--expanded' : ''}`}
-                      >
-                        <div
-                          className="subtopic-row-header"
-                          onClick={() => toggleSubtopicExpand(subtopic)}
-                          role="button"
-                          tabIndex={0}
-                          aria-expanded={isExpanded}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              toggleSubtopicExpand(subtopic);
-                            }
-                          }}
-                        >
-                          <ChevronRight size={14} className="subtopic-expand-chevron" />
-                          <span className="subtopic-row-name">{subtopic}</span>
-                          <div className="subtopic-row-meta">
-                            {isOverdueRevision && (
-                              <span
-                                className="revision-warning-badge"
-                                title="Not revised in 30+ days"
-                              >
-                                ⚠️
-                              </span>
-                            )}
-                            <div className="subtopic-progress-dots">
-                              {materialNames.map((m) => (
-                                <span
-                                  key={m}
-                                  className={`subtopic-progress-dot ${subCompleted[m] ? 'filled' : ''}`}
-                                  title={`${m}: ${subCompleted[m] ? 'Done' : 'Pending'}`}
-                                />
-                              ))}
-                            </div>
-                            <span className="subtopic-row-count">
-                              {completedMaterialCount}/{materialNames.length}
-                            </span>
-                          </div>
-                        </div>
-
-                        <AnimatePresence initial={false}>
-                          {isExpanded && (
-                            <motion.div 
-                              className="subtopic-expand-content"
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2, ease: "easeInOut" }}
-                              style={{ overflow: 'hidden' }}
-                            >
-                            {materialNames.map((material) => {
-                              const isChecked = !!subCompleted[material];
-                              const attemptedValue = attempted[material] ?? 0;
-
-                              return (
-                                <div
-                                  key={material}
-                                  className={`subtopic-material-row ${isChecked ? 'active' : ''}`}
-                                >
-                                  <div
-                                    className="subtopic-material-toggle"
-                                    onClick={() => onToggleSubtopicMaterial(subtopic, material)}
-                                  >
-                                    <div className={`modern-toggle ${isChecked ? 'checked' : ''}`}>
-                                      {isChecked && <Check size={10} strokeWidth={3} />}
-                                    </div>
-                                    <span className="subtopic-material-name">{material}</span>
-                                  </div>
-
-                                  <div className="subtopic-material-qs">
-                                    <span className="q-label">Qs:</span>
-                                    <div className="modern-stepper--compact">
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          onUpdateSubtopicAttempted(
-                                            subtopic,
-                                            material,
-                                            attemptedValue - 1
-                                          )
-                                        }
-                                        disabled={attemptedValue <= 0}
-                                        aria-label={`Decrease ${subtopic} ${material} questions`}
-                                      >
-                                        <Minus size={10} />
-                                      </button>
-                                      <input
-                                        type="number"
-                                        min={0}
-                                        value={attemptedValue}
-                                        onChange={(e) =>
-                                          onUpdateSubtopicAttempted(
-                                            subtopic,
-                                            material,
-                                            parseInt(e.target.value) || 0
-                                          )
-                                        }
-                                        aria-label={`${subtopic} ${material} attempted questions`}
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          onUpdateSubtopicAttempted(
-                                            subtopic,
-                                            material,
-                                            attemptedValue + 1
-                                          )
-                                        }
-                                        aria-label={`Increase ${subtopic} ${material} questions`}
-                                      >
-                                        <Plus size={10} />
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-
-                            <div className="subtopic-revision-row">
-                              <span className="subtopic-revised-label">Revised:</span>
-                              <span
-                                className={`subtopic-revised-val ${isOverdueRevision ? 'overdue' : ''}`}
-                              >
-                                {lastRevised ? formatDateDisplay(lastRevised) : 'Never'}
-                              </span>
-                              <div className="subtopic-revision-actions">
-                                <button
-                                  type="button"
-                                  className="subtopic-mark-btn"
-                                  onClick={() => onSetSubtopicLastRevised(subtopic, todayString())}
-                                >
-                                  Mark today
-                                </button>
-                                {lastRevised && (
-                                  <button
-                                    type="button"
-                                    className="icon-btn-reset"
-                                    onClick={() => onSetSubtopicLastRevised(subtopic, undefined)}
-                                    title="Clear revision date"
-                                  >
-                                    <X size={12} />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    );
-                  })}
+                  {chapter.subtopics.map((subtopic) => (
+                    <SubtopicRow
+                      key={subtopic}
+                      subtopic={subtopic}
+                      materialNames={materialNames}
+                      subState={
+                        (progress?.subtopics?.[subtopic] as SubtopicRowProps['subState']) ||
+                        { completed: {} }
+                      }
+                      isExpanded={expandedSubtopics.has(subtopic)}
+                      onToggleExpand={toggleSubtopicExpand}
+                      onToggleMaterial={onToggleSubtopicMaterial}
+                      onUpdateAttempted={onUpdateSubtopicAttempted}
+                      onSetRevised={onSetSubtopicLastRevised}
+                    />
+                  ))}
                 </div>
               </div>
             )}

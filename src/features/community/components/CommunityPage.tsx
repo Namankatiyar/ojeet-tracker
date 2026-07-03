@@ -8,6 +8,7 @@ import { InviteFriendModal } from './InviteFriendModal';
 import { DisconnectModal } from './DisconnectModal';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useFriends, FriendProfile } from '../hooks/useFriends';
+import { useActivityHeartbeat } from '../hooks/useActivityHeartbeat';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
@@ -17,6 +18,10 @@ import { Users, Trophy, CheckCircle, AlertCircle, X } from 'lucide-react';
 type CommunityTab = 'friends' | 'leaderboard';
 
 export function CommunityPage() {
+  // PERF-008: Heartbeat only fires while this page is mounted
+  const triggerHeartbeat = useActivityHeartbeat;
+  triggerHeartbeat();
+
   const [activeTab, setActiveTab] = useState<CommunityTab>('friends');
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -84,21 +89,21 @@ export function CommunityPage() {
     hidden: {},
     show: {
       transition: {
-        staggerChildren: 0.06,
+        staggerChildren: 0.04,
         delayChildren: 0.02,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 28, scale: 0.94 },
+    hidden: { opacity: 0, y: 12 },
     show: {
+      opacity: 1,
       y: 0,
-      scale: 1,
       transition: {
         type: 'spring' as const,
-        stiffness: 320,
-        damping: 26,
+        stiffness: 260,
+        damping: 30,
       },
     },
   };

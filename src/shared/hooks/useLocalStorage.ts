@@ -41,24 +41,22 @@ export function useLocalStorage<T>(
   // Update internal state if the key changes
   useEffect(() => {
     setStoredValue(readValue());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  const setValue = (value: T | ((prev: T) => T)) => {
+  // Persist to localStorage whenever storedValue changes
+  useEffect(() => {
     try {
-      setStoredValue((prevValue) => {
-        // Allow value to be a function so we have same API as useState
-        const valueToStore = value instanceof Function ? value(prevValue) : value;
-
-        // Save to local storage
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        }
-
-        return valueToStore;
-      });
-    } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
+    } catch (e) {
+      console.error(`Error setting localStorage key "${key}":`, e);
     }
+  }, [key, storedValue]);
+
+
+  const setValue = (value: T | ((prev: T) => T)) => {
+    // Allow value to be a function so we have same API as useState
+    setStoredValue((prevValue) => (value instanceof Function ? value(prevValue) : value));
   };
 
   return [storedValue, setValue];

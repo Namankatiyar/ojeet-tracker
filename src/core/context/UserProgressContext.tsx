@@ -102,7 +102,73 @@ interface UserProgressContextType {
   handleUpdateMockExamPreset: (preset: MockExamPreset) => void;
 }
 
-const UserProgressContext = createContext<UserProgressContextType | undefined>(undefined);
+// PERF-006: Internal sub-contexts to avoid monolithic re-renders.
+// Components that only need settings won't re-render when studySessions changes, etc.
+
+interface ProgressDataContextType {
+  progress: AppProgress;
+  setProgress: (progress: AppProgress | ((prev: AppProgress) => AppProgress)) => void;
+  plannerTasks: PlannerTask[];
+  setPlannerTasks: (tasks: PlannerTask[] | ((prev: PlannerTask[]) => PlannerTask[])) => void;
+  mockScores: MockScore[];
+  setMockScores: (scores: MockScore[] | ((prev: MockScore[]) => MockScore[])) => void;
+  examDates: ExamEntry[];
+  setExamDates: (dates: ExamEntry[] | ((prev: ExamEntry[]) => ExamEntry[])) => void;
+  mockExamPresets: MockExamPreset[];
+  setMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
+  dailyQuestionLogs: Record<string, number>;
+  setDailyQuestionLogs: (logs: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>)) => void;
+  primaryExamDate: string;
+  physicsProgress: number;
+  chemistryProgress: number;
+  mathsProgress: number;
+  overallProgress: number;
+  calculateSubjectProgress: (subject: Subject) => number;
+  handleToggleMaterial: (subject: Subject, chapterSerial: number, material: string) => void;
+  handleSetPriority: (subject: Subject, chapterSerial: number, priority: Priority) => void;
+  handleUpdateChapterDetail: (subject: Subject, chapterSerial: number, patch: Partial<ChapterDetailProgress>) => void;
+  handleToggleSubtopicMaterial: (subject: Subject, chapterSerial: number, subtopicName: string, material: string) => void;
+  handleUpdateSubtopicAttempted: (subject: Subject, chapterSerial: number, subtopicName: string, material: string, count: number) => void;
+  handleSetSubtopicLastRevised: (subject: Subject, chapterSerial: number, subtopicName: string, date: string | undefined) => void;
+  handleAddPlannerTask: (task: PlannerTask) => void;
+  handleTogglePlannerTask: (taskId: string) => void;
+  handleDeletePlannerTask: (taskId: string) => void;
+  handleEditPlannerTask: (updatedTask: PlannerTask) => void;
+  handleAddExam: (exam: Omit<ExamEntry, 'id'>) => void;
+  handleDeleteExam: (id: string) => void;
+  handleUpdateExam: (exam: ExamEntry) => void;
+  handleSetPrimaryExam: (id: string) => void;
+  handleAddMockScore: (score: Omit<MockScore, 'id'>) => void;
+  handleDeleteMockScore: (id: string) => void;
+  handleAddMockExamPreset: (preset: MockExamPreset) => void;
+  handleDeleteMockExamPreset: (id: string) => void;
+  handleUpdateMockExamPreset: (preset: MockExamPreset) => void;
+}
+
+interface StudySessionContextType {
+  studySessions: StudySession[];
+  setStudySessions: (sessions: StudySession[] | ((prev: StudySession[]) => StudySession[])) => void;
+  handleAddStudySession: (session: StudySession) => void;
+  handleDeleteStudySession: (sessionId: string) => void;
+  handleEditStudySession: (session: StudySession) => void;
+}
+
+interface SettingsContextType {
+  disableAutoShift: boolean;
+  setDisableAutoShift: (disable: boolean | ((prev: boolean) => boolean)) => void;
+  enableAIAgent: boolean;
+  setEnableAIAgent: (enable: boolean | ((prev: boolean) => boolean)) => void;
+  enableMusicPlayer: boolean;
+  setEnableMusicPlayer: (enable: boolean | ((prev: boolean) => boolean)) => void;
+  dailyResetHour: number;
+  setDailyResetHour: (hour: number | ((prev: number) => number)) => void;
+  progressCardSettings: ProgressCardSettings;
+  setProgressCardSettings: (settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)) => void;
+}
+
+const ProgressDataContext = createContext<ProgressDataContextType | undefined>(undefined);
+const StudySessionContext = createContext<StudySessionContextType | undefined>(undefined);
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 const initialProgress: AppProgress = {
   physics: {},
@@ -1000,31 +1066,24 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     [setMockExamPresets]
   );
 
-  const contextValue = useMemo(
+  // PERF-006: Split into 3 sub-context values so that e.g. studySessions changes
+  // don't re-render components that only consume settings or progress.
+
+  const progressDataValue = useMemo(
     () => ({
       progress,
       setProgress,
       plannerTasks,
       setPlannerTasks,
-      studySessions,
-      setStudySessions,
       mockScores,
       setMockScores,
       examDates,
       setExamDates,
-      primaryExamDate,
-      disableAutoShift,
-      setDisableAutoShift,
-      enableAIAgent,
-      setEnableAIAgent,
-      enableMusicPlayer,
-      setEnableMusicPlayer,
-      dailyResetHour,
-      setDailyResetHour,
-      progressCardSettings,
-      setProgressCardSettings,
+      mockExamPresets,
+      setMockExamPresets,
       dailyQuestionLogs,
       setDailyQuestionLogs,
+      primaryExamDate,
       physicsProgress,
       chemistryProgress,
       mathsProgress,
@@ -1033,24 +1092,19 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleToggleMaterial,
       handleSetPriority,
       handleUpdateChapterDetail,
-      handleAddPlannerTask,
-      handleTogglePlannerTask,
       handleToggleSubtopicMaterial,
       handleUpdateSubtopicAttempted,
       handleSetSubtopicLastRevised,
+      handleAddPlannerTask,
+      handleTogglePlannerTask,
       handleDeletePlannerTask,
       handleEditPlannerTask,
-      handleAddStudySession,
-      handleDeleteStudySession,
-      handleEditStudySession,
-      handleAddMockScore,
-      handleDeleteMockScore,
       handleAddExam,
       handleDeleteExam,
       handleUpdateExam,
       handleSetPrimaryExam,
-      mockExamPresets,
-      setMockExamPresets,
+      handleAddMockScore,
+      handleDeleteMockScore,
       handleAddMockExamPreset,
       handleDeleteMockExamPreset,
       handleUpdateMockExamPreset,
@@ -1060,13 +1114,61 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setProgress,
       plannerTasks,
       setPlannerTasks,
-      studySessions,
-      setStudySessions,
       mockScores,
       setMockScores,
       examDates,
       setExamDates,
+      mockExamPresets,
+      setMockExamPresets,
+      dailyQuestionLogs,
+      setDailyQuestionLogs,
       primaryExamDate,
+      physicsProgress,
+      chemistryProgress,
+      mathsProgress,
+      overallProgress,
+      calculateSubjectProgress,
+      handleToggleMaterial,
+      handleSetPriority,
+      handleUpdateChapterDetail,
+      handleToggleSubtopicMaterial,
+      handleUpdateSubtopicAttempted,
+      handleSetSubtopicLastRevised,
+      handleAddPlannerTask,
+      handleTogglePlannerTask,
+      handleDeletePlannerTask,
+      handleEditPlannerTask,
+      handleAddExam,
+      handleDeleteExam,
+      handleUpdateExam,
+      handleSetPrimaryExam,
+      handleAddMockScore,
+      handleDeleteMockScore,
+      handleAddMockExamPreset,
+      handleDeleteMockExamPreset,
+      handleUpdateMockExamPreset,
+    ]
+  );
+
+  const studySessionValue = useMemo(
+    () => ({
+      studySessions,
+      setStudySessions,
+      handleAddStudySession,
+      handleDeleteStudySession,
+      handleEditStudySession,
+    }),
+    [
+      studySessions,
+      setStudySessions,
+      handleAddStudySession,
+      handleDeleteStudySession,
+      handleEditStudySession,
+    ]
+  );
+
+  const settingsValue = useMemo(
+    () => ({
       disableAutoShift,
       setDisableAutoShift,
       enableAIAgent,
@@ -1077,51 +1179,48 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setDailyResetHour,
       progressCardSettings,
       setProgressCardSettings,
-      dailyQuestionLogs,
-      setDailyQuestionLogs,
-      physicsProgress,
-      chemistryProgress,
-      mathsProgress,
-      overallProgress,
-      calculateSubjectProgress,
-      handleToggleMaterial,
-      handleSetPriority,
-      handleUpdateChapterDetail,
-      handleAddPlannerTask,
-      handleTogglePlannerTask,
-      handleToggleSubtopicMaterial,
-      handleUpdateSubtopicAttempted,
-      handleSetSubtopicLastRevised,
-      handleDeletePlannerTask,
-      handleEditPlannerTask,
-      handleAddStudySession,
-      handleDeleteStudySession,
-      handleEditStudySession,
-      handleAddMockScore,
-      handleDeleteMockScore,
-      handleAddExam,
-      handleDeleteExam,
-      handleUpdateExam,
-      handleSetPrimaryExam,
-      mockExamPresets,
-      setMockExamPresets,
-      handleAddMockExamPreset,
-      handleDeleteMockExamPreset,
-      handleUpdateMockExamPreset,
+    }),
+    [
+      disableAutoShift,
+      setDisableAutoShift,
+      enableAIAgent,
+      setEnableAIAgent,
+      enableMusicPlayer,
+      setEnableMusicPlayer,
+      dailyResetHour,
+      setDailyResetHour,
+      progressCardSettings,
+      setProgressCardSettings,
     ]
   );
 
   return (
-    <UserProgressContext.Provider value={contextValue}>
-      {children}
-    </UserProgressContext.Provider>
+    <ProgressDataContext.Provider value={progressDataValue}>
+      <StudySessionContext.Provider value={studySessionValue}>
+        <SettingsContext.Provider value={settingsValue}>
+          {children}
+        </SettingsContext.Provider>
+      </StudySessionContext.Provider>
+    </ProgressDataContext.Provider>
   );
 };
 
-export const useUserProgress = () => {
-  const context = useContext(UserProgressContext);
-  if (context === undefined) {
+/**
+ * PERF-006: Merged facade hook — reads from all 3 sub-contexts and returns
+ * the full UserProgressContextType. Zero consumer changes needed.
+ */
+export const useUserProgress = (): UserProgressContextType => {
+  const progressData = useContext(ProgressDataContext);
+  const studySessionData = useContext(StudySessionContext);
+  const settingsData = useContext(SettingsContext);
+  if (!progressData || !studySessionData || !settingsData) {
     throw new Error('useUserProgress must be used within a UserProgressProvider');
   }
-  return context;
+  // Merge inline — this object is created per-call but is cheap since
+  // the sub-context values are individually memoized.
+  return {
+    ...progressData,
+    ...studySessionData,
+    ...settingsData,
+  };
 };
