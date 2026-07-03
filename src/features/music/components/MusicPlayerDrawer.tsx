@@ -71,6 +71,55 @@ function determineTrackType(url: string): 'youtube' | 'spotify' | 'other' {
   return 'other';
 }
 
+function getYouTubePlaylistId(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+      return urlObj.searchParams.get('list');
+    }
+  } catch (e) {
+    // Ignore invalid URLs
+  }
+  return null;
+}
+
+async function fetchYouTubePlaylistTracks(playlistId: string, apiKey: string): Promise<Track[]> {
+  const tracks: Track[] = [];
+  let nextPageToken = '';
+  
+  do {
+    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${apiKey}${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      const reason = errData?.error?.errors?.[0]?.reason;
+      if (response.status === 404 || reason === 'playlistNotFound' || response.status === 400) {
+        throw new Error('YouTube playlist not found. Please verify the URL and ensure the playlist is public.');
+      }
+      const errMsg = errData?.error?.message || `HTTP error! status: ${response.status}`;
+      throw new Error(errMsg);
+    }
+    const data = await response.json();
+    if (data.items && Array.isArray(data.items)) {
+      for (const item of data.items) {
+        const videoId = item.snippet?.resourceId?.videoId;
+        const title = item.snippet?.title || 'YouTube Track';
+        if (videoId) {
+          tracks.push({
+            id: `yt-${videoId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            title,
+            url: `https://www.youtube.com/watch?v=${videoId}`,
+            type: 'youtube',
+          });
+        }
+      }
+    }
+    nextPageToken = data.nextPageToken || '';
+  } while (nextPageToken);
+  
+  return tracks;
+}
+
 /** Source logo icon for YouTube / Spotify */
 function SourceIcon({ type }: { type: Track['type'] }) {
   if (type === 'youtube') {
@@ -143,6 +192,8 @@ export function MusicPlayerDrawer() {
   const [showAddTrack, setShowAddTrack] = useState(false);
   const [isSavingLocal, setIsSavingLocal] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  const [isResolvingPlaylist, setIsResolvingPlaylist] = useState(false);
+  const [resolutionError, setResolutionError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -276,15 +327,48 @@ export function MusicPlayerDrawer() {
   };
 
   // ── Track Management ─────────────────────────────────────────
-  const handleAddTrack = () => {
-    if (!newTrackUrl.trim()) return;
-    const type = determineTrackType(newTrackUrl);
+  const handleAddTrack = async () => {
+    const url = newTrackUrl.trim();
+    if (!url) return;
+
+    setResolutionError(null);
+    const playlistId = getYouTubePlaylistId(url);
+    const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
+
+    if (playlistId && apiKey) {
+      setIsResolvingPlaylist(true);
+      try {
+        const resolvedTracks = await fetchYouTubePlaylistTracks(playlistId, apiKey);
+        if (resolvedTracks.length === 0) {
+          throw new Error('No tracks found in this playlist.');
+        }
+        setPlaylists((prev) =>
+          prev.map((p) => {
+            if (p.id === activePlaylist.id) {
+              return { ...p, tracks: [...p.tracks, ...resolvedTracks] };
+            }
+            return p;
+          })
+        );
+        setNewTrackUrl('');
+        setNewTrackTitle('');
+        setShowAddTrack(false);
+      } catch (error: any) {
+        console.error('Failed to resolve playlist:', error);
+        setResolutionError(error?.message || 'Failed to resolve YouTube playlist.');
+      } finally {
+        setIsResolvingPlaylist(false);
+      }
+      return;
+    }
+
+    const type = determineTrackType(url);
     const title = newTrackTitle.trim() || (type === 'spotify' ? 'Spotify Track' : 'New Track');
 
     const newTrack: Track = {
       id: Date.now().toString(),
       title,
-      url: newTrackUrl.trim(),
+      url,
       type,
     };
 
@@ -582,11 +666,17 @@ export function MusicPlayerDrawer() {
               style={{ overflow: 'hidden' }}
             >
               <div className="music-add-track-inner">
+                {resolutionError && (
+                  <div className="music-error-banner">
+                    {resolutionError}
+                  </div>
+                )}
                 <input
                   type="text"
                   placeholder="Track name (optional)"
                   value={newTrackTitle}
                   onChange={(e) => setNewTrackTitle(e.target.value)}
+                  disabled={isResolvingPlaylist}
                 />
                 <div className="music-add-track-url-row">
                   <input
@@ -595,14 +685,22 @@ export function MusicPlayerDrawer() {
                     placeholder="YouTube or Spotify URL"
                     value={newTrackUrl}
                     onChange={(e) => setNewTrackUrl(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddTrack()}
+                    onKeyDown={(e) => e.key === 'Enter' && !isResolvingPlaylist && handleAddTrack()}
+                    disabled={isResolvingPlaylist}
                   />
                   <button
                     className="music-create-btn"
                     onClick={handleAddTrack}
-                    disabled={!newTrackUrl.trim()}
+                    disabled={!newTrackUrl.trim() || isResolvingPlaylist}
                   >
-                    Add
+                    {isResolvingPlaylist ? (
+                      <>
+                        <Loader2 size={14} className="music-spinner" />
+                        <span>Resolving...</span>
+                      </>
+                    ) : (
+                      'Add'
+                    )}
                   </button>
                 </div>
 
@@ -612,8 +710,9 @@ export function MusicPlayerDrawer() {
 
                 <div
                   className="music-local-upload-zone"
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={handleFileDrop}
+                  onDragOver={(e) => !isResolvingPlaylist && e.preventDefault()}
+                  onDrop={(e) => !isResolvingPlaylist && handleFileDrop(e)}
+                  style={isResolvingPlaylist ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
                 >
                   <input
                     type="file"
@@ -621,6 +720,7 @@ export function MusicPlayerDrawer() {
                     id="music-local-upload"
                     onChange={handleFileInput}
                     style={{ display: 'none' }}
+                    disabled={isResolvingPlaylist}
                   />
                   <label htmlFor="music-local-upload" className="music-local-upload-label">
                     {isSavingLocal ? (
