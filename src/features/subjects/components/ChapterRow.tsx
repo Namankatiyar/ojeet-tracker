@@ -88,12 +88,19 @@ function HoverPanel({ x, y, chapterName, progress }: HoverPanelProps) {
         )}
 
         {(detail?.revisionCount !== undefined && detail?.revisionCount > 0) ||
+        (detail?.lectureCount !== undefined && detail?.lectureCount > 0) ||
         detail?.lastRevised ? (
           <div className="chp-section chp-row-stats">
             {detail?.revisionCount !== undefined && detail?.revisionCount > 0 && (
               <div className="chp-stat">
                 <span>Revisions</span>
                 <span className="chp-stat-val">{detail.revisionCount}</span>
+              </div>
+            )}
+            {detail?.lectureCount !== undefined && detail?.lectureCount > 0 && (
+              <div className="chp-stat">
+                <span>Lectures</span>
+                <span className="chp-stat-val">{detail.lectureCount}</span>
               </div>
             )}
             {detail?.lastRevised && (
