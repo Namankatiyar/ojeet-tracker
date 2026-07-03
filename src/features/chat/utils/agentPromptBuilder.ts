@@ -57,7 +57,7 @@ export function buildAgentSystemPrompt(ctx: AgentContext): string {
     .slice(0, 10)
     .map(
       (t) =>
-        `  • [${t.date} ${t.time}] ${t.title}${t.subtitle ? ` (${t.subtitle})` : ''}${t.wasShifted ? ' [OVERDUE]' : ''}`
+        `  • [${t.date} ${t.time}] ${t.title}${t.subtitle ? ` (${t.subtitle})` : ''}${t.isLecture ? ' [LECTURE]' : ''}${t.wasShifted ? ' [OVERDUE]' : ''}`
     );
 
   const recentMocks = [...ctx.mockScores]

@@ -190,7 +190,8 @@ export function useAgentTools() {
       subject?: Subject,
       chapterName?: string,
       material?: string,
-      questions?: number
+      questions?: number,
+      isLecture?: boolean
     ): string => {
       let chapterSerial: number | undefined;
       let resolvedTitle = title;
@@ -218,6 +219,7 @@ export function useAgentTools() {
         chapterSerial,
         material,
         questions: questions && questions > 0 ? questions : undefined,
+        isLecture,
       };
       handleAddPlannerTask(task);
       return ok(`Added task "${finalTitle}" on ${date} at ${time}.`, { taskId: task.id });
@@ -280,6 +282,7 @@ export function useAgentTools() {
           time: t.time,
           completed: t.completed,
           subject: t.subject,
+          isLecture: t.isLecture,
         }))
       );
     },
@@ -538,7 +541,8 @@ export function useAgentTools() {
           args.subject as Subject | undefined,
           args.chapter_name as string | undefined,
           args.material as string | undefined,
-          args.questions as number | undefined
+          args.questions as number | undefined,
+          args.is_lecture as boolean | undefined
         ),
       toggle_planner_task: (args: Record<string, unknown>) =>
         togglePlannerTask(args.task_id as string),
@@ -810,6 +814,10 @@ export function useAgentTools() {
             questions: {
               type: Type.NUMBER,
               description: 'Optional number of questions to attempt for this task',
+            },
+            is_lecture: {
+              type: Type.BOOLEAN,
+              description: 'Optional boolean indicating if this task is a lecture',
             },
           },
           required: ['title', 'date'],
