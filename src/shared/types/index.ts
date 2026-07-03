@@ -30,6 +30,7 @@ export interface ChapterDetailProgress {
   confidence?: ConfidenceLevel;
   lastRevised?: string;
   revisionCount?: number;
+  lectureCount?: number;
   notes?: string;
   revisionHistory?: Array<{
     date: string;
@@ -73,6 +74,7 @@ export interface PlannerTask {
   completedAt?: string;
   wasShifted?: boolean; // True if this task was auto-moved from a past day
   questions?: number; // Questions to attempt
+  isLecture?: boolean;
 }
 
 export interface StudySession {

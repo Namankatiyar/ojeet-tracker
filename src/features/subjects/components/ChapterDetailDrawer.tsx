@@ -460,16 +460,47 @@ export function ChapterDetailDrawer({
                         <Plus size={14} />
                       </button>
                     </div>
-                    {(detail?.revisionCount || 0) > 0 && (
+                  </div>
+                </div>
+
+                <div className="drawer-field row-field">
+                  <label>Lecture Count</label>
+                  <div className="stepper-wrapper-with-reset">
+                    <div className="modern-stepper">
                       <button
-                        className="icon-btn-reset"
-                        onClick={() => onUpdateDetail(chapter.serial, { revisionCount: 0 })}
-                        title="Reset revision count to 0"
+                        onClick={() =>
+                          onUpdateDetail(chapter.serial, {
+                            lectureCount: Math.max(0, (detail?.lectureCount || 0) - 1),
+                          })
+                        }
+                        disabled={(detail?.lectureCount || 0) <= 0}
+                        aria-label="Decrease lectures"
                         type="button"
                       >
-                        <X size={14} />
+                        <Minus size={14} />
                       </button>
-                    )}
+                      <input
+                        type="number"
+                        value={detail?.lectureCount || 0}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          onUpdateDetail(chapter.serial, { lectureCount: Math.max(0, val) });
+                        }}
+                        min="0"
+                        aria-label="Lecture count"
+                      />
+                      <button
+                        onClick={() =>
+                          onUpdateDetail(chapter.serial, {
+                            lectureCount: (detail?.lectureCount || 0) + 1,
+                          })
+                        }
+                        aria-label="Increase lectures"
+                        type="button"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -52,6 +52,7 @@ export function TaskModal({
       completed: taskToEdit ? taskToEdit.completed : false,
       type: form.taskType,
       questions: form.questions > 0 ? form.questions : undefined,
+      isLecture: form.isLecture,
     };
 
     if (form.taskType === 'custom') {
@@ -198,7 +199,20 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
         </div>
       </div>
       {form.customSubject !== 'none' && (
-        <QuestionStepper value={form.questions} onChange={form.setQuestions} />
+        <>
+          <div className="form-group-inline" style={{ marginBottom: 'var(--space-4)' }}>
+            <label>Lecture</label>
+            <label className="checkbox-container" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={form.isLecture}
+                onChange={(e) => form.setIsLecture(e.target.checked)}
+              />
+              <span className="checkmark"></span>
+            </label>
+          </div>
+          <QuestionStepper value={form.questions} onChange={form.setQuestions} />
+        </>
       )}
     </>
   );
@@ -314,6 +328,17 @@ function ChapterTaskFields({
             {form.selectedMaterial.length === 0 && form.availableMaterials.length > 0 && (
               <div className="material-hint">Leave empty for general chapter task</div>
             )}
+          </div>
+          <div className="form-group-inline" style={{ marginBottom: 'var(--space-4)' }}>
+            <label>Lecture</label>
+            <label className="checkbox-container" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={form.isLecture}
+                onChange={(e) => form.setIsLecture(e.target.checked)}
+              />
+              <span className="checkmark"></span>
+            </label>
           </div>
           <QuestionStepper value={form.questions} onChange={form.setQuestions} />
         </>

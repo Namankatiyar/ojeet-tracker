@@ -17,6 +17,8 @@ export function hasChapterDetailData(progress: ChapterProgress | undefined): boo
     getTotalAttemptedQuestions(progress) > 0 ||
     detail.confidence !== undefined ||
     !!detail.lastRevised ||
+    (detail.lectureCount !== undefined && detail.lectureCount > 0) ||
+    (detail.revisionCount !== undefined && detail.revisionCount > 0) ||
     !!detail.notes?.trim()
   );
 }

@@ -834,10 +834,10 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         triggerSmallConfetti(accentColor);
       }
 
-      if (task.type === 'chapter' && task.subject && task.chapterSerial && task.material) {
+      if (task.subject && task.chapterSerial) {
         const currentProgress = pendingProgressRef.current;
-        const subjectProgress = currentProgress[task.subject!];
-        const chapterProgress = subjectProgress[task.chapterSerial!] || {
+        const subjectProgress = currentProgress[task.subject];
+        const chapterProgress = subjectProgress[task.chapterSerial] || {
           completed: {},
           priority: 'none',
         };
@@ -846,9 +846,9 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         let newCount = 0;
         const currentDetail = chapterProgress.detail || { attemptedByMaterial: {} };
         const currentAttempted = currentDetail.attemptedByMaterial || {};
-        const currentCount = currentAttempted[task.material!] || 0;
 
-        if (task.questions && task.questions > 0) {
+        if (task.material && task.questions && task.questions > 0) {
+          const currentCount = currentAttempted[task.material] || 0;
           const change = newStatus ? task.questions : -task.questions;
           newCount = Math.max(0, currentCount + change);
           netChange = newCount - currentCount;
@@ -860,26 +860,39 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + netChange),
             }));
           }
+        } else if (task.questions && task.questions > 0) {
+          const change = newStatus ? task.questions : -task.questions;
+          const todayStr = new Date().toLocaleDateString('en-CA');
+          setDailyQuestionLogs((prevLogs) => ({
+            ...prevLogs,
+            [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + change),
+          }));
         }
 
-        // Update pendingProgressRef immediately so subsequent synchronous updates see it!
-        let updatedDetailForRef = chapterProgress.detail;
-        if (task.questions && task.questions > 0) {
-          updatedDetailForRef = {
-            ...currentDetail,
-            attemptedByMaterial: {
-              ...currentAttempted,
-              [task.material!]: newCount,
-            },
-          };
-        }
+        const prevLectureCount = currentDetail.lectureCount || 0;
+        const nextLectureCount = task.isLecture
+          ? Math.max(0, prevLectureCount + (newStatus ? 1 : -1))
+          : prevLectureCount;
+
+        const updatedDetailForRef = {
+          ...currentDetail,
+          attemptedByMaterial: (task.material && task.questions && task.questions > 0)
+            ? { ...currentAttempted, [task.material]: newCount }
+            : currentAttempted,
+          lectureCount: nextLectureCount,
+        };
+
+        const updatedCompleted = task.material
+          ? { ...chapterProgress.completed, [task.material]: newStatus }
+          : chapterProgress.completed;
+
         const nextProgress = {
           ...currentProgress,
-          [task.subject!]: {
+          [task.subject]: {
             ...subjectProgress,
-            [task.chapterSerial!]: {
+            [task.chapterSerial]: {
               ...chapterProgress,
-              completed: { ...chapterProgress.completed, [task.material!]: newStatus },
+              completed: updatedCompleted,
               detail: updatedDetailForRef,
             },
           },
@@ -895,16 +908,22 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           const prevDetail = prevChapterProgress.detail || { attemptedByMaterial: {} };
           const prevAttempted = prevDetail.attemptedByMaterial || {};
 
-          let updatedDetail = prevChapterProgress.detail;
-          if (task.questions && task.questions > 0) {
-            updatedDetail = {
-              ...prevDetail,
-              attemptedByMaterial: {
-                ...prevAttempted,
-                [task.material!]: newCount,
-              },
-            };
-          }
+          const prevLectures = prevDetail.lectureCount || 0;
+          const nextLectures = task.isLecture
+            ? Math.max(0, prevLectures + (newStatus ? 1 : -1))
+            : prevLectures;
+
+          const updatedDetail = {
+            ...prevDetail,
+            attemptedByMaterial: (task.material && task.questions && task.questions > 0)
+              ? { ...prevAttempted, [task.material!]: newCount }
+              : prevAttempted,
+            lectureCount: nextLectures,
+          };
+
+          const updatedComp = task.material
+            ? { ...prevChapterProgress.completed, [task.material!]: newStatus }
+            : prevChapterProgress.completed;
 
           return {
             ...prog,
@@ -912,7 +931,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               ...prevSubjectProgress,
               [task.chapterSerial!]: {
                 ...prevChapterProgress,
-                completed: { ...prevChapterProgress.completed, [task.material!]: newStatus },
+                completed: updatedComp,
                 detail: updatedDetail,
               },
             },
@@ -946,16 +965,201 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const handleDeletePlannerTask = useCallback(
     (taskId: string) => {
+      const task = plannerTasksRef.current.find((t) => t.id === taskId);
       setPlannerTasks((prev) => prev.filter((t) => t.id !== taskId));
+
+      if (task && task.completed && task.isLecture && task.subject && task.chapterSerial) {
+        setProgress((prog) => {
+          const subjectProgress = prog[task.subject!];
+          const chapterProgress = subjectProgress[task.chapterSerial!] || { completed: {}, priority: 'none' };
+          const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+          const currentLectures = detail.lectureCount || 0;
+          const nextLectures = Math.max(0, currentLectures - 1);
+          return {
+            ...prog,
+            [task.subject!]: {
+              ...subjectProgress,
+              [task.chapterSerial!]: {
+                ...chapterProgress,
+                detail: {
+                  ...detail,
+                  lectureCount: nextLectures,
+                },
+              },
+            },
+          };
+        });
+
+        const currentProgress = pendingProgressRef.current;
+        const subjectProgress = currentProgress[task.subject!];
+        const chapterProgress = subjectProgress[task.chapterSerial!] || { completed: {}, priority: 'none' };
+        const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+        const currentLectures = detail.lectureCount || 0;
+        const nextLectures = Math.max(0, currentLectures - 1);
+        pendingProgressRef.current = {
+          ...currentProgress,
+          [task.subject!]: {
+            ...subjectProgress,
+            [task.chapterSerial!]: {
+              ...chapterProgress,
+              detail: {
+                ...detail,
+                lectureCount: nextLectures,
+              },
+            },
+          },
+        };
+      }
     },
-    [setPlannerTasks]
+    [setPlannerTasks, setProgress]
   );
 
   const handleEditPlannerTask = useCallback(
     (updatedTask: PlannerTask) => {
+      const oldTask = plannerTasksRef.current.find((t) => t.id === updatedTask.id);
       setPlannerTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+
+      if (oldTask) {
+        const oldLectureVal = (oldTask.isLecture && oldTask.completed) ? 1 : 0;
+        const newLectureVal = (updatedTask.isLecture && updatedTask.completed) ? 1 : 0;
+
+        if (oldTask.subject === updatedTask.subject && oldTask.chapterSerial === updatedTask.chapterSerial) {
+          const diff = newLectureVal - oldLectureVal;
+          if (diff !== 0 && updatedTask.subject && updatedTask.chapterSerial) {
+            setProgress((prog) => {
+              const subjectProgress = prog[updatedTask.subject!];
+              const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
+              const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+              const currentLectures = detail.lectureCount || 0;
+              const nextLectures = Math.max(0, currentLectures + diff);
+
+              return {
+                ...prog,
+                [updatedTask.subject!]: {
+                  ...subjectProgress,
+                  [updatedTask.chapterSerial!]: {
+                    ...chapterProgress,
+                    detail: {
+                      ...detail,
+                      lectureCount: nextLectures,
+                    },
+                  },
+                },
+              };
+            });
+
+            const currentProgress = pendingProgressRef.current;
+            const subjectProgress = currentProgress[updatedTask.subject!];
+            const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
+            const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+            const currentLectures = detail.lectureCount || 0;
+            const nextLectures = Math.max(0, currentLectures + diff);
+            pendingProgressRef.current = {
+              ...currentProgress,
+              [updatedTask.subject!]: {
+                ...subjectProgress,
+                [updatedTask.chapterSerial!]: {
+                  ...chapterProgress,
+                  detail: {
+                    ...detail,
+                    lectureCount: nextLectures,
+                  },
+                },
+              },
+            };
+          }
+        } else {
+          if (oldLectureVal > 0 && oldTask.subject && oldTask.chapterSerial) {
+            setProgress((prog) => {
+              const subjectProgress = prog[oldTask.subject!];
+              const chapterProgress = subjectProgress[oldTask.chapterSerial!] || { completed: {}, priority: 'none' };
+              const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+              const currentLectures = detail.lectureCount || 0;
+              const nextLectures = Math.max(0, currentLectures - 1);
+
+              return {
+                ...prog,
+                [oldTask.subject!]: {
+                  ...subjectProgress,
+                  [oldTask.chapterSerial!]: {
+                    ...chapterProgress,
+                    detail: {
+                      ...detail,
+                      lectureCount: nextLectures,
+                    },
+                  },
+                },
+              };
+            });
+
+            const currentProgress = pendingProgressRef.current;
+            const subjectProgress = currentProgress[oldTask.subject!];
+            const chapterProgress = subjectProgress[oldTask.chapterSerial!] || { completed: {}, priority: 'none' };
+            const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+            const currentLectures = detail.lectureCount || 0;
+            const nextLectures = Math.max(0, currentLectures - 1);
+            pendingProgressRef.current = {
+              ...currentProgress,
+              [oldTask.subject!]: {
+                ...subjectProgress,
+                [oldTask.chapterSerial!]: {
+                  ...chapterProgress,
+                  detail: {
+                    ...detail,
+                    lectureCount: nextLectures,
+                  },
+                },
+              },
+            };
+          }
+
+          if (newLectureVal > 0 && updatedTask.subject && updatedTask.chapterSerial) {
+            setProgress((prog) => {
+              const subjectProgress = prog[updatedTask.subject!];
+              const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
+              const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+              const currentLectures = detail.lectureCount || 0;
+              const nextLectures = Math.max(0, currentLectures + 1);
+
+              return {
+                ...prog,
+                [updatedTask.subject!]: {
+                  ...subjectProgress,
+                  [updatedTask.chapterSerial!]: {
+                    ...chapterProgress,
+                    detail: {
+                      ...detail,
+                      lectureCount: nextLectures,
+                    },
+                  },
+                },
+              };
+            });
+
+            const currentProgress = pendingProgressRef.current;
+            const subjectProgress = currentProgress[updatedTask.subject!];
+            const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
+            const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+            const currentLectures = detail.lectureCount || 0;
+            const nextLectures = Math.max(0, currentLectures + 1);
+            pendingProgressRef.current = {
+              ...currentProgress,
+              [updatedTask.subject!]: {
+                ...subjectProgress,
+                [updatedTask.chapterSerial!]: {
+                  ...chapterProgress,
+                  detail: {
+                    ...detail,
+                    lectureCount: nextLectures,
+                  },
+                },
+              },
+            };
+          }
+        }
+      }
     },
-    [setPlannerTasks]
+    [setPlannerTasks, setProgress]
   );
 
   const handleAddStudySession = useCallback(

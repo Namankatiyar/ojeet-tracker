@@ -29,6 +29,9 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
   // Question Counter State
   const [questions, setQuestions] = useState<number>(0);
 
+  // Is Lecture State
+  const [isLecture, setIsLecture] = useState<boolean>(false);
+
   useEffect(() => {
     if (isOpen) {
       setChapterSearch('');
@@ -37,6 +40,7 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
         setTime(taskToEdit.time);
         setDate(taskToEdit.date);
         setQuestions(taskToEdit.questions || 0);
+        setIsLecture(taskToEdit.isLecture || false);
 
         if (taskToEdit.type === 'custom') {
           const cleanTitle = taskToEdit.title.replace(/\s*\(\d+\s*Qs\)$/, '');
@@ -60,6 +64,7 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
         setSelectedChapterSerial('');
         setSelectedMaterial([]);
         setQuestions(0);
+        setIsLecture(false);
         setDate(initialDate);
 
         // Default time: Current time rounded to nearest 5 mins
@@ -158,5 +163,7 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
     resolveSubject,
     questions,
     setQuestions,
+    isLecture,
+    setIsLecture,
   };
 }
