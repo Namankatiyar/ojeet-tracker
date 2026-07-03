@@ -294,7 +294,7 @@
   /* ── Profile Card Container ── */
   .community-profile-area {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-6);
     align-items: stretch;
   }
@@ -416,6 +416,7 @@
     flex-direction: column;
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     border-radius: var(--radius-md);
     background: var(--panel-bg);
     backdrop-filter: var(--panel-blur);
@@ -991,6 +992,7 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    min-width: 0;
   }
 
   .profile-card-section-label {
@@ -1009,6 +1011,7 @@
     max-height: 160px;
     overflow-y: auto;
     scrollbar-width: thin;
+    min-width: 0;
   }
 
   .profile-card-task-item {
@@ -1026,6 +1029,7 @@
     line-height: 1.2;
     border: 1px solid transparent;
     cursor: pointer;
+    min-width: 0;
     transition:
       background-color var(--transition-fast),
       border-color var(--transition-fast),
@@ -1133,6 +1137,7 @@
 
   .profile-card-task-title {
     flex: 1;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1885,7 +1890,7 @@
   /* ── Responsive ── */
   @media (max-width: 72rem) {
     .community-profile-area {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
