@@ -210,6 +210,16 @@ export function Header({
   return (
     <header className="header">
       <div className="header-content">
+        <div className="header-avatar-mobile">
+          <UserAvatar
+            name={progressCardSettings.userName || 'Student'}
+            size={32}
+            customImageUrl={progressCardSettings.customAvatarUrl}
+            accentColor={accentColor}
+            onClick={() => setIsProgressCardOpen(true)}
+          />
+        </div>
+
         <div className="logo">
           <span className="logo-text">OJEE Tracker</span>
           <div className="header-avatar">
@@ -363,6 +373,19 @@ export function Header({
             <Menu size={24} color="var(--text-primary)" />
           </button>
         </div>
+
+        <button
+          className="header-support-mobile"
+          onClick={() => onNavigate('support')}
+          aria-label="Support OJEE-Tracker"
+          title="Support OJEE-Tracker"
+        >
+          <Heart
+            size={20}
+            color="#e63946"
+            fill={currentView === 'support' ? '#e63946' : 'transparent'}
+          />
+        </button>
       </div>
 
       {/* Mobile Bottom Navigation Bar (Visible only on widths <= 48rem) */}

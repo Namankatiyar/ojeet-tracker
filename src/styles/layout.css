@@ -91,6 +91,12 @@ html[data-theme^='dark-'] .header {
   overflow: hidden;
 }
 
+/* Mobile-only header elements (hidden on desktop) */
+.header-avatar-mobile,
+.header-support-mobile {
+  display: none;
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -266,13 +272,57 @@ html[data-theme^='dark-'] .nav-item.active {
     font-size: 1.1rem;
   }
 
+  /* Mobile header: avatar left, title center, support right */
+  .header-content {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+  }
+
+  .header-avatar-mobile {
+    display: flex;
+    align-items: center;
+    justify-self: start;
+  }
+
+  .logo {
+    text-align: center;
+  }
+
+  .header-support-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    justify-self: end;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+  }
+
+  .header-support-mobile:hover {
+    background: var(--bg-tertiary);
+  }
+
   /* Hide top horizontal scrolling navigation completely on small screens */
   .nav {
     display: none;
   }
 
+  /* Hide avatar inside logo on mobile (shown as standalone element instead) */
+  .logo .header-avatar {
+    display: none;
+  }
+
   /* Hide top menu toggle on mobile since bottom navigation bar has Menu item */
   .header .mobile-menu-toggle {
+    display: none;
+  }
+
+  /* Hide entire header-actions on mobile (grid layout replaces flex) */
+  .header-actions {
     display: none;
   }
 
