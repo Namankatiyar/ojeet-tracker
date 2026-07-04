@@ -66,8 +66,7 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenC
             {onOpenCockpit && (
               <button
                 type="button"
-                className="view-toggle-btn"
-                style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                className="secondary-btn mock-panel-cockpit-btn"
                 onClick={onOpenCockpit}
                 title="Open Mock Scores Cockpit"
               >

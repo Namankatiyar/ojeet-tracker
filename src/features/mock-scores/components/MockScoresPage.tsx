@@ -161,19 +161,19 @@ export function MockScoresPage() {
         <div className="mock-scores-actions">
           <button
             type="button"
-            className="view-toggle-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 0.8rem' }}
+            className="secondary-btn mock-preset-btn"
             onClick={() => setIsManagePresetsOpen(true)}
           >
-            <Settings size={16} /> Presets
+            <Settings size={16} />
+            <span>Presets</span>
           </button>
           <button
             type="button"
-            className="add-task-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem' }}
+            className="primary-btn mock-add-btn"
             onClick={handleOpenAdd}
           >
-            <Plus size={16} /> Log New Score
+            <Plus size={16} />
+            <span>Log New Score</span>
           </button>
         </div>
       </div>

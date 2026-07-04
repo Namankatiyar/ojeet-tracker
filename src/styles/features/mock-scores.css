@@ -51,6 +51,33 @@
   flex-wrap: wrap;
 }
 
+.mock-scores-actions .mock-preset-btn,
+.mock-scores-actions .mock-add-btn {
+  /* ponytail: adjust padding for header placement */
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  height: 2.25rem;
+}
+
+.mock-scores-actions .mock-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Specificity override to ensure full color vibrancy for mock score button */
+html[data-theme^='dark-'] .mock-scores-actions .mock-add-btn,
+.mock-scores-actions .mock-add-btn {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+}
+
+html[data-theme^='dark-'] .mock-scores-actions .mock-add-btn:hover,
+.mock-scores-actions .mock-add-btn:hover {
+  background: var(--accent-hover);
+}
+
 /* Stats Grid */
 .mock-scores-stats-grid {
   display: grid;
@@ -85,26 +112,29 @@
   color: var(--text-muted);
 }
 
-/* Tabs */
+/* Tabs Redesign as Segmented Control matching view-toggle-small */
 .mock-scores-tabs {
-  display: flex;
-  gap: var(--space-2);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: var(--space-2);
+  display: inline-flex;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1);
+  gap: var(--space-1);
   margin-top: var(--space-2);
   overflow-x: auto;
+  max-width: 100%;
 }
 
 .mock-tab-btn {
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  border: none;
   background: transparent;
   color: var(--text-secondary);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -113,13 +143,16 @@
 
 .mock-tab-btn:hover {
   color: var(--text-primary);
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme='light'] .mock-tab-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .mock-tab-btn.active {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--border);
+  background: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -134,6 +167,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-top: var(--space-4);
 }
 
 /* Diagnostics & Notes Grid */
@@ -283,9 +317,9 @@
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 6px;
+  padding: var(--space-1_5, 6px);
   border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
