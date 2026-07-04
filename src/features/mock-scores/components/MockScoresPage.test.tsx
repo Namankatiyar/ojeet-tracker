@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MockScoresPage } from './MockScoresPage';
@@ -89,10 +88,10 @@ describe('MockScoresPage', () => {
 
     expect(screen.getByText('Tests Taken')).toBeInTheDocument();
     
-    const testsCard = screen.getByText('Tests Taken').closest('.mock-stat-card')!;
+    const testsCard = screen.getByText('Tests Taken').closest('.mock-stat-card') as HTMLElement;
     expect(within(testsCard).getByText('1')).toBeInTheDocument();
 
-    const avgCard = screen.getByText('Average Score').closest('.mock-stat-card')!;
+    const avgCard = screen.getByText('Average Score').closest('.mock-stat-card') as HTMLElement;
     expect(within(avgCard).getByText(/60\.0%/)).toBeInTheDocument();
 
     expect(screen.getAllByText('Test 1').length).toBe(2);
@@ -148,7 +147,7 @@ describe('MockScoresPage', () => {
 
     render(<MockScoresPage />);
 
-    const avgCard = screen.getByText('Average Score').closest('.mock-stat-card')!;
+    const avgCard = screen.getByText('Average Score').closest('.mock-stat-card') as HTMLElement;
     expect(within(avgCard).getByText(/0\.0%/)).toBeInTheDocument();
 
     // Switch to Time Spent tab
@@ -178,7 +177,7 @@ describe('MockScoresPage', () => {
     render(<MockScoresPage />);
 
     expect(screen.getAllByText('Adv Mock 1').length).toBe(2);
-    const avgCard = screen.getByText('Average Score').closest('.mock-stat-card')!;
+    const avgCard = screen.getByText('Average Score').closest('.mock-stat-card') as HTMLElement;
     expect(within(avgCard).getByText(/66\.7%/)).toBeInTheDocument();
   });
 

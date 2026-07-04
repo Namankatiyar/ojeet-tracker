@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export function useLocalStorage<T>(
   key: string,
@@ -37,6 +37,7 @@ export function useLocalStorage<T>(
   };
 
   const [storedValue, setStoredValue] = useState<T>(readValue);
+  const isMounted = useRef(false);
 
   // Update internal state if the key changes
   useEffect(() => {
@@ -44,8 +45,12 @@ export function useLocalStorage<T>(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  // Persist to localStorage whenever storedValue changes
+  // Persist to localStorage whenever storedValue changes (skip initial mount)
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     try {
       window.localStorage.setItem(key, JSON.stringify(storedValue));
     } catch (e) {
