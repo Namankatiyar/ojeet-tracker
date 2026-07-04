@@ -403,6 +403,16 @@
   background: var(--priority-high-bg);
 }
 
+.timer-btn.park {
+  background: transparent;
+  color: var(--confidence-purple);
+  border-color: var(--confidence-purple);
+}
+
+.timer-btn.park:hover {
+  background: color-mix(in srgb, var(--confidence-purple) 15%, transparent);
+}
+
 .timer-btn.mark-complete {
   background: var(--priority-low);
   color: var(--priority-low-text, #fff);
