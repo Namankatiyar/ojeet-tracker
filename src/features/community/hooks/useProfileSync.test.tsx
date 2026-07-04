@@ -201,7 +201,25 @@ describe('useProfileSync Hook', () => {
       dailyQuestionLogs: {},
     } as any);
 
-    renderHook(() => useProfileSync());
+    const { rerender } = renderHook(() => useProfileSync());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Simulate settings change after initial fetch completes
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: {
+        ...progressSettings,
+        userName: 'New Updated Name 2',
+      },
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    rerender();
 
     // Settings changed check triggers update, debounced for 5 seconds
     act(() => {
@@ -241,4 +259,91 @@ describe('useProfileSync Hook', () => {
     expect(cleared.inviteCode).toBe('');
     expect(cleared.userName).toBe('');
   });
+
+  it('should not push debounced profile updates to DB before initial fetch completes', async () => {
+    vi.useFakeTimers();
+    let resolveFetch: any;
+    const singleMock = vi.fn().mockReturnValue(new Promise((r) => { resolveFetch = r; }));
+    const updateMock = vi.fn().mockReturnThis();
+    const selectMock = vi.fn().mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: singleMock,
+      update: updateMock,
+      upsert: vi.fn().mockReturnThis(),
+      then: vi.fn((onFulfilled) => onFulfilled({ error: null })),
+    }));
+    vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
+
+    const progressSettings = {
+      ...defaultProgressSettings,
+      userName: 'New Updated Name',
+    };
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: progressSettings,
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    renderHook(() => useProfileSync());
+
+    // Advance 5 seconds while fetch is still pending
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    // Should NOT have called update because initial fetch is not done
+    expect(updateMock).not.toHaveBeenCalled();
+
+    // Resolve initial fetch
+    await act(async () => {
+      resolveFetch({ data: null, error: null });
+    });
+
+    vi.useRealTimers();
+  });
+
+  it('should overwrite stale localStorage avatar with DB avatar_url', async () => {
+    const mockProfileData = {
+      avatar_url: 'https://xyz.com/new-custom-avatar.jpg',
+    };
+
+    const singleMock = vi.fn().mockResolvedValue({ data: mockProfileData, error: null });
+    const selectMock = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: singleMock,
+    });
+    vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
+
+    // Simulate localStorage already having an old Google avatar or stale avatar
+    const staleSettings = {
+      ...defaultProgressSettings,
+      customAvatarUrl: 'https://google.com/old-default.png',
+    };
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: staleSettings,
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    renderHook(() => useProfileSync());
+
+    await waitFor(() => {
+      expect(mockProgressCardSettings).toHaveBeenCalled();
+    });
+
+    const stateUpdater = mockProgressCardSettings.mock.calls[0][0];
+    const finalSettings = stateUpdater(staleSettings);
+
+    // Should overwrite stale localStorage value with DB value
+    expect(finalSettings.customAvatarUrl).toBe('https://xyz.com/new-custom-avatar.jpg');
+  });
 });
+

@@ -2020,7 +2020,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogresscontexttype",
-      "community": 21,
+      "community": 2,
       "norm_label": "userprogresscontexttype"
     },
     {
@@ -2030,7 +2030,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "context_userprogresscontext_progressdatacontexttype",
-      "community": 27,
+      "community": 2,
       "norm_label": "progressdatacontexttype"
     },
     {
@@ -2050,7 +2050,7 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "context_userprogresscontext_settingscontexttype",
-      "community": 21,
+      "community": 2,
       "norm_label": "settingscontexttype"
     },
     {
@@ -2667,7 +2667,7 @@
       "label": "fuzzyFindSubtopic()",
       "file_type": "code",
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
-      "source_location": "L20",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "hooks_useagenttools_fuzzyfindsubtopic",
       "community": 68,
@@ -2677,7 +2677,7 @@
       "label": "fuzzyFindChapter()",
       "file_type": "code",
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
-      "source_location": "L47",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "hooks_useagenttools_fuzzyfindchapter",
       "community": 68,
@@ -2687,7 +2687,7 @@
       "label": "ok()",
       "file_type": "code",
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
-      "source_location": "L59",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "hooks_useagenttools_ok",
       "community": 68,
@@ -2697,7 +2697,7 @@
       "label": "err()",
       "file_type": "code",
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
-      "source_location": "L62",
+      "source_location": "L65",
       "_origin": "ast",
       "id": "hooks_useagenttools_err",
       "community": 68,
@@ -2707,7 +2707,7 @@
       "label": "useAgentTools()",
       "file_type": "code",
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
-      "source_location": "L67",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "hooks_useagenttools_useagenttools",
       "community": 68,
@@ -2720,7 +2720,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder",
-      "community": 52,
+      "community": 89,
       "norm_label": "agentpromptbuilder.ts"
     },
     {
@@ -2730,24 +2730,24 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder_agentcontext",
-      "community": 52,
+      "community": 89,
       "norm_label": "agentcontext"
     },
     {
       "label": "formatDuration()",
       "file_type": "code",
       "source_file": "src/features/chat/utils/agentPromptBuilder.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder_formatduration",
-      "community": 52,
+      "community": 89,
       "norm_label": "formatduration()"
     },
     {
       "label": "buildAgentSystemPrompt()",
       "file_type": "code",
       "source_file": "src/features/chat/utils/agentPromptBuilder.ts",
-      "source_location": "L41",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "utils_agentpromptbuilder_buildagentsystemprompt",
       "community": 68,
@@ -2930,7 +2930,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "components_profileeditmodal_profileeditmodalprops",
-      "community": 21,
+      "community": 2,
       "norm_label": "profileeditmodalprops"
     },
     {
@@ -3727,7 +3727,7 @@
       "label": "mockScoresState",
       "file_type": "code",
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
-      "source_location": "L7",
+      "source_location": "L6",
       "_origin": "ast",
       "id": "components_mockscorespage_test_mockscoresstate",
       "community": 3,
@@ -3737,7 +3737,7 @@
       "label": "mockHandleAddMockScore",
       "file_type": "code",
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
-      "source_location": "L8",
+      "source_location": "L7",
       "_origin": "ast",
       "id": "components_mockscorespage_test_mockhandleaddmockscore",
       "community": 3,
@@ -3747,7 +3747,7 @@
       "label": "mockHandleEditMockScore",
       "file_type": "code",
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
-      "source_location": "L9",
+      "source_location": "L8",
       "_origin": "ast",
       "id": "components_mockscorespage_test_mockhandleeditmockscore",
       "community": 3,
@@ -3757,7 +3757,7 @@
       "label": "mockHandleDeleteMockScore",
       "file_type": "code",
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
-      "source_location": "L10",
+      "source_location": "L9",
       "_origin": "ast",
       "id": "components_mockscorespage_test_mockhandledeletemockscore",
       "community": 3,
@@ -3767,7 +3767,7 @@
       "label": "defaultPresets",
       "file_type": "code",
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
-      "source_location": "L12",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "components_mockscorespage_test_defaultpresets",
       "community": 3,
@@ -4760,7 +4760,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_taskmodal",
-      "community": 72,
+      "community": 27,
       "norm_label": "taskmodal.tsx"
     },
     {
@@ -4780,7 +4780,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "components_taskmodal_taskmodal",
-      "community": 72,
+      "community": 27,
       "norm_label": "taskmodal()"
     },
     {
@@ -4790,7 +4790,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "components_taskmodal_tasktypetoggle",
-      "community": 72,
+      "community": 27,
       "norm_label": "tasktypetoggle()"
     },
     {
@@ -4800,7 +4800,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "components_taskmodal_customtaskfields",
-      "community": 72,
+      "community": 27,
       "norm_label": "customtaskfields()"
     },
     {
@@ -4810,7 +4810,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "components_taskmodal_chaptertaskfields",
-      "community": 72,
+      "community": 27,
       "norm_label": "chaptertaskfields()"
     },
     {
@@ -4820,7 +4820,7 @@
       "source_location": "L350",
       "_origin": "ast",
       "id": "components_taskmodal_questionstepper",
-      "community": 72,
+      "community": 27,
       "norm_label": "questionstepper()"
     },
     {
@@ -4980,7 +4980,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "hooks_usetaskform_tasktype",
-      "community": 72,
+      "community": 27,
       "norm_label": "tasktype"
     },
     {
@@ -4990,7 +4990,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "hooks_usetaskform_usetaskform",
-      "community": 72,
+      "community": 27,
       "norm_label": "usetaskform()"
     },
     {
@@ -5160,7 +5160,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_sessionhistory",
-      "community": 72,
+      "community": 27,
       "norm_label": "sessionhistory.tsx"
     },
     {
@@ -5180,7 +5180,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "components_sessionhistory_formatduration",
-      "community": 72,
+      "community": 27,
       "norm_label": "formatduration()"
     },
     {
@@ -6880,7 +6880,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "layout_header_headerprops",
-      "community": 21,
+      "community": 2,
       "norm_label": "headerprops"
     },
     {
@@ -7580,7 +7580,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_timepicker",
-      "community": 72,
+      "community": 27,
       "norm_label": "timepicker.tsx"
     },
     {
@@ -7590,7 +7590,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "ui_timepicker_timepickerprops",
-      "community": 72,
+      "community": 27,
       "norm_label": "timepickerprops"
     },
     {
@@ -7600,7 +7600,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "ui_timepicker_timepickerhandle",
-      "community": 72,
+      "community": 27,
       "norm_label": "timepickerhandle"
     },
     {
@@ -7610,7 +7610,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "ui_timepicker_timepicker",
-      "community": 72,
+      "community": 27,
       "norm_label": "timepicker"
     },
     {
@@ -7650,7 +7650,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useprogress",
-      "community": 27,
+      "community": 21,
       "norm_label": "useprogress.ts"
     },
     {
@@ -7960,7 +7960,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "types_index_appprogress",
-      "community": 27,
+      "community": 2,
       "norm_label": "appprogress"
     },
     {
@@ -8010,7 +8010,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "types_index_mockexampreset",
-      "community": 3,
+      "community": 2,
       "norm_label": "mockexampreset"
     },
     {
@@ -8040,7 +8040,7 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "types_index_progresscardsettings",
-      "community": 21,
+      "community": 2,
       "norm_label": "progresscardsettings"
     },
     {
@@ -13870,7 +13870,7 @@
       "source_location": "L411",
       "_origin": "ast",
       "id": "changelog_0_0_15_https_github_com_namankatiyar_pcm_tracker_compare_v0_0_14_v0_0_15_2026_02_03",
-      "community": 102,
+      "community": 10,
       "norm_label": "[0.0.15](https://github.com/namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)"
     },
     {
@@ -13880,7 +13880,7 @@
       "source_location": "L413",
       "_origin": "ast",
       "id": "changelog_features_413",
-      "community": 102,
+      "community": 10,
       "norm_label": "features"
     },
     {
@@ -13890,7 +13890,7 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "changelog_bug_fixes_425",
-      "community": 102,
+      "community": 10,
       "norm_label": "bug fixes"
     },
     {
@@ -14020,7 +14020,7 @@
       "source_location": "L483",
       "_origin": "ast",
       "id": "changelog_0_0_10_2026_01_31",
-      "community": 90,
+      "community": 10,
       "norm_label": "0.0.10 (2026-01-31)"
     },
     {
@@ -14030,7 +14030,7 @@
       "source_location": "L485",
       "_origin": "ast",
       "id": "changelog_added_485",
-      "community": 90,
+      "community": 10,
       "norm_label": "added"
     },
     {
@@ -14040,7 +14040,7 @@
       "source_location": "L490",
       "_origin": "ast",
       "id": "changelog_fixed_490",
-      "community": 90,
+      "community": 10,
       "norm_label": "fixed"
     },
     {
@@ -14080,7 +14080,7 @@
       "source_location": "L508",
       "_origin": "ast",
       "id": "changelog_0_0_8_2026_01_31",
-      "community": 10,
+      "community": 72,
       "norm_label": "0.0.8 (2026-01-31)"
     },
     {
@@ -14090,7 +14090,7 @@
       "source_location": "L510",
       "_origin": "ast",
       "id": "changelog_added_510",
-      "community": 10,
+      "community": 72,
       "norm_label": "added"
     },
     {
@@ -14100,7 +14100,7 @@
       "source_location": "L517",
       "_origin": "ast",
       "id": "changelog_changed",
-      "community": 10,
+      "community": 72,
       "norm_label": "changed"
     },
     {
@@ -14110,7 +14110,7 @@
       "source_location": "L525",
       "_origin": "ast",
       "id": "changelog_fixed_525",
-      "community": 10,
+      "community": 72,
       "norm_label": "fixed"
     },
     {
@@ -22561,6 +22561,39 @@
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
       "source_location": "L10",
       "weight": 1.0,
+      "source": "hooks_useagenttools",
+      "target": "types_index_mockexampreset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/chat/hooks/useAgentTools.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "hooks_useagenttools",
+      "target": "types_index_mockscore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/chat/hooks/useAgentTools.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "hooks_useagenttools",
+      "target": "types_index_mocksubjectmarks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/chat/hooks/useAgentTools.ts",
+      "source_location": "L10",
+      "weight": 1.0,
       "confidence_score": 1.0,
       "source": "hooks_useagenttools",
       "target": "types_index_plannertask"
@@ -22660,6 +22693,17 @@
       "source_file": "src/features/chat/utils/agentPromptBuilder.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "source": "utils_agentpromptbuilder",
+      "target": "types_index_mockexampreset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/chat/utils/agentPromptBuilder.ts",
+      "source_location": "L6",
+      "weight": 1.0,
       "confidence_score": 1.0,
       "source": "utils_agentpromptbuilder",
       "target": "types_index_mockscore"
@@ -22748,6 +22792,17 @@
       "confidence_score": 1.0,
       "source": "utils_agentpromptbuilder_agentcontext",
       "target": "types_index_examentry"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/chat/utils/agentPromptBuilder.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "utils_agentpromptbuilder_agentcontext",
+      "target": "types_index_mockexampreset",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -25968,9 +26023,9 @@
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_mockscorespage_test",
-      "target": "components_mockscorespage",
-      "confidence_score": 1.0
+      "target": "components_mockscorespage"
     },
     {
       "relation": "imports",
@@ -25979,9 +26034,9 @@
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_mockscorespage_test",
-      "target": "components_mockscorespage_mockscorespage",
-      "confidence_score": 1.0
+      "target": "components_mockscorespage_mockscorespage"
     },
     {
       "relation": "contains",
@@ -25989,9 +26044,9 @@
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_mockscorespage_test",
-      "target": "components_mockscorespage_test_defaultpresets",
-      "confidence_score": 1.0
+      "target": "components_mockscorespage_test_defaultpresets"
     },
     {
       "relation": "contains",
@@ -25999,9 +26054,9 @@
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_mockscorespage_test",
-      "target": "components_mockscorespage_test_mockhandleaddmockscore",
-      "confidence_score": 1.0
+      "target": "components_mockscorespage_test_mockhandleaddmockscore"
     },
     {
       "relation": "contains",
@@ -26009,9 +26064,9 @@
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_mockscorespage_test",
-      "target": "components_mockscorespage_test_mockhandledeletemockscore",
-      "confidence_score": 1.0
+      "target": "components_mockscorespage_test_mockhandledeletemockscore"
     },
     {
       "relation": "contains",
@@ -26019,9 +26074,9 @@
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_mockscorespage_test",
-      "target": "components_mockscorespage_test_mockhandleeditmockscore",
-      "confidence_score": 1.0
+      "target": "components_mockscorespage_test_mockhandleeditmockscore"
     },
     {
       "relation": "contains",
@@ -26029,9 +26084,9 @@
       "source_file": "src/features/mock-scores/components/MockScoresPage.test.tsx",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_mockscorespage_test",
-      "target": "components_mockscorespage_test_mockscoresstate",
-      "confidence_score": 1.0
+      "target": "components_mockscorespage_test_mockscoresstate"
     },
     {
       "relation": "contains",
@@ -43516,5 +43571,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e87d007fc720b5d2cdaab79abf8ce72301a51633"
+  "built_at_commit": "fa5692453684b987d949ec0945f81c873cac0419"
 }

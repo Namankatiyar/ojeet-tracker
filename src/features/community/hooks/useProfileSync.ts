@@ -24,6 +24,8 @@ export function useProfileSync() {
 
   const subjectDataRef = useRef(subjectData);
   const plannerTasksRef = useRef(plannerTasks);
+  const isFetchingProfileRef = useRef(false);
+  const initialFetchDoneRef = useRef(false);
 
   useEffect(() => {
     subjectDataRef.current = subjectData;
@@ -37,6 +39,7 @@ export function useProfileSync() {
   useEffect(() => {
     // If we transitioned from a logged-in user to null (logout)
     if (prevUserRef.current && !user && !isLoading) {
+      initialFetchDoneRef.current = false;
       setProgressCardSettings((prev) => ({
         ...prev,
         inviteCode: '',
@@ -110,9 +113,13 @@ export function useProfileSync() {
   // 0. Fetch invite_code, discord_tag, display_name, and avatar_url from backend on authentication
   useEffect(() => {
     const client = supabase;
-    if (!user || !isConfigured || !client) return;
+    if (!user || !isConfigured || !client) {
+      initialFetchDoneRef.current = false;
+      return;
+    }
 
     const fetchProfileDetails = async () => {
+      isFetchingProfileRef.current = true;
       try {
         const { data, error } = await client
           .from('profiles')
@@ -135,27 +142,23 @@ export function useProfileSync() {
               updates.discordSpecialTag = data.discord_tag;
             }
 
-            // Prefill display name if currently empty
-            if (!prev.userName) {
-              const nameToUse = data.display_name || googleName;
-              if (nameToUse) {
-                updates.userName = nameToUse;
-              }
+            // Database values take priority over localStorage
+            if (data.display_name && prev.userName !== data.display_name) {
+              updates.userName = data.display_name;
+            } else if (!prev.userName && !data.display_name && googleName) {
+              updates.userName = googleName;
             }
 
-            // Prefill avatar URL if currently empty
-            if (!prev.customAvatarUrl) {
-              const avatarToUse = data.avatar_url || googleAvatar;
-              if (avatarToUse) {
-                updates.customAvatarUrl = avatarToUse;
-              }
+            if (data.avatar_url && prev.customAvatarUrl !== data.avatar_url) {
+              updates.customAvatarUrl = data.avatar_url;
+            } else if (!prev.customAvatarUrl && !data.avatar_url && googleAvatar) {
+              updates.customAvatarUrl = googleAvatar;
             }
 
-            // Prefill other profile fields if missing locally or different
-            if (!prev.bannerUrl && data.banner_url) {
+            if (data.banner_url && prev.bannerUrl !== data.banner_url) {
               updates.bannerUrl = data.banner_url;
             }
-            if (!prev.customStatus && data.custom_status) {
+            if (data.custom_status && prev.customStatus !== data.custom_status) {
               updates.customStatus = data.custom_status;
             }
             // Prefill grade status and target exam if missing locally or if they are the default values
@@ -191,6 +194,9 @@ export function useProfileSync() {
         }
       } catch (err) {
         console.warn('Failed to fetch profile details', err);
+      } finally {
+        isFetchingProfileRef.current = false;
+        initialFetchDoneRef.current = true;
       }
     };
 
@@ -215,6 +221,7 @@ export function useProfileSync() {
   useEffect(() => {
     const client = supabase;
     if (!user || !isConfigured || !client) return;
+    if (!initialFetchDoneRef.current || isFetchingProfileRef.current) return;
 
     const todayStr = new Date().toLocaleDateString('en-CA');
     const currentStudySessions = studySessionsRef.current;
@@ -350,6 +357,7 @@ export function useProfileSync() {
 
     debounceTimeoutRef.current = window.setTimeout(async () => {
       const executeSync = async () => {
+        if (!initialFetchDoneRef.current || isFetchingProfileRef.current) return;
         try {
           const { error } = await client.from('profiles').update(diff).eq('id', user.id);
           if (error) throw error;

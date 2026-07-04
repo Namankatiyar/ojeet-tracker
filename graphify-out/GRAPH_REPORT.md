@@ -1,16 +1,16 @@
-# Graph Report - ojee-tracker  (2026-07-04)
+# Graph Report - ojee-tracker  (2026-07-05)
 
 ## Corpus Check
-- 225 files · ~290,259 words
+- 224 files · ~290,345 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1528 nodes · 2688 edges · 100 communities (88 shown, 12 thin omitted)
+- 1528 nodes · 2693 edges · 98 communities (86 shown, 12 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e87d007f`
+- Built from commit: `fa569245`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -98,12 +98,10 @@
 - [[_COMMUNITY_Community 87|Community 87]]
 - [[_COMMUNITY_Community 88|Community 88]]
 - [[_COMMUNITY_Community 89|Community 89]]
-- [[_COMMUNITY_Community 90|Community 90]]
 - [[_COMMUNITY_Community 91|Community 91]]
 - [[_COMMUNITY_Community 92|Community 92]]
 - [[_COMMUNITY_Community 96|Community 96]]
 - [[_COMMUNITY_Community 98|Community 98]]
-- [[_COMMUNITY_Community 102|Community 102]]
 - [[_COMMUNITY_Community 103|Community 103]]
 - [[_COMMUNITY_Community 104|Community 104]]
 
@@ -114,8 +112,8 @@
 4. `useUserProgress()` - 40 edges
 5. `Changelog` - 31 edges
 6. `useRemoteAuth()` - 29 edges
-7. `formatDateLocal()` - 29 edges
-8. `MockScore` - 28 edges
+7. `MockScore` - 29 edges
+8. `formatDateLocal()` - 29 edges
 9. `useTheme()` - 27 edges
 10. `SubjectData` - 27 edges
 
@@ -134,7 +132,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (100 total, 12 thin omitted)
+## Communities (98 total, 12 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.12
@@ -145,12 +143,12 @@ Cohesion: 0.11
 Nodes (16): AppRoutesProps, ChangelogPage, CommunityPage, Dashboard, ImportSyncPage, InviteHandler, MockScoresPage, Planner (+8 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.13
-Nodes (21): createLocalPayload(), defaultMockExamPresets, buildSyncPayloadFromLocalStorage(), defaultProgress, defaultProgressCardSettings, defaultSubjectDataRecord, defaultSubjectStringMap, readJson() (+13 more)
+Cohesion: 0.12
+Nodes (29): ProfileEditModalProps, createLocalPayload(), defaultMockExamPresets, ProgressDataContextType, SettingsContextType, UserProgressContextType, HeaderProps, buildSyncPayloadFromLocalStorage() (+21 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.09
-Nodes (45): AddMockModalProps, AnalyticsPanelsProps, ManageMockPresetsModal(), ManageMockPresetsModalProps, MockScoresPage(), defaultPresets, mockHandleAddMockScore, mockHandleDeleteMockScore (+37 more)
+Nodes (44): AddMockModalProps, AnalyticsPanelsProps, ManageMockPresetsModal(), ManageMockPresetsModalProps, MockScoresPage(), defaultPresets, mockHandleAddMockScore, mockHandleDeleteMockScore (+36 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.07
@@ -178,7 +176,7 @@ Nodes (33): 10. Anti-Patterns (Banned Style Operations), 11. Quality Checklist, 
 
 ### Community 10 - "Community 10"
 Cohesion: 0.06
-Nodes (30): [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22), [0.0.18](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.17...v0.0.18) (2026-02-22), [0.0.22](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.22) (2026-02-26) (+22 more)
+Nodes (32): 0.0.10 (2026-01-31), [0.0.13](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.8...v0.0.13) (2026-02-02), [0.0.14](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.13...v0.0.14) (2026-02-02), [0.0.15] (2026-02-03), [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03), [0.0.16](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.7...v0.0.16) (2026-02-22), [0.0.17] (2026-02-22), [0.0.17](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.16...v0.0.17) (2026-02-22) (+24 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.07
@@ -221,8 +219,8 @@ Cohesion: 0.11
 Nodes (17): 1. 📥 Installation, 2. 🔑 Configure Environment Variables, 3. ⚡ Start Development, 4. 📦 Build for Production, 🏗️ Architecture, 🌐 Community, 🛠️ Getting Started, 🚀 Key Features (+9 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.19
-Nodes (12): ProfileEditModalProps, initialProgress, ProgressDataContext, SettingsContext, SettingsContextType, StudySessionContext, mockMergedSubjectData, UserProgressContextType (+4 more)
+Cohesion: 0.27
+Nodes (7): initialProgress, ProgressDataContext, SettingsContext, StudySessionContext, mockMergedSubjectData, UserProgressProvider(), useProgress()
 
 ### Community 22 - "Community 22"
 Cohesion: 0.06
@@ -245,8 +243,8 @@ Cohesion: 0.22
 Nodes (8): 1. Project Overview, 2. Recent Implementation: Subtopics Tracking & Chapter Workspace (V2), Directory Structure, Key Implementations & Architecture, Project Overview & Context: ojee-tracker, Tech Stack, Use the caveman skill and ponytail skill when you are about to write code without fail., Use the ojee-tracker-design skill when you are about to design an UI component from scratch or redesign an exisiting one.
 
 ### Community 27 - "Community 27"
-Cohesion: 0.20
-Nodes (16): DashboardProps, PlannerProps, SessionHistoryProps, formatDuration(), SessionStatistics(), SessionStatisticsProps, StudyClockProps, subjectConfig (+8 more)
+Cohesion: 0.12
+Nodes (20): DashboardProps, PlannerProps, SessionHistoryProps, formatDuration(), SessionStatistics(), SessionStatisticsProps, StudyClockProps, subjectConfig (+12 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.06
@@ -333,8 +331,8 @@ Cohesion: 0.67
 Nodes (3): 0.0.13 (2026-02-02), Added, Fixed
 
 ### Community 52 - "Community 52"
-Cohesion: 0.14
-Nodes (20): CalendarGrid(), CalendarGridProps, WEEKDAY_HEADERS, DayModal(), DayModalProps, formatStudyTime(), DayTile, DayTileComponent() (+12 more)
+Cohesion: 0.16
+Nodes (19): CalendarGrid(), CalendarGridProps, WEEKDAY_HEADERS, DayModal(), DayModalProps, formatStudyTime(), DayTile, DayTileComponent() (+11 more)
 
 ### Community 53 - "Community 53"
 Cohesion: 0.18
@@ -361,8 +359,8 @@ Cohesion: 0.16
 Nodes (18): build_run(), embed_file(), find_runs(), _find_runs_recursive(), generate_html(), get_mime_type(), _kill_port(), load_previous_iteration() (+10 more)
 
 ### Community 72 - "Community 72"
-Cohesion: 0.19
-Nodes (6): TaskModal(), TaskType, useTaskForm(), TimePicker, TimePickerHandle, TimePickerProps
+Cohesion: 0.50
+Nodes (4): 0.0.8 (2026-01-31), Added, Changed, Fixed
 
 ### Community 73 - "Community 73"
 Cohesion: 0.22
@@ -429,12 +427,8 @@ Cohesion: 0.20
 Nodes (9): analysis.json, benchmark.json, comparison.json, evals.json, grading.json, history.json, JSON Schemas, metrics.json (+1 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.22
-Nodes (7): MonthCell, MonthCellProps, StudySessionContextType, ImportSyncPageProps, OjeetSyncPayload, VALID_SUBJECTS, StudySession
-
-### Community 90 - "Community 90"
-Cohesion: 0.67
-Nodes (3): 0.0.10 (2026-01-31), Added, Fixed
+Cohesion: 0.18
+Nodes (8): MonthCell, MonthCellProps, StudySessionContextType, ImportSyncPageProps, OjeetSyncPayload, VALID_SUBJECTS, StudySession, AgentContext
 
 ### Community 91 - "Community 91"
 Cohesion: 0.67
@@ -448,10 +442,6 @@ Nodes (10): caveman, Example output, How to invoke, See also, What it does, Auto
 Cohesion: 0.22
 Nodes (8): Boundaries, Intensity, Output, Persistence, Ponytail, Rules, The ladder, When NOT to be lazy
 
-### Community 102 - "Community 102"
-Cohesion: 0.67
-Nodes (3): [0.0.15](https://github.com/Namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03), Bug Fixes, Features
-
 ## Knowledge Gaps
 - **732 isolated node(s):** `config`, `name`, `version`, `type`, `bin` (+727 more)
   These have ≤1 connection - possible missing edges or undocumented components.
@@ -462,9 +452,9 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `useUserProgress()` connect `Community 19` to `Community 1`, `Community 3`, `Community 4`, `Community 68`, `Community 6`, `Community 7`, `Community 41`, `Community 76`, `Community 78`, `Community 81`, `Community 82`, `Community 21`, `Community 22`?**
   _High betweenness centrality (0.018) - this node is a cross-community bridge._
-- **Why does `PlannerTask` connect `Community 52` to `Community 2`, `Community 3`, `Community 4`, `Community 68`, `Community 70`, `Community 7`, `Community 72`, `Community 78`, `Community 82`, `Community 21`, `Community 89`, `Community 27`?**
+- **Why does `PlannerTask` connect `Community 52` to `Community 2`, `Community 3`, `Community 4`, `Community 68`, `Community 70`, `Community 7`, `Community 78`, `Community 82`, `Community 21`, `Community 89`, `Community 27`?**
   _High betweenness centrality (0.017) - this node is a cross-community bridge._
-- **Why does `StudySession` connect `Community 89` to `Community 3`, `Community 4`, `Community 68`, `Community 70`, `Community 7`, `Community 72`, `Community 6`, `Community 73`, `Community 78`, `Community 81`, `Community 82`, `Community 19`, `Community 52`, `Community 21`, `Community 27`?**
+- **Why does `StudySession` connect `Community 89` to `Community 2`, `Community 3`, `Community 4`, `Community 68`, `Community 70`, `Community 7`, `Community 6`, `Community 73`, `Community 78`, `Community 81`, `Community 82`, `Community 19`, `Community 52`, `Community 21`, `Community 27`?**
   _High betweenness centrality (0.013) - this node is a cross-community bridge._
 - **What connects `Recursively find directories that contain an outputs/ subdirectory.`, `Build a run dict with prompt, outputs, and grading data.`, `Read a file and return an embedded representation.` to the rest of the system?**
   _746 weakly-connected nodes found - possible documentation gaps or missing edges._
@@ -473,4 +463,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.11052631578947368 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.13 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11553030303030302 - nodes in this community are weakly interconnected._
