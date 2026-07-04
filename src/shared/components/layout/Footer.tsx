@@ -66,6 +66,9 @@ export function Footer() {
               <Link to="/jee-study-timer" className="bottom-link" itemProp="url">
                 Study Clock
               </Link>
+              <Link to="/jee-mock-scores" className="bottom-link" itemProp="url">
+                Mock Scores
+              </Link>
             </nav>
           </div>
 

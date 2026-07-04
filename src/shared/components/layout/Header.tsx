@@ -20,6 +20,7 @@ import {
   Users,
   X,
   BookOpen,
+  Target,
 } from 'lucide-react';
 import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
@@ -32,11 +33,12 @@ interface HeaderProps {
     | 'planner'
     | 'studyclock'
     | 'reports'
+    | 'mockscores'
     | 'support'
     | 'community'
     | Subject;
   onNavigate: (
-    view: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject
+    view: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'mockscores' | 'support' | 'community' | Subject
   ) => void;
   theme: 'light' | 'dark-glass' | 'dark-solid';
   onThemeChange: (theme: 'light' | 'dark-glass' | 'dark-solid') => void;
@@ -185,7 +187,7 @@ export function Header({
   }, [isMobileMenuOpen, isSubjectsMenuOpen]);
 
   const navItems: {
-    key: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'community' | Subject;
+    key: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'mockscores' | 'community' | Subject;
     label: string;
     icon: React.ReactNode;
   }[] = [
@@ -196,6 +198,7 @@ export function Header({
     { key: 'planner', label: 'Planner', icon: <Calendar size={20} /> },
     { key: 'studyclock', label: 'Study Clock', icon: <Clock size={20} /> },
     { key: 'reports', label: 'Reports', icon: <BarChart2 size={20} /> },
+    { key: 'mockscores', label: 'Mock Scores', icon: <Target size={20} /> },
     { key: 'community', label: 'Community', icon: <Users size={20} /> },
   ];
 

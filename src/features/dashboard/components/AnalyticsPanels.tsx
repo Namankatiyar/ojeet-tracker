@@ -37,6 +37,7 @@ interface AnalyticsPanelsProps {
   mockScores: MockScore[];
   onAddMockScore: (score: Omit<MockScore, 'id'>) => void;
   onDeleteMockScore: (id: string) => void;
+  onOpenCockpit?: () => void;
 }
 
 export function AnalyticsPanels({
@@ -44,6 +45,7 @@ export function AnalyticsPanels({
   mockScores,
   onAddMockScore,
   onDeleteMockScore,
+  onOpenCockpit,
 }: AnalyticsPanelsProps) {
   const [isAddingMock, setIsAddingMock] = useState(false);
   const [draftExamType, setDraftExamType] = useState<MockExamType>('jm');
@@ -65,6 +67,7 @@ export function AnalyticsPanels({
           setIsAddingMock(true);
         }}
         onDeleteScore={onDeleteMockScore}
+        onOpenCockpit={onOpenCockpit}
       />
 
       {/* Add Mock Modal */}

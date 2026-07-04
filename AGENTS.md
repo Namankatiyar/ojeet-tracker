@@ -39,4 +39,5 @@ The subtopics tracking and Chapter Workspace (V2) features have been fully imple
  **Design System & Styling Standards**: CSS rules in [subjects.css](file:///home/naman/Documents/ojee-tracker/src/styles/features/subjects.css) strictly utilize core design tokens (e.g., `var(--bg-tertiary)`, `var(--border)`, `var(--text-primary)`) rather than custom/undefined variables. Control heights (e.g., mark today, reset, stepper buttons) are standardized to 24px (`var(--space-6)`) or 28px (`1.75rem` for date buttons) for pixel-perfect alignment.
 
 ---
-# Use the caveman skill and ponytail skill whenever required without fail.
+# Use the caveman skill and ponytail skill when you are about to write code without fail.
+# Use the ojee-tracker-design skill when you are about to design an UI component from scratch or redesign an exisiting one. 

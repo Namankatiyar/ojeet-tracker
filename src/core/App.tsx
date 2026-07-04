@@ -33,7 +33,7 @@ const OnboardingFlow = lazy(() =>
   }))
 );
 
-type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'support' | 'community' | Subject;
+type View = 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'mockscores' | 'support' | 'community' | Subject;
 
 function ProfileSyncManager() {
   useProfileSync();
@@ -91,6 +91,7 @@ function AppContent() {
     if (path === 'jee-study-planner') return 'planner';
     if (path === 'jee-study-timer') return 'studyclock';
     if (path === 'reports') return 'reports';
+    if (path === 'jee-mock-scores') return 'mockscores';
     if (path === 'support') return 'support';
     if (path === 'community') return 'community';
     return path as View;
@@ -103,6 +104,7 @@ function AppContent() {
     else if (view === 'planner') navigate('/jee-study-planner');
     else if (view === 'studyclock') navigate('/jee-study-timer');
     else if (view === 'reports') navigate('/reports');
+    else if (view === 'mockscores') navigate('/jee-mock-scores');
     else if (view === 'support') navigate('/support');
     else if (view === 'community') navigate('/community');
     else navigate(`/${view}`);

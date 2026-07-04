@@ -20,9 +20,10 @@ interface MockScoresPanelProps {
   mockScores: MockScore[];
   onAddClick: (examType: MockExamType) => void;
   onDeleteScore: (id: string) => void;
+  onOpenCockpit?: () => void;
 }
 
-export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockScoresPanelProps) {
+export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenCockpit }: MockScoresPanelProps) {
   const { theme } = useTheme();
   const { mockExamPresets } = useUserProgress();
   const [examType, setExamType] = useState<MockExamType>('jm');
@@ -53,17 +54,34 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore }: MockS
     <div className="analytics-panel mock-scores-panel">
       <div className="panel-header">
         <div className="mock-panel-head">
-          <div className="panel-title">
+          <div
+            className="panel-title"
+            style={{ cursor: onOpenCockpit ? 'pointer' : 'default' }}
+            onClick={onOpenCockpit}
+          >
             <TrendingUp size={20} />
             <h3>Mock Scores</h3>
           </div>
-          <button
-            className="add-mock-btn add-mock-btn-compact"
-            onClick={() => onAddClick(examType)}
-          >
-            <Plus size={14} />
-            <span>Add</span>
-          </button>
+          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+            {onOpenCockpit && (
+              <button
+                type="button"
+                className="view-toggle-btn"
+                style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                onClick={onOpenCockpit}
+                title="Open Mock Scores Cockpit"
+              >
+                <span>Cockpit ↗</span>
+              </button>
+            )}
+            <button
+              className="add-mock-btn add-mock-btn-compact"
+              onClick={() => onAddClick(examType)}
+            >
+              <Plus size={14} />
+              <span>Add</span>
+            </button>
+          </div>
         </div>
         <div className="mock-panel-actions">
           <div className="view-toggle-small">

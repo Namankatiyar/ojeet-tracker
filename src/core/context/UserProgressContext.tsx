@@ -98,6 +98,7 @@ interface UserProgressContextType {
   handleSetPrimaryExam: (id: string) => void;
   handleAddMockScore: (score: Omit<MockScore, 'id'>) => void;
   handleDeleteMockScore: (id: string) => void;
+  handleEditMockScore: (score: MockScore) => void;
   handleAddMockExamPreset: (preset: MockExamPreset) => void;
   handleDeleteMockExamPreset: (id: string) => void;
   handleUpdateMockExamPreset: (preset: MockExamPreset) => void;
@@ -142,6 +143,7 @@ interface ProgressDataContextType {
   handleSetPrimaryExam: (id: string) => void;
   handleAddMockScore: (score: Omit<MockScore, 'id'>) => void;
   handleDeleteMockScore: (id: string) => void;
+  handleEditMockScore: (score: MockScore) => void;
   handleAddMockExamPreset: (preset: MockExamPreset) => void;
   handleDeleteMockExamPreset: (id: string) => void;
   handleUpdateMockExamPreset: (preset: MockExamPreset) => void;
@@ -1217,6 +1219,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     [setMockScores]
   );
 
+  const handleEditMockScore = useCallback(
+    (score: MockScore) => {
+      setMockScores((prev) => prev.map((s) => (s.id === score.id ? score : s)));
+    },
+    [setMockScores]
+  );
+
   const handleAddExam = useCallback(
     (exam: Omit<ExamEntry, 'id'>) => {
       const newExam: ExamEntry = {
@@ -1326,6 +1335,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleSetPrimaryExam,
       handleAddMockScore,
       handleDeleteMockScore,
+      handleEditMockScore,
       handleAddMockExamPreset,
       handleDeleteMockExamPreset,
       handleUpdateMockExamPreset,
@@ -1366,6 +1376,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleSetPrimaryExam,
       handleAddMockScore,
       handleDeleteMockScore,
+      handleEditMockScore,
       handleAddMockExamPreset,
       handleDeleteMockExamPreset,
       handleUpdateMockExamPreset,

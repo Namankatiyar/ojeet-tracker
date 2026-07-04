@@ -819,6 +819,7 @@ export function Dashboard({
           mockScores={mockScores}
           onAddMockScore={onAddMockScore}
           onDeleteMockScore={onDeleteMockScore}
+          onOpenCockpit={() => navigate('/jee-mock-scores')}
         />
       </motion.div>
 

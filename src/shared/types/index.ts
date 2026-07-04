@@ -125,6 +125,22 @@ export interface MockScore {
   maxMarks?: number; // Optional, defaults to 300
   paper1Marks?: MockSubjectMarks;
   paper2Marks?: MockSubjectMarks;
+  attemptedQuestions?: MockSubjectMarks;
+  wrongQuestions?: MockSubjectMarks;
+  totalTimeAllotted?: number; // in minutes
+  timeSpent?: MockSubjectMarks; // in minutes
+  weakChapters?: Array<{
+    subject: Subject;
+    chapterSerial: number;
+    chapterName: string;
+  }>;
+  weakSubtopics?: Array<{
+    subject: Subject;
+    chapterSerial: number;
+    chapterName: string;
+    subtopicName: string;
+  }>;
+  footnotes?: string;
 }
 
 export interface ExamEntry {

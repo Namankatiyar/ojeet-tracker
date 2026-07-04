@@ -30,6 +30,11 @@ const ReportsPage = lazy(() =>
     default: module.ReportsPage,
   }))
 );
+const MockScoresPage = lazy(() =>
+  import('../features/mock-scores/components/MockScoresPage').then((module) => ({
+    default: module.MockScoresPage,
+  }))
+);
 const ImportSyncPage = lazy(() =>
   import('../features/sync/ImportSyncPage').then((module) => ({ default: module.ImportSyncPage }))
 );
@@ -199,6 +204,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
         />
 
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/jee-mock-scores" element={<MockScoresPage />} />
 
         {/* Subject Routes */}
         {(['physics', 'chemistry', 'maths'] as Subject[]).map((subject) => (
