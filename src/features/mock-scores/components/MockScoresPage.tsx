@@ -265,7 +265,7 @@ export function MockScoresPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="view-toggle-small" style={{ alignSelf: 'flex-start', flexWrap: 'wrap' }}>
+      <div className="view-toggle-small">
         <button
           type="button"
           className={selectedExamType === 'all' ? 'active' : ''}
@@ -287,7 +287,7 @@ export function MockScoresPage() {
 
       {/* Summary Stats Grid */}
       <div className="mock-scores-stats-grid">
-        <div className="mock-stat-card">
+        <div className="glass-panel mock-stat-card">
           <span className="mock-stat-label">Tests Taken</span>
           <span className="mock-stat-value">{summaryStats.totalTestsTaken}</span>
           <span className="mock-stat-sub">
@@ -295,11 +295,11 @@ export function MockScoresPage() {
           </span>
         </div>
 
-        <div className="mock-stat-card">
+        <div className="glass-panel mock-stat-card">
           <span className="mock-stat-label">Average Score</span>
           <span className="mock-stat-value">
             {summaryStats.averageTotal}{' '}
-            <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
+            <span className="mock-stat-value-unit">
               ({summaryStats.averagePercentage.toFixed(1)}%)
             </span>
           </span>
@@ -309,7 +309,7 @@ export function MockScoresPage() {
           </span>
         </div>
 
-        <div className="mock-stat-card">
+        <div className="glass-panel mock-stat-card">
           <span className="mock-stat-label">Highest Score</span>
           <span className="mock-stat-value">
             {summaryStats.highestScore > 0 ? summaryStats.highestScore : '-'}
@@ -317,7 +317,7 @@ export function MockScoresPage() {
           <span className="mock-stat-sub">{summaryStats.highestScoreName}</span>
         </div>
 
-        <div className="mock-stat-card">
+        <div className="glass-panel mock-stat-card">
           <span className="mock-stat-label">Latest Score</span>
           <span className="mock-stat-value">{summaryStats.latestScore}</span>
           <span
@@ -325,9 +325,9 @@ export function MockScoresPage() {
             style={{
               color:
                 summaryStats.latestTrend > 0
-                  ? '#10b981'
+                  ? 'var(--color-priority-low)'
                   : summaryStats.latestTrend < 0
-                  ? '#ef4444'
+                  ? 'var(--color-priority-high)'
                   : 'var(--text-muted)',
             }}
           >
@@ -371,11 +371,11 @@ export function MockScoresPage() {
         </div>
 
         {sortedScores.length === 0 ? (
-          <div className="mock-chart-container">
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-              <Target size={48} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
+          <div className="glass-panel mock-chart-container">
+            <div className="mock-empty-state">
+              <Target size={48} className="mock-empty-state-icon" />
               <h3>No Mock Scores Recorded Yet</h3>
-              <p style={{ fontSize: '0.85rem', maxWidth: '400px', margin: '0.5rem auto' }}>
+              <p className="mock-empty-state-text">
                 Click "Log New Score" above to start recording your mock tests and track your JEE
                 progress over time.
               </p>
@@ -384,16 +384,16 @@ export function MockScoresPage() {
         ) : (
           <>
             {activeTab === 'trend' && (
-              <div className="mock-chart-container">
-                <div style={{ height: '360px', width: '100%' }}>
+              <div className="glass-panel mock-chart-container">
+                <div className="mock-chart-wrapper">
                   <Line data={chartData.trendChartData} options={trendOptions as any} />
                 </div>
               </div>
             )}
 
             {activeTab === 'share' && (
-              <div className="mock-chart-container">
-                <div style={{ height: '360px', width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <div className="glass-panel mock-chart-container">
+                <div className="mock-chart-wrapper-center">
                   <Doughnut data={chartData.subjectShareChartData} options={doughnutOptions as any} />
                 </div>
               </div>
@@ -402,29 +402,29 @@ export function MockScoresPage() {
             {activeTab === 'time' && (
               chartData.hasTimeData ? (
                 <div className="mock-dual-chart-grid">
-                  <div className="mock-chart-card">
+                  <div className="glass-panel mock-chart-card">
                     <h3 className="mock-chart-card-title">
                       <TrendingUp size={18} style={{ color: 'var(--accent)' }} /> Time spent trajectory
                     </h3>
-                    <div style={{ height: '320px', width: '100%' }}>
+                    <div className="mock-chart-wrapper-small">
                       <Line data={chartData.timeSpentTrendChartData} options={timeTrendOptions as any} />
                     </div>
                   </div>
-                  <div className="mock-chart-card">
+                  <div className="glass-panel mock-chart-card">
                     <h3 className="mock-chart-card-title">
-                      <Clock size={18} style={{ color: '#3b82f6' }} /> Subject time distribution (histogram)
+                      <Clock size={18} style={{ color: 'var(--color-physics)' }} /> Subject time distribution (histogram)
                     </h3>
-                    <div style={{ height: '320px', width: '100%' }}>
+                    <div className="mock-chart-wrapper-small">
                       <Bar data={chartData.timeSpentChartData} options={timeBarOptions as any} />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="mock-chart-container">
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-                    <Clock size={40} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
+                <div className="glass-panel mock-chart-container">
+                  <div className="mock-empty-state">
+                    <Clock size={40} className="mock-empty-state-icon" />
                     <h4>No Time Spent Data Available</h4>
-                    <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0.5rem auto' }}>
+                    <p className="mock-empty-state-text">
                       When logging or editing a mock score, expand "+ Advanced Analytics" to record
                       how much time you spent on Physics, Chemistry, and Maths.
                     </p>
@@ -436,29 +436,29 @@ export function MockScoresPage() {
             {activeTab === 'accuracy' && (
               chartData.hasQuestionData ? (
                 <div className="mock-dual-chart-grid">
-                  <div className="mock-chart-card">
+                  <div className="glass-panel mock-chart-card">
                     <h3 className="mock-chart-card-title">
-                      <TrendingUp size={18} style={{ color: '#10b981' }} /> Accuracy percentage trajectory
+                      <TrendingUp size={18} style={{ color: 'var(--color-chemistry)' }} /> Accuracy percentage trajectory
                     </h3>
-                    <div style={{ height: '320px', width: '100%' }}>
+                    <div className="mock-chart-wrapper-small">
                       <Line data={chartData.accuracyTrendChartData} options={accuracyTrendOptions as any} />
                     </div>
                   </div>
-                  <div className="mock-chart-card">
+                  <div className="glass-panel mock-chart-card">
                     <h3 className="mock-chart-card-title">
-                      <CheckCircle2 size={18} style={{ color: '#f59e0b' }} /> Question volume (histogram)
+                      <CheckCircle2 size={18} style={{ color: 'var(--color-maths)' }} /> Question volume (histogram)
                     </h3>
-                    <div style={{ height: '320px', width: '100%' }}>
+                    <div className="mock-chart-wrapper-small">
                       <Bar data={chartData.accuracyChartData} options={barOptions as any} />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="mock-chart-container">
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-                    <CheckCircle2 size={40} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
+                <div className="glass-panel mock-chart-container">
+                  <div className="mock-empty-state">
+                    <CheckCircle2 size={40} className="mock-empty-state-icon" />
                     <h4>No Question Accuracy Data Available</h4>
-                    <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0.5rem auto' }}>
+                    <p className="mock-empty-state-text">
                       When logging or editing a mock score, expand "+ Advanced Analytics" to record
                       attempted and wrong question counts per subject.
                     </p>
@@ -472,16 +472,16 @@ export function MockScoresPage() {
 
       {/* Diagnostics & Notes Grid */}
       <div className="mock-diagnostics-grid">
-        <div className="mock-diagnostic-card">
+        <div className="glass-panel mock-diagnostic-card">
           <div className="mock-diagnostic-header">
             <span className="mock-diagnostic-title">
-              <AlertCircle size={18} style={{ color: '#ef4444' }} /> Weak Areas & Tagged Topics
+              <AlertCircle size={18} style={{ color: 'var(--color-priority-high)' }} /> Weak Areas & Tagged Topics
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Frequency</span>
+            <span className="text-muted">Frequency</span>
           </div>
 
           {weakAreasSummary.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <div className="mock-empty-notes">
               No weak chapters or subtopics tagged yet. Tag weak areas when logging/editing mock
               scores to see frequency analysis here.
             </div>
@@ -489,12 +489,12 @@ export function MockScoresPage() {
             <div className="weak-area-list">
               {weakAreasSummary.map((item) => (
                 <div key={item.id} className="weak-area-item">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div className="flex items-center gap-sm">
                     <span className={`weak-area-tag ${item.subject}`}>{item.subject.slice(0, 4)}</span>
-                    <span style={{ fontWeight: 500 }}>
+                    <span className="weak-area-chapter">
                       {item.chapterName}
                       {item.subtopicName ? (
-                        <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>
+                        <span className="weak-area-subtopic">
                           {' '}
                           › {item.subtopicName}
                         </span>
@@ -503,16 +503,7 @@ export function MockScoresPage() {
                       )}
                     </span>
                   </div>
-                  <span
-                    style={{
-                      background: 'var(--bg-primary)',
-                      padding: '2px 8px',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: 'var(--accent)',
-                    }}
-                  >
+                  <span className="weak-area-count">
                     ×{item.count}
                   </span>
                 </div>
@@ -521,16 +512,16 @@ export function MockScoresPage() {
           )}
         </div>
 
-        <div className="mock-diagnostic-card">
+        <div className="glass-panel mock-diagnostic-card">
           <div className="mock-diagnostic-header">
             <span className="mock-diagnostic-title">
               <FileText size={18} style={{ color: 'var(--accent)' }} /> Footnotes & Reflections
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Recent</span>
+            <span className="text-muted">Recent</span>
           </div>
 
           {diagnosticNotes.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <div className="mock-empty-notes">
               No reflection notes added yet. Record footnotes when logging scores to track your
               mistakes, key takeaways, and exam strategies.
             </div>
@@ -539,7 +530,7 @@ export function MockScoresPage() {
               {diagnosticNotes.map((note) => (
                 <div key={note.id} className="diagnostic-note-item">
                   <div className="diagnostic-note-header">
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{note.name}</span>
+                    <span className="diagnostic-note-author">{note.name}</span>
                     <span>{note.date}</span>
                   </div>
                   <div className="diagnostic-note-body">{note.footnotes}</div>
@@ -551,7 +542,7 @@ export function MockScoresPage() {
       </div>
 
       {/* History Table */}
-      <div className="mock-scores-table-wrapper">
+      <div className="glass-panel mock-scores-table-wrapper">
         <table className="mock-scores-table">
           <thead>
             <tr>
@@ -584,8 +575,8 @@ export function MockScoresPage() {
 
                 return (
                   <tr key={score.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{score.date}</td>
-                    <td style={{ fontWeight: 600 }}>{score.name}</td>
+                    <td className="mock-table-date">{score.date}</td>
+                    <td className="mock-table-name">{score.name}</td>
                     <td>
                       <span
                         style={{
@@ -599,9 +590,9 @@ export function MockScoresPage() {
                         {preset?.shortName || type.toUpperCase()}
                       </span>
                     </td>
-                    <td style={{ color: '#3b82f6' }}>{sub.physics}</td>
-                    <td style={{ color: '#f97316' }}>{sub.chemistry}</td>
-                    <td style={{ color: '#10b981' }}>{sub.maths}</td>
+                    <td className="mock-table-physics">{sub.physics}</td>
+                    <td className="mock-table-chemistry">{sub.chemistry}</td>
+                    <td className="mock-table-maths">{sub.maths}</td>
                     <td style={{ fontWeight: 700 }}>
                       {total}{' '}
                       <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>
