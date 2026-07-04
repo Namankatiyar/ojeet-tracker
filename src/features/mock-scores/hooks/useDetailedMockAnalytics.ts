@@ -6,7 +6,7 @@ import {
   getMockTotalMarks,
   getMockPercentage,
 } from '../../../shared/utils/mockScores';
-import { getSubjectColors } from '../../dashboard/utils/analyticsUtils';
+import { getSubjectColors, createGradient } from '../../dashboard/utils/analyticsUtils';
 
 export interface WeakAreaFrequency {
   id: string;
@@ -104,61 +104,66 @@ export function useDetailedMockAnalytics(
       useSerialNumbers ? `Test #${index + 1}` : s.name
     );
 
+    const totalMarksData = sortedScores.map((s) => getMockTotalMarks(s, preset));
+    const physicsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).physics);
+    const chemistryData = sortedScores.map((s) => getMockSubjectTotals(s, preset).chemistry);
+    const mathsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).maths);
+
     // 1. Trend Chart Data
     const trendChartData = {
       labels,
       datasets: [
         {
           label: 'Total Marks',
-          data: sortedScores.map((s) => getMockTotalMarks(s, preset)),
+          data: totalMarksData,
           borderColor: '#8b5cf6',
-          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          backgroundColor: createGradient('#8b5cf6', totalMarksData),
           pointBackgroundColor: '#8b5cf6',
           pointBorderColor: '#fff',
           pointRadius: 5,
           pointHoverRadius: 7,
-          tension: 0.3,
+          tension: 0.4,
           fill: true,
           borderWidth: 3,
         },
         {
           label: 'Physics',
-          data: sortedScores.map((s) => getMockSubjectTotals(s, preset).physics),
+          data: physicsData,
           borderColor: subjectColors.physics,
-          backgroundColor: 'transparent',
+          backgroundColor: createGradient(subjectColors.physics, physicsData),
           pointBackgroundColor: subjectColors.physics,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
-          tension: 0.3,
+          tension: 0.4,
+          fill: true,
           borderWidth: 2,
-          borderDash: [5, 5],
         },
         {
           label: 'Chemistry',
-          data: sortedScores.map((s) => getMockSubjectTotals(s, preset).chemistry),
+          data: chemistryData,
           borderColor: subjectColors.chemistry,
-          backgroundColor: 'transparent',
+          backgroundColor: createGradient(subjectColors.chemistry, chemistryData),
           pointBackgroundColor: subjectColors.chemistry,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
-          tension: 0.3,
+          tension: 0.4,
+          fill: true,
           borderWidth: 2,
-          borderDash: [5, 5],
         },
         {
           label: 'Maths',
-          data: sortedScores.map((s) => getMockSubjectTotals(s, preset).maths),
+          data: mathsData,
           borderColor: subjectColors.maths,
-          backgroundColor: 'transparent',
+          backgroundColor: createGradient(subjectColors.maths, mathsData),
           pointBackgroundColor: subjectColors.maths,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
-          tension: 0.3,
+          tension: 0.4,
+          fill: true,
           borderWidth: 2,
-          borderDash: [5, 5],
         },
       ],
     };
@@ -184,7 +189,7 @@ export function useDetailedMockAnalytics(
       ],
     };
 
-    // 3. Time Spent Chart Data (Bar)
+    // 3. Time Spent Chart Data (Bar & Line Trend)
     const timeLoggedScores = sortedScores.filter((s) => s.timeSpent);
     const timeLabels = timeLoggedScores.map((s, idx) =>
       useSerialNumbers ? `Test #${idx + 1}` : s.name
@@ -210,7 +215,72 @@ export function useDetailedMockAnalytics(
       ],
     };
 
-    // 4. Accuracy & Questions Chart Data (Bar)
+    const totalTimeData = timeLoggedScores.map((s) =>
+      (s.timeSpent?.physics || 0) + (s.timeSpent?.chemistry || 0) + (s.timeSpent?.maths || 0)
+    );
+    const timePhysicsData = timeLoggedScores.map((s) => s.timeSpent?.physics || 0);
+    const timeChemistryData = timeLoggedScores.map((s) => s.timeSpent?.chemistry || 0);
+    const timeMathsData = timeLoggedScores.map((s) => s.timeSpent?.maths || 0);
+
+    const timeSpentTrendChartData = {
+      labels: timeLabels,
+      datasets: [
+        {
+          label: 'Total Time (mins)',
+          data: totalTimeData,
+          borderColor: '#8b5cf6',
+          backgroundColor: createGradient('#8b5cf6', totalTimeData),
+          pointBackgroundColor: '#8b5cf6',
+          pointBorderColor: '#fff',
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 3,
+        },
+        {
+          label: 'Physics',
+          data: timePhysicsData,
+          borderColor: subjectColors.physics,
+          backgroundColor: createGradient(subjectColors.physics, timePhysicsData),
+          pointBackgroundColor: subjectColors.physics,
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        },
+        {
+          label: 'Chemistry',
+          data: timeChemistryData,
+          borderColor: subjectColors.chemistry,
+          backgroundColor: createGradient(subjectColors.chemistry, timeChemistryData),
+          pointBackgroundColor: subjectColors.chemistry,
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        },
+        {
+          label: 'Maths',
+          data: timeMathsData,
+          borderColor: subjectColors.maths,
+          backgroundColor: createGradient(subjectColors.maths, timeMathsData),
+          pointBackgroundColor: subjectColors.maths,
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        },
+      ],
+    };
+
+    // 4. Accuracy & Questions Chart Data (Bar & Line Trend)
     const qLoggedScores = sortedScores.filter((s) => s.attemptedQuestions && s.wrongQuestions);
     const qLabels = qLoggedScores.map((s, idx) =>
       useSerialNumbers ? `Test #${idx + 1}` : s.name
@@ -247,11 +317,98 @@ export function useDetailedMockAnalytics(
       ],
     };
 
+    const getSubAcc = (att: number, wr: number) => {
+      if (!att || att <= 0) return 0;
+      const corr = Math.max(0, att - wr);
+      return Math.round((corr / att) * 1000) / 10;
+    };
+
+    const overallAccData = qLoggedScores.map((s) => {
+      const att =
+        (s.attemptedQuestions?.physics || 0) +
+        (s.attemptedQuestions?.chemistry || 0) +
+        (s.attemptedQuestions?.maths || 0);
+      const wr =
+        (s.wrongQuestions?.physics || 0) +
+        (s.wrongQuestions?.chemistry || 0) +
+        (s.wrongQuestions?.maths || 0);
+      return getSubAcc(att, wr);
+    });
+    const physAccData = qLoggedScores.map((s) =>
+      getSubAcc(s.attemptedQuestions?.physics || 0, s.wrongQuestions?.physics || 0)
+    );
+    const chemAccData = qLoggedScores.map((s) =>
+      getSubAcc(s.attemptedQuestions?.chemistry || 0, s.wrongQuestions?.chemistry || 0)
+    );
+    const mathsAccData = qLoggedScores.map((s) =>
+      getSubAcc(s.attemptedQuestions?.maths || 0, s.wrongQuestions?.maths || 0)
+    );
+
+    const accuracyTrendChartData = {
+      labels: qLabels,
+      datasets: [
+        {
+          label: 'Overall Accuracy (%)',
+          data: overallAccData,
+          borderColor: '#10b981',
+          backgroundColor: createGradient('#10b981', overallAccData),
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#fff',
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 3,
+        },
+        {
+          label: 'Physics',
+          data: physAccData,
+          borderColor: subjectColors.physics,
+          backgroundColor: createGradient(subjectColors.physics, physAccData),
+          pointBackgroundColor: subjectColors.physics,
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        },
+        {
+          label: 'Chemistry',
+          data: chemAccData,
+          borderColor: subjectColors.chemistry,
+          backgroundColor: createGradient(subjectColors.chemistry, chemAccData),
+          pointBackgroundColor: subjectColors.chemistry,
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        },
+        {
+          label: 'Maths',
+          data: mathsAccData,
+          borderColor: subjectColors.maths,
+          backgroundColor: createGradient(subjectColors.maths, mathsAccData),
+          pointBackgroundColor: subjectColors.maths,
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        },
+      ],
+    };
+
     return {
       trendChartData,
       subjectShareChartData,
       timeSpentChartData,
+      timeSpentTrendChartData,
       accuracyChartData,
+      accuracyTrendChartData,
       hasTimeData: timeLoggedScores.length > 0,
       hasQuestionData: qLoggedScores.length > 0,
     };

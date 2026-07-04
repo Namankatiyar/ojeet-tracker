@@ -14,6 +14,9 @@ import {
   StudySession,
   ConfidenceLevel,
   Chapter,
+  MockScore,
+  MockExamPreset,
+  MockSubjectMarks,
 } from '../../../shared/types';
 
 // ── Fuzzy Matching ─────────────────────────────────────────────────────────────
@@ -83,6 +86,11 @@ export function useAgentTools() {
     handleDeleteStudySession,
     handleAddMockScore,
     handleDeleteMockScore,
+    handleEditMockScore,
+    mockExamPresets,
+    handleAddMockExamPreset,
+    handleDeleteMockExamPreset,
+    handleUpdateMockExamPreset,
     handleAddExam,
     handleDeleteExam,
     handleSetPrimaryExam,
@@ -372,9 +380,59 @@ export function useAgentTools() {
       chemistryMarks: number,
       mathsMarks: number,
       maxMarks?: number,
-      examType?: string
+      examType?: string,
+      paper1Marks?: MockSubjectMarks,
+      paper2Marks?: MockSubjectMarks,
+      attemptedQuestions?: MockSubjectMarks,
+      wrongQuestions?: MockSubjectMarks,
+      totalTimeAllotted?: number,
+      timeSpent?: MockSubjectMarks,
+      weakChapters?: Array<{ subject: Subject; chapter_name: string }>,
+      weakSubtopics?: Array<{ subject: Subject; chapter_name: string; subtopic_name: string }>,
+      footnotes?: string
     ): string => {
       const totalMarks = physicsMarks + chemistryMarks + mathsMarks;
+
+      const resolvedWeakChapters = (weakChapters || [])
+        .map((wc) => {
+          const chapters = mergedSubjectData[wc.subject]?.chapters ?? [];
+          const ch = fuzzyFindChapter(chapters, wc.chapter_name);
+          if (ch) {
+            return {
+              subject: wc.subject,
+              chapterSerial: ch.serial,
+              chapterName: ch.name,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) as Array<{ subject: Subject; chapterSerial: number; chapterName: string }>;
+
+      const resolvedWeakSubtopics = (weakSubtopics || [])
+        .map((ws) => {
+          const chapters = mergedSubjectData[ws.subject]?.chapters ?? [];
+          const ch = fuzzyFindChapter(chapters, ws.chapter_name);
+          if (ch) {
+            const subtopics = ch.subtopics ?? [];
+            const sub = fuzzyFindSubtopic(subtopics, ws.subtopic_name);
+            if (sub) {
+              return {
+                subject: ws.subject,
+                chapterSerial: ch.serial,
+                chapterName: ch.name,
+                subtopicName: sub,
+              };
+            }
+          }
+          return null;
+        })
+        .filter(Boolean) as Array<{
+        subject: Subject;
+        chapterSerial: number;
+        chapterName: string;
+        subtopicName: string;
+      }>;
+
       handleAddMockScore({
         name,
         date,
@@ -384,12 +442,123 @@ export function useAgentTools() {
         mathsMarks,
         totalMarks,
         maxMarks: maxMarks ?? 300,
+        paper1Marks,
+        paper2Marks,
+        attemptedQuestions,
+        wrongQuestions,
+        totalTimeAllotted,
+        timeSpent,
+        weakChapters: resolvedWeakChapters.length > 0 ? resolvedWeakChapters : undefined,
+        weakSubtopics: resolvedWeakSubtopics.length > 0 ? resolvedWeakSubtopics : undefined,
+        footnotes: footnotes?.trim() || undefined,
       });
+
       return ok(
         `Logged mock "${name}" on ${date}: P${physicsMarks} C${chemistryMarks} M${mathsMarks} = ${totalMarks}.`
       );
     },
-    [handleAddMockScore]
+    [handleAddMockScore, mergedSubjectData]
+  );
+
+  const updateMockScore = useCallback(
+    (
+      scoreId: string,
+      name?: string,
+      date?: string,
+      physicsMarks?: number,
+      chemistryMarks?: number,
+      mathsMarks?: number,
+      maxMarks?: number,
+      examType?: string,
+      paper1Marks?: MockSubjectMarks,
+      paper2Marks?: MockSubjectMarks,
+      attemptedQuestions?: MockSubjectMarks,
+      wrongQuestions?: MockSubjectMarks,
+      totalTimeAllotted?: number,
+      timeSpent?: MockSubjectMarks,
+      weakChapters?: Array<{ subject: Subject; chapter_name: string }>,
+      weakSubtopics?: Array<{ subject: Subject; chapter_name: string; subtopic_name: string }>,
+      footnotes?: string
+    ): string => {
+      const existing = mockScores.find((s) => s.id === scoreId);
+      if (!existing) return err(`Mock score "${scoreId}" not found.`);
+
+      const resolvedPhysics = physicsMarks !== undefined ? physicsMarks : existing.physicsMarks;
+      const resolvedChemistry = chemistryMarks !== undefined ? chemistryMarks : existing.chemistryMarks;
+      const resolvedMaths = mathsMarks !== undefined ? mathsMarks : existing.mathsMarks;
+      const resolvedTotal = resolvedPhysics + resolvedChemistry + resolvedMaths;
+
+      const resolvedWeakChapters =
+        weakChapters !== undefined
+          ? (weakChapters || [])
+              .map((wc) => {
+                const chapters = mergedSubjectData[wc.subject]?.chapters ?? [];
+                const ch = fuzzyFindChapter(chapters, wc.chapter_name);
+                if (ch) {
+                  return {
+                    subject: wc.subject,
+                    chapterSerial: ch.serial,
+                    chapterName: ch.name,
+                  };
+                }
+                return null;
+              })
+              .filter(Boolean) as Array<{ subject: Subject; chapterSerial: number; chapterName: string }>
+          : existing.weakChapters;
+
+      const resolvedWeakSubtopics =
+        weakSubtopics !== undefined
+          ? (weakSubtopics || [])
+              .map((ws) => {
+                const chapters = mergedSubjectData[ws.subject]?.chapters ?? [];
+                const ch = fuzzyFindChapter(chapters, ws.chapter_name);
+                if (ch) {
+                  const subtopics = ch.subtopics ?? [];
+                  const sub = fuzzyFindSubtopic(subtopics, ws.subtopic_name);
+                  if (sub) {
+                    return {
+                      subject: ws.subject,
+                      chapterSerial: ch.serial,
+                      chapterName: ch.name,
+                      subtopicName: sub,
+                    };
+                  }
+                }
+                return null;
+              })
+              .filter(Boolean) as Array<{
+              subject: Subject;
+              chapterSerial: number;
+              chapterName: string;
+              subtopicName: string;
+            }>
+          : existing.weakSubtopics;
+
+      const updatedScore: MockScore = {
+        ...existing,
+        name: name !== undefined ? name : existing.name,
+        date: date !== undefined ? date : existing.date,
+        examType: examType !== undefined ? examType : existing.examType,
+        physicsMarks: resolvedPhysics,
+        chemistryMarks: resolvedChemistry,
+        mathsMarks: resolvedMaths,
+        totalMarks: resolvedTotal,
+        maxMarks: maxMarks !== undefined ? maxMarks : existing.maxMarks,
+        paper1Marks: paper1Marks !== undefined ? paper1Marks : existing.paper1Marks,
+        paper2Marks: paper2Marks !== undefined ? paper2Marks : existing.paper2Marks,
+        attemptedQuestions: attemptedQuestions !== undefined ? attemptedQuestions : existing.attemptedQuestions,
+        wrongQuestions: wrongQuestions !== undefined ? wrongQuestions : existing.wrongQuestions,
+        totalTimeAllotted: totalTimeAllotted !== undefined ? totalTimeAllotted : existing.totalTimeAllotted,
+        timeSpent: timeSpent !== undefined ? timeSpent : existing.timeSpent,
+        weakChapters: resolvedWeakChapters && resolvedWeakChapters.length > 0 ? resolvedWeakChapters : undefined,
+        weakSubtopics: resolvedWeakSubtopics && resolvedWeakSubtopics.length > 0 ? resolvedWeakSubtopics : undefined,
+        footnotes: footnotes !== undefined ? footnotes.trim() || undefined : existing.footnotes,
+      };
+
+      handleEditMockScore(updatedScore);
+      return ok(`Updated mock score "${updatedScore.name}".`);
+    },
+    [mockScores, handleEditMockScore, mergedSubjectData]
   );
 
   const deleteMockScore = useCallback(
@@ -403,20 +572,103 @@ export function useAgentTools() {
   );
 
   const listMockScores = useCallback((): string => {
-    const scores = [...mockScores]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 10);
-    return ok(
-      `Found ${scores.length} mock scores.`,
-      scores.map((s) => ({
-        id: s.id,
-        name: s.name,
-        date: s.date,
-        total: s.totalMarks,
-        max: s.maxMarks ?? 300,
-      }))
-    );
+    return ok(`Found ${mockScores.length} mock scores.`, mockScores);
   }, [mockScores]);
+
+  const listMockPresets = useCallback((): string => {
+    return ok(`Found ${mockExamPresets.length} mock presets.`, mockExamPresets);
+  }, [mockExamPresets]);
+
+  const addMockPreset = useCallback(
+    (
+      id: string,
+      name: string,
+      shortName: string,
+      paperCount: number,
+      physicsMax: number,
+      chemistryMax: number,
+      mathsMax: number,
+      enabledSubjects?: { physics?: boolean; chemistry?: boolean; maths?: boolean }
+    ): string => {
+      if (mockExamPresets.some((p) => p.id === id)) {
+        return err(`Preset with ID "${id}" already exists.`);
+      }
+      const preset: MockExamPreset = {
+        id,
+        name,
+        shortName,
+        paperCount: paperCount as 1 | 2,
+        subjectMaxMarks: {
+          physics: physicsMax,
+          chemistry: chemistryMax,
+          maths: mathsMax,
+        },
+        enabledSubjects: {
+          physics: enabledSubjects?.physics ?? true,
+          chemistry: enabledSubjects?.chemistry ?? true,
+          maths: enabledSubjects?.maths ?? true,
+        },
+      };
+      handleAddMockExamPreset(preset);
+      return ok(`Added mock exam preset "${name}" (${shortName}).`);
+    },
+    [mockExamPresets, handleAddMockExamPreset]
+  );
+
+  const updateMockPreset = useCallback(
+    (
+      presetId: string,
+      name?: string,
+      shortName?: string,
+      paperCount?: number,
+      physicsMax?: number,
+      chemistryMax?: number,
+      mathsMax?: number,
+      enabledSubjects?: { physics?: boolean; chemistry?: boolean; maths?: boolean }
+    ): string => {
+      const existing = mockExamPresets.find((p) => p.id === presetId);
+      if (!existing) return err(`Preset with ID "${presetId}" not found.`);
+
+      const updated: MockExamPreset = {
+        ...existing,
+        name: name !== undefined ? name : existing.name,
+        shortName: shortName !== undefined ? shortName : existing.shortName,
+        paperCount: paperCount !== undefined ? (paperCount as 1 | 2) : existing.paperCount,
+        subjectMaxMarks: {
+          physics: physicsMax !== undefined ? physicsMax : existing.subjectMaxMarks.physics,
+          chemistry: chemistryMax !== undefined ? chemistryMax : existing.subjectMaxMarks.chemistry,
+          maths: mathsMax !== undefined ? mathsMax : existing.subjectMaxMarks.maths,
+        },
+        enabledSubjects:
+          enabledSubjects !== undefined
+            ? {
+                physics: enabledSubjects.physics ?? existing.enabledSubjects?.physics ?? true,
+                chemistry: enabledSubjects.chemistry ?? existing.enabledSubjects?.chemistry ?? true,
+                maths: enabledSubjects.maths ?? existing.enabledSubjects?.maths ?? true,
+              }
+            : existing.enabledSubjects,
+      };
+
+      handleUpdateMockExamPreset(updated);
+      return ok(`Updated mock exam preset "${updated.name}".`);
+    },
+    [mockExamPresets, handleUpdateMockExamPreset]
+  );
+
+  const deleteMockPreset = useCallback(
+    (presetId: string): string => {
+      const existing = mockExamPresets.find((p) => p.id === presetId);
+      if (!existing) return err(`Preset with ID "${presetId}" not found.`);
+
+      if (mockExamPresets.length <= 1) {
+        return err(`Cannot delete the only remaining preset.`);
+      }
+
+      handleDeleteMockExamPreset(presetId);
+      return ok(`Deleted mock exam preset "${existing.name}".`);
+    },
+    [mockExamPresets, handleDeleteMockExamPreset]
+  );
 
   // ── EXAM DATE TOOLS ───────────────────────────────────────────────────────
   const addExamDate = useCallback(
@@ -575,11 +827,65 @@ export function useAgentTools() {
           args.chemistry_marks as number,
           args.maths_marks as number,
           args.max_marks as number | undefined,
-          args.exam_type as string | undefined
+          args.exam_type as string | undefined,
+          args.paper1_marks as MockSubjectMarks | undefined,
+          args.paper2_marks as MockSubjectMarks | undefined,
+          args.attempted_questions as MockSubjectMarks | undefined,
+          args.wrong_questions as MockSubjectMarks | undefined,
+          args.total_time_allotted as number | undefined,
+          args.time_spent as MockSubjectMarks | undefined,
+          args.weak_chapters as any,
+          args.weak_subtopics as any,
+          args.footnotes as string | undefined
+        ),
+      update_mock_score: (args: Record<string, unknown>) =>
+        updateMockScore(
+          args.score_id as string,
+          args.name as string | undefined,
+          args.date as string | undefined,
+          args.physics_marks as number | undefined,
+          args.chemistry_marks as number | undefined,
+          args.maths_marks as number | undefined,
+          args.max_marks as number | undefined,
+          args.exam_type as string | undefined,
+          args.paper1_marks as MockSubjectMarks | undefined,
+          args.paper2_marks as MockSubjectMarks | undefined,
+          args.attempted_questions as MockSubjectMarks | undefined,
+          args.wrong_questions as MockSubjectMarks | undefined,
+          args.total_time_allotted as number | undefined,
+          args.time_spent as MockSubjectMarks | undefined,
+          args.weak_chapters as any,
+          args.weak_subtopics as any,
+          args.footnotes as string | undefined
         ),
       delete_mock_score: (args: Record<string, unknown>) =>
         deleteMockScore(args.score_id as string),
       list_mock_scores: (_args: Record<string, unknown>) => listMockScores(),
+      list_mock_presets: (_args: Record<string, unknown>) => listMockPresets(),
+      add_mock_preset: (args: Record<string, unknown>) =>
+        addMockPreset(
+          args.id as string,
+          args.name as string,
+          args.short_name as string,
+          args.paper_count as number,
+          args.physics_max as number,
+          args.chemistry_max as number,
+          args.maths_max as number,
+          args.enabled_subjects as any
+        ),
+      update_mock_preset: (args: Record<string, unknown>) =>
+        updateMockPreset(
+          args.preset_id as string,
+          args.name as string | undefined,
+          args.short_name as string | undefined,
+          args.paper_count as number | undefined,
+          args.physics_max as number | undefined,
+          args.chemistry_max as number | undefined,
+          args.maths_max as number | undefined,
+          args.enabled_subjects as any
+        ),
+      delete_mock_preset: (args: Record<string, unknown>) =>
+        deleteMockPreset(args.preset_id as string),
       // Exams
       add_exam_date: (args: Record<string, unknown>) =>
         addExamDate(
@@ -612,8 +918,13 @@ export function useAgentTools() {
       deleteStudySession,
       listStudySessions,
       addMockScore,
+      updateMockScore,
       deleteMockScore,
       listMockScores,
+      listMockPresets,
+      addMockPreset,
+      updateMockPreset,
+      deleteMockPreset,
       addExamDate,
       deleteExamDate,
       listExamDates,
@@ -642,6 +953,7 @@ export function useAgentTools() {
     'delete_study_session',
     'delete_mock_score',
     'delete_exam_date',
+    'delete_mock_preset',
   ]);
 
   const isDestructive = useCallback((toolName: string): boolean => {
@@ -899,8 +1211,169 @@ export function useAgentTools() {
             maths_marks: { type: Type.NUMBER },
             max_marks: { type: Type.NUMBER, description: 'Max total marks (default 300)' },
             exam_type: { type: Type.STRING, description: 'e.g. jm, ja, bt' },
+            paper1_marks: {
+              type: Type.OBJECT,
+              description: 'Optional subject breakdown for Paper 1',
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            paper2_marks: {
+              type: Type.OBJECT,
+              description: 'Optional subject breakdown for Paper 2',
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            attempted_questions: {
+              type: Type.OBJECT,
+              description: 'Optional questions attempted per subject',
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            wrong_questions: {
+              type: Type.OBJECT,
+              description: 'Optional wrong questions per subject',
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            total_time_allotted: {
+              type: Type.NUMBER,
+              description: 'Optional total time allotted in minutes',
+            },
+            time_spent: {
+              type: Type.OBJECT,
+              description: 'Optional time spent per subject in minutes',
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            weak_chapters: {
+              type: Type.ARRAY,
+              description: 'Optional list of weak chapters identified',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  chapter_name: { type: Type.STRING, description: 'Chapter name' },
+                },
+                required: ['subject', 'chapter_name'],
+              },
+            },
+            weak_subtopics: {
+              type: Type.ARRAY,
+              description: 'Optional list of weak subtopics identified',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  chapter_name: { type: Type.STRING, description: 'Chapter name' },
+                  subtopic_name: { type: Type.STRING, description: 'Subtopic name' },
+                },
+                required: ['subject', 'chapter_name', 'subtopic_name'],
+              },
+            },
+            footnotes: {
+              type: Type.STRING,
+              description: 'Optional notes, reflections, or key takeaways from the mock exam',
+            },
           },
           required: ['name', 'date', 'physics_marks', 'chemistry_marks', 'maths_marks'],
+        },
+      },
+      {
+        name: 'update_mock_score',
+        description: 'Update/edit an existing mock exam score by ID. Only provided fields are updated; others are preserved.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            score_id: { type: Type.STRING, description: 'ID of the mock score to edit' },
+            name: { type: Type.STRING, description: 'Updated test name' },
+            date: { type: Type.STRING, description: 'Updated YYYY-MM-DD date' },
+            physics_marks: { type: Type.NUMBER },
+            chemistry_marks: { type: Type.NUMBER },
+            maths_marks: { type: Type.NUMBER },
+            max_marks: { type: Type.NUMBER },
+            exam_type: { type: Type.STRING },
+            paper1_marks: {
+              type: Type.OBJECT,
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            paper2_marks: {
+              type: Type.OBJECT,
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            attempted_questions: {
+              type: Type.OBJECT,
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            wrong_questions: {
+              type: Type.OBJECT,
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            total_time_allotted: { type: Type.NUMBER },
+            time_spent: {
+              type: Type.OBJECT,
+              properties: {
+                physics: { type: Type.NUMBER },
+                chemistry: { type: Type.NUMBER },
+                maths: { type: Type.NUMBER },
+              },
+            },
+            weak_chapters: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  chapter_name: { type: Type.STRING },
+                },
+                required: ['subject', 'chapter_name'],
+              },
+            },
+            weak_subtopics: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  chapter_name: { type: Type.STRING },
+                  subtopic_name: { type: Type.STRING },
+                },
+                required: ['subject', 'chapter_name', 'subtopic_name'],
+              },
+            },
+            footnotes: { type: Type.STRING },
+          },
+          required: ['score_id'],
         },
       },
       {
@@ -912,6 +1385,72 @@ export function useAgentTools() {
             score_id: { type: Type.STRING },
           },
           required: ['score_id'],
+        },
+      },
+      {
+        name: 'list_mock_presets',
+        description: 'List all mock exam presets (e.g. JEE Main, JEE Advanced, custom presets).',
+        parameters: { type: Type.OBJECT, properties: {} },
+      },
+      {
+        name: 'add_mock_preset',
+        description: 'Add a new mock exam preset.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING, description: 'Unique identifier, e.g. "my-custom-preset"' },
+            name: { type: Type.STRING, description: 'Full name, e.g. "JEE Advanced Pattern A"' },
+            short_name: { type: Type.STRING, description: 'Short name, e.g. "JA-A"' },
+            paper_count: { type: Type.NUMBER, description: 'Number of papers (1 or 2)', enum: [1, 2] },
+            physics_max: { type: Type.NUMBER, description: 'Max physics marks per paper' },
+            chemistry_max: { type: Type.NUMBER, description: 'Max chemistry marks per paper' },
+            maths_max: { type: Type.NUMBER, description: 'Max maths marks per paper' },
+            enabled_subjects: {
+              type: Type.OBJECT,
+              properties: {
+                physics: { type: Type.BOOLEAN },
+                chemistry: { type: Type.BOOLEAN },
+                maths: { type: Type.BOOLEAN },
+              },
+            },
+          },
+          required: ['id', 'name', 'short_name', 'paper_count', 'physics_max', 'chemistry_max', 'maths_max'],
+        },
+      },
+      {
+        name: 'update_mock_preset',
+        description: 'Update an existing mock exam preset.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            preset_id: { type: Type.STRING, description: 'ID of the preset to update' },
+            name: { type: Type.STRING },
+            short_name: { type: Type.STRING },
+            paper_count: { type: Type.NUMBER, enum: [1, 2] },
+            physics_max: { type: Type.NUMBER },
+            chemistry_max: { type: Type.NUMBER },
+            maths_max: { type: Type.NUMBER },
+            enabled_subjects: {
+              type: Type.OBJECT,
+              properties: {
+                physics: { type: Type.BOOLEAN },
+                chemistry: { type: Type.BOOLEAN },
+                maths: { type: Type.BOOLEAN },
+              },
+            },
+          },
+          required: ['preset_id'],
+        },
+      },
+      {
+        name: 'delete_mock_preset',
+        description: 'DESTRUCTIVE: Delete a mock exam preset by ID. Requires user confirmation.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            preset_id: { type: Type.STRING, description: 'ID of the preset to delete' },
+          },
+          required: ['preset_id'],
         },
       },
       // ── EXAM DATE TOOLS ──

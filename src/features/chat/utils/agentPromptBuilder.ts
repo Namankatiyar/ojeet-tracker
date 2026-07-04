@@ -3,7 +3,7 @@
  * Builds the dynamic system prompt for the AI agent (Blue).
  */
 
-import { PlannerTask, MockScore, StudySession, ExamEntry, Subject } from '../../../shared/types';
+import { PlannerTask, MockScore, StudySession, ExamEntry, Subject, MockExamPreset } from '../../../shared/types';
 import { CoPilotRecommendation } from '../../../shared/hooks/useStudyCoPilot';
 
 export interface AgentContext {
@@ -21,6 +21,7 @@ export interface AgentContext {
   // Live App State
   plannerTasks: PlannerTask[];
   mockScores: MockScore[];
+  mockExamPresets: MockExamPreset[];
   studySessions: StudySession[];
   examDates: ExamEntry[];
   recommendations: CoPilotRecommendation[];
@@ -63,10 +64,23 @@ export function buildAgentSystemPrompt(ctx: AgentContext): string {
   const recentMocks = [...ctx.mockScores]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5)
-    .map(
-      (m) =>
-        `  • ${m.date} | ${m.name} | P:${m.physicsMarks} C:${m.chemistryMarks} M:${m.mathsMarks} = ${m.totalMarks}/${m.maxMarks ?? 300}`
-    );
+    .map((m) => {
+      let line = `  • ${m.date} | ${m.name} | P:${m.physicsMarks} C:${m.chemistryMarks} M:${m.mathsMarks} = ${m.totalMarks}/${m.maxMarks ?? 300}`;
+      if (m.weakChapters && m.weakChapters.length > 0) {
+        line += ` | Weak Chapters: ${m.weakChapters.map((wc) => `${wc.subject}: ${wc.chapterName}`).join(', ')}`;
+      }
+      if (m.weakSubtopics && m.weakSubtopics.length > 0) {
+        line += ` | Weak Subtopics: ${m.weakSubtopics.map((ws) => `${ws.subject}: ${ws.chapterName} › ${ws.subtopicName}`).join(', ')}`;
+      }
+      if (m.footnotes) {
+        line += ` | Note: ${m.footnotes}`;
+      }
+      return line;
+    });
+
+  const formattedPresets = ctx.mockExamPresets.map(
+    (p) => `  • ${p.shortName} (ID: "${p.id}"): ${p.paperCount} paper(s), max marks P:${p.subjectMaxMarks.physics} C:${p.subjectMaxMarks.chemistry} M:${p.subjectMaxMarks.maths}`
+  );
 
   const todaysSessions = ctx.studySessions
     .filter((s) => (s.localDate ?? s.startTime.split('T')[0]) === ctx.todayStr)
@@ -133,6 +147,9 @@ ${todaysSessions.length > 0 ? todaysSessions.join('\n') : '  (none logged yet)'}
 UPCOMING TASKS (next 10):
 ${upcomingTasks.length > 0 ? upcomingTasks.join('\n') : '  (none)'}
 
+MOCK EXAM PRESETS:
+${formattedPresets.length > 0 ? formattedPresets.join('\n') : '  (none)'}
+
 RECENT MOCK SCORES (last 5):
 ${recentMocks.length > 0 ? recentMocks.join('\n') : '  (none)'}
 
@@ -182,8 +199,17 @@ schedule_revision(subject, chapter_name)
 log_study_session(title, duration_minutes, subject?, chapter_name?, material?, date?)
   → Use to record a completed study session block.
 
-add_mock_score(name, date, physics_marks, chemistry_marks, maths_marks, max_marks?, exam_type?)
-  → Log a mock exam score.
+add_mock_score(name, date, physics_marks, chemistry_marks, maths_marks, max_marks?, exam_type?, paper1_marks?, paper2_marks?, attempted_questions?, wrong_questions?, total_time_allotted?, time_spent?, weak_chapters?, weak_subtopics?, footnotes?)
+  → Log a mock exam score with details. Supports advanced analytics fields.
+
+update_mock_score(score_id, name?, date?, physics_marks?, chemistry_marks?, maths_marks?, max_marks?, exam_type?, paper1_marks?, paper2_marks?, attempted_questions?, wrong_questions?, total_time_allotted?, time_spent?, weak_chapters?, weak_subtopics?, footnotes?)
+  → Edit/update an existing mock score. Preserves unmodified fields.
+
+add_mock_preset(id, name, short_name, paper_count, physics_max, chemistry_max, maths_max, enabled_subjects?)
+  → Create a new mock exam preset.
+
+update_mock_preset(preset_id, name?, short_name?, paper_count?, physics_max?, chemistry_max?, maths_max?, enabled_subjects?)
+  → Update an existing mock exam preset.
 
 add_exam_date(name, date, is_primary?)
   → Add an exam date entry.
@@ -191,10 +217,10 @@ add_exam_date(name, date, is_primary?)
 set_primary_exam(exam_id)
   → Set an exam as the primary countdown exam.
 
-delete_planner_task(task_id) | delete_study_session(session_id) | delete_mock_score(score_id) | delete_exam_date(exam_id)
+delete_planner_task(task_id) | delete_study_session(session_id) | delete_mock_score(score_id) | delete_exam_date(exam_id) | delete_mock_preset(preset_id)
   → These are DESTRUCTIVE tools. The UI will automatically ask for confirmation. Call these tools normally if the user explicitly requested a deletion.
 
-list_planner_tasks(date?) | list_study_sessions(date?) | list_mock_scores() | list_exam_dates()
+list_planner_tasks(date?) | list_study_sessions(date?) | list_mock_scores() | list_exam_dates() | list_mock_presets()
   → Use these read-only tools to retrieve list data.
 
 [HARD CONSTRAINTS]

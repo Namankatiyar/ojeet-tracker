@@ -170,6 +170,36 @@ html[data-theme='light'] .mock-tab-btn:hover {
   margin-top: var(--space-4);
 }
 
+/* Dual Chart Grid for Time Spent and Accuracy Tabs */
+.mock-dual-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+.mock-chart-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  min-height: 380px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mock-chart-card-title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 /* Diagnostics & Notes Grid */
 .mock-diagnostics-grid {
   display: grid;
@@ -350,6 +380,11 @@ html[data-theme='light'] .mock-tab-btn:hover {
 
   .mock-scores-stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mock-dual-chart-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
 
   .mock-diagnostics-grid {

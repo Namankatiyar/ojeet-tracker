@@ -215,3 +215,40 @@ export const getChartOptions = (
 
   return baseOptions;
 };
+
+/**
+ * Create a linear gradient for Chart.js dataset background with falloff
+ */
+export const createGradient = (color: string, data: number[]) => {
+  return (context: any) => {
+    const chart = context.chart;
+    const { ctx, chartArea, scales } = chart;
+    if (!chartArea || !scales.y) return null;
+
+    let r = 0,
+      g = 0,
+      b = 0;
+    if (color.startsWith('#')) {
+      const hex = color.replace('#', '');
+      if (hex.length === 3) {
+        r = parseInt(hex[0] + hex[0], 16);
+        g = parseInt(hex[1] + hex[1], 16);
+        b = parseInt(hex[2] + hex[2], 16);
+      } else if (hex.length >= 6) {
+        r = parseInt(hex.substring(0, 2), 16);
+        g = parseInt(hex.substring(2, 4), 16);
+        b = parseInt(hex.substring(4, 6), 16);
+      }
+    }
+
+    // Find the peak of this specific dataset
+    const maxVal = data.length > 0 ? Math.max(...data, 0.1) : 0.1;
+    const topY = scales.y.getPixelForValue(maxVal);
+
+    // Gradient starts at the peak of the dataset's line
+    const gradient = ctx.createLinearGradient(0, topY, 0, chartArea.bottom);
+    gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.5)`);
+    gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.0)`);
+    return gradient;
+  };
+};

@@ -127,6 +127,92 @@ export function MockScoresPage() {
     };
   }, [theme]);
 
+  const timeBarOptions = useMemo(() => {
+    const isDark = theme.includes('dark');
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top' as const,
+          labels: { color: isDark ? '#e2e8f0' : '#334155', font: { family: 'Inter', size: 12 } },
+        },
+      },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+        y: {
+          beginAtZero: true,
+          grid: { color: gridColor },
+          ticks: {
+            color: textColor,
+            stepSize: 30,
+            callback: (val: any) => `${val}m`,
+          },
+        },
+      },
+    };
+  }, [theme]);
+
+  const timeTrendOptions = useMemo(() => {
+    const isDark = theme.includes('dark');
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top' as const,
+          labels: { color: isDark ? '#e2e8f0' : '#334155', font: { family: 'Inter', size: 12 } },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => ` ${context.dataset.label}: ${context.raw} mins`,
+          },
+        },
+      },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+        y: {
+          beginAtZero: true,
+          grid: { color: gridColor },
+          ticks: {
+            color: textColor,
+            stepSize: 30,
+            callback: (val: any) => `${val}m`,
+          },
+        },
+      },
+    };
+  }, [theme]);
+
+  const accuracyTrendOptions = useMemo(() => {
+    const isDark = theme.includes('dark');
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top' as const,
+          labels: { color: isDark ? '#e2e8f0' : '#334155', font: { family: 'Inter', size: 12 } },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => ` ${context.dataset.label}: ${context.raw}%`,
+          },
+        },
+      },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+        y: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: textColor, callback: (val: any) => `${val}%` } },
+      },
+    };
+  }, [theme]);
+
   const handleOpenAdd = () => {
     setEditingScore(undefined);
     setIsAddModalOpen(true);
@@ -284,8 +370,8 @@ export function MockScoresPage() {
           </button>
         </div>
 
-        <div className="mock-chart-container">
-          {sortedScores.length === 0 ? (
+        {sortedScores.length === 0 ? (
+          <div className="mock-chart-container">
             <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
               <Target size={48} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
               <h3>No Mock Scores Recorded Yet</h3>
@@ -294,56 +380,94 @@ export function MockScoresPage() {
                 progress over time.
               </p>
             </div>
-          ) : (
-            <>
-              {activeTab === 'trend' && (
+          </div>
+        ) : (
+          <>
+            {activeTab === 'trend' && (
+              <div className="mock-chart-container">
                 <div style={{ height: '360px', width: '100%' }}>
                   <Line data={chartData.trendChartData} options={trendOptions as any} />
                 </div>
-              )}
+              </div>
+            )}
 
-              {activeTab === 'share' && (
+            {activeTab === 'share' && (
+              <div className="mock-chart-container">
                 <div style={{ height: '360px', width: '100%', display: 'flex', justifyContent: 'center' }}>
                   <Doughnut data={chartData.subjectShareChartData} options={doughnutOptions as any} />
                 </div>
-              )}
+              </div>
+            )}
 
-              {activeTab === 'time' && (
-                <div style={{ height: '360px', width: '100%' }}>
-                  {chartData.hasTimeData ? (
-                    <Bar data={chartData.timeSpentChartData} options={barOptions as any} />
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-                      <Clock size={40} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
-                      <h4>No Time Spent Data Available</h4>
-                      <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0.5rem auto' }}>
-                        When logging or editing a mock score, expand "+ Advanced Analytics" to record
-                        how much time you spent on Physics, Chemistry, and Maths.
-                      </p>
+            {activeTab === 'time' && (
+              chartData.hasTimeData ? (
+                <div className="mock-dual-chart-grid">
+                  <div className="mock-chart-card">
+                    <h3 className="mock-chart-card-title">
+                      <TrendingUp size={18} style={{ color: 'var(--accent)' }} /> Time spent trajectory
+                    </h3>
+                    <div style={{ height: '320px', width: '100%' }}>
+                      <Line data={chartData.timeSpentTrendChartData} options={timeTrendOptions as any} />
                     </div>
-                  )}
+                  </div>
+                  <div className="mock-chart-card">
+                    <h3 className="mock-chart-card-title">
+                      <Clock size={18} style={{ color: '#3b82f6' }} /> Subject time distribution (histogram)
+                    </h3>
+                    <div style={{ height: '320px', width: '100%' }}>
+                      <Bar data={chartData.timeSpentChartData} options={timeBarOptions as any} />
+                    </div>
+                  </div>
                 </div>
-              )}
+              ) : (
+                <div className="mock-chart-container">
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+                    <Clock size={40} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
+                    <h4>No Time Spent Data Available</h4>
+                    <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0.5rem auto' }}>
+                      When logging or editing a mock score, expand "+ Advanced Analytics" to record
+                      how much time you spent on Physics, Chemistry, and Maths.
+                    </p>
+                  </div>
+                </div>
+              )
+            )}
 
-              {activeTab === 'accuracy' && (
-                <div style={{ height: '360px', width: '100%' }}>
-                  {chartData.hasQuestionData ? (
-                    <Bar data={chartData.accuracyChartData} options={barOptions as any} />
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-                      <CheckCircle2 size={40} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
-                      <h4>No Question Accuracy Data Available</h4>
-                      <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0.5rem auto' }}>
-                        When logging or editing a mock score, expand "+ Advanced Analytics" to record
-                        attempted and wrong question counts per subject.
-                      </p>
+            {activeTab === 'accuracy' && (
+              chartData.hasQuestionData ? (
+                <div className="mock-dual-chart-grid">
+                  <div className="mock-chart-card">
+                    <h3 className="mock-chart-card-title">
+                      <TrendingUp size={18} style={{ color: '#10b981' }} /> Accuracy percentage trajectory
+                    </h3>
+                    <div style={{ height: '320px', width: '100%' }}>
+                      <Line data={chartData.accuracyTrendChartData} options={accuracyTrendOptions as any} />
                     </div>
-                  )}
+                  </div>
+                  <div className="mock-chart-card">
+                    <h3 className="mock-chart-card-title">
+                      <CheckCircle2 size={18} style={{ color: '#f59e0b' }} /> Question volume (histogram)
+                    </h3>
+                    <div style={{ height: '320px', width: '100%' }}>
+                      <Bar data={chartData.accuracyChartData} options={barOptions as any} />
+                    </div>
+                  </div>
                 </div>
-              )}
-            </>
-          )}
-        </div>
+              ) : (
+                <div className="mock-chart-container">
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+                    <CheckCircle2 size={40} style={{ opacity: 0.3, margin: '0 auto 1rem' }} />
+                    <h4>No Question Accuracy Data Available</h4>
+                    <p style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0.5rem auto' }}>
+                      When logging or editing a mock score, expand "+ Advanced Analytics" to record
+                      attempted and wrong question counts per subject.
+                    </p>
+                  </div>
+                </div>
+              )
+            )}
+          </>
+        )}
       </div>
 
       {/* Diagnostics & Notes Grid */}

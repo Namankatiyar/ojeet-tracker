@@ -5,7 +5,7 @@ import {
   getMockSubjectTotals,
   getMockTotalMarks,
 } from '../../../shared/utils/mockScores';
-import { getSubjectColors } from '../utils/analyticsUtils';
+import { getSubjectColors, createGradient } from '../utils/analyticsUtils';
 
 export function useMockScoresAnalytics(
   mockScores: MockScore[],
@@ -27,60 +27,65 @@ export function useMockScoresAnalytics(
       useSerialNumbers ? (index + 1).toString() : s.name
     );
 
+    const totalData = sortedScores.map((s) => getMockTotalMarks(s, preset));
+    const physicsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).physics);
+    const chemistryData = sortedScores.map((s) => getMockSubjectTotals(s, preset).chemistry);
+    const mathsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).maths);
+
     return {
       labels,
       datasets: [
         {
           label: 'Total',
-          data: sortedScores.map((s) => getMockTotalMarks(s, preset)),
+          data: totalData,
           borderColor: '#8b5cf6',
-          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          backgroundColor: createGradient('#8b5cf6', totalData),
           pointBackgroundColor: '#8b5cf6',
           pointBorderColor: '#fff',
           pointRadius: 5,
           pointHoverRadius: 7,
-          tension: 0.3,
+          tension: 0.4,
           fill: true,
           borderWidth: 3,
         },
         {
           label: 'Physics',
-          data: sortedScores.map((s) => getMockSubjectTotals(s, preset).physics),
+          data: physicsData,
           borderColor: subjectColors.physics,
-          backgroundColor: 'transparent',
+          backgroundColor: createGradient(subjectColors.physics, physicsData),
           pointBackgroundColor: subjectColors.physics,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
-          tension: 0.3,
+          tension: 0.4,
+          fill: true,
           borderWidth: 2,
-          borderDash: [5, 5],
         },
         {
           label: 'Chemistry',
-          data: sortedScores.map((s) => getMockSubjectTotals(s, preset).chemistry),
+          data: chemistryData,
           borderColor: subjectColors.chemistry,
-          backgroundColor: 'transparent',
+          backgroundColor: createGradient(subjectColors.chemistry, chemistryData),
           pointBackgroundColor: subjectColors.chemistry,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
-          tension: 0.3,
+          tension: 0.4,
+          fill: true,
           borderWidth: 2,
-          borderDash: [5, 5],
         },
         {
           label: 'Maths',
-          data: sortedScores.map((s) => getMockSubjectTotals(s, preset).maths),
+          data: mathsData,
           borderColor: subjectColors.maths,
-          backgroundColor: 'transparent',
+          backgroundColor: createGradient(subjectColors.maths, mathsData),
           pointBackgroundColor: subjectColors.maths,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
-          tension: 0.3,
+          tension: 0.4,
+          fill: true,
           borderWidth: 2,
-          borderDash: [5, 5],
         },
       ],
     };
