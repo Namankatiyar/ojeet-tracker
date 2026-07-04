@@ -70,7 +70,7 @@ describe('syncMerge', () => {
       hasLocalUnsyncedEdit: () => false,
     });
 
-    expect(merged.domains.settings.progressCardSettings.userName).toBe('remote');
+    expect(merged.domains.settings.disableAutoShift).toBe(false);
     expect(merged.domains.plannerTasks[0].id).toBe('remote-task');
   });
 
@@ -82,7 +82,7 @@ describe('syncMerge', () => {
     });
 
     expect(merged.domains.plannerTasks[0].id).toBe('local-task');
-    expect(merged.domains.settings.progressCardSettings.userName).toBe('local');
+    expect(merged.domains.settings.disableAutoShift).toBe(true);
     expect(merged.domains.mockScores[0].id).toBe('remote-mock');
     expect(merged.domains.examDates[0].id).toBe('remote-exam');
   });

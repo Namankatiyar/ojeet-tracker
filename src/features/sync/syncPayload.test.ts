@@ -63,7 +63,7 @@ describe('syncPayload', () => {
     expect(filtered.map((t) => t.id)).toEqual(['edge', 'future']);
   });
 
-  it('includes avatar url and other profile settings in synced settings payload', () => {
+  it('excludes avatar url and other profile settings in synced settings payload', () => {
     const payload = buildSyncPayload({
       progress: baseProgress,
       plannerTasks: [],
@@ -81,16 +81,12 @@ describe('syncPayload', () => {
       generatedAt: '2026-03-07T10:00:00.000Z',
     });
 
-    expect(payload.domains.settings.progressCardSettings.userName).toBe('Naman');
+    expect(payload.domains.settings.progressCardSettings.userName).toBeUndefined();
     expect(payload.domains.settings.progressCardSettings.visibleStats.examCountdown).toBe(true);
-    expect(payload.domains.settings.progressCardSettings.customAvatarUrl).toBe(
-      'https://example.com/avatar.png'
-    );
-    expect(payload.domains.settings.progressCardSettings.bannerUrl).toBe(
-      'https://example.com/banner.png'
-    );
-    expect(payload.domains.settings.progressCardSettings.customStatus).toBe('Studying');
-    expect(payload.domains.settings.progressCardSettings.gradeStatus).toBe('Class 12');
-    expect(payload.domains.settings.progressCardSettings.targetExam).toBe('JEE 2026');
+    expect(payload.domains.settings.progressCardSettings.customAvatarUrl).toBeUndefined();
+    expect(payload.domains.settings.progressCardSettings.bannerUrl).toBeUndefined();
+    expect(payload.domains.settings.progressCardSettings.customStatus).toBeUndefined();
+    expect(payload.domains.settings.progressCardSettings.gradeStatus).toBeUndefined();
+    expect(payload.domains.settings.progressCardSettings.targetExam).toBeUndefined();
   });
 });

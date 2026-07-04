@@ -366,14 +366,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         enableAIAgent,
         enableMusicPlayer,
         progressCardSettings: {
-          userName: progressCardSettings.userName,
           visibleStats: progressCardSettings.visibleStats,
           showTasks: progressCardSettings.showTasks,
-          customAvatarUrl: progressCardSettings.customAvatarUrl,
-          bannerUrl: progressCardSettings.bannerUrl,
-          customStatus: progressCardSettings.customStatus,
-          gradeStatus: progressCardSettings.gradeStatus,
-          targetExam: progressCardSettings.targetExam,
         },
         mockExamPresets,
       }),
@@ -427,14 +421,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
       setProgressCardSettings((prev) => ({
         ...prev,
-        userName: payload.domains.settings.progressCardSettings.userName,
         visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
         showTasks: payload.domains.settings.progressCardSettings.showTasks ?? true,
-        customAvatarUrl: payload.domains.settings.progressCardSettings.customAvatarUrl ?? '',
-        bannerUrl: payload.domains.settings.progressCardSettings.bannerUrl ?? '',
-        customStatus: payload.domains.settings.progressCardSettings.customStatus ?? '',
-        gradeStatus: payload.domains.settings.progressCardSettings.gradeStatus ?? 'Class 12',
-        targetExam: payload.domains.settings.progressCardSettings.targetExam ?? 'JEE 2026',
       }));
       setMockExamPresets(
         payload.domains.settings.mockExamPresets &&

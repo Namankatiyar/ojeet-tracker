@@ -535,27 +535,6 @@ export function SubjectPage({
           )}
         </div>
 
-        <div className="mobile-material-strip">
-          {localMaterials.map((material) => (
-            <button
-              key={material}
-              className="mobile-material-pill"
-              onClick={() => {
-                if (!isEditing && onRemoveMaterial) {
-                  setDeleteMaterialState({ isOpen: true, material });
-                }
-              }}
-              title={
-                !isEditing && onRemoveMaterial ? 'Tap to remove this material column' : material
-              }
-              disabled={isEditing || !onRemoveMaterial}
-            >
-              <span>{material}</span>
-              {!isEditing && onRemoveMaterial && <XIcon size={14} />}
-            </button>
-          ))}
-        </div>
-
         {isEditing && priorityFilter === 'all' ? (
           <Reorder.Group
             as="div"

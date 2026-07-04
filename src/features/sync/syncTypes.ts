@@ -16,7 +16,7 @@ export const SYNC_MAX_COMPRESSED_BYTES = 512 * 1024;
 export type SyncStorageMode = 'inline' | 'chunked';
 
 export interface SyncedProgressCardSettings {
-  userName: ProgressCardSettings['userName'];
+  userName?: ProgressCardSettings['userName'];
   visibleStats: ProgressCardSettings['visibleStats'];
   showTasks?: ProgressCardSettings['showTasks'];
   customAvatarUrl?: ProgressCardSettings['customAvatarUrl'];

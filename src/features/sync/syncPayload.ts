@@ -36,7 +36,6 @@ export function toSyncedProgressCardSettings(
   settings: SyncPayloadInput['progressCardSettings']
 ): SyncedProgressCardSettings {
   return {
-    userName: settings?.userName ?? '',
     visibleStats: settings?.visibleStats ?? {
       totalStudyTime: true,
       highestMockScore: true,
@@ -51,11 +50,6 @@ export function toSyncedProgressCardSettings(
       examCountdown: true,
     },
     showTasks: settings?.showTasks ?? true,
-    customAvatarUrl: settings?.customAvatarUrl ?? '',
-    bannerUrl: settings?.bannerUrl ?? '',
-    customStatus: settings?.customStatus ?? '',
-    gradeStatus: settings?.gradeStatus ?? 'Class 12',
-    targetExam: settings?.targetExam ?? 'JEE 2026',
   };
 }
 
