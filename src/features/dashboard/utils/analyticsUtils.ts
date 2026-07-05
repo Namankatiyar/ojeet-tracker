@@ -124,6 +124,7 @@ export const getChartOptions = (
         labels: {
           color: axisColor,
           usePointStyle: true,
+          pointStyle: 'circle',
           padding: 15,
           font: { size: 11, family: 'Inter' },
         },
@@ -134,6 +135,7 @@ export const getChartOptions = (
         bodyFont: { family: 'Inter' },
         padding: 10,
         cornerRadius: 8,
+        usePointStyle: true,
       },
     },
     scales: {

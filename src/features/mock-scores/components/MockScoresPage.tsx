@@ -101,9 +101,12 @@ export function MockScoresPage() {
             color: theme.includes('dark') ? '#e2e8f0' : '#334155',
             font: { family: 'Inter', size: 12, weight: 600 },
             padding: 16,
+            usePointStyle: true,
+            pointStyle: 'circle',
           },
         },
         tooltip: {
+          usePointStyle: true,
           callbacks: {
             label: (context: any) => ` ${context.label}: ${context.raw} marks avg`,
           },
@@ -123,7 +126,15 @@ export function MockScoresPage() {
       plugins: {
         legend: {
           position: 'top' as const,
-          labels: { color: isDark ? '#e2e8f0' : '#334155', font: { family: 'Inter', size: 12 } },
+          labels: { 
+            color: isDark ? '#e2e8f0' : '#334155', 
+            font: { family: 'Inter', size: 12 },
+            usePointStyle: true,
+            pointStyle: 'circle',
+          },
+        },
+        tooltip: {
+          usePointStyle: true,
         },
       },
       scales: {
@@ -143,7 +154,15 @@ export function MockScoresPage() {
       plugins: {
         legend: {
           position: 'top' as const,
-          labels: { color: isDark ? '#e2e8f0' : '#334155', font: { family: 'Inter', size: 12 } },
+          labels: { 
+            color: isDark ? '#e2e8f0' : '#334155', 
+            font: { family: 'Inter', size: 12 },
+            usePointStyle: true,
+            pointStyle: 'circle',
+          },
+        },
+        tooltip: {
+          usePointStyle: true,
         },
       },
       scales: {
@@ -171,9 +190,15 @@ export function MockScoresPage() {
       plugins: {
         legend: {
           position: 'top' as const,
-          labels: { color: isDark ? '#e2e8f0' : '#334155', font: { family: 'Inter', size: 12 } },
+          labels: { 
+            color: isDark ? '#e2e8f0' : '#334155', 
+            font: { family: 'Inter', size: 12 },
+            usePointStyle: true,
+            pointStyle: 'circle',
+          },
         },
         tooltip: {
+          usePointStyle: true,
           callbacks: {
             label: (context: any) => ` ${context.dataset.label}: ${context.raw} mins`,
           },
@@ -204,9 +229,15 @@ export function MockScoresPage() {
       plugins: {
         legend: {
           position: 'top' as const,
-          labels: { color: isDark ? '#e2e8f0' : '#334155', font: { family: 'Inter', size: 12 } },
+          labels: { 
+            color: isDark ? '#e2e8f0' : '#334155', 
+            font: { family: 'Inter', size: 12 },
+            usePointStyle: true,
+            pointStyle: 'circle',
+          },
         },
         tooltip: {
+          usePointStyle: true,
           callbacks: {
             label: (context: any) => ` ${context.dataset.label}: ${context.raw}%`,
           },

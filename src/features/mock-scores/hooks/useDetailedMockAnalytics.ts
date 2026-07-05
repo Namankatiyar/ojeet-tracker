@@ -220,16 +220,19 @@ export function useDetailedMockAnalytics(
           label: 'Physics (mins)',
           data: timeLoggedScores.map((s) => s.timeSpent?.physics || 0),
           backgroundColor: subjectColors.physics,
+          borderRadius: 4,
         },
         {
           label: 'Chemistry (mins)',
           data: timeLoggedScores.map((s) => s.timeSpent?.chemistry || 0),
           backgroundColor: subjectColors.chemistry,
+          borderRadius: 4,
         },
         {
           label: 'Maths (mins)',
           data: timeLoggedScores.map((s) => s.timeSpent?.maths || 0),
           backgroundColor: subjectColors.maths,
+          borderRadius: 4,
         },
       ],
     };
@@ -321,6 +324,7 @@ export function useDetailedMockAnalytics(
             return Math.max(0, att - wr);
           }),
           backgroundColor: '#10b981', // green
+          borderRadius: 4,
         },
         {
           label: 'Wrong Questions',
@@ -332,6 +336,7 @@ export function useDetailedMockAnalytics(
             );
           }),
           backgroundColor: '#ef4444', // red
+          borderRadius: 4,
         },
       ],
     };
