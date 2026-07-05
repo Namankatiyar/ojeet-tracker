@@ -27,6 +27,7 @@ function AvatarWithFallback({ url, name }: { url: string; name: string }) {
 export function Leaderboard({ onSignInClick }: LeaderboardProps) {
   const { user } = useRemoteAuth();
   const [profiles, setProfiles] = useState<RemoteProfile[]>([]);
+  const [isSelfInvalidated, setIsSelfInvalidated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,15 +43,34 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
       setIsLoading(true);
       setError(null);
       try {
-        const { data, error: fetchErr } = await supabase
+        // Query top 10 non-invalidated users
+        const { data: standings, error: fetchErr } = await supabase
           .from('profiles')
           .select('id, display_name, username, avatar_url, weekly_hours, streak_count, target_exam, grade_status')
+          .eq('leaderboard_invalidated', false)
           .order('weekly_hours', { ascending: false })
           .limit(10);
 
         if (fetchErr) throw fetchErr;
-        if (isMounted && data) {
-          setProfiles(data as RemoteProfile[]);
+
+        // Query current user's profile invalidation status
+        let selfFlagged = false;
+        if (user) {
+          const { data: selfProfile } = await supabase
+            .from('profiles')
+            .select('leaderboard_invalidated')
+            .eq('id', user.id)
+            .single();
+          if (selfProfile) {
+            selfFlagged = selfProfile.leaderboard_invalidated || false;
+          }
+        }
+
+        if (isMounted) {
+          if (standings) {
+            setProfiles(standings as RemoteProfile[]);
+          }
+          setIsSelfInvalidated(selfFlagged);
         }
       } catch (err: any) {
         console.error('Failed to fetch leaderboard:', err);
@@ -90,6 +110,16 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
           <p>Standings calculated from active study hours recorded over the last 7 days.</p>
         </div>
       </div>
+
+      {isSelfInvalidated && (
+        <div className="leaderboard-warning glass-panel">
+          <AlertCircle size={20} className="warning-icon" />
+          <div className="warning-text">
+            <h3>Standings Excluded</h3>
+            <p>Your profile is temporarily excluded from public standings because study logs exceeding 18 hours in a single day were detected. Correct or delete invalid study sessions in your history to restore eligibility.</p>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="leaderboard-error glass-panel">
