@@ -38,6 +38,7 @@ import {
   getMockPercentage,
   getMockExamType,
   getMockSubjectTotals,
+  getMockDefaultMaxMarks,
 } from '../../../shared/utils/mockScores';
 import { getChartOptions } from '../../dashboard/utils/analyticsUtils';
 
@@ -374,30 +375,27 @@ export function MockScoresPage() {
         </div>
 
         {activePreset && (
-          <div className="glass-panel mock-stat-card">
+          <div className="glass-panel mock-stat-card mock-target-card">
             <span className="mock-stat-label">Target Score</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className="mock-target-input-wrapper">
+              <span className="mock-target-input-icon">
+                <Target size={16} />
+              </span>
               <input
                 type="number"
                 min={0}
+                max={getMockDefaultMaxMarks(activePreset.id, mockExamPresets)}
                 placeholder="Set target"
                 value={activePreset.targetScore ?? ''}
                 onChange={(e) => {
                   const val = e.target.value === '' ? undefined : Number(e.target.value);
                   handleUpdateMockExamPreset({ ...activePreset, targetScore: val });
                 }}
-                style={{
-                  width: '90px',
-                  height: '28px',
-                  padding: '2px 8px',
-                  fontSize: 'var(--text-md)',
-                  fontWeight: 600,
-                  background: 'var(--bg-tertiary)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--text-primary)',
-                }}
+                className="mock-target-input"
               />
+              <span className="mock-target-max">
+                / {getMockDefaultMaxMarks(activePreset.id, mockExamPresets)}
+              </span>
             </div>
             <span className="mock-stat-sub">
               {activePreset.targetScore !== undefined ? 'Dotted line on trend chart' : 'No target set'}

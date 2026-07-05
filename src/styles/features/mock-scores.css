@@ -121,6 +121,67 @@ html[data-theme^='dark-'] .mock-scores-actions .mock-add-btn:hover,
   color: var(--text-muted);
 }
 
+/* Target Score Card Specific Layout and Input Styling */
+.mock-target-card {
+  gap: var(--space-2);
+}
+
+.mock-target-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 160px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-3);
+  height: 2.25rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.mock-target-input-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.mock-target-input-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  margin-right: var(--space-2);
+}
+
+.mock-target-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+}
+
+/* Hide standard HTML number input spin buttons */
+.mock-target-input::-webkit-outer-spin-button,
+.mock-target-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.mock-target-input {
+  -moz-appearance: textfield;
+}
+
+.mock-target-max {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  margin-left: var(--space-2);
+}
+
 /* Tabs Redesign as Segmented Control matching view-toggle-small */
 .mock-scores-tabs {
   display: inline-flex;
