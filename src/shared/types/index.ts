@@ -76,6 +76,7 @@ export interface PlannerTask {
   wasShifted?: boolean; // True if this task was auto-moved from a past day
   questions?: number; // Questions to attempt
   isLecture?: boolean;
+  isRevision?: boolean;
 }
 
 export interface StudySession {

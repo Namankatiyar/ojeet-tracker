@@ -304,6 +304,7 @@ export const useStudyCoPilot = () => {
         subject: rec.subject,
         chapterSerial: rec.chapterSerial,
         material: 'Revision',
+        isRevision: true,
       };
       handleAddPlannerTask(task);
     },

@@ -53,11 +53,24 @@ export function TaskModal({
       type: form.taskType,
       questions: form.questions > 0 ? form.questions : undefined,
       isLecture: form.isLecture,
+      isRevision: form.isRevision,
     };
 
+    let prefix = '';
+    if (form.isRevision && form.isLecture) {
+      prefix = 'Revision Lecture: ';
+    } else if (form.isRevision) {
+      prefix = 'Revision: ';
+    } else if (form.isLecture) {
+      prefix = 'Lecture: ';
+    }
+
     if (form.taskType === 'custom') {
-      const cleanTitle = form.customTitle.replace(/\s*\(\d+\s*Qs\)$/, '');
-      const finalTitle = form.questions > 0 ? `${cleanTitle} (${form.questions} Qs)` : cleanTitle;
+      const cleanTitle = form.customTitle
+        .replace(/\s*\(\d+\s*Qs\)$/, '')
+        .replace(/^(Revision Lecture|Lecture|Revision):\s*/i, '');
+      const baseTitleWithPrefix = `${prefix}${cleanTitle}`;
+      const finalTitle = form.questions > 0 ? `${baseTitleWithPrefix} (${form.questions} Qs)` : baseTitleWithPrefix;
       onSave({
         ...baseTask,
         title: finalTitle,
@@ -72,7 +85,8 @@ export function TaskModal({
       if (!chapter) return;
 
       const baseTitle = chapter.name;
-      const finalTitle = form.questions > 0 ? `${baseTitle} (${form.questions} Qs)` : baseTitle;
+      const baseTitleWithPrefix = `${prefix}${baseTitle}`;
+      const finalTitle = form.questions > 0 ? `${baseTitleWithPrefix} (${form.questions} Qs)` : baseTitleWithPrefix;
 
       if (form.selectedMaterial.length === 0) {
         onSave({
@@ -211,6 +225,17 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
               <span className="checkmark"></span>
             </label>
           </div>
+          <div className="form-group-inline" style={{ marginBottom: 'var(--space-4)' }}>
+            <label>Revision</label>
+            <label className="checkbox-container" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={form.isRevision}
+                onChange={(e) => form.setIsRevision(e.target.checked)}
+              />
+              <span className="checkmark"></span>
+            </label>
+          </div>
           <QuestionStepper value={form.questions} onChange={form.setQuestions} />
         </>
       )}
@@ -336,6 +361,17 @@ function ChapterTaskFields({
                 type="checkbox"
                 checked={form.isLecture}
                 onChange={(e) => form.setIsLecture(e.target.checked)}
+              />
+              <span className="checkmark"></span>
+            </label>
+          </div>
+          <div className="form-group-inline" style={{ marginBottom: 'var(--space-4)' }}>
+            <label>Revision</label>
+            <label className="checkbox-container" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={form.isRevision}
+                onChange={(e) => form.setIsRevision(e.target.checked)}
               />
               <span className="checkmark"></span>
             </label>

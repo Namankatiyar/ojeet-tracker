@@ -199,7 +199,8 @@ export function useAgentTools() {
       chapterName?: string,
       material?: string,
       questions?: number,
-      isLecture?: boolean
+      isLecture?: boolean,
+      isRevision?: boolean
     ): string => {
       let chapterSerial: number | undefined;
       let resolvedTitle = title;
@@ -212,9 +213,21 @@ export function useAgentTools() {
         }
       }
 
-      const cleanTitle = resolvedTitle.replace(/\s*\(\d+\s*Qs\)$/, '');
+      let prefix = '';
+      if (isRevision && isLecture) {
+        prefix = 'Revision Lecture: ';
+      } else if (isRevision) {
+        prefix = 'Revision: ';
+      } else if (isLecture) {
+        prefix = 'Lecture: ';
+      }
+
+      const cleanTitle = resolvedTitle
+        .replace(/\s*\(\d+\s*Qs\)$/, '')
+        .replace(/^(Revision Lecture|Lecture|Revision):\s*/i, '');
+      const baseTitleWithPrefix = `${prefix}${cleanTitle}`;
       const finalTitle =
-        questions && questions > 0 ? `${cleanTitle} (${questions} Qs)` : cleanTitle;
+        questions && questions > 0 ? `${baseTitleWithPrefix} (${questions} Qs)` : baseTitleWithPrefix;
 
       const task: PlannerTask = {
         id: `agent-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -228,6 +241,7 @@ export function useAgentTools() {
         material,
         questions: questions && questions > 0 ? questions : undefined,
         isLecture,
+        isRevision,
       };
       handleAddPlannerTask(task);
       return ok(`Added task "${finalTitle}" on ${date} at ${time}.`, { taskId: task.id });
@@ -291,6 +305,7 @@ export function useAgentTools() {
           completed: t.completed,
           subject: t.subject,
           isLecture: t.isLecture,
+          isRevision: t.isRevision,
         }))
       );
     },

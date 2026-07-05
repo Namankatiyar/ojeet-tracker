@@ -905,12 +905,19 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           ? Math.max(0, prevLectureCount + (newStatus ? 1 : -1))
           : prevLectureCount;
 
+        const prevRevisionCount = currentDetail.revisionCount || 0;
+        const nextRevisionCount = task.isRevision
+          ? Math.max(0, prevRevisionCount + (newStatus ? 1 : -1))
+          : prevRevisionCount;
+
         const updatedDetailForRef = {
           ...currentDetail,
           attemptedByMaterial: (task.material && task.questions && task.questions > 0)
             ? { ...currentAttempted, [task.material]: newCount }
             : currentAttempted,
           lectureCount: nextLectureCount,
+          revisionCount: nextRevisionCount,
+          ...(task.isRevision && newStatus ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
         };
 
         const updatedCompleted = task.material
@@ -944,12 +951,19 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             ? Math.max(0, prevLectures + (newStatus ? 1 : -1))
             : prevLectures;
 
+          const prevRevisions = prevDetail.revisionCount || 0;
+          const nextRevisions = task.isRevision
+            ? Math.max(0, prevRevisions + (newStatus ? 1 : -1))
+            : prevRevisions;
+
           const updatedDetail = {
             ...prevDetail,
             attemptedByMaterial: (task.material && task.questions && task.questions > 0)
               ? { ...prevAttempted, [task.material!]: newCount }
               : prevAttempted,
             lectureCount: nextLectures,
+            revisionCount: nextRevisions,
+            ...(task.isRevision && newStatus ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
           };
 
           const updatedComp = task.material
@@ -999,47 +1013,49 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const task = plannerTasksRef.current.find((t) => t.id === taskId);
       setPlannerTasks((prev) => prev.filter((t) => t.id !== taskId));
 
-      if (task && task.completed && task.isLecture && task.subject && task.chapterSerial) {
-        setProgress((prog) => {
-          const subjectProgress = prog[task.subject!];
+      if (task && task.completed && task.subject && task.chapterSerial) {
+        const isLec = !!task.isLecture;
+        const isRev = !!task.isRevision;
+        if (isLec || isRev) {
+          setProgress((prog) => {
+            const subjectProgress = prog[task.subject!];
+            const chapterProgress = subjectProgress[task.chapterSerial!] || { completed: {}, priority: 'none' };
+            const detail = chapterProgress.detail || { attemptedByMaterial: {} };
+            return {
+              ...prog,
+              [task.subject!]: {
+                ...subjectProgress,
+                [task.chapterSerial!]: {
+                  ...chapterProgress,
+                  detail: {
+                    ...detail,
+                    lectureCount: isLec ? Math.max(0, (detail.lectureCount || 0) - 1) : detail.lectureCount,
+                    revisionCount: isRev ? Math.max(0, (detail.revisionCount || 0) - 1) : detail.revisionCount,
+                  },
+                },
+              },
+            };
+          });
+
+          const currentProgress = pendingProgressRef.current;
+          const subjectProgress = currentProgress[task.subject!];
           const chapterProgress = subjectProgress[task.chapterSerial!] || { completed: {}, priority: 'none' };
           const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-          const currentLectures = detail.lectureCount || 0;
-          const nextLectures = Math.max(0, currentLectures - 1);
-          return {
-            ...prog,
+          pendingProgressRef.current = {
+            ...currentProgress,
             [task.subject!]: {
               ...subjectProgress,
               [task.chapterSerial!]: {
                 ...chapterProgress,
                 detail: {
                   ...detail,
-                  lectureCount: nextLectures,
+                  lectureCount: isLec ? Math.max(0, (detail.lectureCount || 0) - 1) : detail.lectureCount,
+                  revisionCount: isRev ? Math.max(0, (detail.revisionCount || 0) - 1) : detail.revisionCount,
                 },
               },
             },
           };
-        });
-
-        const currentProgress = pendingProgressRef.current;
-        const subjectProgress = currentProgress[task.subject!];
-        const chapterProgress = subjectProgress[task.chapterSerial!] || { completed: {}, priority: 'none' };
-        const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-        const currentLectures = detail.lectureCount || 0;
-        const nextLectures = Math.max(0, currentLectures - 1);
-        pendingProgressRef.current = {
-          ...currentProgress,
-          [task.subject!]: {
-            ...subjectProgress,
-            [task.chapterSerial!]: {
-              ...chapterProgress,
-              detail: {
-                ...detail,
-                lectureCount: nextLectures,
-              },
-            },
-          },
-        };
+        }
       }
     },
     [setPlannerTasks, setProgress]
@@ -1054,15 +1070,19 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const oldLectureVal = (oldTask.isLecture && oldTask.completed) ? 1 : 0;
         const newLectureVal = (updatedTask.isLecture && updatedTask.completed) ? 1 : 0;
 
+        const oldRevisionVal = (oldTask.isRevision && oldTask.completed) ? 1 : 0;
+        const newRevisionVal = (updatedTask.isRevision && updatedTask.completed) ? 1 : 0;
+
         if (oldTask.subject === updatedTask.subject && oldTask.chapterSerial === updatedTask.chapterSerial) {
-          const diff = newLectureVal - oldLectureVal;
-          if (diff !== 0 && updatedTask.subject && updatedTask.chapterSerial) {
+          const diffLec = newLectureVal - oldLectureVal;
+          const diffRev = newRevisionVal - oldRevisionVal;
+          if ((diffLec !== 0 || diffRev !== 0) && updatedTask.subject && updatedTask.chapterSerial) {
             setProgress((prog) => {
               const subjectProgress = prog[updatedTask.subject!];
               const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
               const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-              const currentLectures = detail.lectureCount || 0;
-              const nextLectures = Math.max(0, currentLectures + diff);
+              const nextLectures = Math.max(0, (detail.lectureCount || 0) + diffLec);
+              const nextRevisions = Math.max(0, (detail.revisionCount || 0) + diffRev);
 
               return {
                 ...prog,
@@ -1073,6 +1093,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     detail: {
                       ...detail,
                       lectureCount: nextLectures,
+                      revisionCount: nextRevisions,
+                      ...(diffRev > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
                     },
                   },
                 },
@@ -1083,8 +1105,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const subjectProgress = currentProgress[updatedTask.subject!];
             const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
             const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-            const currentLectures = detail.lectureCount || 0;
-            const nextLectures = Math.max(0, currentLectures + diff);
+            const nextLectures = Math.max(0, (detail.lectureCount || 0) + diffLec);
+            const nextRevisions = Math.max(0, (detail.revisionCount || 0) + diffRev);
             pendingProgressRef.current = {
               ...currentProgress,
               [updatedTask.subject!]: {
@@ -1094,19 +1116,21 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                   detail: {
                     ...detail,
                     lectureCount: nextLectures,
+                    revisionCount: nextRevisions,
+                    ...(diffRev > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
                   },
                 },
               },
             };
           }
         } else {
-          if (oldLectureVal > 0 && oldTask.subject && oldTask.chapterSerial) {
+          if ((oldLectureVal > 0 || oldRevisionVal > 0) && oldTask.subject && oldTask.chapterSerial) {
             setProgress((prog) => {
               const subjectProgress = prog[oldTask.subject!];
               const chapterProgress = subjectProgress[oldTask.chapterSerial!] || { completed: {}, priority: 'none' };
               const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-              const currentLectures = detail.lectureCount || 0;
-              const nextLectures = Math.max(0, currentLectures - 1);
+              const nextLectures = Math.max(0, (detail.lectureCount || 0) - oldLectureVal);
+              const nextRevisions = Math.max(0, (detail.revisionCount || 0) - oldRevisionVal);
 
               return {
                 ...prog,
@@ -1117,6 +1141,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     detail: {
                       ...detail,
                       lectureCount: nextLectures,
+                      revisionCount: nextRevisions,
                     },
                   },
                 },
@@ -1127,8 +1152,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const subjectProgress = currentProgress[oldTask.subject!];
             const chapterProgress = subjectProgress[oldTask.chapterSerial!] || { completed: {}, priority: 'none' };
             const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-            const currentLectures = detail.lectureCount || 0;
-            const nextLectures = Math.max(0, currentLectures - 1);
+            const nextLectures = Math.max(0, (detail.lectureCount || 0) - oldLectureVal);
+            const nextRevisions = Math.max(0, (detail.revisionCount || 0) - oldRevisionVal);
             pendingProgressRef.current = {
               ...currentProgress,
               [oldTask.subject!]: {
@@ -1138,19 +1163,20 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                   detail: {
                     ...detail,
                     lectureCount: nextLectures,
+                    revisionCount: nextRevisions,
                   },
                 },
               },
             };
           }
 
-          if (newLectureVal > 0 && updatedTask.subject && updatedTask.chapterSerial) {
+          if ((newLectureVal > 0 || newRevisionVal > 0) && updatedTask.subject && updatedTask.chapterSerial) {
             setProgress((prog) => {
               const subjectProgress = prog[updatedTask.subject!];
               const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
               const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-              const currentLectures = detail.lectureCount || 0;
-              const nextLectures = Math.max(0, currentLectures + 1);
+              const nextLectures = Math.max(0, (detail.lectureCount || 0) + newLectureVal);
+              const nextRevisions = Math.max(0, (detail.revisionCount || 0) + newRevisionVal);
 
               return {
                 ...prog,
@@ -1161,6 +1187,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     detail: {
                       ...detail,
                       lectureCount: nextLectures,
+                      revisionCount: nextRevisions,
+                      ...(newRevisionVal > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
                     },
                   },
                 },
@@ -1171,8 +1199,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const subjectProgress = currentProgress[updatedTask.subject!];
             const chapterProgress = subjectProgress[updatedTask.chapterSerial!] || { completed: {}, priority: 'none' };
             const detail = chapterProgress.detail || { attemptedByMaterial: {} };
-            const currentLectures = detail.lectureCount || 0;
-            const nextLectures = Math.max(0, currentLectures + 1);
+            const nextLectures = Math.max(0, (detail.lectureCount || 0) + newLectureVal);
+            const nextRevisions = Math.max(0, (detail.revisionCount || 0) + newRevisionVal);
             pendingProgressRef.current = {
               ...currentProgress,
               [updatedTask.subject!]: {
@@ -1182,6 +1210,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                   detail: {
                     ...detail,
                     lectureCount: nextLectures,
+                    revisionCount: nextRevisions,
+                    ...(newRevisionVal > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
                   },
                 },
               },

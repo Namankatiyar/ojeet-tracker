@@ -32,6 +32,9 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
   // Is Lecture State
   const [isLecture, setIsLecture] = useState<boolean>(false);
 
+  // Is Revision State
+  const [isRevision, setIsRevision] = useState<boolean>(false);
+
   useEffect(() => {
     if (isOpen) {
       setChapterSearch('');
@@ -41,9 +44,12 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
         setDate(taskToEdit.date);
         setQuestions(taskToEdit.questions || 0);
         setIsLecture(taskToEdit.isLecture || false);
+        setIsRevision(taskToEdit.isRevision || false);
 
         if (taskToEdit.type === 'custom') {
-          const cleanTitle = taskToEdit.title.replace(/\s*\(\d+\s*Qs\)$/, '');
+          const cleanTitle = taskToEdit.title
+            .replace(/\s*\(\d+\s*Qs\)$/, '')
+            .replace(/^(Revision Lecture|Lecture|Revision):\s*/i, '');
           setCustomTitle(cleanTitle);
           setCustomSubject(taskToEdit.subject || 'none');
           setSelectedSubject(taskToEdit.subject || '');
@@ -65,6 +71,7 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
         setSelectedMaterial([]);
         setQuestions(0);
         setIsLecture(false);
+        setIsRevision(false);
         setDate(initialDate);
 
         // Default time: Current time rounded to nearest 5 mins
@@ -165,5 +172,7 @@ export function useTaskForm({ isOpen, initialDate, taskToEdit, subjectData }: Us
     setQuestions,
     isLecture,
     setIsLecture,
+    isRevision,
+    setIsRevision,
   };
 }
