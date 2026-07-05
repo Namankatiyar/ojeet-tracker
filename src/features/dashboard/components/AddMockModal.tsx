@@ -274,14 +274,15 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
   const renderNumberGrid = (
     values: MockSubjectMarks,
     onChange: (updater: (current: MockSubjectMarks) => MockSubjectMarks) => void,
-    maxLimit?: MockSubjectMarks
+    maxLimit?: MockSubjectMarks,
+    minLimit: number = 0
   ) => (
     <div className="marks-grid">
       {enabledSubjects.physics && (
         <div className="form-group">
           <label className="text-physics">Physics</label>
           <NumberInput
-            min={0}
+            min={minLimit}
             max={maxLimit ? maxLimit.physics : 500}
             value={values.physics}
             onChange={(val) => onChange((current) => ({ ...current, physics: val }))}
@@ -292,7 +293,7 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
         <div className="form-group">
           <label className="text-chemistry">Chemistry</label>
           <NumberInput
-            min={0}
+            min={minLimit}
             max={maxLimit ? maxLimit.chemistry : 500}
             value={values.chemistry}
             onChange={(val) => onChange((current) => ({ ...current, chemistry: val }))}
@@ -303,7 +304,7 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
         <div className="form-group">
           <label className="text-maths">Maths</label>
           <NumberInput
-            min={0}
+            min={minLimit}
             max={maxLimit ? maxLimit.maths : 500}
             value={values.maths}
             onChange={(val) => onChange((current) => ({ ...current, maths: val }))}
@@ -316,7 +317,8 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
   const renderSubjectMarksGrid = (
     values: MockSubjectMarks,
     onChange: (updater: (current: MockSubjectMarks) => MockSubjectMarks) => void
-  ) => renderNumberGrid(values, onChange, sMax);
+  // ponytail: -50 min matches JEE negative marking ceiling; adjust if a preset allows lower
+  ) => renderNumberGrid(values, onChange, sMax, -50);
 
   return (
     <>

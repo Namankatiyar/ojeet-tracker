@@ -63,4 +63,25 @@ describe('mockScores utils', () => {
     expect(getMockTotalMarks(score)).toBe(247);
     expect(getMockMaxMarks(score)).toBe(360);
   });
+
+  it('handles negative subject marks (JEE negative marking)', () => {
+    const score: MockScore = {
+      id: 'neg-1',
+      name: 'Rough Mock',
+      date: '2026-07-05',
+      physicsMarks: -12,
+      chemistryMarks: 5,
+      mathsMarks: -8,
+      totalMarks: -15,
+      maxMarks: 300,
+    };
+
+    expect(getMockSubjectTotals(score)).toEqual({
+      physics: -12,
+      chemistry: 5,
+      maths: -8,
+    });
+    expect(getMockTotalMarks(score)).toBe(-15);
+    expect(getMockMaxMarks(score)).toBe(300);
+  });
 });

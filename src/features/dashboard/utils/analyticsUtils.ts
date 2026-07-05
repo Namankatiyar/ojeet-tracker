@@ -209,7 +209,8 @@ export const getChartOptions = (
             color: axisColor,
             font: { size: 12, family: 'Inter' },
           },
-          min: 0,
+          // ponytail: -50 floor matches JEE negative marking ceiling
+          min: -50,
           max: mockMaxMarks,
         },
       },

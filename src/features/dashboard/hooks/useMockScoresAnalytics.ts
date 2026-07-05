@@ -43,7 +43,7 @@ export function useMockScoresAnalytics(
         pointRadius: 5,
         pointHoverRadius: 7,
         tension: 0.4,
-        fill: true,
+        fill: 'start',
         borderWidth: 3,
       },
       {
@@ -56,7 +56,7 @@ export function useMockScoresAnalytics(
         pointRadius: 4,
         pointHoverRadius: 6,
         tension: 0.4,
-        fill: true,
+        fill: 'start',
         borderWidth: 2,
       },
       {
@@ -69,7 +69,7 @@ export function useMockScoresAnalytics(
         pointRadius: 4,
         pointHoverRadius: 6,
         tension: 0.4,
-        fill: true,
+        fill: 'start',
         borderWidth: 2,
       },
       {
@@ -82,7 +82,7 @@ export function useMockScoresAnalytics(
         pointRadius: 4,
         pointHoverRadius: 6,
         tension: 0.4,
-        fill: true,
+        fill: 'start',
         borderWidth: 2,
       },
     ];
