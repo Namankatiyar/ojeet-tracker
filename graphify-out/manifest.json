@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1783261909.2720144,
-    "ast_hash": "2b55a6aecf01b7cc131d8d4e37701fd7",
+    "mtime": 1783263346.5505762,
+    "ast_hash": "711092e69cd37eda22df62a6b4a61fda",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -130,18 +130,18 @@
     "semantic_hash": ""
   },
   "src/features/chat/hooks/useAgentTools.ts": {
-    "mtime": 1783187019.485266,
-    "ast_hash": "0309b53fcc46af0e38ae9f25a873068e",
+    "mtime": 1783262752.9760823,
+    "ast_hash": "0dfcdbc3aa2e4cd7ede50be7eda18eea",
     "semantic_hash": ""
   },
   "src/features/chat/utils/agentPromptBuilder.ts": {
-    "mtime": 1783186840.5305822,
-    "ast_hash": "7e33144fb12dbcdacbdb1c819cfdc15a",
+    "mtime": 1783262465.4514565,
+    "ast_hash": "2de6be217c62339b91c8e97164bee84c",
     "semantic_hash": ""
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1783096015.976139,
-    "ast_hash": "c314dcc2370973c7992b7adbfc8848ce",
+    "mtime": 1783266400.0067968,
+    "ast_hash": "6f174357afe9a6be9c7c7175b68794ce",
     "semantic_hash": ""
   },
   "src/features/community/components/DisconnectModal.tsx": {
@@ -150,8 +150,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/InviteFriendModal.tsx": {
-    "mtime": 1782932071.6643488,
-    "ast_hash": "32582bea1e77c4623f9c8b4b54d8cdff",
+    "mtime": 1783266393.2795627,
+    "ast_hash": "3a638b1081ae09c07cf5b67e89ba3d5a",
     "semantic_hash": ""
   },
   "src/features/community/components/InviteHandler.tsx": {
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useFriends.ts": {
-    "mtime": 1783096786.6779373,
-    "ast_hash": "e588b1ba7a737d3b5c3961cae162858a",
+    "mtime": 1783266404.9479692,
+    "ast_hash": "10803f070f924397c399a282791dde5c",
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
@@ -215,13 +215,13 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/components/ManageMockPresetsModal.tsx": {
-    "mtime": 1782932071.6843493,
-    "ast_hash": "4f7b2c2f5df1a80a22da84973490794d",
+    "mtime": 1783263128.3267937,
+    "ast_hash": "1e36becf83f14e1d582b801119b534b5",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/MockScoresPanel.tsx": {
-    "mtime": 1783185450.5698843,
-    "ast_hash": "b7546b27d314280ec1bce6a8e98a2278",
+    "mtime": 1783263115.3572135,
+    "ast_hash": "d7132050f6d0f6b8b5569dc74abcbb8a",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/StudyTimePanel.tsx": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/hooks/useMockScoresAnalytics.ts": {
-    "mtime": 1783185903.6974733,
-    "ast_hash": "2e81738134ef09f51983d043964880ed",
+    "mtime": 1783263361.8972654,
+    "ast_hash": "625ef8c3f837a116c4826b4f883089ab",
     "semantic_hash": ""
   },
   "src/features/dashboard/hooks/useStudyTimeAnalytics.test.ts": {
@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/utils/analyticsUtils.ts": {
-    "mtime": 1783185891.1080463,
-    "ast_hash": "fccebe57aeddeb442b0d5b458b26671c",
+    "mtime": 1783263548.0656352,
+    "ast_hash": "a32954065b5edcf84c0972d0313da7aa",
     "semantic_hash": ""
   },
   "src/features/legal/changelogEntries.ts": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/components/TaskModal.tsx": {
-    "mtime": 1783095196.0502076,
-    "ast_hash": "8a1a85ba8773955096f2b9bc52125416",
+    "mtime": 1783262749.8079422,
+    "ast_hash": "edf5aacd4704fa6e07eb50896c92c54d",
     "semantic_hash": ""
   },
   "src/features/planner/components/WeeklyView.tsx": {
@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "src/features/planner/hooks/useTaskForm.ts": {
-    "mtime": 1783094856.6755488,
-    "ast_hash": "570106cf5142a45565507ce70c428266",
+    "mtime": 1783262742.9276378,
+    "ast_hash": "a760c8df5f50a5b642d1a3b7eb8cf473",
     "semantic_hash": ""
   },
   "src/features/reports/components/CoPilotNudgeRow.tsx": {
@@ -655,8 +655,8 @@
     "semantic_hash": ""
   },
   "src/shared/hooks/useStudyCoPilot.ts": {
-    "mtime": 1783261790.8273284,
-    "ast_hash": "ae5a08e06112b7b5e222bafbdb967cef",
+    "mtime": 1783262468.215577,
+    "ast_hash": "69c9af0c48bdb4e40b61661ae4a133fd",
     "semantic_hash": ""
   },
   "src/shared/lib/gemini.ts": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "src/shared/types/index.ts": {
-    "mtime": 1783261908.7669942,
-    "ast_hash": "eb3e4c58ed434a5abc7075aec6814dd0",
+    "mtime": 1783263088.8640287,
+    "ast_hash": "7fae4d392a5376c774fc710651a1772f",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {
@@ -1195,13 +1195,13 @@
     "semantic_hash": ""
   },
   "src/features/mock-scores/components/MockScoresPage.tsx": {
-    "mtime": 1783187857.8407364,
-    "ast_hash": "1451c731e51633593ebba9d5bc75b371",
+    "mtime": 1783263555.1791368,
+    "ast_hash": "9d810fbb511c9e47d50d0e649cdedc24",
     "semantic_hash": ""
   },
   "src/features/mock-scores/hooks/useDetailedMockAnalytics.ts": {
-    "mtime": 1783186553.0294738,
-    "ast_hash": "4a1222acf0dc09df3af8863c2058775f",
+    "mtime": 1783263688.6516027,
+    "ast_hash": "8b25f2dce26eac0155bfe6696942bc88",
     "semantic_hash": ""
   },
   "src/features/mock-scores/components/MockScoresPage.test.tsx": {

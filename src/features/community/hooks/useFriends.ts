@@ -327,8 +327,8 @@ export function useFriends() {
         throw error;
       }
 
-      // Refresh list
-      await fetchFriends();
+      // ponytail: force cache bypass to reflect disconnect immediately
+      await fetchFriends(true);
     },
     [user, isConfigured, fetchFriends]
   );

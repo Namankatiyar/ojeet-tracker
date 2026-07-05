@@ -2040,7 +2040,7 @@
       "source_location": "L154",
       "_origin": "ast",
       "id": "context_userprogresscontext_studysessioncontexttype",
-      "community": 21,
+      "community": 89,
       "norm_label": "studysessioncontexttype"
     },
     {
@@ -2107,7 +2107,7 @@
       "label": "UserProgressProvider()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L210",
+      "source_location": "L213",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogressprovider",
       "community": 21,
@@ -2117,7 +2117,7 @@
       "label": "useUserProgress()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L1460",
+      "source_location": "L1506",
       "_origin": "ast",
       "id": "context_userprogresscontext_useuserprogress",
       "community": 19,
@@ -3617,7 +3617,7 @@
       "label": "createGradient()",
       "file_type": "code",
       "source_file": "src/features/dashboard/utils/analyticsUtils.ts",
-      "source_location": "L222",
+      "source_location": "L225",
       "_origin": "ast",
       "id": "utils_analyticsutils_creategradient",
       "community": 3,
@@ -4440,7 +4440,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "components_calendargrid_calendargridprops",
-      "community": 89,
+      "community": 52,
       "norm_label": "calendargridprops"
     },
     {
@@ -4670,7 +4670,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "components_monthlyview_monthlyviewprops",
-      "community": 89,
+      "community": 52,
       "norm_label": "monthlyviewprops"
     },
     {
@@ -4700,7 +4700,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "components_planner_plannerprops",
-      "community": 70,
+      "community": 27,
       "norm_label": "plannerprops"
     },
     {
@@ -4787,7 +4787,7 @@
       "label": "TaskTypeToggle()",
       "file_type": "code",
       "source_file": "src/features/planner/components/TaskModal.tsx",
-      "source_location": "L138",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "components_taskmodal_tasktypetoggle",
       "community": 27,
@@ -4797,7 +4797,7 @@
       "label": "CustomTaskFields()",
       "file_type": "code",
       "source_file": "src/features/planner/components/TaskModal.tsx",
-      "source_location": "L163",
+      "source_location": "L177",
       "_origin": "ast",
       "id": "components_taskmodal_customtaskfields",
       "community": 27,
@@ -4807,7 +4807,7 @@
       "label": "ChapterTaskFields()",
       "file_type": "code",
       "source_file": "src/features/planner/components/TaskModal.tsx",
-      "source_location": "L221",
+      "source_location": "L246",
       "_origin": "ast",
       "id": "components_taskmodal_chaptertaskfields",
       "community": 27,
@@ -4817,7 +4817,7 @@
       "label": "QuestionStepper()",
       "file_type": "code",
       "source_file": "src/features/planner/components/TaskModal.tsx",
-      "source_location": "L350",
+      "source_location": "L386",
       "_origin": "ast",
       "id": "components_taskmodal_questionstepper",
       "community": 27,
@@ -4840,7 +4840,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "components_weeklyview_weeklyviewprops",
-      "community": 70,
+      "community": 52,
       "norm_label": "weeklyviewprops"
     },
     {
@@ -7987,7 +7987,7 @@
       "label": "StudySession",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L81",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "types_index_studysession",
       "community": 89,
@@ -7997,7 +7997,7 @@
       "label": "MockSubjectMarks",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L98",
+      "source_location": "L99",
       "_origin": "ast",
       "id": "types_index_mocksubjectmarks",
       "community": 3,
@@ -8007,7 +8007,7 @@
       "label": "MockExamPreset",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L105",
+      "source_location": "L106",
       "_origin": "ast",
       "id": "types_index_mockexampreset",
       "community": 2,
@@ -8017,7 +8017,7 @@
       "label": "MockScore",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L119",
+      "source_location": "L121",
       "_origin": "ast",
       "id": "types_index_mockscore",
       "community": 3,
@@ -8027,17 +8027,17 @@
       "label": "ExamEntry",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L149",
+      "source_location": "L151",
       "_origin": "ast",
       "id": "types_index_examentry",
-      "community": 70,
+      "community": 52,
       "norm_label": "examentry"
     },
     {
       "label": "ProgressCardSettings",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L156",
+      "source_location": "L158",
       "_origin": "ast",
       "id": "types_index_progresscardsettings",
       "community": 2,
@@ -8047,7 +8047,7 @@
       "label": "RemoteProfile",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L183",
+      "source_location": "L185",
       "_origin": "ast",
       "id": "types_index_remoteprofile",
       "community": 78,
@@ -8057,7 +8057,7 @@
       "label": "LiveActivity",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L202",
+      "source_location": "L204",
       "_origin": "ast",
       "id": "types_index_liveactivity",
       "community": 78,
@@ -40855,9 +40855,9 @@
       "source_file": "AGENTS.md",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents",
-      "target": "agents_use_the_ojee_tracker_design_skill_and_follow_design_system_md_when_you_are_about_to_design_an_ui_component_from_scratch_or_redesign_an_exisiting_one",
-      "confidence_score": 1.0
+      "target": "agents_use_the_ojee_tracker_design_skill_and_follow_design_system_md_when_you_are_about_to_design_an_ui_component_from_scratch_or_redesign_an_exisiting_one"
     },
     {
       "relation": "contains",
@@ -43571,5 +43571,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f7a327fd06fbdfa6b452103a2129201dc553b84d"
+  "built_at_commit": "93a929b43d9fbc2d47b4d6c754db76dbf8c4e38a"
 }

@@ -154,10 +154,10 @@ export function InviteFriendModal({ isOpen, onClose, onSuccess }: InviteFriendMo
         ) : (
           <div className="invite-success-view">
             <CheckCircle size={48} className="invite-success-icon" />
-            <h3 className="invite-success-title">Invitation sent!</h3>
+            <h3 className="invite-success-title">Friend Added</h3>
             <p className="invite-success-desc">
-              Successfully sent invitation to code <strong>{code}</strong>. They will appear in your
-              friends list once connected.
+              Successfully added friend with code <strong>{code}</strong>. They will appear in your
+              friends list.
             </p>
             <div
               className="invite-modal-actions"

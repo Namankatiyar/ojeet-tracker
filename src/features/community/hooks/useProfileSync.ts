@@ -311,6 +311,9 @@ export function useProfileSync() {
       }
     }
 
+    const totalWeeklySeconds = heatmapData.reduce((acc, day) => acc + (day.seconds || 0), 0);
+    const weeklyHours = parseFloat((totalWeeklySeconds / 3600).toFixed(2));
+
     const snapshot = {
       grade_status: progressCardSettings.gradeStatus || null,
       target_exam: progressCardSettings.targetExam || null,
@@ -323,6 +326,7 @@ export function useProfileSync() {
       momentum_heatmap: heatmapData,
       todays_tasks: todayTasks,
       streak_count: calculatedStreak,
+      weekly_hours: weeklyHours,
     };
 
     const snapshotStr = JSON.stringify(snapshot);

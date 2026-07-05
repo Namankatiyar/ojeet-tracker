@@ -198,6 +198,7 @@ export interface RemoteProfile {
   today_questions: number;
   momentum_heatmap: any[];
   todays_tasks: any[];
+  weekly_hours?: number;
   updated_at?: string;
 }
 

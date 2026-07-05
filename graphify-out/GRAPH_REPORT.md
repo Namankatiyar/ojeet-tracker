@@ -1,7 +1,7 @@
 # Graph Report - ojee-tracker  (2026-07-05)
 
 ## Corpus Check
-- 226 files · ~291,002 words
+- 226 files · ~291,847 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f7a327fd`
+- Built from commit: `93a929b4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -122,12 +122,12 @@
   api/invite-image.js → src/shared/lib/gemini.ts
 - `handler()` --calls--> `createClient()`  [INFERRED]
   api/invite-page.js → src/shared/lib/gemini.ts
-- `StudySessionContextType` --references--> `StudySession`  [EXTRACTED]
-  src/core/context/UserProgressContext.tsx → src/shared/types/index.ts
 - `ExamCountdownModalProps` --references--> `ExamEntry`  [EXTRACTED]
   src/features/dashboard/components/ExamCountdownModal.tsx → src/shared/types/index.ts
 - `StudyTimePanelProps` --references--> `StudySession`  [EXTRACTED]
   src/features/dashboard/components/StudyTimePanel.tsx → src/shared/types/index.ts
+- `WeakAreaFrequency` --references--> `Subject`  [EXTRACTED]
+  src/features/mock-scores/hooks/useDetailedMockAnalytics.ts → src/shared/types/index.ts
 
 ## Import Cycles
 - None detected.
@@ -219,8 +219,8 @@ Cohesion: 0.11
 Nodes (17): 1. 📥 Installation, 2. 🔑 Configure Environment Variables, 3. ⚡ Start Development, 4. 📦 Build for Production, 🏗️ Architecture, 🌐 Community, 🛠️ Getting Started, 🚀 Key Features (+9 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.24
-Nodes (8): initialProgress, ProgressDataContext, SettingsContext, StudySessionContext, StudySessionContextType, mockMergedSubjectData, UserProgressProvider(), useProgress()
+Cohesion: 0.27
+Nodes (7): initialProgress, ProgressDataContext, SettingsContext, StudySessionContext, mockMergedSubjectData, UserProgressProvider(), useProgress()
 
 ### Community 22 - "Community 22"
 Cohesion: 0.06
@@ -244,7 +244,7 @@ Nodes (8): 1. Project Overview, 2. Recent Implementation: Subtopics Tracking & C
 
 ### Community 27 - "Community 27"
 Cohesion: 0.12
-Nodes (19): DashboardProps, SessionHistoryProps, formatDuration(), SessionStatistics(), SessionStatisticsProps, StudyClockProps, subjectConfig, SubjectHeaderProps (+11 more)
+Nodes (20): DashboardProps, PlannerProps, SessionHistoryProps, formatDuration(), SessionStatistics(), SessionStatisticsProps, StudyClockProps, subjectConfig (+12 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.06
@@ -331,8 +331,8 @@ Cohesion: 0.67
 Nodes (3): 0.0.13 (2026-02-02), Added, Fixed
 
 ### Community 52 - "Community 52"
-Cohesion: 0.18
-Nodes (15): CalendarGrid(), WEEKDAY_HEADERS, DayModal(), DayModalProps, formatStudyTime(), DayTile, DayTileComponent(), DayTileProps (+7 more)
+Cohesion: 0.16
+Nodes (19): CalendarGrid(), CalendarGridProps, WEEKDAY_HEADERS, DayModal(), DayModalProps, formatStudyTime(), DayTile, DayTileComponent() (+11 more)
 
 ### Community 53 - "Community 53"
 Cohesion: 0.18
@@ -351,8 +351,8 @@ Cohesion: 0.17
 Nodes (9): DEFAULT_PLAYLIST, DEFAULT_TRACKS, MusicPlayerDrawer(), Playlist, Track, deleteAudioFile(), getAudioFile(), getDB() (+1 more)
 
 ### Community 70 - "Community 70"
-Cohesion: 0.26
-Nodes (8): Planner(), PlannerProps, ViewMode, WeeklyView(), WeeklyViewProps, useDateNavigator(), usePlannerData(), ExamEntry
+Cohesion: 0.31
+Nodes (5): Planner(), ViewMode, WeeklyView(), useDateNavigator(), usePlannerData()
 
 ### Community 71 - "Community 71"
 Cohesion: 0.16
@@ -427,8 +427,8 @@ Cohesion: 0.20
 Nodes (9): analysis.json, benchmark.json, comparison.json, evals.json, grading.json, history.json, JSON Schemas, metrics.json (+1 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.16
-Nodes (9): CalendarGridProps, MonthCell, MonthCellProps, MonthlyViewProps, ImportSyncPageProps, OjeetSyncPayload, VALID_SUBJECTS, StudySession (+1 more)
+Cohesion: 0.18
+Nodes (8): MonthCell, MonthCellProps, StudySessionContextType, ImportSyncPageProps, OjeetSyncPayload, VALID_SUBJECTS, StudySession, AgentContext
 
 ### Community 90 - "Community 90"
 Cohesion: 0.67

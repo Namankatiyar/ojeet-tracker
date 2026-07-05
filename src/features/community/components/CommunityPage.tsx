@@ -6,6 +6,7 @@ import { InviteSection } from './InviteSection';
 import { ProfileEditModal } from './ProfileEditModal';
 import { InviteFriendModal } from './InviteFriendModal';
 import { DisconnectModal } from './DisconnectModal';
+import { Leaderboard } from './Leaderboard';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useFriends, FriendProfile } from '../hooks/useFriends';
 import { useActivityHeartbeat } from '../hooks/useActivityHeartbeat';
@@ -82,7 +83,7 @@ export function CommunityPage() {
 
   const tabs: { key: CommunityTab; label: string; icon: React.ReactNode; disabled?: boolean }[] = [
     { key: 'friends', label: 'Friends', icon: <Users size={14} /> },
-    { key: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={14} />, disabled: true },
+    { key: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={14} /> },
   ];
 
   const containerVariants = {
@@ -223,10 +224,8 @@ export function CommunityPage() {
       )}
 
       {activeTab === 'leaderboard' && (
-        <motion.div className="community-coming-soon" variants={itemVariants}>
-          <Trophy size={48} />
-          <h2>Leaderboard</h2>
-          <p>Compete with friends and track study rankings. Coming soon.</p>
+        <motion.div variants={itemVariants}>
+          <Leaderboard onSignInClick={() => setIsSyncPromptOpen(true)} />
         </motion.div>
       )}
 
@@ -240,7 +239,7 @@ export function CommunityPage() {
       <InviteFriendModal
         isOpen={isInviteOpen}
         onClose={() => setIsInviteOpen(false)}
-        onSuccess={refreshFriends}
+        onSuccess={() => refreshFriends(true)}
       />
 
       <DisconnectModal
