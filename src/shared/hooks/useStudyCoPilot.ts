@@ -28,7 +28,7 @@ export const useStudyCoPilot = () => {
 
   // 1. Calculate Mock Exam Subject Weaknesses
   const subjectWeaknessWeights = useMemo(() => {
-    const weights: Record<Subject, number> = { physics: 1.0, chemistry: 1.0, maths: 1.0 };
+    const weights: Record<Subject, number> = { physics: 1.0, chemistry: 1.0, maths: 1.0, biology: 1.0 };
     if (!mockScores || mockScores.length === 0) return weights;
 
     // Take last 3 mocks
@@ -53,8 +53,8 @@ export const useStudyCoPilot = () => {
 
     const totalAvg = (avgPhy + avgChem + avgMath) / 3;
 
-    const subjects: Subject[] = ['physics', 'chemistry', 'maths'];
-    const avgs = { physics: avgPhy, chemistry: avgChem, maths: avgMath };
+    const subjects: Subject[] = ['physics', 'chemistry', 'maths', 'biology'];
+    const avgs: Record<Subject, number> = { physics: avgPhy, chemistry: avgChem, maths: avgMath, biology: 0 };
 
     subjects.forEach((sub) => {
       const gap = totalAvg > 0 ? (totalAvg - avgs[sub]) / totalAvg : 0;
@@ -68,7 +68,7 @@ export const useStudyCoPilot = () => {
 
   // 2. Calculate weekly study duration share per subject
   const subjectStudyTimeShares = useMemo(() => {
-    const totalDurations: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0 };
+    const totalDurations: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0, biology: 0 };
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
@@ -79,12 +79,12 @@ export const useStudyCoPilot = () => {
       }
     });
 
-    const totalStudyTime = totalDurations.physics + totalDurations.chemistry + totalDurations.maths;
-    const shares: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0 };
-    const timeWeights: Record<Subject, number> = { physics: 1.0, chemistry: 1.0, maths: 1.0 };
+    const totalStudyTime = totalDurations.physics + totalDurations.chemistry + totalDurations.maths + totalDurations.biology;
+    const shares: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0, biology: 0 };
+    const timeWeights: Record<Subject, number> = { physics: 1.0, chemistry: 1.0, maths: 1.0, biology: 1.0 };
 
     if (totalStudyTime > 0) {
-      const subjects: Subject[] = ['physics', 'chemistry', 'maths'];
+      const subjects: Subject[] = ['physics', 'chemistry', 'maths', 'biology'];
       subjects.forEach((sub) => {
         shares[sub] = totalDurations[sub] / totalStudyTime;
         // If subject share is below 20%, boost urgency of its active chapters

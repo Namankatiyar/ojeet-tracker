@@ -1917,7 +1917,7 @@
       "label": "useSubjectData()",
       "file_type": "code",
       "source_file": "src/core/context/SubjectDataContext.tsx",
-      "source_location": "L361",
+      "source_location": "L367",
       "_origin": "ast",
       "id": "context_subjectdatacontext_usesubjectdata",
       "community": 68,
@@ -2027,7 +2027,7 @@
       "label": "ProgressDataContextType",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L110",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "context_userprogresscontext_progressdatacontexttype",
       "community": 2,
@@ -2037,17 +2037,17 @@
       "label": "StudySessionContextType",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L152",
+      "source_location": "L154",
       "_origin": "ast",
       "id": "context_userprogresscontext_studysessioncontexttype",
-      "community": 89,
+      "community": 21,
       "norm_label": "studysessioncontexttype"
     },
     {
       "label": "SettingsContextType",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L160",
+      "source_location": "L162",
       "_origin": "ast",
       "id": "context_userprogresscontext_settingscontexttype",
       "community": 2,
@@ -2057,7 +2057,7 @@
       "label": "ProgressDataContext",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L173",
+      "source_location": "L175",
       "_origin": "ast",
       "id": "context_userprogresscontext_progressdatacontext",
       "community": 21,
@@ -2067,7 +2067,7 @@
       "label": "StudySessionContext",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L174",
+      "source_location": "L176",
       "_origin": "ast",
       "id": "context_userprogresscontext_studysessioncontext",
       "community": 21,
@@ -2077,7 +2077,7 @@
       "label": "SettingsContext",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L175",
+      "source_location": "L177",
       "_origin": "ast",
       "id": "context_userprogresscontext_settingscontext",
       "community": 21,
@@ -2087,7 +2087,7 @@
       "label": "initialProgress",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L177",
+      "source_location": "L179",
       "_origin": "ast",
       "id": "context_userprogresscontext_initialprogress",
       "community": 21,
@@ -2097,7 +2097,7 @@
       "label": "defaultMockExamPresets",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L183",
+      "source_location": "L186",
       "_origin": "ast",
       "id": "context_userprogresscontext_defaultmockexampresets",
       "community": 2,
@@ -2107,7 +2107,7 @@
       "label": "UserProgressProvider()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L207",
+      "source_location": "L210",
       "_origin": "ast",
       "id": "context_userprogresscontext_userprogressprovider",
       "community": 21,
@@ -2117,7 +2117,7 @@
       "label": "useUserProgress()",
       "file_type": "code",
       "source_file": "src/core/context/UserProgressContext.tsx",
-      "source_location": "L1445",
+      "source_location": "L1460",
       "_origin": "ast",
       "id": "context_userprogresscontext_useuserprogress",
       "community": 19,
@@ -4440,7 +4440,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "components_calendargrid_calendargridprops",
-      "community": 52,
+      "community": 89,
       "norm_label": "calendargridprops"
     },
     {
@@ -4670,7 +4670,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "components_monthlyview_monthlyviewprops",
-      "community": 52,
+      "community": 89,
       "norm_label": "monthlyviewprops"
     },
     {
@@ -4700,7 +4700,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "components_planner_plannerprops",
-      "community": 27,
+      "community": 70,
       "norm_label": "plannerprops"
     },
     {
@@ -4840,7 +4840,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "components_weeklyview_weeklyviewprops",
-      "community": 52,
+      "community": 70,
       "norm_label": "weeklyviewprops"
     },
     {
@@ -6047,7 +6047,7 @@
       "label": "SubjectHeaderProps",
       "file_type": "code",
       "source_file": "src/features/subjects/components/SubjectHeader.tsx",
-      "source_location": "L12",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "components_subjectheader_subjectheaderprops",
       "community": 27,
@@ -6057,7 +6057,7 @@
       "label": "SubjectHeader()",
       "file_type": "code",
       "source_file": "src/features/subjects/components/SubjectHeader.tsx",
-      "source_location": "L23",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "components_subjectheader_subjectheader",
       "community": 5,
@@ -6537,7 +6537,7 @@
       "label": "defaultProgressCardSettings",
       "file_type": "code",
       "source_file": "src/features/sync/syncLocalStorage.ts",
-      "source_location": "L38",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "sync_synclocalstorage_defaultprogresscardsettings",
       "community": 2,
@@ -6547,7 +6547,7 @@
       "label": "defaultSubjectDataRecord",
       "file_type": "code",
       "source_file": "src/features/sync/syncLocalStorage.ts",
-      "source_location": "L63",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "sync_synclocalstorage_defaultsubjectdatarecord",
       "community": 2,
@@ -6557,7 +6557,7 @@
       "label": "defaultSubjectStringMap",
       "file_type": "code",
       "source_file": "src/features/sync/syncLocalStorage.ts",
-      "source_location": "L69",
+      "source_location": "L71",
       "_origin": "ast",
       "id": "sync_synclocalstorage_defaultsubjectstringmap",
       "community": 2,
@@ -6567,7 +6567,7 @@
       "label": "readJson()",
       "file_type": "code",
       "source_file": "src/features/sync/syncLocalStorage.ts",
-      "source_location": "L75",
+      "source_location": "L78",
       "_origin": "ast",
       "id": "sync_synclocalstorage_readjson",
       "community": 2,
@@ -6577,7 +6577,7 @@
       "label": "buildSyncPayloadFromLocalStorage()",
       "file_type": "code",
       "source_file": "src/features/sync/syncLocalStorage.ts",
-      "source_location": "L85",
+      "source_location": "L88",
       "_origin": "ast",
       "id": "sync_synclocalstorage_buildsyncpayloadfromlocalstorage",
       "community": 2,
@@ -6667,7 +6667,7 @@
       "label": "progressCardSettings",
       "file_type": "code",
       "source_file": "src/features/sync/syncPayload.test.ts",
-      "source_location": "L11",
+      "source_location": "L12",
       "_origin": "ast",
       "id": "sync_syncpayload_test_progresscardsettings",
       "community": 2,
@@ -7967,7 +7967,7 @@
       "label": "SubjectData",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L58",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "types_index_subjectdata",
       "community": 27,
@@ -7977,7 +7977,7 @@
       "label": "PlannerTask",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L63",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "types_index_plannertask",
       "community": 52,
@@ -7987,7 +7987,7 @@
       "label": "StudySession",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L80",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "types_index_studysession",
       "community": 89,
@@ -7997,7 +7997,7 @@
       "label": "MockSubjectMarks",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L97",
+      "source_location": "L98",
       "_origin": "ast",
       "id": "types_index_mocksubjectmarks",
       "community": 3,
@@ -8007,7 +8007,7 @@
       "label": "MockExamPreset",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L103",
+      "source_location": "L105",
       "_origin": "ast",
       "id": "types_index_mockexampreset",
       "community": 2,
@@ -8017,7 +8017,7 @@
       "label": "MockScore",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L116",
+      "source_location": "L119",
       "_origin": "ast",
       "id": "types_index_mockscore",
       "community": 3,
@@ -8027,17 +8027,17 @@
       "label": "ExamEntry",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L146",
+      "source_location": "L149",
       "_origin": "ast",
       "id": "types_index_examentry",
-      "community": 52,
+      "community": 70,
       "norm_label": "examentry"
     },
     {
       "label": "ProgressCardSettings",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L153",
+      "source_location": "L156",
       "_origin": "ast",
       "id": "types_index_progresscardsettings",
       "community": 2,
@@ -8047,7 +8047,7 @@
       "label": "RemoteProfile",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L178",
+      "source_location": "L183",
       "_origin": "ast",
       "id": "types_index_remoteprofile",
       "community": 78,
@@ -8057,7 +8057,7 @@
       "label": "LiveActivity",
       "file_type": "code",
       "source_file": "src/shared/types/index.ts",
-      "source_location": "L197",
+      "source_location": "L202",
       "_origin": "ast",
       "id": "types_index_liveactivity",
       "community": 78,
@@ -8257,7 +8257,7 @@
       "label": "parseSubjectJSON()",
       "file_type": "code",
       "source_file": "src/shared/utils/jsonParser.ts",
-      "source_location": "L21",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "utils_jsonparser_parsesubjectjson",
       "community": 53,
@@ -12674,14 +12674,14 @@
       "norm_label": "use the caveman skill and ponytail skill when you are about to write code without fail."
     },
     {
-      "label": "Use the ojee-tracker-design skill when you are about to design an UI component from scratch or redesign an exisiting one.",
+      "label": "Use the ojee-tracker-design skill and follow DESIGN_SYSTEM.md when you are about to design an UI component from scratch or redesign an exisiting one.",
       "file_type": "document",
       "source_file": "AGENTS.md",
       "source_location": "L43",
       "_origin": "ast",
-      "id": "agents_use_the_ojee_tracker_design_skill_when_you_are_about_to_design_an_ui_component_from_scratch_or_redesign_an_exisiting_one",
+      "id": "agents_use_the_ojee_tracker_design_skill_and_follow_design_system_md_when_you_are_about_to_design_an_ui_component_from_scratch_or_redesign_an_exisiting_one",
       "community": 26,
-      "norm_label": "use the ojee-tracker-design skill when you are about to design an ui component from scratch or redesign an exisiting one."
+      "norm_label": "use the ojee-tracker-design skill and follow design_system.md when you are about to design an ui component from scratch or redesign an exisiting one."
     },
     {
       "label": "BACKEND.md",
@@ -13730,7 +13730,7 @@
       "source_location": "L342",
       "_origin": "ast",
       "id": "changelog_0_0_19_https_github_com_namankatiyar_pcm_tracker_compare_v0_0_18_v0_0_19_2026_02_23",
-      "community": 91,
+      "community": 10,
       "norm_label": "[0.0.19](https://github.com/namankatiyar/pcm-tracker/compare/v0.0.18...v0.0.19) (2026-02-23)"
     },
     {
@@ -13740,7 +13740,7 @@
       "source_location": "L344",
       "_origin": "ast",
       "id": "changelog_performance_refactoring",
-      "community": 91,
+      "community": 10,
       "norm_label": "performance & refactoring"
     },
     {
@@ -13750,7 +13750,7 @@
       "source_location": "L352",
       "_origin": "ast",
       "id": "changelog_ui_styling",
-      "community": 91,
+      "community": 10,
       "norm_label": "ui & styling"
     },
     {
@@ -13870,7 +13870,7 @@
       "source_location": "L411",
       "_origin": "ast",
       "id": "changelog_0_0_15_https_github_com_namankatiyar_pcm_tracker_compare_v0_0_14_v0_0_15_2026_02_03",
-      "community": 10,
+      "community": 90,
       "norm_label": "[0.0.15](https://github.com/namankatiyar/pcm-tracker/compare/v0.0.14...v0.0.15) (2026-02-03)"
     },
     {
@@ -13880,7 +13880,7 @@
       "source_location": "L413",
       "_origin": "ast",
       "id": "changelog_features_413",
-      "community": 10,
+      "community": 90,
       "norm_label": "features"
     },
     {
@@ -13890,7 +13890,7 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "changelog_bug_fixes_425",
-      "community": 10,
+      "community": 90,
       "norm_label": "bug fixes"
     },
     {
@@ -22561,9 +22561,9 @@
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_useagenttools",
-      "target": "types_index_mockexampreset",
-      "confidence_score": 1.0
+      "target": "types_index_mockexampreset"
     },
     {
       "relation": "imports",
@@ -22572,9 +22572,9 @@
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_useagenttools",
-      "target": "types_index_mockscore",
-      "confidence_score": 1.0
+      "target": "types_index_mockscore"
     },
     {
       "relation": "imports",
@@ -22583,9 +22583,9 @@
       "source_file": "src/features/chat/hooks/useAgentTools.ts",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_useagenttools",
-      "target": "types_index_mocksubjectmarks",
-      "confidence_score": 1.0
+      "target": "types_index_mocksubjectmarks"
     },
     {
       "relation": "imports",
@@ -22693,9 +22693,9 @@
       "source_file": "src/features/chat/utils/agentPromptBuilder.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_agentpromptbuilder",
-      "target": "types_index_mockexampreset",
-      "confidence_score": 1.0
+      "target": "types_index_mockexampreset"
     },
     {
       "relation": "imports",
@@ -22800,9 +22800,9 @@
       "source_file": "src/features/chat/utils/agentPromptBuilder.ts",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_agentpromptbuilder_agentcontext",
-      "target": "types_index_mockexampreset",
-      "confidence_score": 1.0
+      "target": "types_index_mockexampreset"
     },
     {
       "relation": "references",
@@ -40855,9 +40855,9 @@
       "source_file": "AGENTS.md",
       "source_location": "L43",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agents",
-      "target": "agents_use_the_ojee_tracker_design_skill_when_you_are_about_to_design_an_ui_component_from_scratch_or_redesign_an_exisiting_one"
+      "target": "agents_use_the_ojee_tracker_design_skill_and_follow_design_system_md_when_you_are_about_to_design_an_ui_component_from_scratch_or_redesign_an_exisiting_one",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -43571,5 +43571,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "fa5692453684b987d949ec0945f81c873cac0419"
+  "built_at_commit": "f7a327fd06fbdfa6b452103a2129201dc553b84d"
 }

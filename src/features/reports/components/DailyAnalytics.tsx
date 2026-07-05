@@ -186,7 +186,7 @@ export const DailyAnalytics: React.FC = () => {
 
   /* ── Subject Distribution ── */
   const subjectTotals = useMemo(() => {
-    const totals: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0 };
+    const totals: Record<Subject, number> = { physics: 0, chemistry: 0, maths: 0, biology: 0 };
     let total = 0;
     daySessions.forEach((s) => {
       if (s.subject && totals[s.subject] !== undefined) {
@@ -443,6 +443,7 @@ export const DailyAnalytics: React.FC = () => {
         physics: 0,
         chemistry: 0,
         maths: 0,
+        biology: 0,
         custom: 0,
       };
       let total = 0;

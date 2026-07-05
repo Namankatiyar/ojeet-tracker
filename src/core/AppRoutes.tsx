@@ -207,7 +207,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
         <Route path="/jee-mock-scores" element={<MockScoresPage />} />
 
         {/* Subject Routes */}
-        {(['physics', 'chemistry', 'maths'] as Subject[]).map((subject) => (
+        {(['physics', 'chemistry', 'maths', 'biology'] as Subject[]).map((subject) => (
           <Route
             key={subject}
             path={`/${subject}`}

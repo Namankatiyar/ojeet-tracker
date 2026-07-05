@@ -33,6 +33,7 @@ const defaultProgress: AppProgress = {
   physics: {},
   chemistry: {},
   maths: {},
+  biology: {},
 };
 
 const defaultProgressCardSettings: ProgressCardSettings = {
@@ -64,12 +65,14 @@ const defaultSubjectDataRecord: Record<Subject, SubjectData | null> = {
   physics: null,
   chemistry: null,
   maths: null,
+  biology: null,
 };
 
 const defaultSubjectStringMap: Record<Subject, string[]> = {
   physics: [],
   chemistry: [],
   maths: [],
+  biology: [],
 };
 
 function readJson<T>(key: string, fallback: T): T {

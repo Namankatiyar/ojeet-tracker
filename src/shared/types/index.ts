@@ -1,6 +1,6 @@
 export type Priority = 'high' | 'medium' | 'low' | 'none';
 
-export type Subject = 'physics' | 'chemistry' | 'maths';
+export type Subject = 'physics' | 'chemistry' | 'maths' | 'biology';
 export type MockExamType = 'jm' | 'ja' | 'bt' | string;
 
 export interface Chapter {
@@ -52,6 +52,7 @@ export interface AppProgress {
   physics: SubjectProgress;
   chemistry: SubjectProgress;
   maths: SubjectProgress;
+  biology: SubjectProgress;
   streaks?: Record<Subject, SubjectStreak>;
 }
 
@@ -98,6 +99,7 @@ export interface MockSubjectMarks {
   physics: number;
   chemistry: number;
   maths: number;
+  biology?: number;
 }
 
 export interface MockExamPreset {
@@ -110,6 +112,7 @@ export interface MockExamPreset {
     physics: boolean;
     chemistry: boolean;
     maths: boolean;
+    biology?: boolean;
   };
 }
 
@@ -161,9 +164,11 @@ export interface ProgressCardSettings {
     physicsTime: boolean;
     chemistryTime: boolean;
     mathsTime: boolean;
+    biologyTime?: boolean;
     physicsProgress: boolean;
     chemistryProgress: boolean;
     mathsProgress: boolean;
+    biologyProgress?: boolean;
     examCountdown: boolean;
   };
   bannerUrl?: string;

@@ -12,7 +12,7 @@ const payload: SyncPayloadV1 = {
   schemaVersion: 1,
   generatedAt: '2026-03-07T10:00:00.000Z',
   domains: {
-    progress: { physics: {}, chemistry: {}, maths: {} },
+    progress: { physics: {}, chemistry: {}, maths: {}, biology: {} },
     plannerTasks: [
       {
         id: 'a',

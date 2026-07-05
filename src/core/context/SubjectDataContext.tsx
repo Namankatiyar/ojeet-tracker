@@ -66,6 +66,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       physics: null,
       chemistry: null,
       maths: null,
+      biology: null,
     }
   );
 
@@ -75,6 +76,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       physics: [],
       chemistry: [],
       maths: [],
+      biology: [],
     }
   );
   const [excludedColumns, setExcludedColumns] = useLocalStorage<Record<Subject, string[]>>(
@@ -83,6 +85,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       physics: [],
       chemistry: [],
       maths: [],
+      biology: [],
     }
   );
   const [materialOrder, setMaterialOrder] = useLocalStorage<Record<Subject, string[]>>(
@@ -91,6 +94,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       physics: [],
       chemistry: [],
       maths: [],
+      biology: [],
     }
   );
 
@@ -144,6 +148,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (!subjectData.physics) loadSubjectData('physics');
     if (!subjectData.chemistry) loadSubjectData('chemistry');
     if (!subjectData.maths) loadSubjectData('maths');
+    if (!subjectData.biology) loadSubjectData('biology');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge CSV data with custom columns and filter excluded ones
@@ -152,8 +157,9 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       physics: null,
       chemistry: null,
       maths: null,
+      biology: null,
     };
-    (['physics', 'chemistry', 'maths'] as Subject[]).forEach((subject) => {
+    (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).forEach((subject) => {
       const data = subjectData[subject];
       if (!data) return;
 

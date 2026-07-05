@@ -1,12 +1,13 @@
 import React from 'react';
 import { Subject, SubjectData } from '../../../shared/types';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
-import { Atom, FlaskConical, Pi, Plus, Pencil, Check } from 'lucide-react';
+import { Atom, FlaskConical, Pi, Dna, Plus, Pencil, Check } from 'lucide-react';
 
 const subjectConfig: Record<Subject, { label: string; icon: React.ReactNode; color: string }> = {
   physics: { label: 'Physics', icon: <Atom size={32} />, color: '#6366f1' },
   chemistry: { label: 'Chemistry', icon: <FlaskConical size={32} />, color: '#10b981' },
   maths: { label: 'Maths', icon: <Pi size={32} />, color: '#f59e0b' },
+  biology: { label: 'Biology', icon: <Dna size={32} />, color: '#ec4899' },
 };
 
 interface SubjectHeaderProps {

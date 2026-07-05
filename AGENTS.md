@@ -40,4 +40,4 @@ The subtopics tracking and Chapter Workspace (V2) features have been fully imple
 
 ---
 # Use the caveman skill and ponytail skill when you are about to write code without fail.
-# Use the ojee-tracker-design skill when you are about to design an UI component from scratch or redesign an exisiting one. 
+# Use the ojee-tracker-design skill and follow DESIGN_SYSTEM.md when you are about to design an UI component from scratch or redesign an exisiting one. 

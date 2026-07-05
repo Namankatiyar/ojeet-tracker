@@ -6,6 +6,7 @@ const baseProgress: AppProgress = {
   physics: {},
   chemistry: {},
   maths: {},
+  biology: {},
 };
 
 const progressCardSettings: ProgressCardSettings = {

@@ -16,6 +16,7 @@ interface SyllabusResponse {
   JEE_Main_Physics_Syllabus_2026?: JSONUnit[];
   JEE_Main_Mathematics_Syllabus_2026?: JSONUnit[];
   JEE_Main_Chemistry_Syllabus_2026?: ChemistrySyllabus;
+  NEET_Biology_Syllabus_2026?: JSONUnit[];
 }
 
 export async function parseSubjectJSON(subject: string): Promise<SubjectData> {
@@ -31,6 +32,8 @@ export async function parseSubjectJSON(subject: string): Promise<SubjectData> {
     units = data.JEE_Main_Physics_Syllabus_2026 || [];
   } else if (subject === 'maths') {
     units = data.JEE_Main_Mathematics_Syllabus_2026 || [];
+  } else if (subject === 'biology') {
+    units = data.NEET_Biology_Syllabus_2026 || [];
   } else if (subject === 'chemistry') {
     const chemData = data.JEE_Main_Chemistry_Syllabus_2026;
     if (chemData) {

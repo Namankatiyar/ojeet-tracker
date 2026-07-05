@@ -13,9 +13,10 @@ export function useProgress(
       physics: null,
       chemistry: null,
       maths: null,
+      biology: null,
     };
 
-    (['physics', 'chemistry', 'maths'] as Subject[]).forEach((subject) => {
+    (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).forEach((subject) => {
       const data = subjectData[subject];
       if (!data || data.chapters.length === 0 || data.materialNames.length === 0) {
         meta[subject] = null;
@@ -50,13 +51,15 @@ export function useProgress(
       physics: 0,
       chemistry: 0,
       maths: 0,
+      biology: 0,
     };
 
-    (['physics', 'chemistry', 'maths'] as Subject[]).forEach((subject) => {
+    (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).forEach((subject) => {
       const meta = subjectMeta[subject];
       const data = subjectData[subject];
       if (!meta || !data) return;
       const subjectProgress = progress[subject];
+      if (!subjectProgress) return;
 
       data.chapters.forEach((chapter) => {
         const chapterProgress = subjectProgress[chapter.serial];
@@ -101,9 +104,10 @@ export function useProgress(
   const physicsProgress = calculateSubjectProgress('physics');
   const chemistryProgress = calculateSubjectProgress('chemistry');
   const mathsProgress = calculateSubjectProgress('maths');
+  const biologyProgress = calculateSubjectProgress('biology');
 
   const overallProgress = useMemo(() => {
-    const subjects: Subject[] = ['physics', 'chemistry', 'maths'];
+    const subjects: Subject[] = ['physics', 'chemistry', 'maths', 'biology'];
     let totalItems = 0;
     let completedItems = 0;
 
@@ -121,6 +125,7 @@ export function useProgress(
     physicsProgress,
     chemistryProgress,
     mathsProgress,
+    biologyProgress,
     overallProgress,
     calculateSubjectProgress,
   };

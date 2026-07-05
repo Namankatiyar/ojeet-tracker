@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "src/core/AppRoutes.tsx": {
-    "mtime": 1783184658.632344,
-    "ast_hash": "a375af6419edfae1aa8dc26d57410f01",
+    "mtime": 1783261771.3565736,
+    "ast_hash": "2211264ab762f9e51adec9128117ddcf",
     "semantic_hash": ""
   },
   "src/core/context/RemoteAuthContext.tsx": {
@@ -70,8 +70,8 @@
     "semantic_hash": ""
   },
   "src/core/context/SubjectDataContext.tsx": {
-    "mtime": 1783066358.006099,
-    "ast_hash": "3e9d3be79b3b1473f7de09041bd7a05b",
+    "mtime": 1783261510.285757,
+    "ast_hash": "1924ed96f8246d9918fa4ea7714e8f39",
     "semantic_hash": ""
   },
   "src/core/context/ThemeContext.tsx": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/core/context/UserProgressContext.tsx": {
-    "mtime": 1783184552.428469,
-    "ast_hash": "c06010f33da26ffd88bf915f0a24475a",
+    "mtime": 1783261909.2720144,
+    "ast_hash": "2b55a6aecf01b7cc131d8d4e37701fd7",
     "semantic_hash": ""
   },
   "src/core/context/remoteSyncHelpers.test.ts": {
@@ -355,8 +355,8 @@
     "semantic_hash": ""
   },
   "src/features/reports/components/DailyAnalytics.tsx": {
-    "mtime": 1782932071.7323508,
-    "ast_hash": "d4f92892cb34250b5603de1ea4a2dade",
+    "mtime": 1783261790.765326,
+    "ast_hash": "67529fa63a6f06176856047abdca4382",
     "semantic_hash": ""
   },
   "src/features/reports/components/ReportsPage.tsx": {
@@ -375,8 +375,8 @@
     "semantic_hash": ""
   },
   "src/features/study-clock/components/SessionStatistics.tsx": {
-    "mtime": 1782932071.738351,
-    "ast_hash": "6bfdcdc495d9184b5e56458147a3af7a",
+    "mtime": 1783261790.7823267,
+    "ast_hash": "13767173a881942ec2ab8ec061c7ad2c",
     "semantic_hash": ""
   },
   "src/features/study-clock/components/StudyClock.tsx": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "src/features/subjects/components/SubjectHeader.tsx": {
-    "mtime": 1782932071.7513514,
-    "ast_hash": "196f9707e49003494a6948ef57a06ddc",
+    "mtime": 1783261771.4805784,
+    "ast_hash": "b5763c17444b66e64fe068f0780a9564",
     "semantic_hash": ""
   },
   "src/features/subjects/components/SubjectPage.tsx": {
@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "src/features/sync/syncCodec.test.ts": {
-    "mtime": 1782932071.7633517,
-    "ast_hash": "c08555079e5ba3526c9ecd3094b22a24",
+    "mtime": 1783261978.6628258,
+    "ast_hash": "63390eaf8877791fe51d9aceaf75bee8",
     "semantic_hash": ""
   },
   "src/features/sync/syncCodec.ts": {
@@ -490,13 +490,13 @@
     "semantic_hash": ""
   },
   "src/features/sync/syncLocalStorage.ts": {
-    "mtime": 1782932071.768352,
-    "ast_hash": "38687aca82c595e1390a614a1b891a0d",
+    "mtime": 1783261977.8597932,
+    "ast_hash": "c487a8a7a1bc095c6719c567759ef663",
     "semantic_hash": ""
   },
   "src/features/sync/syncMerge.test.ts": {
-    "mtime": 1783163331.1628108,
-    "ast_hash": "59691442d8a74017385f0d87b5a41622",
+    "mtime": 1783261978.6788266,
+    "ast_hash": "62f3c74be33806ce2f7e6b4fe86e479a",
     "semantic_hash": ""
   },
   "src/features/sync/syncMerge.ts": {
@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "src/features/sync/syncPayload.test.ts": {
-    "mtime": 1783163325.198167,
-    "ast_hash": "d81c656de798c2f73b377ab71f5d1023",
+    "mtime": 1783261978.7998316,
+    "ast_hash": "0b155b2adc4bea5c993673d1b45d4ba9",
     "semantic_hash": ""
   },
   "src/features/sync/syncPayload.ts": {
@@ -650,13 +650,13 @@
     "semantic_hash": ""
   },
   "src/shared/hooks/useProgress.ts": {
-    "mtime": 1782932071.8003528,
-    "ast_hash": "ce23fd09b38b83ba7dbb85b93fdf8833",
+    "mtime": 1783261768.9634812,
+    "ast_hash": "a26c28a1b897e073c57463d02f594cae",
     "semantic_hash": ""
   },
   "src/shared/hooks/useStudyCoPilot.ts": {
-    "mtime": 1782932071.804353,
-    "ast_hash": "a7659457d8ad1390e017fc1f9684c503",
+    "mtime": 1783261790.8273284,
+    "ast_hash": "ae5a08e06112b7b5e222bafbdb967cef",
     "semantic_hash": ""
   },
   "src/shared/lib/gemini.ts": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "src/shared/types/index.ts": {
-    "mtime": 1783184519.914608,
-    "ast_hash": "f88ce363f9bcc843e1df2e143e6fc7c7",
+    "mtime": 1783261908.7669942,
+    "ast_hash": "eb3e4c58ed434a5abc7075aec6814dd0",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {
@@ -690,8 +690,8 @@
     "semantic_hash": ""
   },
   "src/shared/utils/jsonParser.ts": {
-    "mtime": 1782932071.8113532,
-    "ast_hash": "83da47f995c260a94061680b7d7fba19",
+    "mtime": 1783261482.2434628,
+    "ast_hash": "ec843d71b2041eb505bd4f06b63e45fd",
     "semantic_hash": ""
   },
   "src/shared/utils/mockScores.test.ts": {
@@ -875,8 +875,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1783184184.4538314,
-    "ast_hash": "790d06833a3d32879ed74919c4d714b6",
+    "mtime": 1783261525.8300831,
+    "ast_hash": "dd2ed9e30c098f3da97d19d10f648e17",
     "semantic_hash": ""
   },
   "BACKEND.md": {
@@ -1207,6 +1207,16 @@
   "src/features/mock-scores/components/MockScoresPage.test.tsx": {
     "mtime": 1783187019.8672824,
     "ast_hash": "b41b842c468cebadf76c17eb26a280a3",
+    "semantic_hash": ""
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1783258074.2784739,
+    "ast_hash": "0fcc8665e572ab7be3dc76db735a1775",
+    "semantic_hash": ""
+  },
+  "public/data/biology.json": {
+    "mtime": 1783260348.0881245,
+    "ast_hash": "49494f8c8c9b10c3b2097d6c04da49bc",
     "semantic_hash": ""
   }
 }

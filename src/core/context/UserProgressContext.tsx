@@ -54,6 +54,7 @@ interface UserProgressContextType {
   physicsProgress: number;
   chemistryProgress: number;
   mathsProgress: number;
+  biologyProgress?: number;
   overallProgress: number;
   lectureCounter: number;
   calculateSubjectProgress: (subject: Subject) => number;
@@ -124,6 +125,7 @@ interface ProgressDataContextType {
   physicsProgress: number;
   chemistryProgress: number;
   mathsProgress: number;
+  biologyProgress?: number;
   overallProgress: number;
   lectureCounter: number;
   calculateSubjectProgress: (subject: Subject) => number;
@@ -178,6 +180,7 @@ const initialProgress: AppProgress = {
   physics: {},
   chemistry: {},
   maths: {},
+  biology: {},
 };
 
 export const defaultMockExamPresets: MockExamPreset[] = [
@@ -238,6 +241,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [mockExamPresets, setMockExamPresets]);
 
+  // Ensure biology progress object exists for legacy users
+  useEffect(() => {
+    if (progress && !progress.biology) {
+      setProgress((prev) => ({ ...prev, biology: {} }));
+    }
+  }, [progress, setProgress]);
+
   // Migrate legacy single examDate to new examDates array
   useEffect(() => {
     const legacy = localStorage.getItem('jee-exam-date');
@@ -266,17 +276,17 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (!needsMigration) return;
 
     // Check if mergedSubjectData has actually loaded chapters
-    const isDataLoaded = (['physics', 'chemistry', 'maths'] as Subject[]).every(
-      (s) => mergedSubjectData[s] && mergedSubjectData[s]!.chapters.length > 0
+    const isDataLoaded = (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).every(
+      (s) => !mergedSubjectData[s] || mergedSubjectData[s]!.chapters.length > 0
     );
     if (!isDataLoaded) return;
 
     setProgress((prevProgress) => {
       const newProgress = JSON.parse(JSON.stringify(prevProgress)) as AppProgress;
-      (['physics', 'chemistry', 'maths'] as Subject[]).forEach((subject) => {
+      (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).forEach((subject) => {
         const subjectProgress = newProgress[subject];
         const subjectData = mergedSubjectData[subject];
-        if (!subjectData) return;
+        if (!subjectProgress || !subjectData) return;
 
         subjectData.chapters.forEach((chapter) => {
           const chapterProgress = subjectProgress[chapter.serial];
@@ -336,9 +346,11 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         physicsTime: true,
         chemistryTime: true,
         mathsTime: true,
+        biologyTime: true,
         physicsProgress: true,
         chemistryProgress: true,
         mathsProgress: true,
+        biologyProgress: true,
         examCountdown: true,
       },
       bannerUrl: '',
@@ -355,13 +367,14 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     physicsProgress,
     chemistryProgress,
     mathsProgress,
+    biologyProgress,
     overallProgress,
     calculateSubjectProgress,
   } = useProgress(progress, mergedSubjectData);
 
   const lectureCounter = useMemo(() => {
     let count = 0;
-    (['physics', 'chemistry', 'maths'] as Subject[]).forEach((sub) => {
+    (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).forEach((sub) => {
       const subProg = progress[sub];
       if (!subProg) return;
       Object.values(subProg).forEach((chProg) => {
@@ -1316,6 +1329,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       physicsProgress,
       chemistryProgress,
       mathsProgress,
+      biologyProgress,
       overallProgress,
       lectureCounter,
       calculateSubjectProgress,
@@ -1357,6 +1371,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       physicsProgress,
       chemistryProgress,
       mathsProgress,
+      biologyProgress,
       overallProgress,
       lectureCounter,
       calculateSubjectProgress,

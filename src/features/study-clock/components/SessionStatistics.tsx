@@ -84,7 +84,7 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
   }, [activeSessions]);
 
   const getSubjectDistribution = useCallback((periodSessions: StudySession[]) => {
-    const distribution = { physics: 0, chemistry: 0, maths: 0, custom: 0 };
+    const distribution: Record<Subject | 'custom', number> = { physics: 0, chemistry: 0, maths: 0, biology: 0, custom: 0 };
     periodSessions.forEach((s) => {
       if (s.subject && s.subject in distribution) {
         distribution[s.subject] += s.duration;

@@ -10,6 +10,7 @@ const makePayload = (tag: string): SyncPayloadV1 => ({
       physics: { 1: { completed: { ncert: tag === 'local' }, priority: 'none' } },
       chemistry: {},
       maths: {},
+      biology: {},
     },
     plannerTasks: [
       {
@@ -54,10 +55,10 @@ const makePayload = (tag: string): SyncPayloadV1 => ({
       mockExamPresets: [],
     },
     subjects: {
-      subjectData: { physics: null, chemistry: null, maths: null },
-      customColumns: { physics: [tag], chemistry: [], maths: [] },
-      excludedColumns: { physics: [], chemistry: [], maths: [] },
-      materialOrder: { physics: [], chemistry: [], maths: [] },
+      subjectData: { physics: null, chemistry: null, maths: null, biology: null },
+      customColumns: { physics: [tag], chemistry: [], maths: [], biology: [] },
+      excludedColumns: { physics: [], chemistry: [], maths: [], biology: [] },
+      materialOrder: { physics: [], chemistry: [], maths: [], biology: [] },
     },
   },
 });
