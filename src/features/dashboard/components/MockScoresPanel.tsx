@@ -94,6 +94,37 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenC
               </button>
             ))}
           </div>
+          {activePreset?.targetScore !== undefined && (
+            <div
+              className="mock-target-badge"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)',
+                padding: '2px 8px',
+                height: '1.75rem',
+                marginLeft: 'auto',
+                fontWeight: 500,
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: '#f43f5e',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                }}
+              />
+              Target: <strong style={{ color: 'var(--text-primary)' }}>{activePreset.targetScore}</strong>
+            </div>
+          )}
         </div>
       </div>
 

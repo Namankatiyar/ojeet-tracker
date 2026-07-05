@@ -115,6 +115,7 @@ export interface MockExamPreset {
     maths: boolean;
     biology?: boolean;
   };
+  targetScore?: number;
 }
 
 export interface MockScore {

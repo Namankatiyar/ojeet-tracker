@@ -186,6 +186,28 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
               </div>
             </div>
 
+            <div className="form-group">
+              <label>Target Mock Score (total marks)</label>
+              <input
+                type="number"
+                min={0}
+                max={
+                  Math.max(
+                    1,
+                    (editForm.subjectMaxMarks?.physics || 0) +
+                      (editForm.subjectMaxMarks?.chemistry || 0) +
+                      (editForm.subjectMaxMarks?.maths || 0)
+                  ) * (editForm.paperCount || 1)
+                }
+                placeholder="e.g., 180"
+                value={editForm.targetScore !== undefined ? editForm.targetScore : ''}
+                onChange={(e) => {
+                  const val = e.target.value === '' ? undefined : Number(e.target.value);
+                  setEditForm((prev) => ({ ...prev, targetScore: val }));
+                }}
+              />
+            </div>
+
             <div className="modal-actions">
               <button className="cancel-btn" onClick={() => setEditingId(null)}>
                 Cancel
@@ -222,6 +244,9 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
                       )}
                       {(preset.enabledSubjects?.maths ?? true) && (
                         <span className="text-maths"> · M:{preset.subjectMaxMarks.maths}</span>
+                      )}
+                      {preset.targetScore !== undefined && (
+                        <span style={{ color: '#f43f5e', fontWeight: 600 }}> · Target:{preset.targetScore}</span>
                       )}
                     </span>
                   </div>

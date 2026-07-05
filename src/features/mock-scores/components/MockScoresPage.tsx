@@ -63,6 +63,7 @@ export function MockScoresPage() {
     handleAddMockScore,
     handleEditMockScore,
     handleDeleteMockScore,
+    handleUpdateMockExamPreset,
   } = useUserProgress();
 
   const [selectedExamType, setSelectedExamType] = useState<MockExamType | 'all'>('all');
@@ -70,6 +71,11 @@ export function MockScoresPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingScore, setEditingScore] = useState<MockScore | undefined>(undefined);
   const [isManagePresetsOpen, setIsManagePresetsOpen] = useState(false);
+
+  const activePreset = useMemo(
+    () => mockExamPresets.find((p) => p.id === selectedExamType),
+    [mockExamPresets, selectedExamType]
+  );
 
   const { sortedScores, summaryStats, chartData, weakAreasSummary, diagnosticNotes } =
     useDetailedMockAnalytics(mockScores, selectedExamType, mockExamPresets);
@@ -335,6 +341,38 @@ export function MockScoresPage() {
             {summaryStats.latestTrend !== 0 ? `${summaryStats.latestTrend} vs prev test` : 'No trend yet'}
           </span>
         </div>
+
+        {activePreset && (
+          <div className="glass-panel mock-stat-card">
+            <span className="mock-stat-label">Target Score</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <input
+                type="number"
+                min={0}
+                placeholder="Set target"
+                value={activePreset.targetScore ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value === '' ? undefined : Number(e.target.value);
+                  handleUpdateMockExamPreset({ ...activePreset, targetScore: val });
+                }}
+                style={{
+                  width: '90px',
+                  height: '28px',
+                  padding: '2px 8px',
+                  fontSize: 'var(--text-md)',
+                  fontWeight: 600,
+                  background: 'var(--bg-tertiary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--text-primary)',
+                }}
+              />
+            </div>
+            <span className="mock-stat-sub">
+              {activePreset.targetScore !== undefined ? 'Dotted line on trend chart' : 'No target set'}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Tabbed Charts Section */}
