@@ -9,18 +9,135 @@ interface LeaderboardProps {
 }
 
 // Renders avatar image with automatic fallback to User icon on load error
-function AvatarWithFallback({ url, name }: { url: string; name: string }) {
+function AvatarWithFallback({
+  url,
+  name,
+  size = 40,
+}: {
+  url: string;
+  name: string;
+  size?: number;
+}) {
   const [broken, setBroken] = useState(false);
   const handleError = useCallback(() => setBroken(true), []);
 
   if (broken) {
     return (
-      <div className="leaderboard-avatar placeholder">
-        <User size={18} />
+      <div className="lb-avatar placeholder">
+        <User size={size * 0.45} />
       </div>
     );
   }
-  return <img src={url} alt={name} className="leaderboard-avatar" onError={handleError} />;
+  return (
+    <img
+      src={url}
+      alt={name}
+      className="lb-avatar"
+      onError={handleError}
+    />
+  );
+}
+
+/** Podium slot for rank 1 / 2 / 3 */
+function PodiumCard({
+  entry,
+  isMe,
+  maxHours,
+}: {
+  entry: LeaderboardEntry;
+  isMe: boolean;
+  maxHours: number;
+}) {
+  const hours = Number(entry.weekly_hours || 0);
+  const pct = maxHours > 0 ? Math.round((hours / maxHours) * 100) : 0;
+  const displayName = entry.display_name || entry.username || 'Student';
+  const rankClass = entry.rank === 1 ? 'gold' : entry.rank === 2 ? 'silver' : 'bronze';
+
+  return (
+    <div className={`lb-podium-card ${rankClass} ${isMe ? 'current-user' : ''} glass-panel`}>
+      <div className="lb-podium-medal">
+        {entry.rank === 1 ? (
+          <Trophy size={18} className="gold-icon" />
+        ) : (
+          <Award size={18} className={entry.rank === 2 ? 'silver-icon' : 'bronze-icon'} />
+        )}
+        <span className="lb-podium-rank-num">{entry.rank}</span>
+      </div>
+
+      <div className="lb-podium-avatar-wrap">
+        {entry.avatar_url ? (
+          <AvatarWithFallback url={entry.avatar_url} name={displayName} size={56} />
+        ) : (
+          <div className="lb-avatar placeholder">
+            <User size={24} />
+          </div>
+        )}
+        {isMe && <span className="lb-me-dot" title="You" />}
+      </div>
+
+      <div className="lb-podium-identity">
+        <span className="lb-podium-name">{displayName}</span>
+        {isMe && <span className="lb-me-badge">You</span>}
+      </div>
+
+      <div className="lb-podium-hours">
+        <span className="lb-hours-num">{hours.toFixed(1)}</span>
+        <span className="lb-hours-label">hrs / wk</span>
+      </div>
+
+      {/* Relative fill bar */}
+      <div className="lb-podium-bar-track">
+        <div className="lb-podium-bar-fill" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/** Compact row for rank 4+ */
+function ListRow({
+  entry,
+  isMe,
+  maxHours,
+}: {
+  entry: LeaderboardEntry;
+  isMe: boolean;
+  maxHours: number;
+}) {
+  const hours = Number(entry.weekly_hours || 0);
+  const pct = maxHours > 0 ? Math.round((hours / maxHours) * 100) : 0;
+  const displayName = entry.display_name || entry.username || 'Student';
+
+  return (
+    <div className={`lb-list-row ${isMe ? 'current-user' : ''} glass-panel`}>
+      <span className="lb-list-rank">{entry.rank}</span>
+
+      <div className="lb-list-avatar-wrap">
+        {entry.avatar_url ? (
+          <AvatarWithFallback url={entry.avatar_url} name={displayName} size={32} />
+        ) : (
+          <div className="lb-avatar placeholder">
+            <User size={14} />
+          </div>
+        )}
+      </div>
+
+      <div className="lb-list-info">
+        <div className="lb-list-name-row">
+          <span className="lb-list-name">{displayName}</span>
+          {isMe && <span className="lb-me-badge">You</span>}
+        </div>
+        {/* Progress bar inline */}
+        <div className="lb-list-bar-track">
+          <div className="lb-list-bar-fill" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+
+      <div className="lb-list-stats">
+        <span className="lb-hours-num">{hours.toFixed(1)}</span>
+        <span className="lb-hours-label">hrs</span>
+      </div>
+    </div>
+  );
 }
 
 // ponytail: single read from pre-computed leaderboard_snapshot table (~10 rows, index-only scan)
@@ -89,24 +206,38 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
     return (
       <div className="leaderboard-signin-prompt glass-panel">
         <Trophy size={48} className="leaderboard-prompt-icon" />
-        <h2>Leaderboard is Authenticated-Only</h2>
+        <h2>Leaderboard is authenticated-only</h2>
         <p>Sign in to sync your study hours, compete with top JEE/OJEE aspirants, and track standings.</p>
         <button className="primary-btn" onClick={onSignInClick}>
-          Sign In with Google
+          Sign in with Google
         </button>
       </div>
     );
   }
 
+  // Highest hours for relative bar scaling
+  const maxHours = entries.length > 0 ? Number(entries[0].weekly_hours || 0) : 1;
+
+  const podium = entries.filter(e => e.rank <= 3);
+  const restList = entries.filter(e => e.rank > 3);
+
+  // Podium display order: 2nd – 1st – 3rd
+  const podiumOrder = [
+    podium.find(e => e.rank === 2),
+    podium.find(e => e.rank === 1),
+    podium.find(e => e.rank === 3),
+  ].filter(Boolean) as LeaderboardEntry[];
+
   return (
     <div className="leaderboard-container">
+      {/* ── Header ── */}
       <div className="leaderboard-header glass-panel">
         <div className="leaderboard-header-icon">
           <Trophy size={24} />
         </div>
         <div className="leaderboard-header-text">
-          <h2>Weekly Study Leaderboard</h2>
-          <p>Standings refresh daily at midnight. Ranked by study hours over the last 7 days.</p>
+          <h2>Weekly study leaderboard</h2>
+          <p>Ranked by study hours over the last 7 days. Refreshes daily.</p>
           {snapshotAt && (
             <span className="leaderboard-snapshot-ts">
               Updated {new Date(snapshotAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
@@ -115,16 +246,18 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
         </div>
       </div>
 
+      {/* ── Anti-cheat warning ── */}
       {isSelfInvalidated && (
         <div className="leaderboard-warning glass-panel">
           <AlertCircle size={20} className="warning-icon" />
           <div className="warning-text">
-            <h3>Standings Excluded</h3>
+            <h3>Standings excluded</h3>
             <p>Your profile is temporarily excluded from public standings because study logs exceeding 18 hours in a single day were detected. Correct or delete invalid study sessions in your history to restore eligibility.</p>
           </div>
         </div>
       )}
 
+      {/* ── Error ── */}
       {error && (
         <div className="leaderboard-error glass-panel">
           <AlertCircle size={20} />
@@ -132,15 +265,11 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
         </div>
       )}
 
+      {/* ── Loading skeletons ── */}
       {isLoading ? (
-        <div className="leaderboard-list">
+        <div className="lb-skeleton-list">
           {Array.from({ length: 5 }).map((_, idx) => (
-            <div key={idx} className="leaderboard-row skeleton glass-panel">
-              <div className="skeleton-rank" />
-              <div className="skeleton-avatar" />
-              <div className="skeleton-info" />
-              <div className="skeleton-hours" />
-            </div>
+            <div key={idx} className="lb-skeleton-row glass-panel" />
           ))}
         </div>
       ) : entries.length === 0 ? (
@@ -149,56 +278,35 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
           <p>No study hours recorded this week yet. Be the first on the leaderboard!</p>
         </div>
       ) : (
-        <div className="leaderboard-list">
-          {entries.map((entry) => {
-            const isMe = entry.user_id === user.id;
-            const rankClass =
-              entry.rank === 1 ? 'gold' : entry.rank === 2 ? 'silver' : entry.rank === 3 ? 'bronze' : 'standard';
-            const displayName = entry.display_name || entry.username || 'Student';
-            const hours = Number(entry.weekly_hours || 0).toFixed(1);
+        <>
+          {/* ── Top-3 Podium ── */}
+          {podiumOrder.length > 0 && (
+            <div className="lb-podium">
+              {podiumOrder.map(entry => (
+                <PodiumCard
+                  key={entry.user_id}
+                  entry={entry}
+                  isMe={entry.user_id === user.id}
+                  maxHours={maxHours}
+                />
+              ))}
+            </div>
+          )}
 
-            return (
-              <div
-                key={entry.user_id}
-                className={`leaderboard-row ${rankClass} ${isMe ? 'current-user' : ''} glass-panel`}
-              >
-                <div className="leaderboard-rank">
-                  {entry.rank === 1 ? (
-                    <Trophy size={20} className="rank-icon gold-icon" />
-                  ) : entry.rank === 2 ? (
-                    <Award size={20} className="rank-icon silver-icon" />
-                  ) : entry.rank === 3 ? (
-                    <Award size={20} className="rank-icon bronze-icon" />
-                  ) : (
-                    <span className="rank-num">{entry.rank}</span>
-                  )}
-                </div>
-
-                <div className="leaderboard-avatar-wrap">
-                  {entry.avatar_url ? (
-                    <AvatarWithFallback url={entry.avatar_url} name={displayName} />
-                  ) : (
-                    <div className="leaderboard-avatar placeholder">
-                      <User size={18} />
-                    </div>
-                  )}
-                </div>
-
-                <div className="leaderboard-info">
-                  <div className="leaderboard-name-row">
-                    <span className="leaderboard-name">{displayName}</span>
-                    {isMe && <span className="leaderboard-me-badge">You</span>}
-                  </div>
-                </div>
-
-                <div className="leaderboard-stats">
-                  <span className="leaderboard-hours-num">{hours}</span>
-                  <span className="leaderboard-hours-label">hrs / wk</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+          {/* ── Rank 4+ List ── */}
+          {restList.length > 0 && (
+            <div className="lb-list">
+              {restList.map(entry => (
+                <ListRow
+                  key={entry.user_id}
+                  entry={entry}
+                  isMe={entry.user_id === user.id}
+                  maxHours={maxHours}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
