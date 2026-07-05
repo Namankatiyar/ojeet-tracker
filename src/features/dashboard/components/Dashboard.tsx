@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
@@ -14,7 +15,56 @@ import {
 import { TaskLog } from '../../planner/components/TaskLog';
 import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
-import { Atom, FlaskConical, Pi, Calendar, Check, Pencil } from 'lucide-react';
+import { Atom, FlaskConical, Pi, Calendar, Check, Pencil, Trophy, X } from 'lucide-react';
+
+interface LeaderboardActiveModalProps {
+  onClose: () => void;
+}
+
+function LeaderboardActiveModal({ onClose }: LeaderboardActiveModalProps) {
+  return createPortal(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+        <div className="modal-header">
+          <h3>Weekly Leaderboard Active</h3>
+          <button className="close-btn" onClick={onClose} aria-label="Close modal">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="modal-body" style={{ gap: 'var(--space-4)', padding: 'var(--space-2) 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: 'var(--space-2) 0' }}>
+            <Trophy size={48} className="gold-icon" style={{ color: 'var(--color-priority-medium)' }} />
+          </div>
+          <p style={{ margin: 0, textAlign: 'center', fontWeight: 500, color: 'var(--text-primary)' }}>
+            Track weekly study hours and compare rankings with JEE/OJEE aspirants.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <span style={{ color: 'var(--accent)' }}>✦</span>
+              <span>Study duration syncs automatically from active sessions.</span>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <span style={{ color: 'var(--accent)' }}>✦</span>
+              <span>Keep streaks active to climb standings.</span>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <span style={{ color: 'var(--color-priority-high)' }}>⚠️</span>
+              <span>Cheat guardrails active. Suspicious logs (&gt;18 hours/day) auto-exclude profile.</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer" style={{ marginTop: 'var(--space-4)' }}>
+          <button className="primary-btn" onClick={onClose} style={{ width: '100%', justifyContent: 'center' }}>
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
 import {
   formatTime12Hour,
   calculateDaysRemaining,
@@ -123,6 +173,22 @@ export function Dashboard({
   const { remoteStudyAggregate } = useRemoteSync();
   const { progress, dailyResetHour } = useUserProgress();
   const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
+
+  const [showActiveModal, setShowActiveModal] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const dismissed = localStorage.getItem('ojee_leaderboard_active_announced');
+      if (dismissed !== 'true') {
+        setShowActiveModal(true);
+      }
+    }
+  }, [user]);
+
+  const handleDismissModal = () => {
+    localStorage.setItem('ojee_leaderboard_active_announced', 'true');
+    setShowActiveModal(false);
+  };
   const lastAcknowledgedReleaseId =
     notificationMeta.lastAcknowledgedReleaseId ??
     notificationMeta.lastAcknowledgedVersion ??
@@ -558,6 +624,7 @@ export function Dashboard({
       animate="show"
     >
       <h1 className="sr-only">The Ultimate Offline-First JEE Tracker for Aspirants</h1>
+      {showActiveModal && <LeaderboardActiveModal onClose={handleDismissModal} />}
       <motion.div className="dashboard-header" variants={itemVariants}>
         {quote ? (
           <div className="quote-container">

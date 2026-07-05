@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/features/community/components/CommunityPage.tsx": {
-    "mtime": 1783266400.0067968,
-    "ast_hash": "6f174357afe9a6be9c7c7175b68794ce",
+    "mtime": 1783266946.7059321,
+    "ast_hash": "bab7d39d8218a54188447b393ee6f869",
     "semantic_hash": ""
   },
   "src/features/community/components/DisconnectModal.tsx": {
@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "src/features/community/hooks/useProfileSync.ts": {
-    "mtime": 1783191231.243932,
-    "ast_hash": "dba19dcc6ed2198a20d9312fa3193481",
+    "mtime": 1783266895.2059681,
+    "ast_hash": "72cf11c25a28d2a6c3f74dab61e7ff83",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/AddMockModal.tsx": {
@@ -200,8 +200,8 @@
     "semantic_hash": ""
   },
   "src/features/dashboard/components/Dashboard.tsx": {
-    "mtime": 1783184976.9848742,
-    "ast_hash": "7d6540a3807683f75772d102bc1f81f3",
+    "mtime": 1783268964.5657089,
+    "ast_hash": "65189171e2c5dd35e9ca08619a9e197a",
     "semantic_hash": ""
   },
   "src/features/dashboard/components/DashboardNotificationCenter.tsx": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "src/shared/types/index.ts": {
-    "mtime": 1783263088.8640287,
-    "ast_hash": "7fae4d392a5376c774fc710651a1772f",
+    "mtime": 1783268569.2238302,
+    "ast_hash": "06122e02c2aae75757bebf9143784ad0",
     "semantic_hash": ""
   },
   "src/shared/utils/confetti.ts": {
@@ -1217,6 +1217,21 @@
   "public/data/biology.json": {
     "mtime": 1783260348.0881245,
     "ast_hash": "49494f8c8c9b10c3b2097d6c04da49bc",
+    "semantic_hash": ""
+  },
+  "src/features/community/components/Leaderboard.tsx": {
+    "mtime": 1783268945.5348656,
+    "ast_hash": "62d978b61a4fe33b8f12b9006e0c2f0f",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260705_leaderboard_guardrails.sql": {
+    "mtime": 1783268525.9318116,
+    "ast_hash": "f462bb843a076ac2cb031c6aab36d024",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260705_sync_weekly_hours_to_profiles.sql": {
+    "mtime": 1783267348.9965098,
+    "ast_hash": "5c28018a4c5841beb3c0e723883bc6ec",
     "semantic_hash": ""
   }
 }
