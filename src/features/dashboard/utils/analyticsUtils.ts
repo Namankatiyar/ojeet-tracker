@@ -196,6 +196,7 @@ export const getChartOptions = (
   if (type === 'mock') {
     return {
       ...baseOptions,
+      interaction: { mode: 'index' as const, intersect: false },
       scales: {
         ...baseOptions.scales,
         y: {

@@ -190,6 +190,7 @@ export const defaultMockExamPresets: MockExamPreset[] = [
     shortName: 'JM',
     paperCount: 1,
     subjectMaxMarks: { physics: 100, chemistry: 100, maths: 100 },
+    targetScore: 180,
   },
   {
     id: 'ja',
@@ -197,6 +198,7 @@ export const defaultMockExamPresets: MockExamPreset[] = [
     shortName: 'JA',
     paperCount: 2,
     subjectMaxMarks: { physics: 60, chemistry: 60, maths: 60 },
+    targetScore: 120,
   },
   {
     id: 'bt',
@@ -204,6 +206,7 @@ export const defaultMockExamPresets: MockExamPreset[] = [
     shortName: 'BT',
     paperCount: 1,
     subjectMaxMarks: { physics: 130, chemistry: 130, maths: 130 },
+    targetScore: 320,
   },
 ];
 
@@ -234,10 +237,23 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     {}
   );
 
-  // Ensure mockExamPresets is never empty
+  // Ensure mockExamPresets is never empty and backfill default targetScore for legacy presets
   useEffect(() => {
     if (!mockExamPresets || mockExamPresets.length === 0) {
       setMockExamPresets(defaultMockExamPresets);
+    } else {
+      const needsMigration = mockExamPresets.some(
+        (p) => p.targetScore === undefined && ['jm', 'ja', 'bt'].includes(p.id)
+      );
+      if (needsMigration) {
+        setMockExamPresets((prev) =>
+          prev.map((p) => {
+            if (p.targetScore !== undefined) return p;
+            const def = defaultMockExamPresets.find((d) => d.id === p.id);
+            return def ? { ...p, targetScore: def.targetScore } : p;
+          })
+        );
+      }
     }
   }, [mockExamPresets, setMockExamPresets]);
 

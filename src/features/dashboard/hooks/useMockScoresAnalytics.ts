@@ -89,13 +89,16 @@ export function useMockScoresAnalytics(
 
     if (preset && preset.targetScore !== undefined) {
       datasets.push({
-        label: `Target (${preset.targetScore})`,
+        label: 'Target',
         data: Array(sortedScores.length).fill(preset.targetScore),
         borderColor: '#f43f5e',
         borderDash: [6, 6],
         borderWidth: 2,
         pointRadius: 0,
-        pointHoverRadius: 0,
+        pointHoverRadius: 6,
+        pointHitRadius: 15,
+        pointHoverBackgroundColor: '#f43f5e',
+        pointHoverBorderColor: '#fff',
         fill: false,
         tension: 0,
       });
