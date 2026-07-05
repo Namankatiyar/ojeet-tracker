@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../shared/lib/supabase';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
-import { RemoteProfile } from '../../../shared/types';
-import { Trophy, Award, Flame, User, AlertCircle } from 'lucide-react';
+import { LeaderboardEntry } from '../../../shared/types';
+import { Trophy, Award, User, AlertCircle } from 'lucide-react';
 
 interface LeaderboardProps {
   onSignInClick: () => void;
@@ -23,68 +23,67 @@ function AvatarWithFallback({ url, name }: { url: string; name: string }) {
   return <img src={url} alt={name} className="leaderboard-avatar" onError={handleError} />;
 }
 
-// ponytail: Fetch top 10 users by weekly study hours once on mount when tab is opened
+// ponytail: single read from pre-computed leaderboard_snapshot table (~10 rows, index-only scan)
 export function Leaderboard({ onSignInClick }: LeaderboardProps) {
   const { user } = useRemoteAuth();
-  const [profiles, setProfiles] = useState<RemoteProfile[]>([]);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isSelfInvalidated, setIsSelfInvalidated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [snapshotAt, setSnapshotAt] = useState<string | null>(null);
+
+  const userId = user?.id;
 
   useEffect(() => {
-    if (!user || !supabase) {
+    if (!userId || !supabase) {
       setIsLoading(false);
       return;
     }
 
-    let isMounted = true;
-    const fetchLeaderboard = async () => {
+    let cancelled = false;
+    const load = async () => {
       if (!supabase) return;
       setIsLoading(true);
       setError(null);
       try {
-        // Query top 10 non-invalidated users
+        // Single query: read pre-computed snapshot
         const { data: standings, error: fetchErr } = await supabase
-          .from('profiles')
-          .select('id, display_name, username, avatar_url, weekly_hours, streak_count, target_exam, grade_status')
-          .eq('leaderboard_invalidated', false)
-          .order('weekly_hours', { ascending: false })
-          .limit(10);
+          .from('leaderboard_snapshot')
+          .select('rank, user_id, display_name, username, avatar_url, weekly_hours, snapshot_at')
+          .order('rank', { ascending: true });
 
         if (fetchErr) throw fetchErr;
 
-        // Query current user's profile invalidation status
+        // Check self-invalidation only if user is NOT in snapshot
         let selfFlagged = false;
-        if (user) {
+        const inSnapshot = standings?.some(s => s.user_id === userId);
+        if (!inSnapshot) {
           const { data: selfProfile } = await supabase
             .from('profiles')
             .select('leaderboard_invalidated')
-            .eq('id', user.id)
+            .eq('id', userId)
             .single();
           if (selfProfile) {
             selfFlagged = selfProfile.leaderboard_invalidated || false;
           }
         }
 
-        if (isMounted) {
-          if (standings) {
-            setProfiles(standings as RemoteProfile[]);
-          }
+        if (!cancelled) {
+          setEntries((standings ?? []) as LeaderboardEntry[]);
           setIsSelfInvalidated(selfFlagged);
+          setSnapshotAt(standings?.[0]?.snapshot_at ?? null);
         }
       } catch (err: any) {
         console.error('Failed to fetch leaderboard:', err);
-        if (isMounted) setError(err.message || 'Failed to load leaderboard standings');
+        if (!cancelled) setError(err.message || 'Failed to load leaderboard standings');
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    fetchLeaderboard();
-    return () => {
-      isMounted = false;
-    };
-  }, [user]);
+    load();
+    return () => { cancelled = true; };
+  }, [userId]);
 
   if (!user) {
     return (
@@ -107,7 +106,12 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
         </div>
         <div className="leaderboard-header-text">
           <h2>Weekly Study Leaderboard</h2>
-          <p>Standings calculated from active study hours recorded over the last 7 days.</p>
+          <p>Standings refresh daily at midnight. Ranked by study hours over the last 7 days.</p>
+          {snapshotAt && (
+            <span className="leaderboard-snapshot-ts">
+              Updated {new Date(snapshotAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+            </span>
+          )}
         </div>
       </div>
 
@@ -139,41 +143,40 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
             </div>
           ))}
         </div>
-      ) : profiles.length === 0 ? (
+      ) : entries.length === 0 ? (
         <div className="leaderboard-empty glass-panel">
           <Trophy size={36} />
           <p>No study hours recorded this week yet. Be the first on the leaderboard!</p>
         </div>
       ) : (
         <div className="leaderboard-list">
-          {profiles.map((profile, idx) => {
-            const rank = idx + 1;
-            const isMe = profile.id === user.id;
+          {entries.map((entry) => {
+            const isMe = entry.user_id === user.id;
             const rankClass =
-              rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : 'standard';
-            const displayName = profile.display_name || profile.username || 'Student';
-            const hours = Number(profile.weekly_hours || 0).toFixed(1);
+              entry.rank === 1 ? 'gold' : entry.rank === 2 ? 'silver' : entry.rank === 3 ? 'bronze' : 'standard';
+            const displayName = entry.display_name || entry.username || 'Student';
+            const hours = Number(entry.weekly_hours || 0).toFixed(1);
 
             return (
               <div
-                key={profile.id}
+                key={entry.user_id}
                 className={`leaderboard-row ${rankClass} ${isMe ? 'current-user' : ''} glass-panel`}
               >
                 <div className="leaderboard-rank">
-                  {rank === 1 ? (
+                  {entry.rank === 1 ? (
                     <Trophy size={20} className="rank-icon gold-icon" />
-                  ) : rank === 2 ? (
+                  ) : entry.rank === 2 ? (
                     <Award size={20} className="rank-icon silver-icon" />
-                  ) : rank === 3 ? (
+                  ) : entry.rank === 3 ? (
                     <Award size={20} className="rank-icon bronze-icon" />
                   ) : (
-                    <span className="rank-num">{rank}</span>
+                    <span className="rank-num">{entry.rank}</span>
                   )}
                 </div>
 
                 <div className="leaderboard-avatar-wrap">
-                  {profile.avatar_url ? (
-                    <AvatarWithFallback url={profile.avatar_url} name={displayName} />
+                  {entry.avatar_url ? (
+                    <AvatarWithFallback url={entry.avatar_url} name={displayName} />
                   ) : (
                     <div className="leaderboard-avatar placeholder">
                       <User size={18} />
@@ -185,16 +188,6 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
                   <div className="leaderboard-name-row">
                     <span className="leaderboard-name">{displayName}</span>
                     {isMe && <span className="leaderboard-me-badge">You</span>}
-                  </div>
-                  <div className="leaderboard-meta">
-                    {profile.target_exam && <span className="meta-tag">{profile.target_exam}</span>}
-                    {profile.grade_status && <span className="meta-tag">{profile.grade_status}</span>}
-                    {profile.streak_count > 0 && (
-                      <span className="meta-streak">
-                        <Flame size={14} className="streak-flame" />
-                        {profile.streak_count}d
-                      </span>
-                    )}
                   </div>
                 </div>
 

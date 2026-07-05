@@ -213,3 +213,13 @@ export interface LiveActivity {
   started_at?: string | null;
   updated_at: string;
 }
+
+// ponytail: minimal shape matching leaderboard_snapshot table columns
+export interface LeaderboardEntry {
+  rank: number;
+  user_id: string;
+  display_name?: string;
+  username?: string;
+  avatar_url?: string;
+  weekly_hours: number;
+}
