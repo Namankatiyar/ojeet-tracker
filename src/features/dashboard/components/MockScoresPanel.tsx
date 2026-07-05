@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { TrendingUp, Plus, Trash2 } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, ExternalLink } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { MockExamType, MockScore } from '../../../shared/types';
 import { useTheme } from '../../../core/context/ThemeContext';
@@ -70,7 +70,8 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenC
                 onClick={onOpenCockpit}
                 title="Open Mock Scores Cockpit"
               >
-                <span>Cockpit ↗</span>
+                <span>Cockpit</span>
+                <ExternalLink size={14} />
               </button>
             )}
             <button

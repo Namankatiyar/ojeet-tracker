@@ -1215,6 +1215,7 @@
   font-size: var(--text-xs);
   border-radius: var(--radius-xs);
   white-space: nowrap;
+  height: 1.75rem;
 }
 
 .add-mock-btn:hover {
@@ -1232,8 +1233,18 @@
   gap: var(--space-1);
   border-radius: var(--radius-xs);
   white-space: nowrap;
-  font-weight: 500;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  font-weight: 600;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.mock-panel-cockpit-btn:hover {
+  transform: translateY(-1px);
+}
+
+.mock-panel-cockpit-btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 .mock-panel-actions {
