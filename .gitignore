@@ -65,3 +65,21 @@ seo_plan.md
 !og_image.jpg
 .env*
 !onboardingImage.jpg
+
+# Agent / AI local cache & metadata
+.agents/
+.claude/
+.codex/
+.github/skills/
+.impeccable/
+.mcp.json
+.superpowers/
+skills-lock.json
+
+# Local tool output, docs, and samples
+graphify-out/
+CLAUDE.md
+sample.html
+
+# Database CLI temp files
+supabase/.temp/
