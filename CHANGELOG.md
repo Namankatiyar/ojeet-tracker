@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.0.0...v2.1.0) (2026-07-14)
+
+
+### Features
+
+* **dashboard:** implement per-exam syllabus tracking and align scope picker design ([1e08778](https://github.com/Namankatiyar/ojeet-tracker/commit/1e087786cee81f7047d211e43bb6c2621963fade))
+
 # [2.1.0-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.0.0...v2.1.0-develop.1) (2026-07-14)
 
 
