@@ -128,6 +128,8 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     handleDeleteExam,
     handleUpdateExam,
     handleSetPrimaryExam,
+    handleSetFavouriteExam,
+    handleSetExamSyllabus,
   } = useUserProgress();
 
   const dailyQuote = useDailyQuote();
@@ -158,6 +160,8 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
               onDeleteExam={handleDeleteExam}
               onUpdateExam={handleUpdateExam}
               onSetPrimaryExam={handleSetPrimaryExam}
+              onSetFavouriteExam={handleSetFavouriteExam}
+              onSetExamSyllabus={handleSetExamSyllabus}
               onQuickAdd={onQuickAddTask}
               studySessions={studySessions}
               mockScores={mockScores}

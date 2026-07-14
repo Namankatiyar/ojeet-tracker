@@ -247,7 +247,9 @@ export function useProfileSync() {
           }
         }
       }
-    } catch {}
+    } catch {
+      /* ignore */
+    }
 
     const todayTasks =
       progressCardSettings.showTasks !== false

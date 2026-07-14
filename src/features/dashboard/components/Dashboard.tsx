@@ -85,6 +85,8 @@ import {
   DashboardNotificationItem,
 } from './DashboardNotificationCenter';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { useProgress, type ChapterFilter } from '../../../shared/hooks/useProgress';
+import { type ExamSyllabus } from '../../../shared/types';
 
 interface DashboardProps {
   physicsProgress: number;
@@ -106,13 +108,15 @@ interface DashboardProps {
   mockScores?: MockScore[];
   onAddMockScore?: (score: Omit<MockScore, 'id'>) => void;
   onDeleteMockScore?: (id: string) => void;
+  onSetFavouriteExam?: (id: string | null) => void;
+  onSetExamSyllabus?: (id: string, syllabus: ExamSyllabus) => void;
 }
 
 export function Dashboard({
-  physicsProgress,
-  chemistryProgress,
-  mathsProgress,
-  overallProgress,
+  physicsProgress: propPhysicsProgress,
+  chemistryProgress: propChemistryProgress,
+  mathsProgress: propMathsProgress,
+  overallProgress: propOverallProgress,
   subjectData,
   onNavigate,
   quote,
@@ -128,6 +132,8 @@ export function Dashboard({
   mockScores = [],
   onAddMockScore = () => {},
   onDeleteMockScore = () => {},
+  onSetFavouriteExam,
+  onSetExamSyllabus,
 }: DashboardProps) {
   const navigate = useNavigate();
 
@@ -173,6 +179,23 @@ export function Dashboard({
   const { remoteStudyAggregate } = useRemoteSync();
   const { progress, dailyResetHour } = useUserProgress();
   const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
+
+  const favouriteExam = useMemo(() => examDates.find((e) => e.isFavourite), [examDates]);
+
+  const chapterFilter = useMemo(() => {
+    if (!favouriteExam?.syllabus) return undefined;
+    const filter: ChapterFilter = {};
+    if (favouriteExam.syllabus.physics) filter.physics = new Set(favouriteExam.syllabus.physics);
+    if (favouriteExam.syllabus.chemistry) filter.chemistry = new Set(favouriteExam.syllabus.chemistry);
+    if (favouriteExam.syllabus.maths) filter.maths = new Set(favouriteExam.syllabus.maths);
+    return filter;
+  }, [favouriteExam]);
+
+  const scopedProgressStats = useProgress(progress, subjectData, chapterFilter);
+  const physicsProgress = favouriteExam ? scopedProgressStats.physicsProgress : propPhysicsProgress;
+  const chemistryProgress = favouriteExam ? scopedProgressStats.chemistryProgress : propChemistryProgress;
+  const mathsProgress = favouriteExam ? scopedProgressStats.mathsProgress : propMathsProgress;
+  const overallProgress = favouriteExam ? scopedProgressStats.overallProgress : propOverallProgress;
 
   const [showActiveModal, setShowActiveModal] = useState(false);
 
@@ -329,6 +352,9 @@ export function Dashboard({
   const getChapterStats = (subject: Subject) => {
     const data = subjectData[subject];
     if (!data) return { total: 0, completed: 0 };
+    if (favouriteExam?.syllabus?.[subject as 'physics' | 'chemistry' | 'maths'] !== undefined) {
+      return { total: favouriteExam.syllabus[subject as 'physics' | 'chemistry' | 'maths']!.length, completed: 0 };
+    }
     return { total: data.chapters.length, completed: 0 };
   };
 
@@ -640,7 +666,13 @@ export function Dashboard({
         <motion.div className="glass-panel overall-progress-card" variants={itemVariants}>
           <div className="overall-header">
             <h2>Overall Progress</h2>
-            <p>Combined progress across all subjects</p>
+            <p>
+              {favouriteExam ? (
+                <span className="scoped-exam-indicator">✦ Scoped to {favouriteExam.name}</span>
+              ) : (
+                'Combined progress across all subjects'
+              )}
+            </p>
           </div>
           <div className="overall-ring-wrapper">
             <ProgressRing
@@ -657,9 +689,9 @@ export function Dashboard({
           <div className="overall-stats">
             <div className="stat">
               <span className="stat-value">
-                {(subjectData.physics?.chapters.length || 0) +
-                  (subjectData.chemistry?.chapters.length || 0) +
-                  (subjectData.maths?.chapters.length || 0)}
+                {getChapterStats('physics').total +
+                  getChapterStats('chemistry').total +
+                  getChapterStats('maths').total}
               </span>
               <span className="stat-label">Total Chapters</span>
             </div>
@@ -906,6 +938,9 @@ export function Dashboard({
           onDeleteExam={onDeleteExam}
           onUpdateExam={onUpdateExam}
           onSetPrimaryExam={onSetPrimaryExam}
+          onSetFavouriteExam={onSetFavouriteExam}
+          onSetExamSyllabus={onSetExamSyllabus}
+          subjectData={subjectData}
           onClose={() => setIsExamModalOpen(false)}
         />
       )}

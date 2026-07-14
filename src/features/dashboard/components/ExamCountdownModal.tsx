@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Calendar, Star, Trash2, Plus, X, Pencil } from 'lucide-react';
-import { ExamEntry } from '../../../shared/types';
+import { Calendar, Star, BookOpen, Trash2, Plus, X, Pencil } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { ExamEntry, ExamSyllabus, Subject, SubjectData } from '../../../shared/types';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
+import { SyllabusScopePickerModal } from './SyllabusScopePickerModal';
 import { calculateDaysRemaining } from '../../../shared/utils/date';
 
 interface ExamCountdownModalProps {
@@ -10,6 +12,9 @@ interface ExamCountdownModalProps {
   onDeleteExam: (id: string) => void;
   onUpdateExam: (exam: ExamEntry) => void;
   onSetPrimaryExam: (id: string) => void;
+  onSetFavouriteExam?: (id: string | null) => void;
+  onSetExamSyllabus?: (id: string, syllabus: ExamSyllabus) => void;
+  subjectData?: Record<Subject, SubjectData | null>;
   onClose: () => void;
 }
 
@@ -19,6 +24,9 @@ export function ExamCountdownModal({
   onDeleteExam,
   onUpdateExam,
   onSetPrimaryExam,
+  onSetFavouriteExam,
+  onSetExamSyllabus,
+  subjectData,
   onClose,
 }: ExamCountdownModalProps) {
   const [isAdding, setIsAdding] = useState(false);
@@ -28,6 +36,27 @@ export function ExamCountdownModal({
   const [editName, setEditName] = useState('');
   const [editDate, setEditDate] = useState('');
   const [datePickerTarget, setDatePickerTarget] = useState<'new' | string | null>(null);
+  const [syllabusPickerExamId, setSyllabusPickerExamId] = useState<string | null>(null);
+
+  const getSyllabusLabel = (exam: ExamEntry) => {
+    if (!exam.syllabus || !subjectData) return 'Full syllabus';
+    let totalSelected = 0;
+    let totalChapters = 0;
+    (['physics', 'chemistry', 'maths'] as const).forEach((subj) => {
+      const data = subjectData[subj];
+      if (data) {
+        totalChapters += data.chapters.length;
+        const selected = exam.syllabus?.[subj];
+        if (selected !== undefined) {
+          totalSelected += selected.length;
+        } else {
+          totalSelected += data.chapters.length;
+        }
+      }
+    });
+    if (totalSelected === totalChapters || totalSelected === 0) return 'Full syllabus';
+    return `${totalSelected} chapters`;
+  };
 
   const formatDateDisplay = (dateString: string) => {
     if (!dateString) return 'Select Date';
@@ -41,6 +70,7 @@ export function ExamCountdownModal({
       name: newName.trim(),
       date: newDate,
       isPrimary: examDates.length === 0,
+      isFavourite: false,
     });
     setNewName('');
     setNewDate('');
@@ -128,13 +158,13 @@ export function ExamCountdownModal({
                         </button>
                         <div className="exam-edit-actions">
                           <button
-                            className="save-btn small"
+                            className="action-btn primary small"
                             onClick={() => handleSaveEdit(exam)}
                             disabled={!editName.trim() || !editDate}
                           >
                             Save
                           </button>
-                          <button className="cancel-btn small" onClick={handleCancelEdit}>
+                          <button className="action-btn outline small" onClick={handleCancelEdit}>
                             Cancel
                           </button>
                         </div>
@@ -145,13 +175,31 @@ export function ExamCountdownModal({
                           className={`exam-primary-btn ${exam.isPrimary ? 'active' : ''}`}
                           onClick={() => onSetPrimaryExam(exam.id)}
                           title={exam.isPrimary ? 'Primary exam' : 'Set as primary'}
+                          type="button"
                         >
                           <Star size={16} fill={exam.isPrimary ? 'currentColor' : 'none'} />
+                        </button>
+                        <button
+                          className={`exam-favourite-btn ${exam.isFavourite ? 'active' : ''}`}
+                          onClick={() => onSetFavouriteExam?.(exam.isFavourite ? null : exam.id)}
+                          title={exam.isFavourite ? 'Marked syllabus (dashboard scoped)' : 'Mark syllabus'}
+                          type="button"
+                        >
+                          <BookOpen size={16} />
                         </button>
                         <div className="exam-item-info">
                           <span className="exam-item-name">{exam.name}</span>
                           <span className="exam-item-date">{formatDateDisplay(exam.date)}</span>
                         </div>
+                        {exam.isFavourite && (
+                          <button
+                            type="button"
+                            className="exam-syllabus-btn"
+                            onClick={() => setSyllabusPickerExamId(exam.id)}
+                          >
+                            <span>{getSyllabusLabel(exam)}</span>
+                          </button>
+                        )}
                         <div className="exam-item-countdown">
                           {days !== null && (
                             <span
@@ -204,14 +252,14 @@ export function ExamCountdownModal({
                 </button>
                 <div className="exam-add-actions">
                   <button
-                    className="save-btn small"
+                    className="action-btn primary small"
                     onClick={handleAdd}
                     disabled={!newName.trim() || !newDate}
                   >
                     Add
                   </button>
                   <button
-                    className="cancel-btn small"
+                    className="action-btn outline small"
                     onClick={() => {
                       setIsAdding(false);
                       setNewName('');
@@ -239,6 +287,24 @@ export function ExamCountdownModal({
         onClose={() => setDatePickerTarget(null)}
         disablePastDates={true}
       />
+
+      <AnimatePresence>
+        {syllabusPickerExamId !== null && subjectData && (() => {
+          const targetExam = examDates.find((e) => e.id === syllabusPickerExamId);
+          if (!targetExam) return null;
+          return (
+            <SyllabusScopePickerModal
+              exam={targetExam}
+              subjectData={subjectData}
+              onSave={(syllabus) => {
+                onSetExamSyllabus?.(targetExam.id, syllabus);
+                setSyllabusPickerExamId(null);
+              }}
+              onClose={() => setSyllabusPickerExamId(null)}
+            />
+          );
+        })()}
+      </AnimatePresence>
     </>
   );
 }
