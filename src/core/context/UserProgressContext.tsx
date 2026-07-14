@@ -10,6 +10,7 @@ import {
   StudySession,
   MockScore,
   ExamEntry,
+  ExamSyllabus,
   ProgressCardSettings,
   MockExamPreset,
   ChapterDetailProgress,
@@ -97,6 +98,8 @@ interface UserProgressContextType {
   handleDeleteExam: (id: string) => void;
   handleUpdateExam: (exam: ExamEntry) => void;
   handleSetPrimaryExam: (id: string) => void;
+  handleSetFavouriteExam: (id: string | null) => void;
+  handleSetExamSyllabus: (id: string, syllabus: ExamSyllabus) => void;
   handleAddMockScore: (score: Omit<MockScore, 'id'>) => void;
   handleDeleteMockScore: (id: string) => void;
   handleEditMockScore: (score: MockScore) => void;
@@ -143,6 +146,8 @@ interface ProgressDataContextType {
   handleDeleteExam: (id: string) => void;
   handleUpdateExam: (exam: ExamEntry) => void;
   handleSetPrimaryExam: (id: string) => void;
+  handleSetFavouriteExam: (id: string | null) => void;
+  handleSetExamSyllabus: (id: string, syllabus: ExamSyllabus) => void;
   handleAddMockScore: (score: Omit<MockScore, 'id'>) => void;
   handleDeleteMockScore: (id: string) => void;
   handleEditMockScore: (score: MockScore) => void;
@@ -445,7 +450,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           priority: 'none' as Priority,
         };
 
-        let nextSubtopicProgress = { ...(prevChapterProgress.subtopics || {}) };
+        const nextSubtopicProgress = { ...(prevChapterProgress.subtopics || {}) };
         if (subtopics.length > 0) {
           subtopics.forEach((sub) => {
             const currentSubState = nextSubtopicProgress[sub] || { completed: {} };
@@ -1292,14 +1297,15 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       };
       setExamDates((prev) => {
-        // If this is the first exam or marked primary, ensure it's the only primary
+        let updated = prev;
         if (newExam.isPrimary || prev.length === 0) {
-          return [
-            ...prev.map((e) => ({ ...e, isPrimary: false })),
-            { ...newExam, isPrimary: true },
-          ];
+          updated = updated.map((e) => ({ ...e, isPrimary: false }));
+          newExam.isPrimary = true;
         }
-        return [...prev, newExam];
+        if (newExam.isFavourite) {
+          updated = updated.map((e) => ({ ...e, isFavourite: false }));
+        }
+        return [...updated, newExam];
       });
     },
     [setExamDates]
@@ -1329,6 +1335,20 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const handleSetPrimaryExam = useCallback(
     (id: string) => {
       setExamDates((prev) => prev.map((e) => ({ ...e, isPrimary: e.id === id })));
+    },
+    [setExamDates]
+  );
+
+  const handleSetFavouriteExam = useCallback(
+    (id: string | null) => {
+      setExamDates((prev) => prev.map((e) => ({ ...e, isFavourite: e.id === id })));
+    },
+    [setExamDates]
+  );
+
+  const handleSetExamSyllabus = useCallback(
+    (id: string, syllabus: ExamSyllabus) => {
+      setExamDates((prev) => prev.map((e) => (e.id === id ? { ...e, syllabus } : e)));
     },
     [setExamDates]
   );
@@ -1393,6 +1413,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleDeleteExam,
       handleUpdateExam,
       handleSetPrimaryExam,
+      handleSetFavouriteExam,
+      handleSetExamSyllabus,
       handleAddMockScore,
       handleDeleteMockScore,
       handleEditMockScore,
@@ -1435,6 +1457,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleDeleteExam,
       handleUpdateExam,
       handleSetPrimaryExam,
+      handleSetFavouriteExam,
+      handleSetExamSyllabus,
       handleAddMockScore,
       handleDeleteMockScore,
       handleEditMockScore,

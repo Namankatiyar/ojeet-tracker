@@ -153,7 +153,13 @@ export interface ExamEntry {
   name: string; // e.g. "JEE Mains", "JEE Advanced"
   date: string; // YYYY-MM-DD
   isPrimary: boolean; // The one shown in the main countdown display
+  isFavourite?: boolean; // NEW — drives dashboard progress scoping
+  syllabus?: ExamSyllabus; // NEW — absent means full syllabus
 }
+
+// Chapter serials selected per subject. A subject key that is absent OR maps to an
+// empty array means "all chapters for that subject".
+export type ExamSyllabus = Partial<Record<'physics' | 'chemistry' | 'maths', number[]>>;
 
 export interface ProgressCardSettings {
   userName: string;

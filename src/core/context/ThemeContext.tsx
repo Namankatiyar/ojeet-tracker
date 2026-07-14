@@ -38,7 +38,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         return parsed as Theme;
       }
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark-solid' : 'light';
   };
 

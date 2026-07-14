@@ -12,7 +12,6 @@ Offline-first JEE syllabus tracker & study planner. Vite + React 18.3.1 + TypeSc
 ## Tech Stack
 - Vite + React 18.3.1 + TypeScript
 - State/persistence: React Context + custom `useLocalStorage` hooks
-- Sync: Supabase (`@supabase/supabase-js`) OLD -> Now migrating to Firebase
 - Charts: `chart.js` · Icons: `lucide-react` · Celebrations: `canvas-confetti`
 
 ## Directory Structure

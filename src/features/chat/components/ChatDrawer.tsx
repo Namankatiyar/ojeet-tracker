@@ -50,7 +50,7 @@ function renderMarkdown(text: string): string {
   );
 
   // 7. Parse lists
-  html = html.replace(/^\s*[\*\-]\s+(.*?)$/gm, '<li>$1</li>');
+  html = html.replace(/^\s*[*-]\s+(.*?)$/gm, '<li>$1</li>');
   html = html.replace(/^\s*\d+\.\s+(.*?)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>.*?<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
 
@@ -67,7 +67,7 @@ function renderMarkdown(text: string): string {
     ) {
       return part;
     }
-    let p = part.trim();
+    const p = part.trim();
     if (!p) return '';
     return p
       .split(/\n{2,}/)

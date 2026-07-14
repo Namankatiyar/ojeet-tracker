@@ -1,9 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import { AppProgress, Subject, SubjectData } from '../types';
 
+export type ChapterFilter = Partial<Record<Subject, Set<number>>>;
+
 export function useProgress(
   progress: AppProgress,
-  subjectData: Record<Subject, SubjectData | null>
+  subjectData: Record<Subject, SubjectData | null>,
+  filter?: ChapterFilter
 ) {
   const subjectMeta = useMemo(() => {
     const meta: Record<
@@ -25,9 +28,11 @@ export function useProgress(
 
       const materialSet = new Set(data.materialNames);
       const chapterSet = new Set(data.chapters.map((chapter) => chapter.serial));
+      const allowed = filter?.[subject];
 
       let totalItems = 0;
       data.chapters.forEach((chapter) => {
+        if (allowed && !allowed.has(chapter.serial)) return;
         const subtopicCount = chapter.subtopics?.length || 0;
         if (subtopicCount > 0) {
           totalItems += subtopicCount * data.materialNames.length;
@@ -44,7 +49,7 @@ export function useProgress(
     });
 
     return meta;
-  }, [subjectData]);
+  }, [subjectData, filter]);
 
   const completedBySubject = useMemo(() => {
     const counts: Record<Subject, number> = {
@@ -60,8 +65,10 @@ export function useProgress(
       if (!meta || !data) return;
       const subjectProgress = progress[subject];
       if (!subjectProgress) return;
+      const allowed = filter?.[subject];
 
       data.chapters.forEach((chapter) => {
+        if (allowed && !allowed.has(chapter.serial)) return;
         const chapterProgress = subjectProgress[chapter.serial];
         if (!chapterProgress) return;
 
@@ -89,7 +96,7 @@ export function useProgress(
     });
 
     return counts;
-  }, [progress, subjectMeta, subjectData]);
+  }, [progress, subjectMeta, subjectData, filter]);
 
   const calculateSubjectProgress = useCallback(
     (subject: Subject): number => {
