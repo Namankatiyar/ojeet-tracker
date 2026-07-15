@@ -11,6 +11,10 @@ export const supabase = isSupabaseConfigured
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        // Custom no-op lock to prevent navigator.locks deadlocks in background tabs or Strict Mode
+        lock: async (_name, _acquireTimeout, fn) => {
+          return await fn();
+        },
       },
     })
   : null;

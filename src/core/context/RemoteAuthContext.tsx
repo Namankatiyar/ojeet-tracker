@@ -37,6 +37,43 @@ const clearRemoteSyncMetadata = () => {
   keysToRemove.forEach((key) => localStorage.removeItem(key));
 };
 
+// Helper to clear oauth and magic link query params and hashes from URL
+const cleanupAuthParams = () => {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  let changed = false;
+
+  // Clean hash if it contains auth tokens
+  if (url.hash) {
+    const params = new URLSearchParams(url.hash.substring(1));
+    if (params.has('access_token') || params.has('refresh_token') || params.has('error')) {
+      url.hash = '';
+      changed = true;
+    }
+  }
+
+  // Clean query params if they contain auth tokens
+  if (url.search) {
+    const params = new URLSearchParams(url.search);
+    const authKeys = ['access_token', 'refresh_token', 'error', 'error_description', 'code'];
+    let searchChanged = false;
+    authKeys.forEach((key) => {
+      if (params.has(key)) {
+        params.delete(key);
+        searchChanged = true;
+      }
+    });
+    if (searchChanged) {
+      url.search = params.toString();
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    window.history.replaceState(null, '', url.toString());
+  }
+};
+
 const RemoteAuthContext = createContext<RemoteAuthContextType | undefined>(undefined);
 
 export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -60,6 +97,9 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setSession(data.session ?? null);
         setUser(data.session?.user ?? null);
         setIsLoading(false);
+        if (data.session) {
+          cleanupAuthParams();
+        }
       })
       .catch((err) => {
         console.error('Failed to get session:', err);
@@ -72,6 +112,9 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession ?? null);
       setUser(nextSession?.user ?? null);
+      if (nextSession) {
+        cleanupAuthParams();
+      }
     });
 
     return () => {
