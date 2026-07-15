@@ -1,11 +1,4 @@
-## [2.1.1-develop.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.1-develop.1...v2.1.1-develop.2) (2026-07-15)
-
-
-### Bug Fixes
-
-* **auth:** strip OAuth callback params during redirects and use upsert on profiles ([aa65b92](https://github.com/Namankatiyar/ojeet-tracker/commit/aa65b92a3414ef3b117e5027f47eff7eee45f6df))
-
-## [2.1.1-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.0...v2.1.1-develop.1) (2026-07-15)
+## [2.1.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.0...v2.1.1) (2026-07-15)
 
 
 ### Bug Fixes
