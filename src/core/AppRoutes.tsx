@@ -78,7 +78,40 @@ interface AppRoutesProps {
 
 const RedirectWithHash = ({ to }: { to: string }) => {
   const location = useLocation();
-  return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
+  const searchParams = new URLSearchParams(location.search);
+  const authKeys = [
+    'code',
+    'state',
+    'access_token',
+    'refresh_token',
+    'expires_in',
+    'expires_at',
+    'token_type',
+    'provider_token',
+    'error',
+    'error_description',
+    'error_code',
+  ];
+  authKeys.forEach((key) => searchParams.delete(key));
+  const cleanSearch = searchParams.toString() ? `?${searchParams.toString()}` : '';
+
+  let cleanHash = location.hash;
+  if (cleanHash && cleanHash.startsWith('#')) {
+    const hashParams = new URLSearchParams(cleanHash.substring(1));
+    let hashModified = false;
+    authKeys.forEach((key) => {
+      if (hashParams.has(key)) {
+        hashParams.delete(key);
+        hashModified = true;
+      }
+    });
+    if (hashModified) {
+      const rem = hashParams.toString();
+      cleanHash = rem ? `#${rem}` : '';
+    }
+  }
+
+  return <Navigate to={`${to}${cleanSearch}${cleanHash}`} replace />;
 };
 
 export const AppRoutes: React.FC<AppRoutesProps> = ({
