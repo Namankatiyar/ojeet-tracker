@@ -139,14 +139,52 @@ export function SubjectPage({
 
   const [localChapters, setLocalChapters] = useState<Chapter[]>(sortedChapters);
   useEffect(() => {
-    setLocalChapters(sortedChapters);
-  }, [sortedChapters]);
+    setLocalChapters((prev) => {
+      const prevSerials = new Set(prev.map((c) => c.serial));
+      const sortedSerials = new Set(sortedChapters.map((c) => c.serial));
+
+      const hasDifference =
+        prevSerials.size !== sortedSerials.size ||
+        [...prevSerials].some((serial) => !sortedSerials.has(serial));
+
+      if (!isEditing || hasDifference) {
+        return sortedChapters;
+      }
+      return prev;
+    });
+  }, [sortedChapters, isEditing]);
 
   const [localMaterials, setLocalMaterials] = useState<string[]>(data?.materialNames || []);
   useEffect(() => {
-    setLocalMaterials(data?.materialNames || []);
-  }, [data?.materialNames]);
+    if (!isEditing) {
+      setLocalMaterials(data?.materialNames || []);
+    }
+  }, [data?.materialNames, isEditing]);
 
+  const handleRenameLocal = useCallback((serial: number, newName: string) => {
+    setLocalChapters((prev) =>
+      prev.map((ch) => (ch.serial === serial ? { ...ch, name: newName } : ch))
+    );
+  }, []);
+
+  const handleToggleEditing = useCallback(() => {
+    if (isEditing) {
+      if (onReorderChapters) {
+        onReorderChapters(localChapters);
+      } else if (onRenameChapter) {
+        localChapters.forEach((ch) => {
+          const original = sortedChapters.find((sc) => sc.serial === ch.serial);
+          if (original && original.name !== ch.name) {
+            onRenameChapter(ch.serial, ch.name);
+          }
+        });
+      }
+      if (onReorderMaterials) {
+        onReorderMaterials(localMaterials);
+      }
+    }
+    setIsEditing((prev) => !prev);
+  }, [isEditing, localChapters, localMaterials, onReorderChapters, onRenameChapter, sortedChapters, onReorderMaterials]);
 
   // Stabilized callbacks for ChapterRow memoization
   const handleToggleMaterialWithConfetti = useCallback(
@@ -191,24 +229,26 @@ export function SubjectPage({
   const handleAddChapter = useCallback(
     (name: string) => {
       if (onAddChapter && name && name.trim()) {
+        if (onReorderChapters) {
+          onReorderChapters(localChapters);
+        }
         onAddChapter(name.trim());
       }
       setIsAddChapterModalOpen(false);
     },
-    [onAddChapter]
+    [onAddChapter, onReorderChapters, localChapters]
   );
 
   const confirmDeleteChapter = useCallback(() => {
     if (onRemoveChapter && chapterToDelete.serial !== null) {
+      if (onReorderChapters) {
+        const updatedChapters = localChapters.filter((c) => c.serial !== chapterToDelete.serial);
+        onReorderChapters(updatedChapters);
+      }
       onRemoveChapter(chapterToDelete.serial);
     }
     setChapterToDelete({ isOpen: false, serial: null, name: '' });
-  }, [onRemoveChapter, chapterToDelete.serial]);
-
-  const localChaptersRef = useRef(localChapters);
-  useEffect(() => {
-    localChaptersRef.current = localChapters;
-  }, [localChapters]);
+  }, [onRemoveChapter, onReorderChapters, localChapters, chapterToDelete.serial]);
 
   const handleOpenDetails = useCallback((serial: number) => {
     setSelectedChapterSerial(serial);
@@ -229,12 +269,6 @@ export function SubjectPage({
       name,
     });
   }, []);
-
-  const handleDragEnd = useCallback(() => {
-    if (onReorderChapters) {
-      onReorderChapters(localChaptersRef.current);
-    }
-  }, [onReorderChapters]);
 
   // Loading state
   if (!data) {
@@ -261,7 +295,7 @@ export function SubjectPage({
         data={data}
         subjectProgress={subjectProgress}
         isEditing={isEditing}
-        onToggleEditing={() => setIsEditing(!isEditing)}
+        onToggleEditing={handleToggleEditing}
         canEdit={!!onAddChapter}
         canAddMaterial={!!onAddMaterial}
         onAddMaterial={() => setIsAddMaterialModalOpen(true)}
@@ -318,13 +352,13 @@ export function SubjectPage({
                     index={index}
                     progress={chProgress}
                     isEditing={isEditing}
-                    onRename={onRenameChapter}
+                    onRename={handleRenameLocal}
                     onOpenDetails={handleOpenDetails}
                     isHovered={hoveredChapterSerial === chapter.serial}
                     onMouseEnter={handleMouseEnterRow}
                     onMouseLeave={handleMouseLeaveRow}
                     priorityClass={priorityClass}
-                    onDragEnd={onReorderChapters ? handleDragEnd : undefined}
+                    onDragEnd={undefined}
                   />
                 );
               });
@@ -373,7 +407,7 @@ export function SubjectPage({
                         key={material}
                         value={material}
                         dragListener={isEditing}
-                        onDragEnd={() => onReorderMaterials?.(localMaterials)}
+                        onDragEnd={undefined}
                         className={`material-header ${isEditing ? 'material-header-draggable' : ''}`}
                       >
                         <div className="material-header-content">
@@ -553,7 +587,7 @@ export function SubjectPage({
                 isEditing={isEditing}
                 canReorder={true}
                 onOpenDetails={handleOpenDetails}
-                onDragEnd={onReorderChapters ? handleDragEnd : undefined}
+                onDragEnd={undefined}
               />
             ))}
           </Reorder.Group>
