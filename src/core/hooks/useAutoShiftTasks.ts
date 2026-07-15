@@ -3,6 +3,7 @@ import { getLogicalTodayStr, getLogicalDate, parseDateLocal } from '../../shared
 import { PlannerTask } from '../../shared/types';
 
 export const useAutoShiftTasks = (
+  plannerTasks: PlannerTask[],
   setPlannerTasks: (tasks: PlannerTask[] | ((prev: PlannerTask[]) => PlannerTask[])) => void,
   disableAutoShift: boolean,
   dailyResetHour: number = 0
@@ -29,5 +30,6 @@ export const useAutoShiftTasks = (
       });
       return shifted ? updatedTasks : currentTasks;
     });
-  }, [disableAutoShift, setPlannerTasks, dailyResetHour]);
+  }, [plannerTasks, disableAutoShift, setPlannerTasks, dailyResetHour]);
 };
+
