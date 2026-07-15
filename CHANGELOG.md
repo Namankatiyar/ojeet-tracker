@@ -1,3 +1,11 @@
+## [2.1.2-develop.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.2-develop.1...v2.1.2-develop.2) (2026-07-15)
+
+
+### Bug Fixes
+
+* **planner:** auto-shift overdue tasks on remote sync load and settings toggle ([a551c0d](https://github.com/Namankatiyar/ojeet-tracker/commit/a551c0de2b3c11367b9fd3d4f35320fe28eeb141))
+* **subjects:** fix chapter rename cursor jump and edit lag ([f09e306](https://github.com/Namankatiyar/ojeet-tracker/commit/f09e3060c39fa4d4b36f74fb0406c8da6c6b3662))
+
 ## [2.1.2-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.1...v2.1.2-develop.1) (2026-07-15)
 
 
