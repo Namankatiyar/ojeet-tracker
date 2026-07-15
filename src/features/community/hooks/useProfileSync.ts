@@ -24,6 +24,7 @@ export function useProfileSync() {
 
   const subjectDataRef = useRef(subjectData);
   const plannerTasksRef = useRef(plannerTasks);
+  const progressCardSettingsRef = useRef(progressCardSettings);
   const isFetchingProfileRef = useRef(false);
   const initialFetchDoneRef = useRef(false);
 
@@ -33,6 +34,9 @@ export function useProfileSync() {
   useEffect(() => {
     plannerTasksRef.current = plannerTasks;
   }, [plannerTasks]);
+  useEffect(() => {
+    progressCardSettingsRef.current = progressCardSettings;
+  }, [progressCardSettings]);
 
   // Handle logout cleanup
   const prevUserRef = useRef<typeof user>(null);
@@ -127,7 +131,7 @@ export function useProfileSync() {
             'invite_code, discord_tag, display_name, avatar_url, banner_url, custom_status, grade_status, target_exam'
           )
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
         const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
@@ -179,8 +183,33 @@ export function useProfileSync() {
 
             return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
           });
+        } else if (!error && !data) {
+          // Profile row is missing. Insert default profile row immediately to satisfy foreign key constraints
+          const initialProfile = {
+            id: user.id,
+            display_name: progressCardSettingsRef.current.userName || googleName || 'Student',
+            avatar_url: progressCardSettingsRef.current.customAvatarUrl || googleAvatar || null,
+            grade_status: progressCardSettingsRef.current.gradeStatus || 'Class 12',
+            target_exam: progressCardSettingsRef.current.targetExam || 'JEE 2026',
+          };
+          const { error: insertErr } = await client.from('profiles').insert(initialProfile);
+          if (insertErr) {
+            console.error('Failed to create initial profile row:', insertErr);
+          } else {
+            console.log('Successfully created initial profile row for user:', user.id);
+            setProgressCardSettings((prev) => {
+              const updates: Partial<typeof prev> = {};
+              if (!prev.userName && googleName) {
+                updates.userName = googleName;
+              }
+              if (!prev.customAvatarUrl && googleAvatar) {
+                updates.customAvatarUrl = googleAvatar;
+              }
+              return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+            });
+          }
         } else {
-          // Fallback to Google metadata if profile row isn't found or error occurs
+          // Fallback to Google metadata if error occurs
           setProgressCardSettings((prev) => {
             const updates: Partial<typeof prev> = {};
             if (!prev.userName && googleName) {
@@ -365,7 +394,9 @@ export function useProfileSync() {
       const executeSync = async () => {
         if (!initialFetchDoneRef.current || isFetchingProfileRef.current) return;
         try {
-          const { error } = await client.from('profiles').update(diff).eq('id', user.id);
+          const { error } = await client
+            .from('profiles')
+            .upsert({ id: user.id, ...diff }, { onConflict: 'id' });
           if (error) throw error;
           lastSnapshotRef.current = snapshotStr;
           retryAttemptRef.current = 0;
