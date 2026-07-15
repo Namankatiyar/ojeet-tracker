@@ -1,3 +1,13 @@
+# [2.1.0-develop.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.0-develop.1...v2.1.0-develop.2) (2026-07-15)
+
+
+### Bug Fixes
+
+* **auth:** resolve Supabase lock deadlocks and profile sync errors ([0101683](https://github.com/Namankatiyar/ojeet-tracker/commit/01016830ab0af56bc04e2a33cc0213f35143ca0b))
+* **auth:** resolve Supabase lock deadlocks and profile sync errors ([dd2df00](https://github.com/Namankatiyar/ojeet-tracker/commit/dd2df001732f3c68108a81ca855a15eff2fa38db))
+* **layout:** derive footer version from package.json ([77dd7d8](https://github.com/Namankatiyar/ojeet-tracker/commit/77dd7d856bb1a37d230865f7379f1ce847baa27b))
+* **layout:** derive footer version from package.json ([10bf3b9](https://github.com/Namankatiyar/ojeet-tracker/commit/10bf3b9b472ef4949ba673192cd61a4eada163b1))
+
 # [2.1.0-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.0.0...v2.1.0-develop.1) (2026-07-14)
 
 
