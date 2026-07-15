@@ -37,40 +37,56 @@ const clearRemoteSyncMetadata = () => {
   keysToRemove.forEach((key) => localStorage.removeItem(key));
 };
 
-// Helper to clear oauth and magic link query params and hashes from URL
-const cleanupAuthParams = () => {
+const cleanOAuthUrlParams = () => {
   if (typeof window === 'undefined') return;
-  const url = new URL(window.location.href);
-  let changed = false;
+  try {
+    const url = new URL(window.location.href);
+    let modified = false;
 
-  // Clean hash if it contains auth tokens
-  if (url.hash) {
-    const params = new URLSearchParams(url.hash.substring(1));
-    if (params.has('access_token') || params.has('refresh_token') || params.has('error')) {
-      url.hash = '';
-      changed = true;
+    if (url.hash && url.hash.startsWith('#')) {
+      const hashParams = new URLSearchParams(url.hash.substring(1));
+      const authKeys = [
+        'access_token',
+        'refresh_token',
+        'expires_in',
+        'expires_at',
+        'token_type',
+        'provider_token',
+        'error',
+        'error_description',
+        'error_code',
+      ];
+      let hashModified = false;
+      authKeys.forEach((key) => {
+        if (hashParams.has(key)) {
+          hashParams.delete(key);
+          hashModified = true;
+        }
+      });
+      if (hashModified) {
+        const newHash = hashParams.toString();
+        url.hash = newHash ? `#${newHash}` : '';
+        modified = true;
+      }
     }
-  }
 
-  // Clean query params if they contain auth tokens
-  if (url.search) {
-    const params = new URLSearchParams(url.search);
-    const authKeys = ['access_token', 'refresh_token', 'error', 'error_description', 'code'];
-    let searchChanged = false;
-    authKeys.forEach((key) => {
-      if (params.has(key)) {
-        params.delete(key);
-        searchChanged = true;
+    const searchAuthKeys = ['code', 'state', 'error', 'error_description', 'error_code'];
+    let searchModified = false;
+    searchAuthKeys.forEach((key) => {
+      if (url.searchParams.has(key)) {
+        url.searchParams.delete(key);
+        searchModified = true;
       }
     });
-    if (searchChanged) {
-      url.search = params.toString();
-      changed = true;
+    if (searchModified) {
+      modified = true;
     }
-  }
 
-  if (changed) {
-    window.history.replaceState(null, '', url.toString());
+    if (modified) {
+      window.history.replaceState(window.history.state, document.title, url.toString());
+    }
+  } catch (err) {
+    console.warn('Failed to clean OAuth URL params:', err);
   }
 };
 
@@ -98,7 +114,7 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setUser(data.session?.user ?? null);
         setIsLoading(false);
         if (data.session) {
-          cleanupAuthParams();
+          cleanOAuthUrlParams();
         }
       })
       .catch((err) => {
@@ -109,11 +125,11 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession ?? null);
       setUser(nextSession?.user ?? null);
-      if (nextSession) {
-        cleanupAuthParams();
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || nextSession) {
+        cleanOAuthUrlParams();
       }
     });
 

@@ -392,7 +392,7 @@ export function useProfileSync() {
 
     debounceTimeoutRef.current = window.setTimeout(async () => {
       const executeSync = async () => {
-        if (!initialFetchDoneRef.current || isFetchingProfileRef.current) return;
+        if (!initialFetchDoneRef.current || isFetchingProfileRef.current || !user || !client) return;
         try {
           const { error } = await client
             .from('profiles')
