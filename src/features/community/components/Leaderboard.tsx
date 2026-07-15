@@ -179,7 +179,7 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
             .from('profiles')
             .select('leaderboard_invalidated')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
           if (selfProfile) {
             selfFlagged = selfProfile.leaderboard_invalidated || false;
           }

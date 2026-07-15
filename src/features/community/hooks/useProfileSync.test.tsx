@@ -104,6 +104,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 
@@ -133,6 +135,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 
@@ -158,6 +162,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 
@@ -174,14 +180,16 @@ describe('useProfileSync Hook', () => {
     vi.useFakeTimers();
     // 1. Mock empty selects/updates
     const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
-    const updateMock = vi.fn().mockReturnThis();
+    const upsertMock = vi.fn().mockReturnThis();
     const selectMock = vi.fn().mockImplementation((_table: string) => {
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: singleMock,
-        update: updateMock,
-        upsert: vi.fn().mockReturnThis(),
+        maybeSingle: singleMock,
+        update: vi.fn().mockReturnThis(),
+        upsert: upsertMock,
+        insert: vi.fn().mockResolvedValue({ error: null }),
         then: vi.fn((onFulfilled) => onFulfilled({ error: null })),
       };
     });
@@ -227,7 +235,7 @@ describe('useProfileSync Hook', () => {
     });
 
     expect(supabase!.from).toHaveBeenCalledWith('profiles');
-    expect(updateMock).toHaveBeenCalled();
+    expect(upsertMock).toHaveBeenCalled();
     vi.useRealTimers();
   });
 
@@ -264,13 +272,15 @@ describe('useProfileSync Hook', () => {
     vi.useFakeTimers();
     let resolveFetch: any;
     const singleMock = vi.fn().mockReturnValue(new Promise((r) => { resolveFetch = r; }));
-    const updateMock = vi.fn().mockReturnThis();
+    const upsertMock = vi.fn().mockReturnThis();
     const selectMock = vi.fn().mockImplementation(() => ({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
-      update: updateMock,
-      upsert: vi.fn().mockReturnThis(),
+      maybeSingle: singleMock,
+      update: vi.fn().mockReturnThis(),
+      upsert: upsertMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
       then: vi.fn((onFulfilled) => onFulfilled({ error: null })),
     }));
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
@@ -295,8 +305,8 @@ describe('useProfileSync Hook', () => {
       vi.advanceTimersByTime(5000);
     });
 
-    // Should NOT have called update because initial fetch is not done
-    expect(updateMock).not.toHaveBeenCalled();
+    // Should NOT have called upsert because initial fetch is not done
+    expect(upsertMock).not.toHaveBeenCalled();
 
     // Resolve initial fetch
     await act(async () => {
@@ -316,6 +326,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 
