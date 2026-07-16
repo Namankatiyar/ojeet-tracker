@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, Reorder, useDragControls } from 'framer-motion';
 import { Chapter, ChapterProgress, Priority } from '../../../shared/types';
@@ -163,6 +163,11 @@ export const LeftChapterRow = React.memo(
     const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
     const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    const [localName, setLocalName] = useState(chapter.name);
+    useEffect(() => {
+      setLocalName(chapter.name);
+    }, [chapter.name]);
+
     const handleMouseEnterLocal = useCallback(
       (e: React.MouseEvent) => {
         onMouseEnter(chapter.serial);
@@ -272,10 +277,15 @@ export const LeftChapterRow = React.memo(
           <td className="chapter-cell">
             <input
               type="text"
-              value={chapter.name}
-              onChange={(e) => onRename?.(chapter.serial, e.target.value)}
+              value={localName}
+              onChange={(e) => {
+                setLocalName(e.target.value);
+                onRename?.(chapter.serial, e.target.value);
+              }}
               onBlur={(e) => {
-                onRename?.(chapter.serial, e.target.value.trim());
+                const trimmed = e.target.value.trim();
+                setLocalName(trimmed);
+                onRename?.(chapter.serial, trimmed);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {

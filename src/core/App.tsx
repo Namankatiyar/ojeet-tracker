@@ -63,6 +63,7 @@ function AppContent() {
   } = useTheme();
 
   const {
+    plannerTasks,
     setPlannerTasks,
     studySessions,
     mockScores,
@@ -147,7 +148,7 @@ function AppContent() {
 
   // Custom Hooks
   useGlobalShortcuts(handleQuickAddTask);
-  useAutoShiftTasks(setPlannerTasks, disableAutoShift, dailyResetHour);
+  useAutoShiftTasks(plannerTasks, setPlannerTasks, disableAutoShift, dailyResetHour);
   useDocumentMetadata();
 
   return (
