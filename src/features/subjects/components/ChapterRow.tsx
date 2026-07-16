@@ -88,19 +88,31 @@ function HoverPanel({ x, y, chapterName, progress }: HoverPanelProps) {
         )}
 
         {(detail?.revisionCount !== undefined && detail?.revisionCount > 0) ||
+        (detail?.targetRevisionCount !== undefined && detail?.targetRevisionCount > 0) ||
         (detail?.lectureCount !== undefined && detail?.lectureCount > 0) ||
+        (detail?.targetLectureCount !== undefined && detail?.targetLectureCount > 0) ||
         detail?.lastRevised ? (
           <div className="chp-section chp-row-stats">
-            {detail?.revisionCount !== undefined && detail?.revisionCount > 0 && (
+            {((detail?.revisionCount !== undefined && detail?.revisionCount > 0) ||
+              (detail?.targetRevisionCount !== undefined && detail?.targetRevisionCount > 0)) && (
               <div className="chp-stat">
                 <span>Revisions</span>
-                <span className="chp-stat-val">{detail.revisionCount}</span>
+                <span className="chp-stat-val">
+                  {detail?.targetRevisionCount !== undefined && detail.targetRevisionCount > 0
+                    ? `${detail.revisionCount || 0}/${detail.targetRevisionCount}`
+                    : detail.revisionCount}
+                </span>
               </div>
             )}
-            {detail?.lectureCount !== undefined && detail?.lectureCount > 0 && (
+            {((detail?.lectureCount !== undefined && detail?.lectureCount > 0) ||
+              (detail?.targetLectureCount !== undefined && detail?.targetLectureCount > 0)) && (
               <div className="chp-stat">
                 <span>Lectures</span>
-                <span className="chp-stat-val">{detail.lectureCount}</span>
+                <span className="chp-stat-val">
+                  {detail?.targetLectureCount !== undefined && detail.targetLectureCount > 0
+                    ? `${detail.lectureCount || 0}/${detail.targetLectureCount}`
+                    : detail.lectureCount}
+                </span>
               </div>
             )}
             {detail?.lastRevised && (
