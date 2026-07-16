@@ -2171,11 +2171,14 @@ td.material-cell .checkbox-container {
   height: 28px;
   padding: 0 var(--space-2);
   font-size: var(--text-xs);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 

@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Minus, Plus, X, Check } from 'lucide-react';
+import { Calendar, ChevronRight, Minus, Plus, X, Check, Target } from 'lucide-react';
 import {
   Chapter,
   ChapterDetailProgress,
@@ -482,7 +482,8 @@ export function ChapterDetailDrawer({
                       onClick={() => setIsRevisionTargetOpen(!isRevisionTargetOpen)}
                       type="button"
                     >
-                      {targetRevision > 0 ? `🎯 Goal: ${targetRevision}` : '+ Target'}
+                      <Target size={14} />
+                      {targetRevision > 0 ? `Goal: ${targetRevision}` : 'Target'}
                     </button>
                   </div>
                 </div>
@@ -504,7 +505,7 @@ export function ChapterDetailDrawer({
                             <button
                               onClick={() =>
                                 onUpdateDetail(chapter.serial, {
-                                  targetRevisionCount: Math.max(0, targetRevision - 1),
+                                  targetRevisionCount: targetRevision <= 1 ? undefined : targetRevision - 1,
                                 })
                               }
                               disabled={targetRevision <= 0}
@@ -535,17 +536,6 @@ export function ChapterDetailDrawer({
                               <Plus size={12} />
                             </button>
                           </div>
-                          <button
-                            className="icon-btn-reset"
-                            onClick={() => {
-                              onUpdateDetail(chapter.serial, { targetRevisionCount: undefined });
-                              setIsRevisionTargetOpen(false);
-                            }}
-                            title="Clear target revisions"
-                            type="button"
-                          >
-                            <X size={14} />
-                          </button>
                         </div>
                       </div>
                     </motion.div>
@@ -602,7 +592,8 @@ export function ChapterDetailDrawer({
                       onClick={() => setIsLectureTargetOpen(!isLectureTargetOpen)}
                       type="button"
                     >
-                      {targetLecture > 0 ? `🎯 Goal: ${targetLecture}` : '+ Target'}
+                      <Target size={14} />
+                      {targetLecture > 0 ? `Goal: ${targetLecture}` : 'Target'}
                     </button>
                   </div>
                 </div>
@@ -624,7 +615,7 @@ export function ChapterDetailDrawer({
                             <button
                               onClick={() =>
                                 onUpdateDetail(chapter.serial, {
-                                  targetLectureCount: Math.max(0, targetLecture - 1),
+                                  targetLectureCount: targetLecture <= 1 ? undefined : targetLecture - 1,
                                 })
                               }
                               disabled={targetLecture <= 0}
@@ -655,17 +646,6 @@ export function ChapterDetailDrawer({
                               <Plus size={12} />
                             </button>
                           </div>
-                          <button
-                            className="icon-btn-reset"
-                            onClick={() => {
-                              onUpdateDetail(chapter.serial, { targetLectureCount: undefined });
-                              setIsLectureTargetOpen(false);
-                            }}
-                            title="Clear target lectures"
-                            type="button"
-                          >
-                            <X size={14} />
-                          </button>
                         </div>
                       </div>
                     </motion.div>

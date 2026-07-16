@@ -29,17 +29,17 @@ describe('ChapterDetailDrawer Target Goals', () => {
     onSetSubtopicLastRevised: vi.fn(),
   };
 
-  it('renders + Target buttons when targets are not set', () => {
+  it('renders Target buttons when targets are not set', () => {
     render(<ChapterDetailDrawer {...defaultProps} />);
     
-    const targetButtons = screen.getAllByRole('button', { name: '+ Target' });
+    const targetButtons = screen.getAllByRole('button', { name: 'Target' });
     expect(targetButtons).toHaveLength(2); // One for Revision, one for Lecture
   });
 
-  it('toggles target sub-row when + Target button is clicked', async () => {
+  it('toggles target sub-row when Target button is clicked', async () => {
     render(<ChapterDetailDrawer {...defaultProps} />);
     
-    const targetButtons = screen.getAllByRole('button', { name: '+ Target' });
+    const targetButtons = screen.getAllByRole('button', { name: 'Target' });
     
     // Click Revision Target button
     fireEvent.click(targetButtons[0]);
@@ -51,7 +51,7 @@ describe('ChapterDetailDrawer Target Goals', () => {
     render(<ChapterDetailDrawer {...defaultProps} />);
     
     // Expand Revision Target
-    const targetButtons = screen.getAllByRole('button', { name: '+ Target' });
+    const targetButtons = screen.getAllByRole('button', { name: 'Target' });
     fireEvent.click(targetButtons[0]);
 
     // Initially target is 0. Increase target.
@@ -74,7 +74,7 @@ describe('ChapterDetailDrawer Target Goals', () => {
 
     render(<ChapterDetailDrawer {...defaultProps} progress={progressWithTarget} />);
 
-    expect(screen.getByRole('button', { name: '🎯 Goal: 5' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Goal: 5' })).toBeInTheDocument();
     expect(screen.getByText('3 / 5 done')).toBeInTheDocument();
   });
 
@@ -94,25 +94,25 @@ describe('ChapterDetailDrawer Target Goals', () => {
     expect(screen.getByText('5 / 5 🎉')).toBeInTheDocument();
   });
 
-  it('resets target count when clear button is clicked', () => {
+  it('resets target count to undefined when decrementing from 1', () => {
     const progressWithTarget: ChapterProgress = {
       completed: {},
       priority: 'none' as const,
       detail: {
         attemptedByMaterial: {},
         revisionCount: 3,
-        targetRevisionCount: 5,
+        targetRevisionCount: 1,
       },
     };
 
     render(<ChapterDetailDrawer {...defaultProps} progress={progressWithTarget} />);
 
     // Open Target panel by clicking Goal button
-    fireEvent.click(screen.getByRole('button', { name: '🎯 Goal: 5' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Goal: 1' }));
 
-    // Click clear button
-    const clearBtn = screen.getByRole('button', { name: 'Clear target revisions' });
-    fireEvent.click(clearBtn);
+    // Click decrease button
+    const decreaseBtn = screen.getByRole('button', { name: 'Decrease target revisions' });
+    fireEvent.click(decreaseBtn);
 
     expect(defaultProps.onUpdateDetail).toHaveBeenCalledWith(1, { targetRevisionCount: undefined });
   });
