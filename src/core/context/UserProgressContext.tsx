@@ -15,6 +15,7 @@ import {
   MockExamPreset,
   ChapterDetailProgress,
 } from '../../shared/types';
+import { SyncTombstoneMap, SYNC_DEFAULT_PLANNER_HISTORY_DAYS } from '../../features/sync/syncTypes';
 import { useSubjectData } from './SubjectDataContext';
 import { useTheme } from './ThemeContext';
 
@@ -32,6 +33,10 @@ interface UserProgressContextType {
   mockExamPresets: MockExamPreset[];
   setMockExamPresets: (
     presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])
+  ) => void;
+  tombstones: SyncTombstoneMap;
+  setTombstones: (
+    tombstones: SyncTombstoneMap | ((prev: SyncTombstoneMap) => SyncTombstoneMap)
   ) => void;
   primaryExamDate: string;
   disableAutoShift: boolean;
@@ -122,6 +127,8 @@ interface ProgressDataContextType {
   setExamDates: (dates: ExamEntry[] | ((prev: ExamEntry[]) => ExamEntry[])) => void;
   mockExamPresets: MockExamPreset[];
   setMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
+  tombstones: SyncTombstoneMap;
+  setTombstones: (tombstones: SyncTombstoneMap | ((prev: SyncTombstoneMap) => SyncTombstoneMap)) => void;
   dailyQuestionLogs: Record<string, number>;
   setDailyQuestionLogs: (logs: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>)) => void;
   primaryExamDate: string;
@@ -240,6 +247,32 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [dailyQuestionLogs, setDailyQuestionLogs] = useLocalStorage<Record<string, number>>(
     'jee-tracker-daily-questions',
     {}
+  );
+  const [tombstones, setTombstones] = useLocalStorage<SyncTombstoneMap>(
+    'jee-tracker-sync-tombstones',
+    { plannerTasks: [], mockScores: [], examDates: [], mockExamPresets: [] }
+  );
+
+  const recordTombstone = useCallback(
+    (
+      domain: 'plannerTasks' | 'mockScores' | 'examDates' | 'mockExamPresets',
+      id: string
+    ) => {
+      const nowIso = new Date().toISOString();
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - SYNC_DEFAULT_PLANNER_HISTORY_DAYS);
+      const cutoffIso = cutoffDate.toISOString();
+
+      setTombstones((prev) => {
+        const currentList = prev[domain] || [];
+        const filtered = currentList.filter((t) => t.id !== id && t.deletedAt >= cutoffIso);
+        return {
+          ...prev,
+          [domain]: [...filtered, { id, deletedAt: nowIso }],
+        };
+      });
+    },
+    [setTombstones]
   );
 
   // Ensure mockExamPresets is never empty and backfill default targetScore for legacy presets
@@ -472,6 +505,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               ...prevChapterProgress,
               completed: { ...prevChapterProgress.completed, [material]: isNowCompleted },
               subtopics: nextSubtopicProgress,
+              updatedAt: new Date().toISOString(),
             },
           },
         };
@@ -489,6 +523,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               ...t,
               completed: isNowCompleted,
               completedAt,
+              updatedAt: new Date().toISOString(),
             };
           }
           return t;
@@ -568,6 +603,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 [material]: isAllCompleted,
               },
               subtopics: updatedSubtopics,
+              updatedAt: new Date().toISOString(),
             },
           },
         };
@@ -585,6 +621,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               ...t,
               completed: allCompleted,
               completedAt,
+              updatedAt: new Date().toISOString(),
             };
           }
           return t;
@@ -625,6 +662,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
 
       // Update pendingProgressRef immediately so subsequent synchronous updates see it!
+      const nowIso = new Date().toISOString();
       const nextProgress = {
         ...currentProgress,
         [subject]: {
@@ -641,6 +679,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 },
               },
             },
+            updatedAt: nowIso,
           },
         },
       };
@@ -705,6 +744,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 attemptedByMaterial: totalAttemptedByMaterial,
               },
               subtopics: nextSubtopics,
+              updatedAt: nowIso,
             },
           },
         };
@@ -763,6 +803,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 lastRevised: latestDate || undefined,
               },
               subtopics: nextSubtopics,
+              updatedAt: new Date().toISOString(),
             },
           },
         };
@@ -783,7 +824,11 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           ...prev,
           [subject]: {
             ...subjectProgress,
-            [chapterSerial]: { ...chapterProgress, priority },
+            [chapterSerial]: {
+              ...chapterProgress,
+              priority,
+              updatedAt: new Date().toISOString(),
+            },
           },
         };
       });
@@ -820,6 +865,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
 
       // Update pendingProgressRef immediately so subsequent synchronous updates see it!
+      const nowIso = new Date().toISOString();
       const nextProgress = {
         ...currentProgress,
         [subject]: {
@@ -834,6 +880,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 ...patch.attemptedByMaterial,
               },
             },
+            updatedAt: nowIso,
           },
         },
       };
@@ -861,6 +908,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                   ...patch.attemptedByMaterial,
                 },
               },
+              updatedAt: nowIso,
             },
           },
         };
@@ -871,7 +919,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const handleAddPlannerTask = useCallback(
     (task: PlannerTask) => {
-      setPlannerTasks((prev) => [...prev, task]);
+      const newTask = { ...task, updatedAt: task.updatedAt || new Date().toISOString() };
+      setPlannerTasks((prev) => [...prev, newTask]);
     },
     [setPlannerTasks]
   );
@@ -953,6 +1002,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               ...chapterProgress,
               completed: updatedCompleted,
               detail: updatedDetailForRef,
+              updatedAt: new Date().toISOString(),
             },
           },
         };
@@ -999,6 +1049,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 ...prevChapterProgress,
                 completed: updatedComp,
                 detail: updatedDetail,
+                updatedAt: new Date().toISOString(),
               },
             },
           };
@@ -1020,6 +1071,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               completed: newStatus,
               wasShifted: newStatus ? false : t.wasShifted,
               completedAt: newStatus ? new Date().toISOString() : undefined,
+              updatedAt: new Date().toISOString(),
             };
           }
           return t;
@@ -1033,6 +1085,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     (taskId: string) => {
       const task = plannerTasksRef.current.find((t) => t.id === taskId);
       setPlannerTasks((prev) => prev.filter((t) => t.id !== taskId));
+      recordTombstone('plannerTasks', taskId);
 
       if (task && task.completed && task.subject && task.chapterSerial) {
         const isLec = !!task.isLecture;
@@ -1079,13 +1132,14 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
       }
     },
-    [setPlannerTasks, setProgress]
+    [setPlannerTasks, setProgress, recordTombstone]
   );
 
   const handleEditPlannerTask = useCallback(
     (updatedTask: PlannerTask) => {
+      const taskWithTimestamp = { ...updatedTask, updatedAt: new Date().toISOString() };
       const oldTask = plannerTasksRef.current.find((t) => t.id === updatedTask.id);
-      setPlannerTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+      setPlannerTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? taskWithTimestamp : t)));
 
       if (oldTask) {
         const oldLectureVal = (oldTask.isLecture && oldTask.completed) ? 1 : 0;
@@ -1270,6 +1324,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const newScore: MockScore = {
         ...score,
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        updatedAt: score.updatedAt || new Date().toISOString(),
       };
       setMockScores((prev) => [...prev, newScore]);
     },
@@ -1279,13 +1334,15 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const handleDeleteMockScore = useCallback(
     (id: string) => {
       setMockScores((prev) => prev.filter((s) => s.id !== id));
+      recordTombstone('mockScores', id);
     },
-    [setMockScores]
+    [setMockScores, recordTombstone]
   );
 
   const handleEditMockScore = useCallback(
     (score: MockScore) => {
-      setMockScores((prev) => prev.map((s) => (s.id === score.id ? score : s)));
+      const scoreWithTime = { ...score, updatedAt: new Date().toISOString() };
+      setMockScores((prev) => prev.map((s) => (s.id === score.id ? scoreWithTime : s)));
     },
     [setMockScores]
   );
@@ -1295,6 +1352,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const newExam: ExamEntry = {
         ...exam,
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        updatedAt: exam.updatedAt || new Date().toISOString(),
       };
       setExamDates((prev) => {
         let updated = prev;
@@ -1321,20 +1379,23 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
         return filtered;
       });
+      recordTombstone('examDates', id);
     },
-    [setExamDates]
+    [setExamDates, recordTombstone]
   );
 
   const handleUpdateExam = useCallback(
     (exam: ExamEntry) => {
-      setExamDates((prev) => prev.map((e) => (e.id === exam.id ? exam : e)));
+      const examWithTime = { ...exam, updatedAt: new Date().toISOString() };
+      setExamDates((prev) => prev.map((e) => (e.id === exam.id ? examWithTime : e)));
     },
     [setExamDates]
   );
 
   const handleSetPrimaryExam = useCallback(
     (id: string) => {
-      setExamDates((prev) => prev.map((e) => ({ ...e, isPrimary: e.id === id })));
+      const nowIso = new Date().toISOString();
+      setExamDates((prev) => prev.map((e) => ({ ...e, isPrimary: e.id === id, updatedAt: nowIso })));
     },
     [setExamDates]
   );
@@ -1355,7 +1416,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const handleAddMockExamPreset = useCallback(
     (preset: MockExamPreset) => {
-      setMockExamPresets((prev) => [...prev, preset]);
+      const presetWithTime = { ...preset, updatedAt: preset.updatedAt || new Date().toISOString() };
+      setMockExamPresets((prev) => [...prev, presetWithTime]);
     },
     [setMockExamPresets]
   );
@@ -1363,13 +1425,15 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const handleDeleteMockExamPreset = useCallback(
     (id: string) => {
       setMockExamPresets((prev) => prev.filter((p) => p.id !== id));
+      recordTombstone('mockExamPresets', id);
     },
-    [setMockExamPresets]
+    [setMockExamPresets, recordTombstone]
   );
 
   const handleUpdateMockExamPreset = useCallback(
     (preset: MockExamPreset) => {
-      setMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? preset : p)));
+      const presetWithTime = { ...preset, updatedAt: new Date().toISOString() };
+      setMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? presetWithTime : p)));
     },
     [setMockExamPresets]
   );
@@ -1389,6 +1453,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setExamDates,
       mockExamPresets,
       setMockExamPresets,
+      tombstones,
+      setTombstones,
       dailyQuestionLogs,
       setDailyQuestionLogs,
       primaryExamDate,
@@ -1433,6 +1499,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setExamDates,
       mockExamPresets,
       setMockExamPresets,
+      tombstones,
+      setTombstones,
       dailyQuestionLogs,
       setDailyQuestionLogs,
       primaryExamDate,
