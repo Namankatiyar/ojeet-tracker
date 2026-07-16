@@ -5,11 +5,12 @@ import {
   encodeSyncPayload,
   reconstructCompressedPayload,
   splitCompressedPayload,
+  upgradeSyncPayloadToV2,
 } from './syncCodec';
-import { SyncPayloadV1 } from './syncTypes';
+import { SyncPayloadV1, SYNC_SCHEMA_VERSION } from './syncTypes';
 
 const payload: SyncPayloadV1 = {
-  schemaVersion: 1,
+  schemaVersion: SYNC_SCHEMA_VERSION,
   generatedAt: '2026-03-07T10:00:00.000Z',
   domains: {
     progress: { physics: {}, chemistry: {}, maths: {}, biology: {} },
@@ -89,5 +90,19 @@ describe('syncCodec', () => {
       expect(encoded.chunkCount).toBeGreaterThan(1);
       expect(encoded.chunks.length).toBe(encoded.chunkCount);
     }
+  });
+
+  it('upgrades v1 schema payload to v2 during decompression or upgradeSyncPayloadToV2', async () => {
+    const v1Payload = {
+      ...payload,
+      schemaVersion: 1,
+    };
+    const upgraded = upgradeSyncPayloadToV2(v1Payload);
+    expect(upgraded.schemaVersion).toBe(2);
+    expect(upgraded.domains.progress).toEqual(v1Payload.domains.progress);
+
+    const encodedV1 = await encodeSyncPayload(v1Payload as any);
+    const decompressed = decompressSyncPayload(encodedV1.compressed);
+    expect(decompressed.schemaVersion).toBe(2);
   });
 });
