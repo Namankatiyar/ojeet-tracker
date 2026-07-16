@@ -1,3 +1,23 @@
+# [2.2.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.2...v2.2.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* **planner:** auto-shift overdue tasks on remote sync load and settings toggle ([a551c0d](https://github.com/Namankatiyar/ojeet-tracker/commit/a551c0de2b3c11367b9fd3d4f35320fe28eeb141))
+* **subjects:** fix chapter rename cursor jump and edit lag ([f09e306](https://github.com/Namankatiyar/ojeet-tracker/commit/f09e3060c39fa4d4b36f74fb0406c8da6c6b3662))
+* **sync:** eliminate lost-update window and race conditions ([958ddcc](https://github.com/Namankatiyar/ojeet-tracker/commit/958ddcc5f4a821f81bc7817d58b26ddf480c4fff))
+* **sync:** wire tombstones and content-modified clocks into live sync path ([577dea3](https://github.com/Namankatiyar/ojeet-tracker/commit/577dea395b1c5529c38cd330aca0efc5c9e0f970))
+
+
+### Features
+
+* **core:** stamp updatedAt on item mutations and track tombstones ([bb2ed86](https://github.com/Namankatiyar/ojeet-tracker/commit/bb2ed869454a97795fc13460c9b0445bba604598))
+* **subjects:** implement target goals in ChapterDetailDrawer ([9adcecb](https://github.com/Namankatiyar/ojeet-tracker/commit/9adcecb32dbaf128e9749db1fa85890ec51e3375))
+* **subjects:** show current/target counts in ChapterRow HoverPanel ([883fde5](https://github.com/Namankatiyar/ojeet-tracker/commit/883fde50aef28d3dd5051e03d62a24ce3c12eae7))
+* **sync:** add schema v2 with item timestamps and tombstone tracking ([d129e47](https://github.com/Namankatiyar/ojeet-tracker/commit/d129e4751aaecfaf98630a1227fe2155aeec3a6b))
+* **sync:** implement LWW merge engine and schema v2 upgrade ([41a27a1](https://github.com/Namankatiyar/ojeet-tracker/commit/41a27a19ef122de14f17b6a1f16b49c7e8491ae0))
+* **types:** add targetRevisionCount and targetLectureCount to ChapterDetailProgress ([77ccfbd](https://github.com/Namankatiyar/ojeet-tracker/commit/77ccfbdcd291378d87a45ef3b1a87b9c4dd6c3bd))
+
 ## [2.1.3-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.2...v2.1.3-develop.1) (2026-07-16)
 
 
