@@ -9,7 +9,7 @@ import {
   MockExamPreset,
 } from '../../shared/types';
 import { buildSyncPayload } from './syncPayload';
-import { SyncPayloadV1 } from './syncTypes';
+import { SyncPayloadV1, SyncTombstoneMap } from './syncTypes';
 import { defaultMockExamPresets } from '../../core/context/UserProgressContext';
 
 export const SYNC_LOCAL_KEYS = {
@@ -27,6 +27,8 @@ export const SYNC_LOCAL_KEYS = {
   customColumns: 'jee-tracker-custom-columns',
   excludedColumns: 'jee-tracker-excluded-columns',
   materialOrder: 'jee-tracker-material-order',
+  tombstones: 'jee-tracker-sync-tombstones',
+  domainsModifiedAt: 'jee-tracker-sync-modified-at',
 } as const;
 
 const defaultProgress: AppProgress = {
@@ -90,6 +92,11 @@ export function buildSyncPayloadFromLocalStorage(options?: {
   includeSubjects?: boolean;
   plannerHistoryDays?: number;
   now?: Date;
+  tombstones?: SyncTombstoneMap;
+  domainsModifiedAt?: {
+    settings?: string;
+    subjects?: string;
+  };
 }): SyncPayloadV1 {
   const includeSubjects = options?.includeSubjects ?? true;
 
@@ -112,6 +119,10 @@ export function buildSyncPayloadFromLocalStorage(options?: {
     appVersion: options?.appVersion,
     plannerHistoryDays: options?.plannerHistoryDays,
     now: options?.now,
+    tombstones: options?.tombstones ?? readJson<SyncTombstoneMap>(SYNC_LOCAL_KEYS.tombstones, {}),
+    domainsModifiedAt:
+      options?.domainsModifiedAt ??
+      readJson<{ settings?: string; subjects?: string }>(SYNC_LOCAL_KEYS.domainsModifiedAt, {}),
     subjects: includeSubjects
       ? {
           subjectData: readJson<Record<Subject, SubjectData | null>>(

@@ -90,4 +90,44 @@ describe('syncPayload', () => {
     expect(payload.domains.settings.progressCardSettings.gradeStatus).toBeUndefined();
     expect(payload.domains.settings.progressCardSettings.targetExam).toBeUndefined();
   });
+
+  it('includes tombstones and modifiedAt when present, and excludes them when empty', () => {
+    const payloadWithMetadata = buildSyncPayload({
+      progress: baseProgress,
+      plannerTasks: [],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings,
+      mockExamPresets: [],
+      tombstones: {
+        plannerTasks: [{ id: 'task-1', deletedAt: '2026-03-07T10:00:00.000Z' }],
+      },
+      domainsModifiedAt: {
+        settings: '2026-03-07T10:00:00.000Z',
+      },
+    });
+
+    expect(payloadWithMetadata.domains.tombstones).toEqual({
+      plannerTasks: [{ id: 'task-1', deletedAt: '2026-03-07T10:00:00.000Z' }],
+    });
+    expect(payloadWithMetadata.domains.modifiedAt).toEqual({
+      settings: '2026-03-07T10:00:00.000Z',
+    });
+
+    const payloadWithoutMetadata = buildSyncPayload({
+      progress: baseProgress,
+      plannerTasks: [],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings,
+      mockExamPresets: [],
+      tombstones: {},
+      domainsModifiedAt: {},
+    });
+
+    expect(payloadWithoutMetadata.domains.tombstones).toBeUndefined();
+    expect(payloadWithoutMetadata.domains.modifiedAt).toBeUndefined();
+  });
 });

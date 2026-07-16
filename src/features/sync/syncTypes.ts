@@ -9,11 +9,23 @@ import {
   MockExamPreset,
 } from '../../shared/types';
 
-export const SYNC_SCHEMA_VERSION = 1 as const;
+export const SYNC_SCHEMA_VERSION = 2 as const;
 export const SYNC_DEFAULT_PLANNER_HISTORY_DAYS = 60;
 export const SYNC_MAX_COMPRESSED_BYTES = 512 * 1024;
 
 export type SyncStorageMode = 'inline' | 'chunked';
+
+export interface SyncTombstone {
+  id: string;
+  deletedAt: string;
+}
+
+export interface SyncTombstoneMap {
+  plannerTasks?: SyncTombstone[];
+  mockScores?: SyncTombstone[];
+  examDates?: SyncTombstone[];
+  mockExamPresets?: SyncTombstone[];
+}
 
 export interface SyncedProgressCardSettings {
   userName?: ProgressCardSettings['userName'];
@@ -48,6 +60,11 @@ export interface SyncPayloadV1 {
       excludedColumns: Record<Subject, string[]>;
       materialOrder: Record<Subject, string[]>;
     };
+    tombstones?: SyncTombstoneMap;
+    modifiedAt?: {
+      settings?: string;
+      subjects?: string;
+    };
   };
 }
 
@@ -70,6 +87,11 @@ export interface SyncPayloadInput {
     customColumns: Record<Subject, string[]>;
     excludedColumns: Record<Subject, string[]>;
     materialOrder: Record<Subject, string[]>;
+  };
+  tombstones?: SyncTombstoneMap;
+  domainsModifiedAt?: {
+    settings?: string;
+    subjects?: string;
   };
 }
 
