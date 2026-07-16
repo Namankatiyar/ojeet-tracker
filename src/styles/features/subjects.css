@@ -2149,3 +2149,49 @@ td.material-cell .checkbox-container {
     animation: none;
   }
 }
+
+.target-progress-badge {
+  font-size: var(--text-xs);
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  margin-left: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.target-progress-badge.completed {
+  background: color-mix(in srgb, var(--confidence-green) 15%, transparent);
+  color: var(--confidence-green);
+}
+
+.target-toggle-btn {
+  height: 28px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.target-toggle-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.target-toggle-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.target-sub-row {
+  padding-left: var(--space-4);
+  margin-top: var(--space-2);
+  border-left: 2px solid var(--border);
+}
