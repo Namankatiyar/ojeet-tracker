@@ -59,6 +59,10 @@ const REMOTE_SYNC_META_PREFIX = 'ojeet-remote-sync-';
 const LAST_SUCCESSFUL_PUSH_AT_KEY = `${REMOTE_SYNC_META_PREFIX}last-successful-push-at`;
 const LAST_SYNCED_AT_KEY = `${REMOTE_SYNC_META_PREFIX}last-synced-at`;
 const DOMAIN_EDITED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-edited-at-`;
+// Content-modified-at is distinct from domain-edited-at: it is stamped ONLY on genuine
+// local content changes and is never advanced by a successful sync. This makes it a valid
+// last-write-wins clock for singleton domains (settings, subjects) across devices.
+const DOMAIN_CONTENT_MODIFIED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-content-modified-at-`;
 const REMOTE_CHECKSUM_KEY = `${REMOTE_SYNC_META_PREFIX}remote-checksum`;
 const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-delta-synced-at`;
 const CACHED_AGGREGATE_KEY = `${REMOTE_SYNC_META_PREFIX}cached-aggregate`;
@@ -98,10 +102,31 @@ function setDomainEditedAt(domain: SyncDomain, value: string) {
   writeStorageValue(`${DOMAIN_EDITED_AT_PREFIX}${domain}`, value);
 }
 
-function markAllDomainsAsSynced(syncedAt: string) {
-  writeStorageValue(LAST_SUCCESSFUL_PUSH_AT_KEY, syncedAt);
-  writeStorageValue(LAST_SYNCED_AT_KEY, syncedAt);
-  domainKeys.forEach((domain) => setDomainEditedAt(domain, syncedAt));
+function getDomainContentModifiedAt(domain: SyncDomain): string | null {
+  return readStorageValue(`${DOMAIN_CONTENT_MODIFIED_AT_PREFIX}${domain}`);
+}
+
+function setDomainContentModifiedAt(domain: SyncDomain, value: string) {
+  writeStorageValue(`${DOMAIN_CONTENT_MODIFIED_AT_PREFIX}${domain}`, value);
+}
+
+function markCleanDomainsAsSynced(syncStartTimeIso: string) {
+  const syncStartTimeMs = new Date(syncStartTimeIso).getTime();
+  writeStorageValue(LAST_SUCCESSFUL_PUSH_AT_KEY, syncStartTimeIso);
+  writeStorageValue(LAST_SYNCED_AT_KEY, syncStartTimeIso);
+  domainKeys.forEach((domain) => {
+    const editedAtStr = getDomainEditedAt(domain);
+    if (!editedAtStr) {
+      setDomainEditedAt(domain, syncStartTimeIso);
+    } else {
+      const editedAtMs = new Date(editedAtStr).getTime();
+      if (!Number.isNaN(editedAtMs) && editedAtMs <= syncStartTimeMs) {
+        setDomainEditedAt(domain, syncStartTimeIso);
+      }
+      // If editedAtMs > syncStartTimeMs, local edits occurred while the sync was in flight.
+      // We preserve the newer editedAtStr so the next sync knows to push those local edits!
+    }
+  });
 }
 
 type DeltaCursor = {
@@ -153,6 +178,18 @@ function hasLocalUnsyncedEdit(domain: SyncDomain): boolean {
   return new Date(localEditedAt).getTime() > new Date(lastPushAt).getTime();
 }
 
+// modifiedAt drives LWW for the singleton domains (settings, subjects). We use the
+// content-modified clock (stamped only on genuine edits, never advanced by a sync) so a
+// device that merely synced without editing cannot out-rank one that actually changed data.
+function getDomainsModifiedAtMap(): { settings?: string; subjects?: string } {
+  const map: { settings?: string; subjects?: string } = {};
+  const settings = getDomainContentModifiedAt('settings');
+  if (settings) map.settings = settings;
+  const subjects = getDomainContentModifiedAt('subjects');
+  if (subjects) map.subjects = subjects;
+  return map;
+}
+
 function createLocalPayload(params: {
   progress: ReturnType<typeof useUserProgress>['progress'];
   plannerTasks: ReturnType<typeof useUserProgress>['plannerTasks'];
@@ -162,6 +199,7 @@ function createLocalPayload(params: {
   disableAutoShift: ReturnType<typeof useUserProgress>['disableAutoShift'];
   progressCardSettings: ReturnType<typeof useUserProgress>['progressCardSettings'];
   mockExamPresets: ReturnType<typeof useUserProgress>['mockExamPresets'];
+  tombstones: ReturnType<typeof useUserProgress>['tombstones'];
   subjectData: ReturnType<typeof useSubjectData>['subjectData'];
   customColumns: ReturnType<typeof useSubjectData>['customColumns'];
   excludedColumns: ReturnType<typeof useSubjectData>['excludedColumns'];
@@ -175,6 +213,8 @@ function createLocalPayload(params: {
     disableAutoShift: params.disableAutoShift,
     progressCardSettings: params.progressCardSettings,
     mockExamPresets: params.mockExamPresets,
+    tombstones: params.tombstones,
+    domainsModifiedAt: getDomainsModifiedAtMap(),
     plannerHistoryDays: SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
     appVersion: __APP_VERSION__,
     subjects: {
@@ -292,6 +332,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setProgressCardSettings,
     mockExamPresets,
     setMockExamPresets,
+    tombstones,
+    setTombstones,
   } = useUserProgress();
   const {
     subjectData,
@@ -322,7 +364,14 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [remoteStudyAggregate, setRemoteStudyAggregate] = useState<UserStudyAggregateRow | null>(
     () => readCachedAggregate()
   );
-  const isApplyingRemoteRef = useRef(false);
+  const appliedDomainSnapshotsRef = useRef<Record<SyncDomain, string | null>>({
+    progress: null,
+    plannerTasks: null,
+    mockScores: null,
+    examDates: null,
+    settings: null,
+    subjects: null,
+  });
   const syncInFlightRef = useRef(false);
   const scheduledTimerRef = useRef<number | null>(null);
   const scheduledDueAtRef = useRef<number | null>(null);
@@ -406,7 +455,34 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const applyMergedPayload = useCallback(
     (payload: SyncPayloadV1) => {
-      isApplyingRemoteRef.current = true;
+      appliedDomainSnapshotsRef.current = {
+        progress: JSON.stringify(payload.domains.progress),
+        plannerTasks: JSON.stringify(payload.domains.plannerTasks),
+        mockScores: JSON.stringify(payload.domains.mockScores),
+        examDates: JSON.stringify(payload.domains.examDates),
+        settings: JSON.stringify({
+          disableAutoShift: payload.domains.settings.disableAutoShift,
+          enableAIAgent: payload.domains.settings.enableAIAgent,
+          enableMusicPlayer: payload.domains.settings.enableMusicPlayer,
+          progressCardSettings: {
+            visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
+            showTasks: payload.domains.settings.progressCardSettings.showTasks ?? true,
+          },
+          mockExamPresets:
+            payload.domains.settings.mockExamPresets &&
+            payload.domains.settings.mockExamPresets.length > 0
+              ? payload.domains.settings.mockExamPresets
+              : defaultMockExamPresets,
+        }),
+        subjects: payload.domains.subjects
+          ? JSON.stringify({
+              subjectData: payload.domains.subjects.subjectData,
+              customColumns: payload.domains.subjects.customColumns,
+              excludedColumns: payload.domains.subjects.excludedColumns,
+              materialOrder: payload.domains.subjects.materialOrder,
+            })
+          : null,
+      };
 
       setProgress(payload.domains.progress);
       setPlannerTasks(payload.domains.plannerTasks);
@@ -437,10 +513,18 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setExcludedColumns(payload.domains.subjects.excludedColumns);
         setMaterialOrder(payload.domains.subjects.materialOrder);
       }
-
-      window.setTimeout(() => {
-        isApplyingRemoteRef.current = false;
-      }, 0);
+      // Absorb merged tombstones so this device's next payload carries the union.
+      // Always set (defaulting to empty) so tombstones the merge discarded — because an
+      // item was recreated after deletion — are dropped locally instead of resurfacing.
+      setTombstones(payload.domains.tombstones ?? {});
+      // Adopt the winning singleton modifiedAt clocks so future local payloads don't
+      // regress below the merged timestamp.
+      if (payload.domains.modifiedAt?.settings) {
+        setDomainContentModifiedAt('settings', payload.domains.modifiedAt.settings);
+      }
+      if (payload.domains.modifiedAt?.subjects) {
+        setDomainContentModifiedAt('subjects', payload.domains.modifiedAt.subjects);
+      }
     },
     [
       setCustomColumns,
@@ -455,6 +539,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setProgressCardSettings,
       setMockExamPresets,
       setSubjectData,
+      setTombstones,
     ]
   );
 
@@ -463,6 +548,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (syncInFlightRef.current) return;
 
     syncInFlightRef.current = true;
+    const syncStartTimeIso = new Date().toISOString();
     setStatus('syncing');
     setLastError(null);
 
@@ -476,6 +562,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         disableAutoShift,
         progressCardSettings,
         mockExamPresets,
+        tombstones,
         subjectData,
         customColumns,
         excludedColumns,
@@ -701,7 +788,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
 
       const syncedAt = new Date().toISOString();
-      markAllDomainsAsSynced(syncedAt);
+      markCleanDomainsAsSynced(syncStartTimeIso);
       setLastSyncedAt(syncedAt);
       setStatus('synced');
       retryAttemptRef.current = 0;
@@ -731,6 +818,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setStudySessions,
     // studySessions intentionally omitted — read via latestStudySessionsRef to prevent stale closure.
     subjectData,
+    tombstones,
     user,
   ]);
 
@@ -800,9 +888,18 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (previous === null) return;
       if (previous === current) return;
-      if (isApplyingRemoteRef.current) return;
+      if (
+        appliedDomainSnapshotsRef.current[domain] !== null &&
+        appliedDomainSnapshotsRef.current[domain] === current
+      ) {
+        appliedDomainSnapshotsRef.current[domain] = null;
+        return;
+      }
 
       setDomainEditedAt(domain, nowIso);
+      // Genuine local content change (not a remote application): stamp the
+      // content-modified clock so settings/subjects singleton LWW has a truthful timestamp.
+      setDomainContentModifiedAt(domain, nowIso);
     });
   }, [domainSnapshots]);
 
@@ -822,8 +919,6 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const serialized = JSON.stringify(studySessions);
     const previous = studySessionsSnapshotRef.current;
     studySessionsSnapshotRef.current = serialized;
-
-    if (isApplyingRemoteRef.current) return;
 
     if (skipNextSessionsSyncRef.current) {
       skipNextSessionsSyncRef.current = false;

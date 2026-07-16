@@ -75,11 +75,19 @@ export function buildSyncPayload(input: SyncPayloadInput): SyncPayloadV1 {
         mockExamPresets: input.mockExamPresets || [],
       },
       subjects: input.subjects,
+      tombstones: input.tombstones,
+      modifiedAt: input.domainsModifiedAt,
     },
   };
 
   if (!input.subjects) {
     delete payload.domains.subjects;
+  }
+  if (!input.tombstones || Object.keys(input.tombstones).length === 0) {
+    delete payload.domains.tombstones;
+  }
+  if (!input.domainsModifiedAt || Object.keys(input.domainsModifiedAt).length === 0) {
+    delete payload.domains.modifiedAt;
   }
 
   return payload;

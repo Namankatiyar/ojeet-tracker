@@ -104,6 +104,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 
@@ -133,6 +135,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 
@@ -158,6 +162,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 
@@ -181,6 +187,8 @@ describe('useProfileSync Hook', () => {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
         update: updateMock,
         upsert: upsertMock,
         then: vi.fn((onFulfilled) => onFulfilled({ error: null })),
@@ -271,6 +279,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
       update: updateMock,
       upsert: upsertMock,
       then: vi.fn((onFulfilled) => onFulfilled({ error: null })),
@@ -318,6 +328,8 @@ describe('useProfileSync Hook', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
     vi.mocked(supabase!.from).mockImplementation((table) => selectMock(table));
 

@@ -4,6 +4,7 @@ import {
   SyncChunkRow,
   SyncPayloadV1,
   SYNC_MAX_COMPRESSED_BYTES,
+  SYNC_SCHEMA_VERSION,
 } from './syncTypes';
 
 const encoder = new TextEncoder();
@@ -19,6 +20,31 @@ export function compressSyncPayload(payload: SyncPayloadV1): string {
     throw new Error('Failed to compress sync payload.');
   }
   return compressed;
+}
+
+export function upgradeSyncPayloadToV2(payload: any): SyncPayloadV1 {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Invalid sync payload format.');
+  }
+
+  const upgraded: SyncPayloadV1 = {
+    ...payload,
+    schemaVersion: SYNC_SCHEMA_VERSION,
+    domains: {
+      ...payload.domains,
+      tombstones: payload.domains?.tombstones,
+      modifiedAt: payload.domains?.modifiedAt,
+    },
+  };
+
+  if (!upgraded.domains.tombstones) {
+    delete upgraded.domains.tombstones;
+  }
+  if (!upgraded.domains.modifiedAt) {
+    delete upgraded.domains.modifiedAt;
+  }
+
+  return upgraded;
 }
 
 export function decompressSyncPayload(compressedPayload: string): SyncPayloadV1 {
@@ -38,7 +64,7 @@ export function decompressSyncPayload(compressedPayload: string): SyncPayloadV1 
     throw new Error('Invalid sync payload format.');
   }
 
-  return parsed as SyncPayloadV1;
+  return upgradeSyncPayloadToV2(parsed);
 }
 
 function fallbackFnv1aHex(input: string): string {

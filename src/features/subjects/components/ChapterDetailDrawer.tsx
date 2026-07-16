@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Minus, Plus, X, Check } from 'lucide-react';
+import { Calendar, ChevronRight, Minus, Plus, X, Check, Target } from 'lucide-react';
 import {
   Chapter,
   ChapterDetailProgress,
@@ -245,6 +245,16 @@ export function ChapterDetailDrawer({
   const detail = progress?.detail;
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [expandedSubtopics, setExpandedSubtopics] = useState<Set<string>>(new Set());
+  const [isRevisionTargetOpen, setIsRevisionTargetOpen] = useState(false);
+  const [isLectureTargetOpen, setIsLectureTargetOpen] = useState(false);
+
+  const currentRevision = detail?.revisionCount || 0;
+  const targetRevision = detail?.targetRevisionCount || 0;
+  const isRevisionCompleted = targetRevision > 0 && currentRevision >= targetRevision;
+
+  const currentLecture = detail?.lectureCount || 0;
+  const targetLecture = detail?.targetLectureCount || 0;
+  const isLectureCompleted = targetLecture > 0 && currentLecture >= targetLecture;
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
 
   useEffect(() => {
@@ -423,7 +433,14 @@ export function ChapterDetailDrawer({
                 </div>
 
                 <div className="drawer-field row-field">
-                  <label>Revision Count</label>
+                  <label style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    Revision Count
+                    {detail?.targetRevisionCount !== undefined && detail.targetRevisionCount > 0 && (
+                      <span className={`target-progress-badge ${isRevisionCompleted ? 'completed' : ''}`}>
+                        {currentRevision} / {targetRevision} {isRevisionCompleted ? '🎉' : 'done'}
+                      </span>
+                    )}
+                  </label>
                   <div className="stepper-wrapper-with-reset">
                     <div className="modern-stepper">
                       <button
@@ -460,11 +477,80 @@ export function ChapterDetailDrawer({
                         <Plus size={14} />
                       </button>
                     </div>
+                    <button
+                      className={`secondary-btn target-toggle-btn ${targetRevision > 0 ? 'active' : ''}`}
+                      onClick={() => setIsRevisionTargetOpen(!isRevisionTargetOpen)}
+                      type="button"
+                    >
+                      <Target size={14} />
+                      {targetRevision > 0 ? `Goal: ${targetRevision}` : 'Target'}
+                    </button>
                   </div>
                 </div>
 
+                <AnimatePresence>
+                  {isRevisionTargetOpen && (
+                    <motion.div
+                      className="target-sub-row"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ type: 'spring' as const, duration: 0.25, bounce: 0 }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div className="drawer-field row-field" style={{ border: 'none', padding: 0 }}>
+                        <label style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>Target Revisions</label>
+                        <div className="stepper-wrapper-with-reset">
+                          <div className="modern-stepper modern-stepper--compact">
+                            <button
+                              onClick={() =>
+                                onUpdateDetail(chapter.serial, {
+                                  targetRevisionCount: targetRevision <= 1 ? undefined : targetRevision - 1,
+                                })
+                              }
+                              disabled={targetRevision <= 0}
+                              aria-label="Decrease target revisions"
+                              type="button"
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <input
+                              type="number"
+                              value={targetRevision}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                onUpdateDetail(chapter.serial, { targetRevisionCount: Math.max(0, val) });
+                              }}
+                              min="0"
+                              aria-label="Target revision count"
+                            />
+                            <button
+                              onClick={() =>
+                                onUpdateDetail(chapter.serial, {
+                                  targetRevisionCount: targetRevision + 1,
+                                })
+                              }
+                              aria-label="Increase target revisions"
+                              type="button"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="drawer-field row-field">
-                  <label>Lecture Count</label>
+                  <label style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    Lecture Count
+                    {detail?.targetLectureCount !== undefined && detail.targetLectureCount > 0 && (
+                      <span className={`target-progress-badge ${isLectureCompleted ? 'completed' : ''}`}>
+                        {currentLecture} / {targetLecture} {isLectureCompleted ? '🎉' : 'done'}
+                      </span>
+                    )}
+                  </label>
                   <div className="stepper-wrapper-with-reset">
                     <div className="modern-stepper">
                       <button
@@ -501,8 +587,70 @@ export function ChapterDetailDrawer({
                         <Plus size={14} />
                       </button>
                     </div>
+                    <button
+                      className={`secondary-btn target-toggle-btn ${targetLecture > 0 ? 'active' : ''}`}
+                      onClick={() => setIsLectureTargetOpen(!isLectureTargetOpen)}
+                      type="button"
+                    >
+                      <Target size={14} />
+                      {targetLecture > 0 ? `Goal: ${targetLecture}` : 'Target'}
+                    </button>
                   </div>
                 </div>
+
+                <AnimatePresence>
+                  {isLectureTargetOpen && (
+                    <motion.div
+                      className="target-sub-row"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ type: 'spring' as const, duration: 0.25, bounce: 0 }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div className="drawer-field row-field" style={{ border: 'none', padding: 0 }}>
+                        <label style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>Target Lectures</label>
+                        <div className="stepper-wrapper-with-reset">
+                          <div className="modern-stepper modern-stepper--compact">
+                            <button
+                              onClick={() =>
+                                onUpdateDetail(chapter.serial, {
+                                  targetLectureCount: targetLecture <= 1 ? undefined : targetLecture - 1,
+                                })
+                              }
+                              disabled={targetLecture <= 0}
+                              aria-label="Decrease target lectures"
+                              type="button"
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <input
+                              type="number"
+                              value={targetLecture}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                onUpdateDetail(chapter.serial, { targetLectureCount: Math.max(0, val) });
+                              }}
+                              min="0"
+                              aria-label="Target lecture count"
+                            />
+                            <button
+                              onClick={() =>
+                                onUpdateDetail(chapter.serial, {
+                                  targetLectureCount: targetLecture + 1,
+                                })
+                              }
+                              aria-label="Increase target lectures"
+                              type="button"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 

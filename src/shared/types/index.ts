@@ -21,6 +21,7 @@ export interface ChapterProgress {
   priority: Priority;
   detail?: ChapterDetailProgress;
   subtopics?: Record<string, SubtopicState>;
+  updatedAt?: string;
 }
 
 export type ConfidenceLevel = 1 | 2 | 3 | 4 | 5;
@@ -30,7 +31,9 @@ export interface ChapterDetailProgress {
   confidence?: ConfidenceLevel;
   lastRevised?: string;
   revisionCount?: number;
+  targetRevisionCount?: number;
   lectureCount?: number;
+  targetLectureCount?: number;
   notes?: string;
   revisionHistory?: Array<{
     date: string;
@@ -77,6 +80,7 @@ export interface PlannerTask {
   questions?: number; // Questions to attempt
   isLecture?: boolean;
   isRevision?: boolean;
+  updatedAt?: string;
 }
 
 export interface StudySession {
@@ -116,6 +120,7 @@ export interface MockExamPreset {
     biology?: boolean;
   };
   targetScore?: number;
+  updatedAt?: string;
 }
 
 export interface MockScore {
@@ -146,6 +151,7 @@ export interface MockScore {
     subtopicName: string;
   }>;
   footnotes?: string;
+  updatedAt?: string;
 }
 
 export interface ExamEntry {
@@ -155,6 +161,7 @@ export interface ExamEntry {
   isPrimary: boolean; // The one shown in the main countdown display
   isFavourite?: boolean; // NEW — drives dashboard progress scoping
   syllabus?: ExamSyllabus; // NEW — absent means full syllabus
+  updatedAt?: string;
 }
 
 // Chapter serials selected per subject. A subject key that is absent OR maps to an
