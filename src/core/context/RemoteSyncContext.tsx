@@ -98,10 +98,23 @@ function setDomainEditedAt(domain: SyncDomain, value: string) {
   writeStorageValue(`${DOMAIN_EDITED_AT_PREFIX}${domain}`, value);
 }
 
-function markAllDomainsAsSynced(syncedAt: string) {
-  writeStorageValue(LAST_SUCCESSFUL_PUSH_AT_KEY, syncedAt);
-  writeStorageValue(LAST_SYNCED_AT_KEY, syncedAt);
-  domainKeys.forEach((domain) => setDomainEditedAt(domain, syncedAt));
+function markCleanDomainsAsSynced(syncStartTimeIso: string) {
+  const syncStartTimeMs = new Date(syncStartTimeIso).getTime();
+  writeStorageValue(LAST_SUCCESSFUL_PUSH_AT_KEY, syncStartTimeIso);
+  writeStorageValue(LAST_SYNCED_AT_KEY, syncStartTimeIso);
+  domainKeys.forEach((domain) => {
+    const editedAtStr = getDomainEditedAt(domain);
+    if (!editedAtStr) {
+      setDomainEditedAt(domain, syncStartTimeIso);
+    } else {
+      const editedAtMs = new Date(editedAtStr).getTime();
+      if (!Number.isNaN(editedAtMs) && editedAtMs <= syncStartTimeMs) {
+        setDomainEditedAt(domain, syncStartTimeIso);
+      }
+      // If editedAtMs > syncStartTimeMs, local edits occurred while the sync was in flight.
+      // We preserve the newer editedAtStr so the next sync knows to push those local edits!
+    }
+  });
 }
 
 type DeltaCursor = {
@@ -322,7 +335,14 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [remoteStudyAggregate, setRemoteStudyAggregate] = useState<UserStudyAggregateRow | null>(
     () => readCachedAggregate()
   );
-  const isApplyingRemoteRef = useRef(false);
+  const appliedDomainSnapshotsRef = useRef<Record<SyncDomain, string | null>>({
+    progress: null,
+    plannerTasks: null,
+    mockScores: null,
+    examDates: null,
+    settings: null,
+    subjects: null,
+  });
   const syncInFlightRef = useRef(false);
   const scheduledTimerRef = useRef<number | null>(null);
   const scheduledDueAtRef = useRef<number | null>(null);
@@ -406,7 +426,34 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const applyMergedPayload = useCallback(
     (payload: SyncPayloadV1) => {
-      isApplyingRemoteRef.current = true;
+      appliedDomainSnapshotsRef.current = {
+        progress: JSON.stringify(payload.domains.progress),
+        plannerTasks: JSON.stringify(payload.domains.plannerTasks),
+        mockScores: JSON.stringify(payload.domains.mockScores),
+        examDates: JSON.stringify(payload.domains.examDates),
+        settings: JSON.stringify({
+          disableAutoShift: payload.domains.settings.disableAutoShift,
+          enableAIAgent: payload.domains.settings.enableAIAgent,
+          enableMusicPlayer: payload.domains.settings.enableMusicPlayer,
+          progressCardSettings: {
+            visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
+            showTasks: payload.domains.settings.progressCardSettings.showTasks ?? true,
+          },
+          mockExamPresets:
+            payload.domains.settings.mockExamPresets &&
+            payload.domains.settings.mockExamPresets.length > 0
+              ? payload.domains.settings.mockExamPresets
+              : defaultMockExamPresets,
+        }),
+        subjects: payload.domains.subjects
+          ? JSON.stringify({
+              subjectData: payload.domains.subjects.subjectData,
+              customColumns: payload.domains.subjects.customColumns,
+              excludedColumns: payload.domains.subjects.excludedColumns,
+              materialOrder: payload.domains.subjects.materialOrder,
+            })
+          : null,
+      };
 
       setProgress(payload.domains.progress);
       setPlannerTasks(payload.domains.plannerTasks);
@@ -437,10 +484,6 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setExcludedColumns(payload.domains.subjects.excludedColumns);
         setMaterialOrder(payload.domains.subjects.materialOrder);
       }
-
-      window.setTimeout(() => {
-        isApplyingRemoteRef.current = false;
-      }, 0);
     },
     [
       setCustomColumns,
@@ -463,6 +506,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (syncInFlightRef.current) return;
 
     syncInFlightRef.current = true;
+    const syncStartTimeIso = new Date().toISOString();
     setStatus('syncing');
     setLastError(null);
 
@@ -701,7 +745,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
 
       const syncedAt = new Date().toISOString();
-      markAllDomainsAsSynced(syncedAt);
+      markCleanDomainsAsSynced(syncStartTimeIso);
       setLastSyncedAt(syncedAt);
       setStatus('synced');
       retryAttemptRef.current = 0;
@@ -800,7 +844,13 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (previous === null) return;
       if (previous === current) return;
-      if (isApplyingRemoteRef.current) return;
+      if (
+        appliedDomainSnapshotsRef.current[domain] !== null &&
+        appliedDomainSnapshotsRef.current[domain] === current
+      ) {
+        appliedDomainSnapshotsRef.current[domain] = null;
+        return;
+      }
 
       setDomainEditedAt(domain, nowIso);
     });
@@ -822,8 +872,6 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const serialized = JSON.stringify(studySessions);
     const previous = studySessionsSnapshotRef.current;
     studySessionsSnapshotRef.current = serialized;
-
-    if (isApplyingRemoteRef.current) return;
 
     if (skipNextSessionsSyncRef.current) {
       skipNextSessionsSyncRef.current = false;
