@@ -30,7 +30,9 @@ export interface ChapterDetailProgress {
   confidence?: ConfidenceLevel;
   lastRevised?: string;
   revisionCount?: number;
+  targetRevisionCount?: number;
   lectureCount?: number;
+  targetLectureCount?: number;
   notes?: string;
   revisionHistory?: Array<{
     date: string;
