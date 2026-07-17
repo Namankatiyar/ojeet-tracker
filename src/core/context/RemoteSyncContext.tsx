@@ -786,6 +786,19 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         // The upsert has been removed from the hot loop to save egress.
         // It is now handled by the beforeunload/throttled sync mechanism below.
         setRemoteStudyAggregate(mergedAggregateRow);
+        writeCachedAggregate(mergedAggregateRow);
+
+        try {
+          const { updated_at, ...upsertPayload } = mergedAggregateRow;
+          const { error } = await supabase
+            .from('user_study_aggregate')
+            .upsert(upsertPayload, { onConflict: 'user_id' });
+          if (!error) {
+            lastPushedAggregateRef.current = JSON.stringify(mergedAggregateRow);
+          }
+        } catch (err) {
+          console.warn('Failed to upsert aggregate during sync', err);
+        }
       }
 
       const syncedAt = new Date().toISOString();
@@ -1007,12 +1020,20 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        pushAggregate();
+      }
+    };
+
     const intervalId = setInterval(pushAggregate, 3600000); // Once per hour
     window.addEventListener('beforeunload', pushAggregate);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearInterval(intervalId);
       window.removeEventListener('beforeunload', pushAggregate);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [user, isConfigured]);
 
