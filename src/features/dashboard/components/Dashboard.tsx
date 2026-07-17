@@ -390,7 +390,7 @@ export function Dashboard({
         else if (subject === 'maths') remoteSeconds = remoteStudyAggregate.total_seconds_maths;
       }
 
-      const totalSeconds = remoteSeconds ?? localSeconds;
+      const totalSeconds = Math.max(localSeconds, remoteSeconds ?? 0);
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
       return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
@@ -460,7 +460,7 @@ export function Dashboard({
 
   const totalStudyTimeStr = useMemo(() => {
     const localSeconds = studySessions.reduce((acc, s) => acc + s.duration, 0);
-    const totalSeconds = remoteStudyAggregate?.total_seconds_overall ?? localSeconds;
+    const totalSeconds = Math.max(localSeconds, remoteStudyAggregate?.total_seconds_overall ?? 0);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     return hours > 0 ? `${hours}h ${minutes}m` : minutes > 0 ? `${minutes}m` : '0m';

@@ -26,6 +26,9 @@ import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
 import { UserAvatar } from '../ui/Avatar';
 import { ProgressCardModal } from '../ui/ProgressCardModal';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { CloudSyncIndicator } from './CloudSyncIndicator';
+import { CloudSyncPromptModal } from '../../../features/sync/CloudSyncPromptModal';
 
 interface HeaderProps {
   currentView:
@@ -130,9 +133,22 @@ export function Header({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSubjectsMenuOpen, setIsSubjectsMenuOpen] = useState(false);
   const [isProgressCardOpen, setIsProgressCardOpen] = useState(false);
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const { signInWithGoogle } = useRemoteAuth();
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const subjectsMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleSignIn = async () => {
+    setIsSigningIn(true);
+    try {
+      await signInWithGoogle();
+    } finally {
+      setIsSigningIn(false);
+      setIsSignInModalOpen(false);
+    }
+  };
 
   // Manage body class for drawer open state so external FABs can adapt
   useEffect(() => {
@@ -261,6 +277,8 @@ export function Header({
         <div className="header-actions">
           {/* Desktop Actions */}
           <div className="desktop-actions">
+            <CloudSyncIndicator onOpenSignIn={() => setIsSignInModalOpen(true)} />
+
             <div className="color-picker-container" ref={colorPickerRef}>
               <button
                 className="color-picker-toggle"
@@ -366,6 +384,10 @@ export function Header({
               </span>
             </button>
           </div>
+
+          <span className="mobile-header-sync">
+            <CloudSyncIndicator compact onOpenSignIn={() => setIsSignInModalOpen(true)} />
+          </span>
 
           {/* Tablet/Desktop Menu Toggle (Visible only between 48rem and 64rem) */}
           <button
@@ -536,6 +558,15 @@ export function Header({
               </div>
 
               <div className="mobile-sidebar-body">
+                <div className="mobile-sidebar-sync-row">
+                  <CloudSyncIndicator
+                    showLabel={true}
+                    onOpenSignIn={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsSignInModalOpen(true);
+                    }}
+                  />
+                </div>
                 <div className="mobile-sidebar-section">
                   <span className="mobile-sidebar-label">Navigation</span>
                   <div className="mobile-sidebar-list">
@@ -739,6 +770,12 @@ export function Header({
         chemistryProgress={chemistryProgress}
         mathsProgress={mathsProgress}
         examDate={examDate}
+      />
+      <CloudSyncPromptModal
+        isOpen={isSignInModalOpen}
+        onClose={() => setIsSignInModalOpen(false)}
+        onSignIn={handleSignIn}
+        isBusy={isSigningIn}
       />
     </header>
   );
