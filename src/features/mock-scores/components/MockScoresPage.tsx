@@ -39,6 +39,7 @@ import {
   getMockExamType,
   getMockSubjectTotals,
   getMockDefaultMaxMarks,
+  filterMockScoresByMode,
 } from '../../../shared/utils/mockScores';
 import { getChartOptions } from '../../dashboard/utils/analyticsUtils';
 
@@ -65,7 +66,10 @@ export function MockScoresPage() {
     handleEditMockScore,
     handleDeleteMockScore,
     handleUpdateMockExamPreset,
+    examMode,
   } = useUserProgress();
+
+  const filteredScores = filterMockScoresByMode(mockScores, examMode);
 
   const [selectedExamType, setSelectedExamType] = useState<MockExamType | 'all'>('all');
   const [activeTab, setActiveTab] = useState<'trend' | 'share' | 'time' | 'accuracy'>('trend');
@@ -79,7 +83,7 @@ export function MockScoresPage() {
   );
 
   const { sortedScores, summaryStats, chartData, weakAreasSummary, diagnosticNotes } =
-    useDetailedMockAnalytics(mockScores, selectedExamType, mockExamPresets);
+    useDetailedMockAnalytics(filteredScores, selectedExamType, mockExamPresets);
 
   const maxMarksForChart = useMemo(() => {
     if (sortedScores.length === 0) return 300;
@@ -342,8 +346,8 @@ export function MockScoresPage() {
             </span>
           </span>
           <span className="mock-stat-sub">
-            P:{summaryStats.subjectAverages.physics} C:{summaryStats.subjectAverages.chemistry} M:
-            {summaryStats.subjectAverages.maths}
+            P:{summaryStats.subjectAverages.physics} C:{summaryStats.subjectAverages.chemistry} {examMode === 'neet' ? 'B' : 'M'}:
+            {examMode === 'neet' ? (summaryStats.subjectAverages as any).biology : summaryStats.subjectAverages.maths}
           </span>
         </div>
 
@@ -618,7 +622,7 @@ export function MockScoresPage() {
               <th>Type</th>
               <th>Physics</th>
               <th>Chemistry</th>
-              <th>Maths</th>
+              <th>{examMode === 'neet' ? 'Biology' : 'Maths'}</th>
               <th>Total</th>
               <th>%</th>
               <th style={{ textAlign: 'right' }}>Actions</th>
@@ -659,7 +663,9 @@ export function MockScoresPage() {
                     </td>
                     <td className="mock-table-physics">{sub.physics}</td>
                     <td className="mock-table-chemistry">{sub.chemistry}</td>
-                    <td className="mock-table-maths">{sub.maths}</td>
+                    <td className={examMode === 'neet' ? 'mock-table-biology' : 'mock-table-maths'}>
+                      {examMode === 'neet' ? sub.biology : sub.maths}
+                    </td>
                     <td style={{ fontWeight: 700 }}>
                       {total}{' '}
                       <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>

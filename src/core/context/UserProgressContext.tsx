@@ -1354,12 +1354,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     (score: Omit<MockScore, 'id'>) => {
       const newScore: MockScore = {
         ...score,
+        examMode: score.examMode ?? examMode, // stamp active mode if not already set
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         updatedAt: score.updatedAt || new Date().toISOString(),
       };
       setMockScores((prev) => [...prev, newScore]);
     },
-    [setMockScores]
+    [setMockScores, examMode]
   );
 
   const handleDeleteMockScore = useCallback(

@@ -55,6 +55,7 @@ export const getMockSubjectTotals = (
       physics: score.physicsMarks,
       chemistry: score.chemistryMarks,
       maths: score.mathsMarks,
+      biology: score.biologyMarks,
     };
   }
 
@@ -65,6 +66,7 @@ export const getMockSubjectTotals = (
     physics: paper1.physics + paper2.physics,
     chemistry: paper1.chemistry + paper2.chemistry,
     maths: paper1.maths + paper2.maths,
+    biology: (paper1.biology ?? 0) + (paper2.biology ?? 0),
   };
 };
 
@@ -88,3 +90,14 @@ export const getMockPercentage = (score: MockScore, presets: MockExamPreset[] = 
   if (maxMarks <= 0) return 0;
   return (getMockTotalMarks(score, preset) / maxMarks) * 100;
 };
+
+export function filterMockScoresByMode(
+  scores: MockScore[],
+  mode: 'jee' | 'neet'
+): MockScore[] {
+  return scores.filter((s) =>
+    mode === 'neet'
+      ? s.examMode === 'neet'
+      : s.examMode !== 'neet' // includes undefined (legacy) and 'jee'
+  );
+}

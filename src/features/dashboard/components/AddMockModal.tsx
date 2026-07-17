@@ -7,6 +7,7 @@ import { getMockPercentage } from '../../../shared/utils/mockScores';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { ManageMockPresetsModal } from './ManageMockPresetsModal';
+import { getActiveSubjects, SUBJECT_META } from '../../../shared/config/subjects';
 
 interface AddMockModalProps {
   defaultExamType: MockExamType;
@@ -17,9 +18,7 @@ interface AddMockModalProps {
 }
 
 const createEmptySubjectMarks = (): MockSubjectMarks => ({
-  physics: 0,
-  chemistry: 0,
-  maths: 0,
+  physics: 0, chemistry: 0, maths: 0, biology: 0,
 });
 
 const NumberInput = ({
@@ -61,7 +60,7 @@ const NumberInput = ({
 };
 
 export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onClose }: AddMockModalProps) {
-  const { mockExamPresets } = useUserProgress();
+  const { mockExamPresets, examMode } = useUserProgress();
   const { mergedSubjectData } = useSubjectData();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isManagePresetsOpen, setIsManagePresetsOpen] = useState(false);
@@ -89,6 +88,7 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
         physics: initialScore.physicsMarks,
         chemistry: initialScore.chemistryMarks,
         maths: initialScore.mathsMarks,
+        biology: initialScore.biologyMarks,
       };
     }
     return createEmptySubjectMarks();
@@ -206,19 +206,22 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
   const enabledSubjects = activePreset.enabledSubjects || {
     physics: true,
     chemistry: true,
-    maths: true,
+    maths: examMode !== 'neet',
+    biology: examMode === 'neet',
   };
   const singlePaperMaxMarks =
     (enabledSubjects.physics ? sMax.physics : 0) +
     (enabledSubjects.chemistry ? sMax.chemistry : 0) +
-    (enabledSubjects.maths ? sMax.maths : 0);
+    (enabledSubjects.maths ? sMax.maths : 0) +
+    (enabledSubjects.biology ? (sMax.biology ?? 0) : 0);
   const totalMaxMarks = singlePaperMaxMarks * activePreset.paperCount;
 
   const getEnabledSubjectTotal = (marks: MockSubjectMarks) => {
     return (
       (enabledSubjects.physics ? marks.physics : 0) +
       (enabledSubjects.chemistry ? marks.chemistry : 0) +
-      (enabledSubjects.maths ? marks.maths : 0)
+      (enabledSubjects.maths ? marks.maths : 0) +
+      (enabledSubjects.biology ? (marks.biology ?? 0) : 0)
     );
   };
 
@@ -228,6 +231,7 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
     physics: paper1Marks.physics + paper2Marks.physics,
     chemistry: paper1Marks.chemistry + paper2Marks.chemistry,
     maths: paper1Marks.maths + paper2Marks.maths,
+    biology: (paper1Marks.biology ?? 0) + (paper2Marks.biology ?? 0),
   };
   const combinedTotalMarks = paper1Total + (isDoublePaper ? paper2Total : 0);
 
@@ -248,6 +252,7 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
       physicsMarks: enabledSubjects.physics ? combinedTotals.physics : 0,
       chemistryMarks: enabledSubjects.chemistry ? combinedTotals.chemistry : 0,
       mathsMarks: enabledSubjects.maths ? combinedTotals.maths : 0,
+      biologyMarks: enabledSubjects.biology ? combinedTotals.biology : undefined,
       totalMarks: combinedTotalMarks,
       maxMarks: totalMaxMarks,
       attemptedQuestions: showAdvanced ? attemptedQuestions : undefined,
@@ -308,6 +313,17 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
             max={maxLimit ? maxLimit.maths : 500}
             value={values.maths}
             onChange={(val) => onChange((current) => ({ ...current, maths: val }))}
+          />
+        </div>
+      )}
+      {enabledSubjects.biology && (
+        <div className="form-group">
+          <label className="text-biology">Biology</label>
+          <NumberInput
+            min={minLimit}
+            max={maxLimit ? (maxLimit.biology ?? 500) : 500}
+            value={values.biology ?? 0}
+            onChange={(val) => onChange((current) => ({ ...current, biology: val }))}
           />
         </div>
       )}
@@ -474,9 +490,11 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
                       setSelectedSubtopic('');
                     }}
                   >
-                    <option value="physics">Physics</option>
-                    <option value="chemistry">Chemistry</option>
-                    <option value="maths">Maths</option>
+                    {getActiveSubjects(examMode).map((sub) => (
+                      <option key={sub} value={sub}>
+                        {SUBJECT_META[sub].label}
+                      </option>
+                    ))}
                   </select>
 
                   <select
