@@ -235,6 +235,190 @@ html[data-theme^='dark-'] .nav-item.active {
   background: var(--bg-tertiary);
 }
 
+/* CloudSync Indicator Icon Button (aligns exactly in height/width with color picker and theme toggles) */
+.cloud-sync-indicator-btn {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.cloud-sync-indicator-btn.compact {
+  width: 40px;
+  height: 40px;
+}
+
+.cloud-sync-indicator-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  transform: scale(1.05);
+}
+
+html[data-theme^='dark-'] .cloud-sync-indicator-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cloud-sync-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.cloud-sync-icon {
+  transition: color var(--transition-fast);
+}
+
+.cloud-sync-indicator-btn.state-error .cloud-sync-icon {
+  color: #e11d48;
+}
+
+.cloud-sync-indicator-btn.state-syncing .cloud-sync-icon {
+  color: #f59e0b;
+}
+
+/* Status Dot Badge - positioned below the cloud right curve for clean coherence */
+.cloud-sync-status-dot {
+  position: absolute;
+  bottom: -3px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+.cloud-sync-indicator-btn:hover .cloud-sync-status-dot {
+  border-color: var(--bg-secondary);
+}
+
+.cloud-sync-status-dot.dot-offline {
+  background-color: #64748b;
+}
+
+.cloud-sync-status-dot.dot-red {
+  background-color: #e11d48;
+  box-shadow: 0 0 6px rgba(225, 29, 72, 0.6);
+  animation: sync-error-shake 2s infinite ease-in-out;
+}
+
+@keyframes sync-error-shake {
+  0%, 90%, 100% {
+    transform: scale(1);
+  }
+  93% {
+    transform: scale(1.15) rotate(10deg);
+  }
+  96% {
+    transform: scale(1.15) rotate(-10deg);
+  }
+}
+
+.cloud-sync-status-dot.dot-green {
+  background-color: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.cloud-sync-status-dot.dot-yellow-static {
+  background-color: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+}
+
+.cloud-sync-status-dot.dot-yellow-blinking {
+  background-color: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+  animation: sync-blink-pulse 1.2s infinite ease-in-out;
+}
+
+.syncing-ring {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  border: 1.5px solid #f59e0b;
+  animation: sync-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes sync-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes sync-blink-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+.mobile-header-sync {
+  display: none;
+}
+
+@media (max-width: 64rem) {
+  .mobile-header-sync {
+    display: inline-flex;
+  }
+}
+
+.mobile-sidebar-sync-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+/* Sidebar wrapper when showLabel is true */
+.cloud-sync-labeled-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.cloud-sync-labeled-wrapper:hover {
+  background: var(--bg-secondary);
+}
+
+.cloud-sync-label-text {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 /* Responsive Layout */
 .mobile-bottom-nav {
   display: none;

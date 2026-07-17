@@ -34,6 +34,7 @@ interface RemoteSyncContextType {
   lastError: string | null;
   remoteStudyAggregate: UserStudyAggregateRow | null;
   syncNow: () => Promise<void>;
+  hasPendingChanges: () => boolean;
 }
 
 interface UserSyncStateRow {
@@ -1018,6 +1019,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Focus/visibility-triggered syncs intentionally removed.
   // App follows a time-based polling model: sync on start, then every 10 minutes.
 
+  const checkPendingChanges = useCallback(() => {
+    const hasDomainEdits = domainKeys.some((domain) => hasLocalUnsyncedEdit(domain));
+    const hasPendingLogs = pendingSessionLogsRef.current.length > 0;
+    return hasDomainEdits || hasPendingLogs;
+  }, []);
+
   const value = useMemo<RemoteSyncContextType>(
     () => ({
       status,
@@ -1025,8 +1032,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       lastError,
       remoteStudyAggregate,
       syncNow,
+      hasPendingChanges: checkPendingChanges,
     }),
-    [lastError, lastSyncedAt, remoteStudyAggregate, status, syncNow]
+    [lastError, lastSyncedAt, remoteStudyAggregate, status, syncNow, checkPendingChanges]
   );
 
   return <RemoteSyncContext.Provider value={value}>{children}</RemoteSyncContext.Provider>;
