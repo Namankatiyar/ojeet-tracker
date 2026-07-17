@@ -387,6 +387,11 @@ html[data-theme='light'] .mock-tab-btn:hover {
   color: var(--color-maths);
 }
 
+.weak-area-tag.biology {
+  background: color-mix(in srgb, var(--color-biology) 15%, transparent);
+  color: var(--color-biology);
+}
+
 .weak-area-chapter {
   font-weight: 500;
 }
@@ -491,6 +496,10 @@ html[data-theme='light'] .mock-tab-btn:hover {
 
 .mock-table-maths {
   color: var(--color-maths);
+}
+
+.mock-table-biology {
+  color: var(--color-biology);
 }
 
 .mock-action-btn {

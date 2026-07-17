@@ -199,6 +199,10 @@
   background: color-mix(in srgb, var(--maths), transparent 85%);
   color: var(--maths);
 }
+.badge-biology {
+  background: color-mix(in srgb, var(--biology), transparent 85%);
+  color: var(--biology);
+}
 
 /* Column 2: Details */
 .nudge-col-details {
@@ -1042,6 +1046,9 @@
 .dh-weekly-bar-seg.maths {
   background-color: var(--maths);
 }
+.dh-weekly-bar-seg.biology {
+  background-color: var(--biology);
+}
 .dh-weekly-bar-seg.custom {
   background-color: var(--custom);
 }
@@ -1266,6 +1273,15 @@
   box-shadow: 0 0 10px color-mix(in srgb, var(--maths), transparent 50%);
 }
 
+.dh-histogram-bar.biology {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--biology), transparent 20%),
+    var(--biology)
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--biology), transparent 50%);
+}
+
 .dh-histogram-bar.custom {
   background: linear-gradient(
     to top,
@@ -1466,6 +1482,9 @@
 .dh-legend-dot.maths {
   background-color: var(--maths);
 }
+.dh-legend-dot.biology {
+  background-color: var(--biology);
+}
 
 .dh-subject-card-name {
   font-size: var(--text-sm);
@@ -1510,6 +1529,9 @@
 }
 .dh-subject-progress-fill.maths {
   background-color: var(--maths);
+}
+.dh-subject-progress-fill.biology {
+  background-color: var(--biology);
 }
 
 .dh-chapter-cards {
@@ -1587,6 +1609,11 @@
   background-color: color-mix(in srgb, var(--maths), transparent 85%);
   color: var(--maths);
   border-color: color-mix(in srgb, var(--maths), transparent 50%);
+}
+.dh-material-tag.completed.biology {
+  background-color: color-mix(in srgb, var(--biology), transparent 85%);
+  color: var(--biology);
+  border-color: color-mix(in srgb, var(--biology), transparent 50%);
 }
 
 /* ── Insights ── */

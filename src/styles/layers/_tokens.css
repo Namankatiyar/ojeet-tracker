@@ -55,6 +55,7 @@
   --color-physics: #6366f1;
   --color-chemistry: #10b981;
   --color-maths: #f59e0b;
+  --color-biology: #00b330;
   --color-custom: #ff57c7;
 
   /* Legacy aliases (for backward compatibility) */
@@ -82,6 +83,7 @@
   --physics: var(--color-physics);
   --chemistry: var(--color-chemistry);
   --maths: var(--color-maths);
+  --biology: var(--color-biology);
   --custom: var(--color-custom);
 
   /* ======================== */
@@ -315,4 +317,8 @@
 
 .text-maths {
   color: var(--color-maths);
+}
+
+.text-biology {
+  color: var(--color-biology);
 }
