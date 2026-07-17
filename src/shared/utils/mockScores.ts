@@ -8,31 +8,32 @@ const EMPTY_SUBJECT_MARKS: MockSubjectMarks = {
 
 export const getMockExamType = (score: MockScore): MockExamType => score.examType ?? 'jm';
 
-export const getMockDefaultMaxMarks = (
-  examType: MockExamType,
-  presets: MockExamPreset[] = []
-): number => {
-  const preset = presets.find((p) => p.id === examType);
-  if (preset) {
-    const s = preset.subjectMaxMarks;
-    const e = preset.enabledSubjects || { physics: true, chemistry: true, maths: true };
-    let singlePaperMax = 0;
-    if (e.physics) singlePaperMax += s.physics;
-    if (e.chemistry) singlePaperMax += s.chemistry;
-    if (e.maths) singlePaperMax += s.maths;
-    return singlePaperMax * preset.paperCount;
-  }
-  if (examType === 'ja') return 360;
-  if (examType === 'bt') return 390;
-  return 300;
+export const getMockDefaultMaxMarks = (preset: MockExamPreset): number => {
+  const s = preset.subjectMaxMarks;
+  const enabled = preset.enabledSubjects;
+  const physicsMax   = enabled && enabled.physics   === false ? 0 : (s.physics   ?? 0);
+  const chemistryMax = enabled && enabled.chemistry === false ? 0 : (s.chemistry ?? 0);
+  const mathsMax     = enabled && enabled.maths     === false ? 0 : (s.maths     ?? 0);
+  const biologyMax   = enabled && enabled.biology   === false ? 0 : (s.biology   ?? 0);
+  return (physicsMax + chemistryMax + mathsMax + biologyMax) * preset.paperCount;
 };
+
+// Fallback presets for legacy exam types without a stored preset
+const LEGACY_PRESETS: MockExamPreset[] = [
+  { id: 'jm', name: 'JEE Main',     shortName: 'JM', paperCount: 1, subjectMaxMarks: { physics: 100, chemistry: 100, maths: 100 } },
+  { id: 'ja', name: 'JEE Advanced', shortName: 'JA', paperCount: 2, subjectMaxMarks: { physics: 60,  chemistry: 60,  maths: 60  } },
+  { id: 'bt', name: 'BITSAT',       shortName: 'BT', paperCount: 1, subjectMaxMarks: { physics: 130, chemistry: 130, maths: 130 } },
+];
 
 export const getMockMaxMarks = (
   score: Pick<MockScore, 'examType' | 'maxMarks'>,
   presets: MockExamPreset[] = []
 ): number => {
   if (typeof score.maxMarks === 'number') return score.maxMarks;
-  return getMockDefaultMaxMarks(score.examType ?? 'jm', presets);
+  const examType = score.examType ?? 'jm';
+  const preset = [...presets, ...LEGACY_PRESETS].find((p) => p.id === examType);
+  if (preset) return getMockDefaultMaxMarks(preset);
+  return 300;
 };
 
 export const getMockPaperMarks = (

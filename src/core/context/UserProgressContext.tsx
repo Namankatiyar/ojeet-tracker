@@ -227,6 +227,17 @@ export const defaultMockExamPresets: MockExamPreset[] = [
   },
 ];
 
+const defaultNeetMockExamPresets: MockExamPreset[] = [
+  {
+    id: 'neet',
+    name: 'NEET UG',
+    shortName: 'NEET',
+    paperCount: 1,
+    subjectMaxMarks: { physics: 180, chemistry: 180, maths: 0, biology: 360 },
+    targetScore: 650,
+  },
+];
+
 export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { mergedSubjectData } = useSubjectData();
   const { accentColor } = useTheme();
@@ -248,6 +259,14 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [mockExamPresets, setMockExamPresets] = useLocalStorage<MockExamPreset[]>(
     'jee-tracker-mock-presets',
     defaultMockExamPresets
+  );
+  const [neetMockExamPresets, setNeetMockExamPresets] = useLocalStorage<MockExamPreset[]>(
+    'jee-tracker-mock-presets-neet',
+    defaultNeetMockExamPresets
+  );
+  const [examMode, setExamMode] = useLocalStorage<ExamMode>(
+    'jee-tracker-exam-mode',
+    'jee'
   );
   const [dailyQuestionLogs, setDailyQuestionLogs] = useLocalStorage<Record<string, number>>(
     'jee-tracker-daily-questions',
@@ -299,6 +318,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     }
   }, [mockExamPresets, setMockExamPresets]);
+
+  // Ensure neetMockExamPresets is never empty when in NEET mode
+  useEffect(() => {
+    if (examMode === 'neet' && neetMockExamPresets.length === 0) {
+      setNeetMockExamPresets(defaultNeetMockExamPresets);
+    }
+  }, [examMode, neetMockExamPresets.length]);
 
   // Ensure biology progress object exists for legacy users
   useEffect(() => {
@@ -420,10 +446,6 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       inviteCode: '',
       showTasks: true,
     }
-  );
-  const [examMode, setExamMode] = useLocalStorage<ExamMode>(
-    'jee-tracker-exam-mode',
-    'jee'
   );
 
   const {
@@ -1426,25 +1448,37 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const handleAddMockExamPreset = useCallback(
     (preset: MockExamPreset) => {
       const presetWithTime = { ...preset, updatedAt: preset.updatedAt || new Date().toISOString() };
-      setMockExamPresets((prev) => [...prev, presetWithTime]);
+      if (examMode === 'neet') {
+        setNeetMockExamPresets((prev) => [...prev, presetWithTime]);
+      } else {
+        setMockExamPresets((prev) => [...prev, presetWithTime]);
+      }
     },
-    [setMockExamPresets]
+    [examMode, setMockExamPresets, setNeetMockExamPresets]
   );
 
   const handleDeleteMockExamPreset = useCallback(
     (id: string) => {
-      setMockExamPresets((prev) => prev.filter((p) => p.id !== id));
+      if (examMode === 'neet') {
+        setNeetMockExamPresets((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        setMockExamPresets((prev) => prev.filter((p) => p.id !== id));
+      }
       recordTombstone('mockExamPresets', id);
     },
-    [setMockExamPresets, recordTombstone]
+    [examMode, setMockExamPresets, setNeetMockExamPresets, recordTombstone]
   );
 
   const handleUpdateMockExamPreset = useCallback(
     (preset: MockExamPreset) => {
       const presetWithTime = { ...preset, updatedAt: new Date().toISOString() };
-      setMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? presetWithTime : p)));
+      if (examMode === 'neet') {
+        setNeetMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? presetWithTime : p)));
+      } else {
+        setMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? presetWithTime : p)));
+      }
     },
-    [setMockExamPresets]
+    [examMode, setMockExamPresets, setNeetMockExamPresets]
   );
 
   // PERF-006: Split into 3 sub-context values so that e.g. studySessions changes
@@ -1460,7 +1494,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setMockScores,
       examDates,
       setExamDates,
-      mockExamPresets,
+      mockExamPresets: examMode === 'neet' ? neetMockExamPresets : mockExamPresets,
       setMockExamPresets,
       tombstones,
       setTombstones,
@@ -1506,7 +1540,9 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setMockScores,
       examDates,
       setExamDates,
+      examMode,
       mockExamPresets,
+      neetMockExamPresets,
       setMockExamPresets,
       tombstones,
       setTombstones,

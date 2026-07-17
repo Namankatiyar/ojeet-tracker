@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { MockScore } from '../types';
+import { MockScore, MockExamPreset } from '../types';
 import {
   getMockExamType,
+  getMockDefaultMaxMarks,
   getMockMaxMarks,
   getMockPaperTotal,
   getMockSubjectTotals,
@@ -83,5 +84,25 @@ describe('mockScores utils', () => {
     });
     expect(getMockTotalMarks(score)).toBe(-15);
     expect(getMockMaxMarks(score)).toBe(300);
+  });
+});
+
+describe('getMockDefaultMaxMarks with biology', () => {
+  const neetPreset: MockExamPreset = {
+    id: 'neet',
+    name: 'NEET UG',
+    shortName: 'NEET',
+    paperCount: 1,
+    subjectMaxMarks: { physics: 180, chemistry: 180, maths: 0, biology: 360 },
+    targetScore: 650,
+  };
+
+  it('sums biology marks when present', () => {
+    expect(getMockDefaultMaxMarks(neetPreset)).toBe(720); // 180+180+360
+  });
+
+  it('ignores maths: 0 in sum', () => {
+    const marks = getMockDefaultMaxMarks(neetPreset);
+    expect(marks).not.toBe(0);
   });
 });

@@ -384,7 +384,7 @@ export function MockScoresPage() {
               <input
                 type="number"
                 min={0}
-                max={getMockDefaultMaxMarks(activePreset.id, mockExamPresets)}
+                max={getMockDefaultMaxMarks(activePreset)}
                 placeholder="Set target"
                 value={activePreset.targetScore ?? ''}
                 onChange={(e) => {
@@ -394,7 +394,7 @@ export function MockScoresPage() {
                 className="mock-target-input"
               />
               <span className="mock-target-max">
-                / {getMockDefaultMaxMarks(activePreset.id, mockExamPresets)}
+                / {getMockDefaultMaxMarks(activePreset)}
               </span>
             </div>
             <span className="mock-stat-sub">

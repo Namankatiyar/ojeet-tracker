@@ -41,9 +41,9 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenC
 
   const { sortedScores, chartData } = useMockScoresAnalytics(mockScores, examType, mockExamPresets);
   const maxMarks = useMemo(() => {
-    if (sortedScores.length === 0) return getMockDefaultMaxMarks(examType, mockExamPresets);
+    if (sortedScores.length === 0) return activePreset ? getMockDefaultMaxMarks(activePreset) : 300;
     return Math.max(...sortedScores.map((score) => getMockMaxMarks(score, mockExamPresets)));
-  }, [examType, sortedScores, mockExamPresets]);
+  }, [activePreset, sortedScores, mockExamPresets]);
 
   const chartOptions = useMemo(() => getChartOptions(theme, 'mock', maxMarks), [maxMarks, theme]);
 
