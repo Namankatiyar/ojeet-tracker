@@ -1,3 +1,17 @@
+# [2.3.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.2.0...v2.3.0) (2026-07-17)
+
+
+### Bug Fixes
+
+* **dashboard:** resolve study hours count mismatch by updating cache and fallbacks ([aa46027](https://github.com/Namankatiyar/ojeet-tracker/commit/aa46027965ad7cd545b55575fbf687af73d800e6))
+
+
+### Features
+
+* **layout:** implement cloud sync indicator with status dot badge ([f25f74b](https://github.com/Namankatiyar/ojeet-tracker/commit/f25f74b0b10987718d53b5fe48d22db640be0c67))
+* **layout:** use strikethrough cloud icon for not signed in state ([41c76b2](https://github.com/Namankatiyar/ojeet-tracker/commit/41c76b2013546deb684d2988b0982e963c76cec3))
+* **study-clock:** add customizable fullscreen timer background ([9d6b540](https://github.com/Namankatiyar/ojeet-tracker/commit/9d6b540ace0ea9a0396e8015dabb99d017234947))
+
 # [2.2.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.1.2...v2.2.0) (2026-07-16)
 
 
