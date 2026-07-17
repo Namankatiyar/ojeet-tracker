@@ -1481,6 +1481,17 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     [examMode, setMockExamPresets, setNeetMockExamPresets]
   );
 
+  const setMockExamPresetsModeAware = useCallback(
+    (value: React.SetStateAction<MockExamPreset[]>) => {
+      if (examMode === 'neet') {
+        setNeetMockExamPresets(value);
+      } else {
+        setMockExamPresets(value);
+      }
+    },
+    [examMode, setNeetMockExamPresets, setMockExamPresets]
+  );
+
   // PERF-006: Split into 3 sub-context values so that e.g. studySessions changes
   // don't re-render components that only consume settings or progress.
 
@@ -1495,7 +1506,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       examDates,
       setExamDates,
       mockExamPresets: examMode === 'neet' ? neetMockExamPresets : mockExamPresets,
-      setMockExamPresets,
+      setMockExamPresets: setMockExamPresetsModeAware,
       tombstones,
       setTombstones,
       dailyQuestionLogs,
@@ -1543,7 +1554,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       examMode,
       mockExamPresets,
       neetMockExamPresets,
-      setMockExamPresets,
+      setMockExamPresetsModeAware,
       tombstones,
       setTombstones,
       dailyQuestionLogs,
