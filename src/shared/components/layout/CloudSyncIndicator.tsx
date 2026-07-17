@@ -84,7 +84,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
         };
       case 'not-signed-in':
         return {
-          icon: <Cloud size={compact ? 18 : 20} className="cloud-sync-icon neutral" />,
+          icon: <CloudOff size={compact ? 18 : 20} className="cloud-sync-icon neutral" />,
           label: 'Local Only',
           dotClass: '',
           title: 'Not signed in. Click to sign in with Google and sync across devices.',
