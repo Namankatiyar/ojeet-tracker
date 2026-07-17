@@ -16,6 +16,7 @@ import {
   ChapterDetailProgress,
 } from '../../shared/types';
 import { SyncTombstoneMap, SYNC_DEFAULT_PLANNER_HISTORY_DAYS } from '../../features/sync/syncTypes';
+import { type ExamMode } from '../../shared/config/subjects';
 import { useSubjectData } from './SubjectDataContext';
 import { useTheme } from './ThemeContext';
 
@@ -51,6 +52,8 @@ interface UserProgressContextType {
   setProgressCardSettings: (
     settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)
   ) => void;
+  examMode: ExamMode;
+  setExamMode: (mode: ExamMode) => void;
   dailyQuestionLogs: Record<string, number>;
   setDailyQuestionLogs: (
     logs: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>)
@@ -182,6 +185,8 @@ interface SettingsContextType {
   setDailyResetHour: (hour: number | ((prev: number) => number)) => void;
   progressCardSettings: ProgressCardSettings;
   setProgressCardSettings: (settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)) => void;
+  examMode: ExamMode;
+  setExamMode: (mode: ExamMode) => void;
 }
 
 const ProgressDataContext = createContext<ProgressDataContextType | undefined>(undefined);
@@ -415,6 +420,10 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       inviteCode: '',
       showTasks: true,
     }
+  );
+  const [examMode, setExamMode] = useLocalStorage<ExamMode>(
+    'jee-tracker-exam-mode',
+    'jee'
   );
 
   const {
@@ -1565,6 +1574,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setDailyResetHour,
       progressCardSettings,
       setProgressCardSettings,
+      examMode,
+      setExamMode,
     }),
     [
       disableAutoShift,
@@ -1577,6 +1588,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setDailyResetHour,
       progressCardSettings,
       setProgressCardSettings,
+      examMode,
+      setExamMode,
     ]
   );
 
