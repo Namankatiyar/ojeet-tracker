@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Trash2, Play } from 'lucide-react';
+import { Clock, Trash2, Play, Palette } from 'lucide-react';
 import { useTheme } from '../../../core/context/ThemeContext';
+import { BgSettingsModal, ClockBgSettings } from './Timer/BgSettingsModal';
 import {
   Subject,
   SubjectData,
@@ -98,7 +99,7 @@ export function StudyClock({
   progress,
   onToggleTask,
 }: StudyClockProps) {
-  const { accentColor } = useTheme();
+  const { accentColor, backgroundUrl } = useTheme();
   const { dailyResetHour } = useUserProgress();
 
   // ── Task selection state (Persisted for Pomodoro cycle transitions) ──
@@ -128,6 +129,14 @@ export function StudyClock({
     []
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isBgModalOpen, setIsBgModalOpen] = useState(false);
+  const [bgSettings, setBgSettings] = useLocalStorage<ClockBgSettings>('studyClock_bgSettings', {
+    mode: 'global',
+    customUrl: '',
+    blur: 10,
+    dim: 40,
+  });
+  const [localImage, setLocalImage] = useLocalStorage<string>('studyClock_bgLocalImage', '');
 
   // Request notification permission on mount
   useEffect(() => {
@@ -485,8 +494,31 @@ export function StudyClock({
 
   // ── Fullscreen render ──
   if (isFullscreen) {
+    const effectiveBgUrl = (() => {
+      if (bgSettings.mode === 'global') return backgroundUrl;
+      if (bgSettings.mode === 'local') return localImage;
+      return bgSettings.customUrl;
+    })();
+
     return (
       <div className="fullscreen-timer">
+        {effectiveBgUrl && (
+          <>
+            <div
+              className="fullscreen-bg-layer"
+              style={{
+                backgroundImage: `url(${effectiveBgUrl})`,
+                filter: `blur(${bgSettings.blur}px)`,
+              }}
+            />
+            <div
+              className="fullscreen-dim-layer"
+              style={{
+                backgroundColor: `rgba(0, 0, 0, ${bgSettings.dim / 100})`,
+              }}
+            />
+          </>
+        )}
         <div className="fullscreen-clock">
           <div
             className={`fullscreen-time ${engine.engineState === 'running' ? 'running' : ''} ${engine.engineState === 'paused' ? 'paused' : ''}`}
@@ -754,6 +786,14 @@ export function StudyClock({
           </div>
 
           <div className="timer-display-section">
+            <button
+              className="edit-bg-btn"
+              onClick={() => setIsBgModalOpen(true)}
+              title="Customize fullscreen background"
+              aria-label="Customize fullscreen background"
+            >
+              <Palette size={16} />
+            </button>
             <div
               className={`timer-circle ${engine.engineState === 'running' ? 'running' : ''} ${engine.engineState === 'paused' ? 'paused' : ''}`}
               onClick={() => {
@@ -853,6 +893,17 @@ export function StudyClock({
           />
         </motion.div>
       </motion.div>
+      <BgSettingsModal
+        isOpen={isBgModalOpen}
+        onClose={() => setIsBgModalOpen(false)}
+        settings={bgSettings}
+        localImage={localImage}
+        onSave={(newSettings, newLocalImage) => {
+          setBgSettings(newSettings);
+          setLocalImage(newLocalImage);
+        }}
+        globalBackgroundUrl={backgroundUrl}
+      />
     </motion.div>
   );
 }
