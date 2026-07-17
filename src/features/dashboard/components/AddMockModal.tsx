@@ -249,6 +249,7 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
       name,
       date,
       examType,
+      examMode: initialScore?.examMode ?? examMode,
       physicsMarks: enabledSubjects.physics ? combinedTotals.physics : 0,
       chemistryMarks: enabledSubjects.chemistry ? combinedTotals.chemistry : 0,
       mathsMarks: enabledSubjects.maths ? combinedTotals.maths : 0,

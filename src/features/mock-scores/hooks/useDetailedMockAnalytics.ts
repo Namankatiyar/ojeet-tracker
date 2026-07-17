@@ -161,9 +161,9 @@ export function useDetailedMockAnalytics(
         ? {
             label: 'Biology',
             data: biologyData,
-            borderColor: subjectColors.biology || '#059669',
-            backgroundColor: createGradient(subjectColors.biology || '#059669', biologyData),
-            pointBackgroundColor: subjectColors.biology || '#059669',
+            borderColor: subjectColors.biology || '#00b330',
+            backgroundColor: createGradient(subjectColors.biology || '#00b330', biologyData),
+            pointBackgroundColor: subjectColors.biology || '#00b330',
             pointBorderColor: '#fff',
             pointRadius: 4,
             pointHoverRadius: 6,
@@ -221,7 +221,7 @@ export function useDetailedMockAnalytics(
           backgroundColor: [
             subjectColors.physics,
             subjectColors.chemistry,
-            isNeet ? (subjectColors.biology || '#059669') : subjectColors.maths,
+            isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
           ],
           borderWidth: 2,
           borderColor: 'var(--bg-secondary)',
@@ -253,7 +253,7 @@ export function useDetailedMockAnalytics(
           ? {
               label: 'Biology (mins)',
               data: timeLoggedScores.map((s) => s.timeSpent?.biology || 0),
-              backgroundColor: subjectColors.biology || '#059669',
+              backgroundColor: subjectColors.biology || '#00b330',
               borderRadius: 4,
             }
           : {
@@ -321,9 +321,9 @@ export function useDetailedMockAnalytics(
         {
           label: isNeet ? 'Biology' : 'Maths',
           data: timeMathsOrBioData,
-          borderColor: isNeet ? (subjectColors.biology || '#059669') : subjectColors.maths,
-          backgroundColor: createGradient(isNeet ? (subjectColors.biology || '#059669') : subjectColors.maths, timeMathsOrBioData),
-          pointBackgroundColor: isNeet ? (subjectColors.biology || '#059669') : subjectColors.maths,
+          borderColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
+          backgroundColor: createGradient(isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths, timeMathsOrBioData),
+          pointBackgroundColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
@@ -447,9 +447,9 @@ export function useDetailedMockAnalytics(
         {
           label: isNeet ? 'Biology' : 'Maths',
           data: mathsOrBioAccData,
-          borderColor: isNeet ? (subjectColors.biology || '#059669') : subjectColors.maths,
-          backgroundColor: createGradient(isNeet ? (subjectColors.biology || '#059669') : subjectColors.maths, mathsOrBioAccData),
-          pointBackgroundColor: isNeet ? (subjectColors.biology || '#059669') : subjectColors.maths,
+          borderColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
+          backgroundColor: createGradient(isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths, mathsOrBioAccData),
+          pointBackgroundColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,

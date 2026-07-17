@@ -80,9 +80,9 @@ export function useMockScoresAnalytics(
         ? {
             label: 'Biology',
             data: biologyData,
-            borderColor: subjectColors.biology || '#059669',
-            backgroundColor: createGradient(subjectColors.biology || '#059669', biologyData),
-            pointBackgroundColor: subjectColors.biology || '#059669',
+            borderColor: subjectColors.biology || '#00b330',
+            backgroundColor: createGradient(subjectColors.biology || '#00b330', biologyData),
+            pointBackgroundColor: subjectColors.biology || '#00b330',
             pointBorderColor: '#fff',
             pointRadius: 4,
             pointHoverRadius: 6,

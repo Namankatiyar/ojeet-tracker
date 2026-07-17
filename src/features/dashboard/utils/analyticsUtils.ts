@@ -72,7 +72,7 @@ export const subjectColors = {
   physics: '#6366f1',
   chemistry: '#10b981',
   maths: '#f59e0b',
-  biology: '#059669',
+  biology: '#00b330',
   custom: '#ff57c7',
   overall: '#22c55e',
 };
