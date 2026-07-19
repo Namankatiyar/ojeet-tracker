@@ -15,7 +15,8 @@ import {
 import { TaskLog } from '../../planner/components/TaskLog';
 import { ExamCountdownModal } from './ExamCountdownModal';
 import { AnalyticsPanels } from './AnalyticsPanels';
-import { Atom, FlaskConical, Pi, Calendar, Check, Pencil, Trophy, X } from 'lucide-react';
+import { Atom, FlaskConical, Pi, Dna, Calendar, Check, Pencil, Trophy, X } from 'lucide-react';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 
 interface LeaderboardActiveModalProps {
   onClose: () => void;
@@ -92,6 +93,7 @@ interface DashboardProps {
   physicsProgress: number;
   chemistryProgress: number;
   mathsProgress: number;
+  biologyProgress?: number;
   overallProgress: number;
   subjectData: Record<Subject, SubjectData | null>;
   onNavigate: (subject: Subject) => void;
@@ -116,6 +118,7 @@ export function Dashboard({
   physicsProgress: propPhysicsProgress,
   chemistryProgress: propChemistryProgress,
   mathsProgress: propMathsProgress,
+  biologyProgress: propBiologyProgress = 0,
   overallProgress: propOverallProgress,
   subjectData,
   onNavigate,
@@ -178,6 +181,7 @@ export function Dashboard({
     useRemoteAuth();
   const { remoteStudyAggregate } = useRemoteSync();
   const { progress, dailyResetHour } = useUserProgress();
+  const { examMode } = useActiveSubjects();
   const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
 
   const favouriteExam = useMemo(() => examDates.find((e) => e.isFavourite), [examDates]);
@@ -188,6 +192,7 @@ export function Dashboard({
     if (favouriteExam.syllabus.physics) filter.physics = new Set(favouriteExam.syllabus.physics);
     if (favouriteExam.syllabus.chemistry) filter.chemistry = new Set(favouriteExam.syllabus.chemistry);
     if (favouriteExam.syllabus.maths) filter.maths = new Set(favouriteExam.syllabus.maths);
+    if (favouriteExam.syllabus.biology) filter.biology = new Set(favouriteExam.syllabus.biology);
     return filter;
   }, [favouriteExam]);
 
@@ -195,6 +200,7 @@ export function Dashboard({
   const physicsProgress = favouriteExam ? scopedProgressStats.physicsProgress : propPhysicsProgress;
   const chemistryProgress = favouriteExam ? scopedProgressStats.chemistryProgress : propChemistryProgress;
   const mathsProgress = favouriteExam ? scopedProgressStats.mathsProgress : propMathsProgress;
+  const biologyProgress = favouriteExam ? scopedProgressStats.biologyProgress ?? 0 : propBiologyProgress ?? 0;
   const overallProgress = favouriteExam ? scopedProgressStats.overallProgress : propOverallProgress;
 
   const [showActiveModal, setShowActiveModal] = useState(false);
@@ -340,20 +346,28 @@ export function Dashboard({
       progress: chemistryProgress,
       color: 'var(--accent)',
     },
-    {
-      key: 'maths',
-      label: 'Maths',
-      icon: <Pi size={24} />,
-      progress: mathsProgress,
-      color: 'var(--accent)',
-    },
+    examMode === 'neet'
+      ? {
+          key: 'biology' as Subject,
+          label: 'Biology',
+          icon: <Dna size={24} />,
+          progress: biologyProgress,
+          color: 'var(--accent)',
+        }
+      : {
+          key: 'maths' as Subject,
+          label: 'Maths',
+          icon: <Pi size={24} />,
+          progress: mathsProgress,
+          color: 'var(--accent)',
+        },
   ];
 
   const getChapterStats = (subject: Subject) => {
     const data = subjectData[subject];
     if (!data) return { total: 0, completed: 0 };
-    if (favouriteExam?.syllabus?.[subject as 'physics' | 'chemistry' | 'maths'] !== undefined) {
-      return { total: favouriteExam.syllabus[subject as 'physics' | 'chemistry' | 'maths']!.length, completed: 0 };
+    if (favouriteExam?.syllabus?.[subject as Subject] !== undefined) {
+      return { total: favouriteExam.syllabus[subject as Subject]!.length, completed: 0 };
     }
     return { total: data.chapters.length, completed: 0 };
   };
@@ -388,6 +402,7 @@ export function Dashboard({
         else if (subject === 'chemistry')
           remoteSeconds = remoteStudyAggregate.total_seconds_chemistry;
         else if (subject === 'maths') remoteSeconds = remoteStudyAggregate.total_seconds_maths;
+        else if (subject === 'biology') remoteSeconds = (remoteStudyAggregate as any)?.total_seconds_biology;
       }
 
       const totalSeconds = Math.max(localSeconds, remoteSeconds ?? 0);
@@ -689,9 +704,7 @@ export function Dashboard({
           <div className="overall-stats">
             <div className="stat">
               <span className="stat-value">
-                {getChapterStats('physics').total +
-                  getChapterStats('chemistry').total +
-                  getChapterStats('maths').total}
+                {subjects.reduce((acc, s) => acc + getChapterStats(s.key).total, 0)}
               </span>
               <span className="stat-label">Total Chapters</span>
             </div>
