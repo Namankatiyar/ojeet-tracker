@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Plus, Trash2, X, Pencil } from 'lucide-react';
-import { MockExamPreset } from '../../../shared/types';
+import { MockExamPreset, Subject } from '../../../shared/types';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 
 interface ManageMockPresetsModalProps {
   onClose: () => void;
@@ -14,23 +15,63 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
     handleDeleteMockExamPreset,
     handleUpdateMockExamPreset,
   } = useUserProgress();
+  const { subjects, examMode } = useActiveSubjects();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<MockExamPreset>>({});
 
   const handleStartEdit = (preset: MockExamPreset) => {
     setEditingId(preset.id);
-    setEditForm({ ...preset });
+    const isNeet = examMode === 'neet';
+
+    const mergedMaxMarks = {
+      physics: preset.subjectMaxMarks.physics || 100,
+      chemistry: preset.subjectMaxMarks.chemistry || 100,
+      maths: isNeet
+        ? 0
+        : (preset.subjectMaxMarks.maths || 100),
+      biology: isNeet
+        ? (preset.subjectMaxMarks.biology || 100)
+        : undefined,
+    };
+
+    const mergedEnabled = {
+      physics: preset.enabledSubjects?.physics ?? true,
+      chemistry: preset.enabledSubjects?.chemistry ?? true,
+      maths: isNeet
+        ? false
+        : (preset.enabledSubjects?.maths ?? true),
+      biology: isNeet
+        ? (preset.enabledSubjects?.biology ?? true)
+        : undefined,
+    };
+
+    setEditForm({
+      ...preset,
+      subjectMaxMarks: mergedMaxMarks,
+      enabledSubjects: mergedEnabled,
+    });
   };
 
   const handleStartAdd = () => {
     setEditingId('new');
+    const isNeet = examMode === 'neet';
     setEditForm({
       id: 'custom-' + Date.now().toString(36),
       name: '',
       shortName: '',
       paperCount: 1,
-      subjectMaxMarks: { physics: 100, chemistry: 100, maths: 100 },
-      enabledSubjects: { physics: true, chemistry: true, maths: true },
+      subjectMaxMarks: {
+        physics: 100,
+        chemistry: 100,
+        maths: isNeet ? 0 : 100,
+        biology: isNeet ? 100 : undefined,
+      },
+      enabledSubjects: {
+        physics: true,
+        chemistry: true,
+        maths: !isNeet,
+        biology: isNeet ? true : undefined,
+      },
     });
   };
 
@@ -47,7 +88,7 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
     setEditingId(null);
   };
 
-  const updateSubjectMax = (subject: 'physics' | 'chemistry' | 'maths', value: number) => {
+  const updateSubjectMax = (subject: Subject, value: number) => {
     const clamped = Math.max(1, isNaN(value) ? 1 : value);
     setEditForm((prev) => ({
       ...prev,
@@ -58,18 +99,21 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
     }));
   };
 
-  const toggleSubject = (subject: 'physics' | 'chemistry' | 'maths') => {
+  const toggleSubject = (subject: Subject) => {
     setEditForm((prev) => {
+      const currentVal = prev.enabledSubjects?.[subject] ?? subjects.includes(subject);
+      const isNeet = examMode === 'neet';
       const currentEnabled = prev.enabledSubjects || {
         physics: true,
         chemistry: true,
-        maths: true,
+        maths: !isNeet,
+        biology: isNeet,
       };
       return {
         ...prev,
         enabledSubjects: {
           ...currentEnabled,
-          [subject]: !currentEnabled[subject],
+          [subject]: !currentVal,
         },
       };
     });
@@ -138,8 +182,9 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
             <div className="form-group">
               <label>Max Marks Per Subject (per paper)</label>
               <div className="marks-grid">
-                {(['physics', 'chemistry', 'maths'] as const).map((subject) => {
-                  const isEnabled = editForm.enabledSubjects?.[subject] ?? true;
+                {subjects.map((subject) => {
+                  const isEnabled = editForm.enabledSubjects?.[subject as keyof typeof editForm.enabledSubjects] 
+                    ?? subjects.includes(subject);
                   return (
                     <div className="form-group" key={subject}>
                       <div
@@ -175,7 +220,7 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
                       <input
                         type="number"
                         min={1}
-                        value={editForm.subjectMaxMarks?.[subject] || 0}
+                        value={editForm.subjectMaxMarks?.[subject as keyof typeof editForm.subjectMaxMarks] || 0}
                         onChange={(e) => updateSubjectMax(subject, Number(e.target.value))}
                         disabled={!isEnabled}
                         style={{ opacity: isEnabled ? 1 : 0.5 }}
@@ -194,9 +239,12 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
                 max={
                   Math.max(
                     1,
-                    (editForm.subjectMaxMarks?.physics || 0) +
-                      (editForm.subjectMaxMarks?.chemistry || 0) +
-                      (editForm.subjectMaxMarks?.maths || 0)
+                    subjects.reduce(
+                      (sum, subj) =>
+                        sum +
+                        (editForm.subjectMaxMarks?.[subj as keyof typeof editForm.subjectMaxMarks] || 0),
+                      0
+                    )
                   ) * (editForm.paperCount || 1)
                 }
                 placeholder="e.g., 180"
@@ -233,18 +281,18 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
                     </span>
                     <span className="mock-preset-item-meta">
                       {preset.paperCount} {preset.paperCount === 1 ? 'Paper' : 'Papers'}
-                      {(preset.enabledSubjects?.physics ?? true) && (
-                        <span className="text-physics"> · P:{preset.subjectMaxMarks.physics}</span>
-                      )}
-                      {(preset.enabledSubjects?.chemistry ?? true) && (
-                        <span className="text-chemistry">
-                          {' '}
-                          · C:{preset.subjectMaxMarks.chemistry}
-                        </span>
-                      )}
-                      {(preset.enabledSubjects?.maths ?? true) && (
-                        <span className="text-maths"> · M:{preset.subjectMaxMarks.maths}</span>
-                      )}
+                      {subjects.map((subj) => {
+                        const isEnabled = preset.enabledSubjects?.[subj as keyof typeof preset.enabledSubjects] ?? true;
+                        if (!isEnabled) return null;
+                        const mark = preset.subjectMaxMarks[subj as keyof typeof preset.subjectMaxMarks];
+                        if (mark == null || mark === 0) return null;
+                        const initial = subj.charAt(0).toUpperCase();
+                        return (
+                          <span key={subj} className={`text-${subj}`}>
+                            {' '}· {initial}:{mark}
+                          </span>
+                        );
+                      })}
                       {preset.targetScore !== undefined && (
                         <span style={{ color: '#f43f5e', fontWeight: 600 }}> · Target:{preset.targetScore}</span>
                       )}

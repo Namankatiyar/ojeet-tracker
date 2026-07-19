@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { X, Search, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ExamEntry, ExamSyllabus, Subject, SubjectData } from '../../../shared/types';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 
 interface SyllabusScopePickerModalProps {
   exam: ExamEntry;
@@ -10,20 +11,21 @@ interface SyllabusScopePickerModalProps {
   onClose: () => void;
 }
 
-const SUBJECT_TABS: { key: Subject; label: string; colorClass: string }[] = [
-  { key: 'physics', label: 'Physics', colorClass: 'text-physics' },
-  { key: 'chemistry', label: 'Chemistry', colorClass: 'text-chemistry' },
-  { key: 'maths', label: 'Maths', colorClass: 'text-maths' },
-];
-
 export function SyllabusScopePickerModal({
   exam,
   subjectData,
   onSave,
   onClose,
 }: SyllabusScopePickerModalProps) {
+  const { subjects, subjectMeta } = useActiveSubjects();
   const [activeTab, setActiveTab] = useState<Subject>('physics');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const subjectTabs = subjectMeta.map((meta) => ({
+    key: meta.key,
+    label: meta.label,
+    colorClass: `text-${meta.key}`,
+  }));
 
   const initialSelection = useMemo(() => {
     const selection: Record<Subject, Set<number>> = {
@@ -33,10 +35,10 @@ export function SyllabusScopePickerModal({
       biology: new Set(),
     };
 
-    (['physics', 'chemistry', 'maths'] as Subject[]).forEach((subject) => {
+    subjects.forEach((subject) => {
       const data = subjectData[subject];
       if (!data) return;
-      const existing = exam.syllabus?.[subject as 'physics' | 'chemistry' | 'maths'];
+      const existing = exam.syllabus?.[subject];
       if (existing !== undefined) {
         selection[subject] = new Set(existing);
       } else {
@@ -45,7 +47,7 @@ export function SyllabusScopePickerModal({
     });
 
     return selection;
-  }, [exam, subjectData]);
+  }, [exam, subjectData, subjects]);
 
   const [selected, setSelected] = useState<Record<Subject, Set<number>>>(initialSelection);
 
@@ -88,11 +90,14 @@ export function SyllabusScopePickerModal({
 
   const handleResetFullSyllabus = () => {
     const full: Record<Subject, Set<number>> = {
-      physics: new Set(subjectData.physics?.chapters.map((c) => c.serial) || []),
-      chemistry: new Set(subjectData.chemistry?.chapters.map((c) => c.serial) || []),
-      maths: new Set(subjectData.maths?.chapters.map((c) => c.serial) || []),
+      physics: new Set(),
+      chemistry: new Set(),
+      maths: new Set(),
       biology: new Set(),
     };
+    subjects.forEach((subj) => {
+      full[subj] = new Set(subjectData[subj]?.chapters.map((c) => c.serial) || []);
+    });
     setSelected(full);
   };
 
@@ -100,7 +105,7 @@ export function SyllabusScopePickerModal({
     const result: ExamSyllabus = {};
     let allFull = true;
 
-    (['physics', 'chemistry', 'maths'] as const).forEach((subject) => {
+    subjects.forEach((subject) => {
       const data = subjectData[subject];
       if (!data) return;
       const serials = Array.from(selected[subject]);
@@ -145,7 +150,7 @@ export function SyllabusScopePickerModal({
         </div>
 
         <div className="syllabus-picker-tabs">
-          {SUBJECT_TABS.map((tab) => {
+          {subjectTabs.map((tab) => {
             const data = subjectData[tab.key];
             const count = selected[tab.key].size;
             const total = data?.chapters.length || 0;

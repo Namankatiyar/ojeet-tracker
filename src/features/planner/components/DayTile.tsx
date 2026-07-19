@@ -19,9 +19,10 @@ interface DayTileProps {
 const MAX_VISIBLE_TASKS = 2;
 
 const SUBJECT_COLORS: Record<string, string> = {
-  physics: '#6366f1',
-  chemistry: '#10b981',
-  maths: '#f59e0b',
+  physics: 'var(--physics)',
+  chemistry: 'var(--chemistry)',
+  maths: 'var(--maths)',
+  biology: 'var(--biology)',
 };
 
 function formatStudyTime(seconds: number): string {

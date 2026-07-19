@@ -61,7 +61,10 @@ export const getStudyTimeBySubject = (studySessions: StudySession[], dateStr: st
     maths:
       daySessions.filter((s) => s.subject === 'maths').reduce((acc, s) => acc + s.duration, 0) /
       3600,
-    other: daySessions.filter((s) => !s.subject).reduce((acc, s) => acc + s.duration, 0) / 3600,
+    biology:
+      daySessions.filter((s) => s.subject === 'biology').reduce((acc, s) => acc + s.duration, 0) /
+      3600,
+    other: daySessions.filter((s) => !['physics', 'chemistry', 'maths', 'biology'].includes(s.subject || '')).reduce((acc, s) => acc + s.duration, 0) / 3600,
   };
 };
 
@@ -70,7 +73,7 @@ export const getStudyTimeBySubject = (studySessions: StudySession[], dateStr: st
  */
 export const subjectColors = {
   physics: '#6366f1',
-  chemistry: '#10b981',
+  chemistry: '#0ea5e9',
   maths: '#f59e0b',
   biology: '#00b330',
   custom: '#ff57c7',

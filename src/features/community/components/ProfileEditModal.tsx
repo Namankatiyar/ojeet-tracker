@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 import { ProgressCardSettings } from '../../../shared/types';
 import { UserProfileCard } from './UserProfileCard';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
@@ -10,11 +11,6 @@ const GRADE_OPTIONS = [
   { value: 'Class 11', label: 'Class 11' },
   { value: 'Class 12', label: 'Class 12' },
   { value: 'Dropper', label: 'Dropper' },
-];
-
-const EXAM_OPTIONS = [
-  { value: 'JEE 2027', label: 'JEE 2027' },
-  { value: 'JEE 2028', label: 'JEE 2028' },
 ];
 
 interface ProfileEditModalProps {
@@ -26,6 +22,7 @@ interface ProfileEditModalProps {
 
 export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileEditModalProps) {
   const { user } = useRemoteAuth();
+  const { examMode } = useActiveSubjects();
   const googleName = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
   const googleAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '';
 
@@ -66,11 +63,17 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
       ? [{ value: currentGrade, label: currentGrade }, ...GRADE_OPTIONS]
       : GRADE_OPTIONS;
 
-  const examOptions = EXAM_OPTIONS.some((o) => o.value === currentExam)
-    ? EXAM_OPTIONS
+  const prefix = examMode === 'neet' ? 'NEET' : 'JEE';
+  const baseExamOptions = [
+    { value: `${prefix} 2027`, label: `${prefix} 2027` },
+    { value: `${prefix} 2028`, label: `${prefix} 2028` },
+  ];
+
+  const examOptions = baseExamOptions.some((o) => o.value === currentExam)
+    ? baseExamOptions
     : currentExam
-      ? [{ value: currentExam, label: currentExam }, ...EXAM_OPTIONS]
-      : EXAM_OPTIONS;
+      ? [{ value: currentExam, label: currentExam }, ...baseExamOptions]
+      : baseExamOptions;
 
   return createPortal(
     <div className="profile-edit-overlay" onClick={onClose}>

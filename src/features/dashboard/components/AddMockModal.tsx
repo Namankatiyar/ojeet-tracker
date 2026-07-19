@@ -428,9 +428,10 @@ export function AddMockModal({ defaultExamType, onAdd, onEdit, initialScore, onC
               </div>
 
               <div className="ja-subject-summary">
-                <span className="text-physics">P {combinedTotals.physics}</span>
-                <span className="text-chemistry">C {combinedTotals.chemistry}</span>
-                <span className="text-maths">M {combinedTotals.maths}</span>
+                {enabledSubjects.physics && <span className="text-physics">P {combinedTotals.physics}</span>}
+                {enabledSubjects.chemistry && <span className="text-chemistry">C {combinedTotals.chemistry}</span>}
+                {enabledSubjects.maths && <span className="text-maths">M {combinedTotals.maths}</span>}
+                {enabledSubjects.biology && <span className="text-biology">B {combinedTotals.biology}</span>}
               </div>
 
               <div className="total-display">

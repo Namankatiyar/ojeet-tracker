@@ -140,6 +140,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     physicsProgress,
     chemistryProgress,
     mathsProgress,
+    biologyProgress,
     overallProgress,
     calculateSubjectProgress,
     handleToggleMaterial,
@@ -182,6 +183,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
               physicsProgress={physicsProgress}
               chemistryProgress={chemistryProgress}
               mathsProgress={mathsProgress}
+              biologyProgress={biologyProgress}
               overallProgress={overallProgress}
               subjectData={mergedSubjectData}
               onNavigate={onNavigate}

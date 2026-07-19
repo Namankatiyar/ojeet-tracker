@@ -168,7 +168,7 @@ export interface ExamEntry {
 
 // Chapter serials selected per subject. A subject key that is absent OR maps to an
 // empty array means "all chapters for that subject".
-export type ExamSyllabus = Partial<Record<'physics' | 'chemistry' | 'maths', number[]>>;
+export type ExamSyllabus = Partial<Record<Subject, number[]>>;
 
 export interface ProgressCardSettings {
   userName: string;

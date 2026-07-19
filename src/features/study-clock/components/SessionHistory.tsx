@@ -3,6 +3,7 @@ import { Trash2, Clock, X, Pencil, Plus, Calendar } from 'lucide-react';
 import { Subject, SubjectData, StudySession } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 import { formatDateLocal } from '../../../shared/utils/date';
 import { TimePicker } from '../../../shared/components/ui/TimePicker';
 
@@ -27,6 +28,7 @@ export function SessionHistory({
   onEditSession,
   onAddSession,
 }: SessionHistoryProps) {
+  const { subjectMeta } = useActiveSubjects();
   // Edit modal state
   const [editingSession, setEditingSession] = useState<StudySession | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -279,9 +281,11 @@ export function SessionHistory({
                   onChange={(val) => setEditSubject(val as Subject | '')}
                   options={[
                     { value: '', label: 'None' },
-                    { value: 'physics', label: 'Physics' },
-                    { value: 'chemistry', label: 'Chemistry' },
-                    { value: 'maths', label: 'Maths' },
+                    ...subjectMeta.map((meta) => ({
+                      value: meta.key,
+                      label: meta.label,
+                      color: meta.colorVar,
+                    })),
                   ]}
                   placeholder="Select Subject"
                 />
@@ -422,9 +426,11 @@ export function SessionHistory({
                   onChange={(val) => setManualSubject(val as Subject | '')}
                   options={[
                     { value: '', label: 'None' },
-                    { value: 'physics', label: 'Physics' },
-                    { value: 'chemistry', label: 'Chemistry' },
-                    { value: 'maths', label: 'Maths' },
+                    ...subjectMeta.map((meta) => ({
+                      value: meta.key,
+                      label: meta.label,
+                      color: meta.colorVar,
+                    })),
                   ]}
                   placeholder="Select Subject"
                 />
