@@ -5,6 +5,7 @@ import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { supabase } from '../../../shared/lib/supabase';
 import { StudySession } from '../../../shared/types';
+import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/backoff';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -393,6 +394,8 @@ export function useProfileSync() {
     debounceTimeoutRef.current = window.setTimeout(async () => {
       const executeSync = async () => {
         if (!initialFetchDoneRef.current || isFetchingProfileRef.current || !user || !client) return;
+        // Skip while offline; the next local change re-triggers the debounce.
+        if (!isOnline()) return;
         try {
           const { error } = await client
             .from('profiles')
@@ -416,8 +419,9 @@ export function useProfileSync() {
           console.warn('Failed to sync profile snapshot/privacy settings', err);
           retryAttemptRef.current += 1;
           if (retryAttemptRef.current <= 4) {
-            const backoffDelay = Math.min(
-              10000 * 2 ** (retryAttemptRef.current - 1),
+            const backoffDelay = calculateBackoffWithJitter(
+              retryAttemptRef.current - 1,
+              10000,
               300000
             );
             retryTimeoutRef.current = window.setTimeout(() => {
