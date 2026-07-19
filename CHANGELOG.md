@@ -1,3 +1,14 @@
+# [2.4.0-develop.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.4.0-develop.1...v2.4.0-develop.2) (2026-07-19)
+
+
+### Features
+
+* **neet:** add biology syllabus and db migration for neet support ([795b798](https://github.com/Namankatiyar/ojeet-tracker/commit/795b798cd0456eb9a931b16c5a4859adb7101bf3))
+* **sync:** add jittered exponential backoff and offline status helpers ([6d1620c](https://github.com/Namankatiyar/ojeet-tracker/commit/6d1620c137d6bcf76c0300d63e31048ecfde1055))
+* **sync:** apply backoff utility and offline check to profile sync ([95bc241](https://github.com/Namankatiyar/ojeet-tracker/commit/95bc241ea081405eb8ebf12d8993f1fce93b15a9))
+* **sync:** apply backoff utility and visibility cadence adjustment to remote sync ([2e62daf](https://github.com/Namankatiyar/ojeet-tracker/commit/2e62daf1b4b910fdef5305ce3404b8427f4a5cb8))
+* **sync:** back off community heartbeat and friends hooks on failure ([0d5de6f](https://github.com/Namankatiyar/ojeet-tracker/commit/0d5de6fa337b0d82a419ff32b598071ee49c7608))
+
 # [2.4.0-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.3.0...v2.4.0-develop.1) (2026-07-19)
 
 
