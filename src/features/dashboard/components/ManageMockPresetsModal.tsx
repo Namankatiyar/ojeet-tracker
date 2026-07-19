@@ -21,7 +21,35 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
 
   const handleStartEdit = (preset: MockExamPreset) => {
     setEditingId(preset.id);
-    setEditForm({ ...preset });
+    const isNeet = examMode === 'neet';
+
+    const mergedMaxMarks = {
+      physics: preset.subjectMaxMarks.physics || 100,
+      chemistry: preset.subjectMaxMarks.chemistry || 100,
+      maths: isNeet
+        ? 0
+        : (preset.subjectMaxMarks.maths || 100),
+      biology: isNeet
+        ? (preset.subjectMaxMarks.biology || 100)
+        : undefined,
+    };
+
+    const mergedEnabled = {
+      physics: preset.enabledSubjects?.physics ?? true,
+      chemistry: preset.enabledSubjects?.chemistry ?? true,
+      maths: isNeet
+        ? false
+        : (preset.enabledSubjects?.maths ?? true),
+      biology: isNeet
+        ? (preset.enabledSubjects?.biology ?? true)
+        : undefined,
+    };
+
+    setEditForm({
+      ...preset,
+      subjectMaxMarks: mergedMaxMarks,
+      enabledSubjects: mergedEnabled,
+    });
   };
 
   const handleStartAdd = () => {
@@ -73,6 +101,7 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
 
   const toggleSubject = (subject: Subject) => {
     setEditForm((prev) => {
+      const currentVal = prev.enabledSubjects?.[subject] ?? subjects.includes(subject);
       const isNeet = examMode === 'neet';
       const currentEnabled = prev.enabledSubjects || {
         physics: true,
@@ -84,7 +113,7 @@ export function ManageMockPresetsModal({ onClose }: ManageMockPresetsModalProps)
         ...prev,
         enabledSubjects: {
           ...currentEnabled,
-          [subject]: !currentEnabled[subject as keyof typeof currentEnabled],
+          [subject]: !currentVal,
         },
       };
     });
