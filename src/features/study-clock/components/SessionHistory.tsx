@@ -284,6 +284,7 @@ export function SessionHistory({
                     ...subjectMeta.map((meta) => ({
                       value: meta.key,
                       label: meta.label,
+                      color: meta.colorVar,
                     })),
                   ]}
                   placeholder="Select Subject"
@@ -428,6 +429,7 @@ export function SessionHistory({
                     ...subjectMeta.map((meta) => ({
                       value: meta.key,
                       label: meta.label,
+                      color: meta.colorVar,
                     })),
                   ]}
                   placeholder="Select Subject"

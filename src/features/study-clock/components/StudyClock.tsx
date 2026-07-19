@@ -670,6 +670,7 @@ export function StudyClock({
                         options={subjectMeta.map((meta) => ({
                           value: meta.key,
                           label: meta.label,
+                          color: meta.colorVar,
                         }))}
                         placeholder="Select Subject"
                         disabled={!isIdle}
