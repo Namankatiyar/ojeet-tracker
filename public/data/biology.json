@@ -2,33 +2,69 @@
   "NEET_Biology_Syllabus_2026": [
     {
       "unit_number": 1,
-      "unit_name": "Diversity of Living Organisms",
+      "unit_name": "The Living World",
       "subtopics": [
-        "What is living",
+        "Characteristics of living organisms",
         "Biodiversity",
-        "Classification systems",
-        "Taxonomy and systematics",
-        "Species concept",
-        "Taxonomical hierarchy",
+        "Taxonomy",
+        "Nomenclature",
         "Binomial nomenclature",
-        "Five kingdom classification",
-        "Kingdom Monera",
-        "Kingdom Protista",
-        "Kingdom Fungi",
-        "Lichens",
-        "Viruses and viroids",
-        "Plant Kingdom",
-        "Animal Kingdom"
+        "Taxonomical hierarchy"
       ]
     },
     {
       "unit_number": 2,
-      "unit_name": "Structural Organization in Plants & Animals",
+      "unit_name": "Biological Classification",
       "subtopics": [
-        "Plant morphology",
-        "Plant anatomy",
-        "Plant tissues",
-        "Morphology of flowering plants",
+        "Five Kingdom Classification",
+        "Kingdom Monera",
+        "Archaebacteria",
+        "Eubacteria",
+        "Cyanobacteria",
+        "Mycoplasma",
+        "Kingdom Protista",
+        "Kingdom Fungi",
+        "Classification",
+        "Reproduction",
+        "Economic importance",
+        "Viruses",
+        "Viroids",
+        "Prions",
+        "Lichens"
+      ]
+    },
+    {
+      "unit_number": 3,
+      "unit_name": "Plant Kingdom",
+      "subtopics": [
+        "Algae",
+        "Bryophytes",
+        "Pteridophytes",
+        "Gymnosperms",
+        "Angiosperms",
+        "Plant life cycles",
+        "Alternation of generations"
+      ]
+    },
+    {
+      "unit_number": 4,
+      "unit_name": "Animal Kingdom",
+      "subtopics": [
+        "Basis of classification",
+        "Levels of organization",
+        "Symmetry",
+        "Coelom",
+        "Segmentation",
+        "Notochord",
+        "Classification from Porifera to Chordata",
+        "Important characteristics",
+        "Examples"
+      ]
+    },
+    {
+      "unit_number": 5,
+      "unit_name": "Morphology of Flowering Plants",
+      "subtopics": [
         "Root",
         "Stem",
         "Leaf",
@@ -36,10 +72,38 @@
         "Flower",
         "Fruit",
         "Seed",
-        "Plant families",
+        "Floral formula",
+        "Floral diagram",
+        "Families",
+        "Fabaceae",
+        "Solanaceae",
+        "Liliaceae"
+      ]
+    },
+    {
+      "unit_number": 6,
+      "unit_name": "Anatomy of Flowering Plants",
+      "subtopics": [
+        "Tissue system",
+        "Meristematic tissue",
+        "Permanent tissue",
+        "Epidermis",
+        "Ground tissue",
+        "Vascular tissue",
+        "Dicot root",
+        "Monocot root",
+        "Dicot stem",
+        "Monocot stem"
+      ]
+    },
+    {
+      "unit_number": 7,
+      "unit_name": "Structural Organisation in Animals",
+      "subtopics": [
         "Animal tissues",
+        "Cockroach morphology",
         "Frog morphology",
-        "Frog anatomy",
+        "Cockroach anatomy",
         "Digestive system",
         "Circulatory system",
         "Respiratory system",
@@ -48,189 +112,362 @@
       ]
     },
     {
-      "unit_number": 3,
-      "unit_name": "Cell Structure and Function",
+      "unit_number": 8,
+      "unit_name": "Cell \u2013 The Unit of Life",
       "subtopics": [
         "Cell theory",
-        "Prokaryotic and eukaryotic cells",
-        "Plant and animal cells",
+        "Cell types",
         "Cell organelles",
-        "Endomembrane system",
+        "Plasma membrane",
+        "Cell wall",
+        "Nucleus",
+        "Ribosomes",
+        "Endoplasmic reticulum",
+        "Golgi apparatus",
+        "Lysosomes",
+        "Vacuoles",
         "Mitochondria",
         "Plastids",
-        "Ribosomes",
-        "Nucleus",
-        "Biomolecules",
-        "Proteins",
+        "Cytoskeleton",
+        "Centrosome",
+        "Cilia & Flagella"
+      ]
+    },
+    {
+      "unit_number": 9,
+      "unit_name": "Biomolecules",
+      "subtopics": [
+        "Water",
+        "Primary metabolites",
+        "Secondary metabolites",
         "Carbohydrates",
+        "Proteins",
         "Lipids",
         "Nucleic acids",
         "Enzymes",
+        "Enzyme kinetics",
+        "Factors affecting enzymes"
+      ]
+    },
+    {
+      "unit_number": 10,
+      "unit_name": "Cell Cycle & Cell Division",
+      "subtopics": [
         "Cell cycle",
+        "Interphase",
         "Mitosis",
         "Meiosis",
-        "Significance of cell division"
+        "Significance",
+        "Differences between mitosis and meiosis"
       ]
     },
     {
-      "unit_number": 4,
-      "unit_name": "Plant Physiology",
+      "unit_number": 11,
+      "unit_name": "Photosynthesis",
       "subtopics": [
-        "Transport in plants",
-        "Mineral nutrition",
-        "Photosynthesis",
-        "Photosynthetic pigments",
+        "Pigments",
         "Light reaction",
-        "Dark reaction",
-        "Cyclic and non-cyclic photophosphorylation",
-        "Chemiosmotic hypothesis",
+        "Electron transport",
+        "Photophosphorylation",
+        "Calvin cycle",
+        "C4 pathway",
         "Photorespiration",
-        "C3 and C4 pathways",
-        "Plant respiration",
-        "Glycolysis",
-        "TCA cycle",
-        "Electron transport system",
-        "ATP synthesis",
-        "Respiratory quotient",
-        "Plant growth and development",
-        "Differentiation",
-        "Plant growth regulators"
+        "Factors affecting photosynthesis"
       ]
     },
     {
-      "unit_number": 5,
-      "unit_name": "Human Physiology",
+      "unit_number": 12,
+      "unit_name": "Respiration in Plants",
       "subtopics": [
-        "Digestion and absorption",
-        "Breathing and respiration",
-        "Respiratory system",
-        "Body fluids and circulation",
+        "Glycolysis",
+        "Krebs cycle",
+        "ETS",
+        "Oxidative phosphorylation",
+        "Fermentation",
+        "Respiratory quotient"
+      ]
+    },
+    {
+      "unit_number": 13,
+      "unit_name": "Plant Growth & Development",
+      "subtopics": [
+        "Growth",
+        "Differentiation",
+        "Development",
+        "Plant growth regulators",
+        "Auxin",
+        "Gibberellin",
+        "Cytokinin",
+        "ABA",
+        "Ethylene",
+        "Photoperiodism",
+        "Vernalization"
+      ]
+    },
+    {
+      "unit_number": 14,
+      "unit_name": "Digestion & Absorption",
+      "subtopics": [
+        "Digestive system",
+        "Digestive glands",
+        "Digestion of food",
+        "Absorption",
+        "Disorders"
+      ]
+    },
+    {
+      "unit_number": 15,
+      "unit_name": "Breathing & Exchange of Gases",
+      "subtopics": [
+        "Respiratory organs",
+        "Mechanism of breathing",
+        "Gas exchange",
+        "Oxygen dissociation curve",
+        "Disorders"
+      ]
+    },
+    {
+      "unit_number": 16,
+      "unit_name": "Body Fluids & Circulation",
+      "subtopics": [
         "Blood",
+        "Plasma",
+        "Blood cells",
+        "Blood groups",
+        "Coagulation",
+        "Lymph",
+        "Heart",
         "Cardiac cycle",
-        "Electrocardiogram (ECG)",
-        "Excretory products and elimination",
-        "Osmoregulation",
-        "Dialysis",
-        "Locomotion and movement",
-        "Muscles",
-        "Skeletal system",
-        "Neural control and coordination",
-        "Neuron and nerve impulse",
-        "Chemical coordination and integration",
+        "ECG",
+        "Double circulation"
+      ]
+    },
+    {
+      "unit_number": 17,
+      "unit_name": "Excretory Products & Their Elimination",
+      "subtopics": [
+        "Excretion",
+        "Kidney",
+        "Nephron",
+        "Urine formation",
+        "Regulation",
+        "Disorders",
+        "Dialysis"
+      ]
+    },
+    {
+      "unit_number": 18,
+      "unit_name": "Locomotion & Movement",
+      "subtopics": [
+        "Bones",
+        "Joints",
+        "Skeletal muscles",
+        "Muscle contraction",
+        "Disorders"
+      ]
+    },
+    {
+      "unit_number": 19,
+      "unit_name": "Neural Control & Coordination",
+      "subtopics": [
+        "Neuron",
+        "CNS",
+        "PNS"
+      ]
+    },
+    {
+      "unit_number": 20,
+      "unit_name": "Chemical Coordination & Integration",
+      "subtopics": [
         "Endocrine glands",
         "Hormones",
+        "Feedback mechanism",
         "Hormonal disorders"
       ]
     },
     {
-      "unit_number": 6,
-      "unit_name": "Reproduction",
+      "unit_number": 21,
+      "unit_name": "Sexual Reproduction in Flowering Plants",
       "subtopics": [
-        "Reproduction in organisms",
-        "Sexual reproduction in flowering plants",
-        "Male and female gametophytes",
+        "Flower",
+        "Microsporogenesis",
+        "Megasporogenesis",
         "Pollination",
-        "Fertilization",
-        "Embryo development",
-        "Seed development",
+        "Double fertilization",
+        "Embryo",
+        "Endosperm",
+        "Seed",
         "Apomixis",
-        "Human reproductive system",
-        "Gametogenesis",
-        "Menstrual cycle",
-        "Pregnancy and embryonic development",
-        "Reproductive health",
-        "Contraception",
-        "Medical termination of pregnancy (MTP)",
-        "Infertility",
-        "Assisted reproductive technologies (IVF, ZIFT, GIFT)"
+        "Polyembryony"
       ]
     },
     {
-      "unit_number": 7,
-      "unit_name": "Genetics and Evolution",
+      "unit_number": 22,
+      "unit_name": "Human Reproduction",
       "subtopics": [
-        "Mendelian inheritance",
-        "Dominance and inheritance patterns",
+        "Male reproductive system",
+        "Female reproductive system",
+        "Gametogenesis",
+        "Menstrual cycle",
+        "Fertilization",
+        "Pregnancy",
+        "Parturition",
+        "Lactation"
+      ]
+    },
+    {
+      "unit_number": 23,
+      "unit_name": "Reproductive Health",
+      "subtopics": [
+        "Population explosion",
+        "Contraception",
+        "MTP",
+        "STDs",
+        "Infertility",
+        "ART"
+      ]
+    },
+    {
+      "unit_number": 24,
+      "unit_name": "Principles of Inheritance & Variation",
+      "subtopics": [
+        "Mendel",
+        "Dominance",
+        "Test cross",
+        "Back cross",
+        "Incomplete dominance",
+        "Codominance",
+        "Multiple alleles",
         "Blood groups",
-        "Polygenic inheritance",
-        "Chromosomal theory of inheritance",
+        "Linkage",
+        "Crossing over",
         "Sex determination",
-        "Linkage and crossing over",
-        "Sex-linked inheritance",
-        "Chromosomal disorders",
-        "DNA and RNA structure",
+        "Pedigree",
+        "Mutations",
+        "Chromosomal disorders"
+      ]
+    },
+    {
+      "unit_number": 25,
+      "unit_name": "Molecular Basis of Inheritance",
+      "subtopics": [
+        "DNA",
+        "RNA",
         "DNA replication",
         "Transcription",
-        "Translation",
         "Genetic code",
+        "Translation",
         "Lac operon",
         "Human Genome Project",
-        "DNA fingerprinting",
-        "Evolution",
-        "Natural selection",
+        "DNA fingerprinting"
+      ]
+    },
+    {
+      "unit_number": 26,
+      "unit_name": "Evolution",
+      "subtopics": [
+        "Origin of life",
+        "Evidences",
+        "Darwinism",
+        "Lamarckism",
         "Hardy-Weinberg principle",
+        "Natural selection",
         "Adaptive radiation",
         "Human evolution"
       ]
     },
     {
-      "unit_number": 8,
-      "unit_name": "Biology and Human Welfare",
+      "unit_number": 27,
+      "unit_name": "Human Health & Disease",
       "subtopics": [
-        "Human health and disease",
         "Pathogens",
-        "Malaria",
-        "Typhoid",
-        "Pneumonia",
-        "Dengue",
+        "Immunity",
+        "Vaccination",
         "AIDS",
         "Cancer",
-        "Immunity",
-        "Vaccines",
-        "Microbes in human welfare",
-        "Adolescence",
-        "Drug and alcohol abuse",
-        "Tobacco abuse"
+        "Drugs",
+        "Alcohol abuse"
       ]
     },
     {
-      "unit_number": 9,
-      "unit_name": "Biotechnology and Its Applications",
+      "unit_number": 28,
+      "unit_name": "Microbes in Human Welfare",
       "subtopics": [
-        "Principles of biotechnology",
-        "Tools of recombinant DNA technology",
-        "Processes of genetic engineering",
-        "Recombinant DNA technology",
-        "Human insulin production",
-        "Vaccines",
+        "Household products",
+        "Industrial products",
+        "Antibiotics",
+        "Sewage treatment",
+        "Biogas",
+        "Biofertilizers",
+        "Biocontrol"
+      ]
+    },
+    {
+      "unit_number": 29,
+      "unit_name": "Biotechnology: Principles & Processes",
+      "subtopics": [
+        "Genetic engineering",
+        "Restriction enzymes",
+        "Ligase",
+        "Vectors",
+        "Plasmids",
+        "PCR",
+        "Gel electrophoresis",
+        "Transformation"
+      ]
+    },
+    {
+      "unit_number": 30,
+      "unit_name": "Biotechnology & Its Applications",
+      "subtopics": [
+        "Bt cotton",
+        "RNA interference",
         "Gene therapy",
-        "Genetically modified crops",
+        "Insulin",
+        "Molecular diagnosis",
+        "ELISA",
         "Transgenic animals",
-        "Biotechnology applications",
-        "Biopiracy",
-        "Biosafety",
-        "Patents"
+        "Ethical issues"
       ]
     },
     {
-      "unit_number": 10,
-      "unit_name": "Ecology and Environment",
+      "unit_number": 31,
+      "unit_name": "Organisms & Populations",
       "subtopics": [
-        "Organisms and environment",
+        "Habitat",
+        "Niche",
+        "Population growth",
+        "Adaptations",
         "Population interactions",
-        "Ecosystem",
-        "Energy flow",
+        "Life history traits"
+      ]
+    },
+    {
+      "unit_number": 32,
+      "unit_name": "Ecosystem",
+      "subtopics": [
+        "Ecosystem structure",
+        "Productivity",
+        "Decomposition",
+        "Food chain",
+        "Food web",
         "Ecological pyramids",
-        "Ecological succession",
-        "Nutrient cycling",
+        "Ecological succession"
+      ]
+    },
+    {
+      "unit_number": 33,
+      "unit_name": "Biodiversity & Conservation",
+      "subtopics": [
         "Biodiversity",
-        "Biodiversity conservation",
-        "Environmental issues",
-        "Pollution",
-        "Global warming",
-        "Ozone depletion",
-        "Deforestation",
-        "Environmental protection"
+        "Patterns",
+        "Importance",
+        "Loss",
+        "Conservation",
+        "Hotspots",
+        "National parks",
+        "Wildlife sanctuaries",
+        "Biosphere reserves"
       ]
     }
   ]
