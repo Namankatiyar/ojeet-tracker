@@ -22,7 +22,7 @@ export interface CoPilotRecommendation {
 }
 
 export const useStudyCoPilot = () => {
-  const { progress, mockScores, studySessions, handleAddPlannerTask, handleUpdateChapterDetail } =
+  const { progress, mockScores, studySessions, handleAddPlannerTask, handleUpdateChapterDetail, examMode } =
     useUserProgress();
   const { mergedSubjectData } = useSubjectData();
 
@@ -38,25 +38,49 @@ export const useStudyCoPilot = () => {
 
     let totalPhy = 0,
       totalChem = 0,
-      totalMath = 0;
+      totalMath = 0,
+      totalBio = 0;
     recentMocks.forEach((m) => {
-      const subjectMax = (m.maxMarks || 300) / 3;
-      totalPhy += m.physicsMarks / subjectMax;
-      totalChem += m.chemistryMarks / subjectMax;
-      totalMath += m.mathsMarks / subjectMax;
+      const mode = m.examMode ?? examMode;
+      const isNeetScore = mode === 'neet';
+      if (isNeetScore) {
+        const totalMax = m.maxMarks ?? 720;
+        const phyMax = totalMax * 0.25;
+        const chemMax = totalMax * 0.25;
+        const bioMax = totalMax * 0.50;
+        totalPhy += m.physicsMarks / phyMax;
+        totalChem += m.chemistryMarks / chemMax;
+        totalBio += (m.biologyMarks ?? 0) / bioMax;
+      } else {
+        const totalMax = m.maxMarks ?? 300;
+        const subjectMax = totalMax / 3;
+        totalPhy += m.physicsMarks / subjectMax;
+        totalChem += m.chemistryMarks / subjectMax;
+        totalMath += m.mathsMarks / subjectMax;
+      }
     });
 
     const count = recentMocks.length;
     const avgPhy = totalPhy / count;
     const avgChem = totalChem / count;
     const avgMath = totalMath / count;
+    const avgBio = totalBio / count;
 
-    const totalAvg = (avgPhy + avgChem + avgMath) / 3;
+    // The average of the active subjects
+    const totalAvg = examMode === 'neet'
+      ? (avgPhy + avgChem + avgBio) / 3
+      : (avgPhy + avgChem + avgMath) / 3;
 
     const subjects: Subject[] = ['physics', 'chemistry', 'maths', 'biology'];
-    const avgs: Record<Subject, number> = { physics: avgPhy, chemistry: avgChem, maths: avgMath, biology: 0 };
+    const avgs: Record<Subject, number> = examMode === 'neet'
+      ? { physics: avgPhy, chemistry: avgChem, maths: 0, biology: avgBio }
+      : { physics: avgPhy, chemistry: avgChem, maths: avgMath, biology: 0 };
 
     subjects.forEach((sub) => {
+      // For NEET: do not boost maths. For JEE: do not boost biology.
+      if (examMode === 'neet' && sub === 'maths') return;
+      if (examMode === 'jee' && sub === 'biology') return;
+
       const gap = totalAvg > 0 ? (totalAvg - avgs[sub]) / totalAvg : 0;
       if (gap > 0) {
         weights[sub] = 1.0 + 1.5 * gap; // Sensitivity factor beta = 1.5
@@ -64,7 +88,7 @@ export const useStudyCoPilot = () => {
     });
 
     return weights;
-  }, [mockScores]);
+  }, [mockScores, examMode]);
 
   // 2. Calculate weekly study duration share per subject
   const subjectStudyTimeShares = useMemo(() => {
@@ -84,8 +108,10 @@ export const useStudyCoPilot = () => {
     const timeWeights: Record<Subject, number> = { physics: 1.0, chemistry: 1.0, maths: 1.0, biology: 1.0 };
 
     if (totalStudyTime > 0) {
-      const subjects: Subject[] = ['physics', 'chemistry', 'maths', 'biology'];
-      subjects.forEach((sub) => {
+      const activeSubs = examMode === 'neet'
+        ? ['physics', 'chemistry', 'biology'] as Subject[]
+        : ['physics', 'chemistry', 'maths'] as Subject[];
+      activeSubs.forEach((sub) => {
         shares[sub] = totalDurations[sub] / totalStudyTime;
         // If subject share is below 20%, boost urgency of its active chapters
         if (shares[sub] < 0.2) {
@@ -95,7 +121,7 @@ export const useStudyCoPilot = () => {
     }
 
     return { shares, timeWeights, totalStudyTime };
-  }, [studySessions]);
+  }, [studySessions, examMode]);
 
   // 3. Map Study Sessions by Chapter for easy lookups
   const chapterSessionsMap = useMemo(() => {
@@ -113,7 +139,9 @@ export const useStudyCoPilot = () => {
   // 4. Compute Chapter Urgency & Recommendations
   const recommendations = useMemo(() => {
     const list: CoPilotRecommendation[] = [];
-    const subjects: Subject[] = ['physics', 'chemistry', 'maths'];
+    const subjects = examMode === 'neet'
+      ? ['physics', 'chemistry', 'biology'] as Subject[]
+      : ['physics', 'chemistry', 'maths'] as Subject[];
     const today = new Date();
 
     subjects.forEach((sub) => {
@@ -282,6 +310,7 @@ export const useStudyCoPilot = () => {
     subjectStudyTimeShares,
     subjectWeaknessWeights,
     chapterSessionsMap,
+    examMode,
   ]);
 
   // 5. Inject task into planner
