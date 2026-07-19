@@ -1,3 +1,23 @@
+# [2.5.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.4.0...v2.5.0) (2026-07-19)
+
+
+### Bug Fixes
+
+* **core:** widen ExamSyllabus to Subject; auto-sync targetExam on examMode ([5cb92d9](https://github.com/Namankatiyar/ojeet-tracker/commit/5cb92d9709f04f75296e23cdfad133b0349d967a))
+* **dashboard:** fix mock preset toggle UX and uninitialized marks on edit ([65a98aa](https://github.com/Namankatiyar/ojeet-tracker/commit/65a98aabbc44f19c91f12e865f8423854e27171c))
+* **dashboard:** make ExamCountdownModal and SyllabusScopePickerModal exam-mode aware ([6aa1c44](https://github.com/Namankatiyar/ojeet-tracker/commit/6aa1c44ceb019560d153a27528df28e96a5a7e6c))
+* **dashboard:** make ManageMockPresetsModal biology-aware for NEET mode ([67f2e75](https://github.com/Namankatiyar/ojeet-tracker/commit/67f2e755c396d16031a5e259b37a0489bdbbf754))
+* **dashboard:** make subjects array dynamic for NEET mode (Biology replaces Maths) ([9b23c1d](https://github.com/Namankatiyar/ojeet-tracker/commit/9b23c1da05e30b201fd8220d6b74dd6f09f563f7))
+* **study-clock:** add subject color to custom select options ([7037d01](https://github.com/Namankatiyar/ojeet-tracker/commit/7037d01cc9cf36579ffe86defbd5cd48ec2db8d0))
+* **study-clock:** make SessionStatistics subject breakdown mode-aware for NEET Biology ([f8ab9ab](https://github.com/Namankatiyar/ojeet-tracker/commit/f8ab9ab809905411840e4173ebd24f0e633b303a))
+* **study-clock:** make StudyClock subject selector and SessionHistory filter mode-aware ([7ec2079](https://github.com/Namankatiyar/ojeet-tracker/commit/7ec20796cf8dd75e9cbea718c264a6bd3f9c1f7b))
+* **utils:** include biology in getMockPaperTotal and study analytics aggregation ([a5dc9ce](https://github.com/Namankatiyar/ojeet-tracker/commit/a5dc9ceb8a11be1f028a4914160f30d05771da35))
+
+
+### Features
+
+* **community:** make exam target options mode-aware in ProfileEditModal ([2f7c2f6](https://github.com/Namankatiyar/ojeet-tracker/commit/2f7c2f6934a10b34334086433d4786b02eca90c5))
+
 # [2.4.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.3.0...v2.4.0) (2026-07-19)
 
 
