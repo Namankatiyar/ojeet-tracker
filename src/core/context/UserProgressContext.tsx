@@ -35,6 +35,14 @@ interface UserProgressContextType {
   setMockExamPresets: (
     presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])
   ) => void;
+  jeeMockExamPresets: MockExamPreset[];
+  setJeeMockExamPresets: (
+    presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])
+  ) => void;
+  neetMockExamPresets: MockExamPreset[];
+  setNeetMockExamPresets: (
+    presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])
+  ) => void;
   tombstones: SyncTombstoneMap;
   setTombstones: (
     tombstones: SyncTombstoneMap | ((prev: SyncTombstoneMap) => SyncTombstoneMap)
@@ -130,6 +138,10 @@ interface ProgressDataContextType {
   setExamDates: (dates: ExamEntry[] | ((prev: ExamEntry[]) => ExamEntry[])) => void;
   mockExamPresets: MockExamPreset[];
   setMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
+  jeeMockExamPresets: MockExamPreset[];
+  setJeeMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
+  neetMockExamPresets: MockExamPreset[];
+  setNeetMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
   tombstones: SyncTombstoneMap;
   setTombstones: (tombstones: SyncTombstoneMap | ((prev: SyncTombstoneMap) => SyncTombstoneMap)) => void;
   dailyQuestionLogs: Record<string, number>;
@@ -1508,6 +1520,10 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setExamDates,
       mockExamPresets: examMode === 'neet' ? neetMockExamPresets : mockExamPresets,
       setMockExamPresets: setMockExamPresetsModeAware,
+      jeeMockExamPresets: mockExamPresets,
+      setJeeMockExamPresets: setMockExamPresets,
+      neetMockExamPresets,
+      setNeetMockExamPresets,
       tombstones,
       setTombstones,
       dailyQuestionLogs,
@@ -1555,6 +1571,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       examMode,
       mockExamPresets,
       neetMockExamPresets,
+      setMockExamPresets,
       setMockExamPresetsModeAware,
       tombstones,
       setTombstones,
@@ -1590,6 +1607,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleAddMockExamPreset,
       handleDeleteMockExamPreset,
       handleUpdateMockExamPreset,
+      setNeetMockExamPresets,
     ]
   );
 

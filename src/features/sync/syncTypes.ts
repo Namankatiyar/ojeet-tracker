@@ -8,6 +8,7 @@ import {
   SubjectData,
   MockExamPreset,
 } from '../../shared/types';
+import { type ExamMode } from '../../shared/config/subjects';
 
 export const SYNC_SCHEMA_VERSION = 2 as const;
 export const SYNC_DEFAULT_PLANNER_HISTORY_DAYS = 60;
@@ -53,6 +54,8 @@ export interface SyncPayloadV1 {
       enableMusicPlayer?: boolean;
       progressCardSettings: SyncedProgressCardSettings;
       mockExamPresets: MockExamPreset[];
+      examMode?: ExamMode;
+      neetMockExamPresets?: MockExamPreset[];
     };
     subjects?: {
       subjectData: Record<Subject, SubjectData | null>;
@@ -78,6 +81,8 @@ export interface SyncPayloadInput {
   enableMusicPlayer?: boolean;
   progressCardSettings: ProgressCardSettings;
   mockExamPresets: MockExamPreset[];
+  examMode?: ExamMode;
+  neetMockExamPresets?: MockExamPreset[];
   appVersion?: string;
   generatedAt?: string;
   now?: Date;

@@ -73,6 +73,8 @@ export function buildSyncPayload(input: SyncPayloadInput): SyncPayloadV1 {
         enableMusicPlayer: input.enableMusicPlayer,
         progressCardSettings: toSyncedProgressCardSettings(input.progressCardSettings),
         mockExamPresets: input.mockExamPresets || [],
+        examMode: input.examMode,
+        neetMockExamPresets: input.neetMockExamPresets,
       },
       subjects: input.subjects,
       tombstones: input.tombstones,

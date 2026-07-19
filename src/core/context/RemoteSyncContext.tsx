@@ -200,6 +200,8 @@ function createLocalPayload(params: {
   disableAutoShift: ReturnType<typeof useUserProgress>['disableAutoShift'];
   progressCardSettings: ReturnType<typeof useUserProgress>['progressCardSettings'];
   mockExamPresets: ReturnType<typeof useUserProgress>['mockExamPresets'];
+  examMode: ReturnType<typeof useUserProgress>['examMode'];
+  neetMockExamPresets: ReturnType<typeof useUserProgress>['neetMockExamPresets'];
   tombstones: ReturnType<typeof useUserProgress>['tombstones'];
   subjectData: ReturnType<typeof useSubjectData>['subjectData'];
   customColumns: ReturnType<typeof useSubjectData>['customColumns'];
@@ -214,6 +216,8 @@ function createLocalPayload(params: {
     disableAutoShift: params.disableAutoShift,
     progressCardSettings: params.progressCardSettings,
     mockExamPresets: params.mockExamPresets,
+    examMode: params.examMode,
+    neetMockExamPresets: params.neetMockExamPresets,
     tombstones: params.tombstones,
     domainsModifiedAt: getDomainsModifiedAtMap(),
     plannerHistoryDays: SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
@@ -331,8 +335,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setEnableMusicPlayer,
     progressCardSettings,
     setProgressCardSettings,
-    mockExamPresets,
-    setMockExamPresets,
+    jeeMockExamPresets,
+    setJeeMockExamPresets,
+    neetMockExamPresets,
+    setNeetMockExamPresets,
+    examMode,
+    setExamMode,
     tombstones,
     setTombstones,
   } = useUserProgress();
@@ -419,7 +427,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           visibleStats: progressCardSettings.visibleStats,
           showTasks: progressCardSettings.showTasks,
         },
-        mockExamPresets,
+        mockExamPresets: jeeMockExamPresets,
+        examMode,
+        neetMockExamPresets,
       }),
       subjects: isSubjectDataLoaded
         ? JSON.stringify({
@@ -439,7 +449,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     enableAIAgent,
     enableMusicPlayer,
     progressCardSettings,
-    mockExamPresets,
+    jeeMockExamPresets,
+    examMode,
+    neetMockExamPresets,
     subjectData,
     customColumns,
     excludedColumns,
@@ -474,6 +486,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             payload.domains.settings.mockExamPresets.length > 0
               ? payload.domains.settings.mockExamPresets
               : defaultMockExamPresets,
+          examMode: payload.domains.settings.examMode,
+          neetMockExamPresets: payload.domains.settings.neetMockExamPresets,
         }),
         subjects: payload.domains.subjects
           ? JSON.stringify({
@@ -501,12 +515,21 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
         showTasks: payload.domains.settings.progressCardSettings.showTasks ?? true,
       }));
-      setMockExamPresets(
+      setJeeMockExamPresets(
         payload.domains.settings.mockExamPresets &&
           payload.domains.settings.mockExamPresets.length > 0
           ? payload.domains.settings.mockExamPresets
           : defaultMockExamPresets
       );
+      if (payload.domains.settings.examMode !== undefined) {
+        setExamMode(payload.domains.settings.examMode);
+      }
+      if (
+        payload.domains.settings.neetMockExamPresets !== undefined &&
+        payload.domains.settings.neetMockExamPresets.length > 0
+      ) {
+        setNeetMockExamPresets(payload.domains.settings.neetMockExamPresets);
+      }
 
       if (payload.domains.subjects) {
         setSubjectData(payload.domains.subjects.subjectData);
@@ -538,7 +561,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setPlannerTasks,
       setProgress,
       setProgressCardSettings,
-      setMockExamPresets,
+      setJeeMockExamPresets,
+      setNeetMockExamPresets,
+      setExamMode,
       setSubjectData,
       setTombstones,
     ]
@@ -562,7 +587,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         examDates,
         disableAutoShift,
         progressCardSettings,
-        mockExamPresets,
+        mockExamPresets: jeeMockExamPresets,
+        examMode,
+        neetMockExamPresets,
         tombstones,
         subjectData,
         customColumns,
@@ -828,7 +855,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     plannerTasks,
     progress,
     progressCardSettings,
-    mockExamPresets,
+    jeeMockExamPresets,
+    neetMockExamPresets,
+    examMode,
     setStudySessions,
     // studySessions intentionally omitted — read via latestStudySessionsRef to prevent stale closure.
     subjectData,
