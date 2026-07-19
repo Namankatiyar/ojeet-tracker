@@ -73,7 +73,7 @@ export const getStudyTimeBySubject = (studySessions: StudySession[], dateStr: st
  */
 export const subjectColors = {
   physics: '#6366f1',
-  chemistry: '#10b981',
+  chemistry: '#0ea5e9',
   maths: '#f59e0b',
   biology: '#00b330',
   custom: '#ff57c7',

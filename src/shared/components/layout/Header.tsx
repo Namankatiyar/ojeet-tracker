@@ -522,13 +522,7 @@ export function Header({
                   else if (meta.key === 'maths') progress = mathsProgress;
                   else if (meta.key === 'biology') progress = biologyProgress ?? 0;
 
-                  const colors: Record<string, string> = {
-                    physics: '#3b82f6',
-                    chemistry: '#f59e0b',
-                    maths: '#10b981',
-                    biology: '#00b330',
-                  };
-                  const color = colors[meta.key] || '#10b981';
+                  const color = meta.colorVar;
                   const Icon = SUBJECT_ICON_MAP[meta.iconKey] ?? FlaskConical;
 
                   return (

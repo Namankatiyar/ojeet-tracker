@@ -1033,11 +1033,15 @@ html[data-theme^='dark-'] .distribution-modal {
 }
 
 .distribution-bar-fill.chemistry {
-  background: linear-gradient(90deg, #10b981, #34d399);
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8);
 }
 
 .distribution-bar-fill.maths {
   background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.distribution-bar-fill.biology {
+  background: linear-gradient(90deg, #00b330, #2ae05c);
 }
 
 .distribution-bar-fill.custom {
@@ -1173,11 +1177,15 @@ html[data-theme^='dark-'] .distribution-modal {
 }
 
 .chapter-bar-fill.chemistry {
-  background: linear-gradient(90deg, #10b981, #34d399);
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8);
 }
 
 .chapter-bar-fill.maths {
   background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.chapter-bar-fill.biology {
+  background: linear-gradient(90deg, #00b330, #2ae05c);
 }
 
 /* Edit Session Modal Form */
