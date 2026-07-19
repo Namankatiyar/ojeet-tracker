@@ -1659,6 +1659,27 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     ]
   );
 
+  // Auto-update targetExam when examMode changes to keep profile in sync
+  useEffect(() => {
+    const now = new Date();
+    const month = now.getMonth(); // 0-indexed
+    const year = now.getFullYear();
+
+    const neetTargetYear = month < 5 ? year : year + 1; // NEET is May/June
+    const jeeTargetYear = month < 3 ? year : year + 1;  // JEE Mains is Jan-Apr
+
+    setProgressCardSettings((prev) => {
+      const current = prev.targetExam || '';
+      if (examMode === 'neet' && (current === '' || current.startsWith('JEE'))) {
+        return { ...prev, targetExam: `NEET ${neetTargetYear}` };
+      }
+      if (examMode === 'jee' && current.startsWith('NEET')) {
+        return { ...prev, targetExam: `JEE ${jeeTargetYear}` };
+      }
+      return prev; // no change for custom values
+    });
+  }, [examMode, setProgressCardSettings]);
+
   return (
     <ProgressDataContext.Provider value={progressDataValue}>
       <StudySessionContext.Provider value={studySessionValue}>
