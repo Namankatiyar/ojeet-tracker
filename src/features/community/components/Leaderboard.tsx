@@ -1,12 +1,36 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../shared/lib/supabase';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
-import { LeaderboardEntry } from '../../../shared/types';
-import { Trophy, Award, User, AlertCircle } from 'lucide-react';
+import { LeaderboardEntry, LeaderboardMode } from '../../../shared/types';
+import { Trophy, Award, User, AlertCircle, Sun, Calendar } from 'lucide-react';
 
 interface LeaderboardProps {
   onSignInClick: () => void;
 }
+
+const MODE_CONFIG: Record<
+  LeaderboardMode,
+  { label: string; hoursSuffix: string; description: string; icon: typeof Sun }
+> = {
+  daily: {
+    label: 'Today',
+    hoursSuffix: 'hrs / day',
+    description: 'Ranked by study hours in the last 24 hours. Refreshes daily at midnight.',
+    icon: Sun,
+  },
+  weekly: {
+    label: 'This week',
+    hoursSuffix: 'hrs / wk',
+    description: 'Ranked by study hours over the last 7 days. Refreshes daily at midnight.',
+    icon: Calendar,
+  },
+  monthly: {
+    label: 'This month',
+    hoursSuffix: 'hrs / mo',
+    description: 'Ranked by study hours over the last 30 days. Refreshes daily at midnight.',
+    icon: Trophy,
+  },
+};
 
 // Renders avatar image with automatic fallback to User icon on load error
 function AvatarWithFallback({
@@ -43,12 +67,14 @@ function PodiumCard({
   entry,
   isMe,
   maxHours,
+  hoursSuffix,
 }: {
   entry: LeaderboardEntry;
   isMe: boolean;
   maxHours: number;
+  hoursSuffix: string;
 }) {
-  const hours = Number(entry.weekly_hours || 0);
+  const hours = Number(entry.hours ?? entry.weekly_hours ?? 0);
   const pct = maxHours > 0 ? Math.round((hours / maxHours) * 100) : 0;
   const displayName = entry.display_name || entry.username || 'Student';
   const rankClass = entry.rank === 1 ? 'gold' : entry.rank === 2 ? 'silver' : 'bronze';
@@ -82,7 +108,7 @@ function PodiumCard({
 
       <div className="lb-podium-hours">
         <span className="lb-hours-num">{hours.toFixed(1)}</span>
-        <span className="lb-hours-label">hrs / wk</span>
+        <span className="lb-hours-label">{hoursSuffix}</span>
       </div>
 
       {/* Relative fill bar */}
@@ -103,7 +129,7 @@ function ListRow({
   isMe: boolean;
   maxHours: number;
 }) {
-  const hours = Number(entry.weekly_hours || 0);
+  const hours = Number(entry.hours ?? entry.weekly_hours ?? 0);
   const pct = maxHours > 0 ? Math.round((hours / maxHours) * 100) : 0;
   const displayName = entry.display_name || entry.username || 'Student';
 
@@ -140,9 +166,10 @@ function ListRow({
   );
 }
 
-// ponytail: single read from pre-computed leaderboard_snapshot table (~10 rows, index-only scan)
+// single read from pre-computed leaderboard_snapshot table, filtered by mode
 export function Leaderboard({ onSignInClick }: LeaderboardProps) {
   const { user } = useRemoteAuth();
+  const [activeMode, setActiveMode] = useState<LeaderboardMode>('weekly');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isSelfInvalidated, setIsSelfInvalidated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,6 +177,7 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
   const [snapshotAt, setSnapshotAt] = useState<string | null>(null);
 
   const userId = user?.id;
+  const modeConfig = MODE_CONFIG[activeMode];
 
   useEffect(() => {
     if (!userId || !supabase) {
@@ -163,10 +191,11 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
       setIsLoading(true);
       setError(null);
       try {
-        // Single query: read pre-computed snapshot
+        // Single query: read pre-computed snapshot for the active mode
         const { data: standings, error: fetchErr } = await supabase
           .from('leaderboard_snapshot')
-          .select('rank, user_id, display_name, username, avatar_url, weekly_hours, snapshot_at')
+          .select('rank, user_id, display_name, username, avatar_url, hours, snapshot_at')
+          .eq('mode', activeMode)
           .order('rank', { ascending: true });
 
         if (fetchErr) throw fetchErr;
@@ -200,7 +229,7 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
 
     load();
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, activeMode]);
 
   if (!user) {
     return (
@@ -216,7 +245,7 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
   }
 
   // Highest hours for relative bar scaling
-  const maxHours = entries.length > 0 ? Number(entries[0].weekly_hours || 0) : 1;
+  const maxHours = entries.length > 0 ? Number(entries[0].hours ?? entries[0].weekly_hours ?? 0) : 1;
 
   const podium = entries.filter(e => e.rank <= 3);
   const restList = entries.filter(e => e.rank > 3);
@@ -236,14 +265,30 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
           <Trophy size={24} />
         </div>
         <div className="leaderboard-header-text">
-          <h2>Weekly study leaderboard</h2>
-          <p>Ranked by study hours over the last 7 days. Refreshes daily.</p>
+          <h2>Study leaderboard</h2>
+          <p>{modeConfig.description}</p>
           {snapshotAt && (
             <span className="leaderboard-snapshot-ts">
               Updated {new Date(snapshotAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
             </span>
           )}
         </div>
+      </div>
+
+      {/* ── Mode Switcher ── */}
+      <div className="lb-mode-switcher" role="tablist" aria-label="Leaderboard time period">
+        {(Object.keys(MODE_CONFIG) as LeaderboardMode[]).map(mode => (
+          <button
+            key={mode}
+            id={`lb-mode-${mode}`}
+            role="tab"
+            aria-selected={activeMode === mode}
+            className={`lb-mode-btn${activeMode === mode ? ' active' : ''}`}
+            onClick={() => setActiveMode(mode)}
+          >
+            {MODE_CONFIG[mode].label}
+          </button>
+        ))}
       </div>
 
       {/* ── Anti-cheat warning ── */}
@@ -275,7 +320,9 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
       ) : entries.length === 0 ? (
         <div className="leaderboard-empty glass-panel">
           <Trophy size={36} />
-          <p>No study hours recorded this week yet. Be the first on the leaderboard!</p>
+          <p>
+            No study hours recorded {activeMode === 'daily' ? 'today' : activeMode === 'weekly' ? 'this week' : 'this month'} yet. Be the first on the leaderboard!
+          </p>
         </div>
       ) : (
         <>
@@ -288,6 +335,7 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
                   entry={entry}
                   isMe={entry.user_id === user.id}
                   maxHours={maxHours}
+                  hoursSuffix={modeConfig.hoursSuffix}
                 />
               ))}
             </div>

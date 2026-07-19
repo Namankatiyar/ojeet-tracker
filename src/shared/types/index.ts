@@ -236,5 +236,9 @@ export interface LeaderboardEntry {
   display_name?: string;
   username?: string;
   avatar_url?: string;
-  weekly_hours: number;
+  hours: number;
+  /** @deprecated use `hours` instead — kept for snapshot backward-compat */
+  weekly_hours?: number;
 }
+
+export type LeaderboardMode = 'daily' | 'weekly' | 'monthly';
