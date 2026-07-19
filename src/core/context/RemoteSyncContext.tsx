@@ -25,6 +25,7 @@ import {
 } from '../../features/sync/syncCodec';
 import { mergePayloadDomainsWithPolicy, SyncDomain } from '../../features/sync/syncMerge';
 import { StudySession } from '../../shared/types';
+import { calculateBackoffWithJitter, isOnline } from '../../shared/utils/backoff';
 
 type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
 
@@ -69,10 +70,17 @@ const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-de
 const CACHED_AGGREGATE_KEY = `${REMOTE_SYNC_META_PREFIX}cached-aggregate`;
 const DEFAULT_DELTA_CURSOR = { created_at: '2000-01-01T00:00:00.000Z' };
 
-const SYNC_BATCH_INTERVAL_MS = 600_000; // 10 minutes — time-based polling only
+const SYNC_BATCH_INTERVAL_MS = 600_000; // 10 minutes — active (tab visible) polling cadence
+const SYNC_PASSIVE_INTERVAL_MS = 1_800_000; // 30 minutes — cadence while the tab is hidden
 const SYNC_RETRY_BASE_MS = 5_000;
 const SYNC_RETRY_MAX_MS = 300_000;
 // Focus-triggered syncs removed — app uses time-based polling only.
+
+// Cadence for the next scheduled success-path sync, throttled when backgrounded.
+const nextSyncInterval = () =>
+  typeof document !== 'undefined' && document.visibilityState === 'hidden'
+    ? SYNC_PASSIVE_INTERVAL_MS
+    : SYNC_BATCH_INTERVAL_MS;
 
 const domainKeys: SyncDomain[] = [
   'progress',
@@ -892,9 +900,21 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           scheduledTimerRef.current = null;
           scheduledDueAtRef.current = null;
 
+          // Offline: don't burn a request. Sync immediately on reconnect, and keep a
+          // long fallback timer in case the online event never fires.
+          if (!isOnline()) {
+            const onOnline = () => {
+              window.removeEventListener('online', onOnline);
+              scheduleSync(0);
+            };
+            window.addEventListener('online', onOnline);
+            scheduleSync(SYNC_RETRY_MAX_MS);
+            return;
+          }
+
           try {
             await runSyncRef.current();
-            scheduleSync(SYNC_BATCH_INTERVAL_MS);
+            scheduleSync(nextSyncInterval());
           } catch (error) {
             // If sync fails with a "Payload version mismatch" or similar permanent-looking error,
             // or after too many retries, prioritize a PWA update check.
@@ -903,8 +923,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               if ((window as any).__FORCE_PWA_UPDATE__) (window as any).__FORCE_PWA_UPDATE__();
             }
 
-            const backoffDelay = Math.min(
-              SYNC_RETRY_BASE_MS * 2 ** Math.max(0, retryAttemptRef.current - 1),
+            const backoffDelay = calculateBackoffWithJitter(
+              Math.max(0, retryAttemptRef.current - 1),
+              SYNC_RETRY_BASE_MS,
               SYNC_RETRY_MAX_MS
             );
             scheduleSync(backoffDelay);
@@ -991,10 +1012,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     clearScheduledSync();
     try {
       await runSyncRef.current();
-      scheduleSync(SYNC_BATCH_INTERVAL_MS);
+      scheduleSync(nextSyncInterval());
     } catch {
-      const backoffDelay = Math.min(
-        SYNC_RETRY_BASE_MS * 2 ** Math.max(0, retryAttemptRef.current - 1),
+      const backoffDelay = calculateBackoffWithJitter(
+        Math.max(0, retryAttemptRef.current - 1),
+        SYNC_RETRY_BASE_MS,
         SYNC_RETRY_MAX_MS
       );
       scheduleSync(backoffDelay);
@@ -1016,6 +1038,22 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // clearScheduledSync). Including it would re-fire on every sync cycle's state update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearScheduledSync, isConfigured, user]);
+
+  // When the tab returns to the foreground, pull the next scheduled sync back to
+  // the active cadence. scheduleSync only shortens an existing timer, so a pending
+  // retry or sooner sync is preserved.
+  useEffect(() => {
+    if (!user || !isConfigured) return;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        scheduleSync(SYNC_BATCH_INTERVAL_MS);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, isConfigured, scheduleSync]);
 
   // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
   const lastPushedAggregateRef = useRef<string | null>(null);
