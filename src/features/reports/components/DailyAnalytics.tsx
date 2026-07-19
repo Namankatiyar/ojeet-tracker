@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { StudySession, Subject } from '../../../shared/types';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 import {
   Calendar,
   ChevronLeft,
@@ -65,6 +66,7 @@ const formatDateDisplay = (dateStr: string): string => {
 /* ───────────────────────────────────────────── */
 export const DailyAnalytics: React.FC = () => {
   const { studySessions, plannerTasks, dailyQuestionLogs } = useUserProgress();
+  const { subjects } = useActiveSubjects();
 
   const todayStr = getLocalDateString(0);
 
@@ -240,7 +242,7 @@ export const DailyAnalytics: React.FC = () => {
 
             if (overlapMin > 0) {
               const sub =
-                s.subject && ['physics', 'chemistry', 'maths'].includes(s.subject)
+                s.subject && (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).includes(s.subject)
                   ? s.subject
                   : 'custom';
               slots[hr].subjects.add(sub);
@@ -304,9 +306,9 @@ export const DailyAnalytics: React.FC = () => {
     if (daySessions.length === 0) return items;
 
     const { totals } = subjectTotals;
-    const subjects: Subject[] = ['physics', 'chemistry', 'maths'];
-    const studied = subjects.filter((s) => totals[s] > 0);
-    const notStudied = subjects.filter((s) => totals[s] === 0);
+    const activeSubjects = subjects;
+    const studied = activeSubjects.filter((s) => totals[s] > 0);
+    const notStudied = activeSubjects.filter((s) => totals[s] === 0);
 
     if (studied.length > 0 && notStudied.length > 0) {
       const dominant = studied.reduce((a, b) => (totals[a] > totals[b] ? a : b));
@@ -356,7 +358,7 @@ export const DailyAnalytics: React.FC = () => {
     }
 
     return items;
-  }, [daySessions, subjectTotals, streak, totalDurationSec]);
+  }, [daySessions, subjectTotals, streak, totalDurationSec, subjects]);
 
   /* ── Date Navigation ── */
   const adjustDate = useCallback((offset: number) => {
@@ -449,7 +451,7 @@ export const DailyAnalytics: React.FC = () => {
       let total = 0;
       daySess.forEach((s) => {
         const sub =
-          s.subject && ['physics', 'chemistry', 'maths'].includes(s.subject) ? s.subject : 'custom';
+          s.subject && (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).includes(s.subject) ? s.subject : 'custom';
         totals[sub] += s.duration;
         total += s.duration;
       });
@@ -468,8 +470,8 @@ export const DailyAnalytics: React.FC = () => {
 
   /* ── Subject Chapters (grouped by subject) ── */
   const subjectChapters = useMemo(() => {
-    const subjects: Subject[] = ['physics', 'chemistry', 'maths'];
-    return subjects
+    const activeSubjects = subjects;
+    return activeSubjects
       .filter((sub) => subjectTotals.totals[sub] > 0)
       .map((sub) => {
         const chapters = chapterBreakdown
@@ -478,7 +480,7 @@ export const DailyAnalytics: React.FC = () => {
         const pct = Math.round((subjectTotals.totals[sub] / subjectTotals.total) * 100);
         return { subject: sub, duration: subjectTotals.totals[sub], pct, chapters };
       });
-  }, [subjectTotals, chapterBreakdown]);
+  }, [subjectTotals, chapterBreakdown, subjects]);
 
   /* ── Histogram Max ── */
   const histogramMax = useMemo(
@@ -660,7 +662,7 @@ export const DailyAnalytics: React.FC = () => {
                   >
                     <div className="dh-weekly-bar-track">
                       {(
-                        ['physics', 'chemistry', 'maths', 'custom'] as Array<Subject | 'custom'>
+                        [...subjects, 'custom'] as Array<Subject | 'custom'>
                       ).map((sub) => {
                         const heightPct = weeklyMax > 0 ? (day.totals[sub] / weeklyMax) * 100 : 0;
                         return heightPct > 0 ? (
