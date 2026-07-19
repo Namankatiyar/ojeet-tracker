@@ -79,6 +79,7 @@ function AppContent() {
     physicsProgress,
     chemistryProgress,
     mathsProgress,
+    biologyProgress,
     progressCardSettings,
     setProgressCardSettings,
   } = useUserProgress();
@@ -185,6 +186,7 @@ function AppContent() {
         physicsProgress={physicsProgress}
         chemistryProgress={chemistryProgress}
         mathsProgress={mathsProgress}
+        biologyProgress={biologyProgress}
         examDate={primaryExamDate}
         progressCardSettings={progressCardSettings}
         onProgressCardSettingsChange={setProgressCardSettings}
