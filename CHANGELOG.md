@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.5.0...v2.6.0) (2026-07-19)
+
+
+### Features
+
+* **community:** add daily and monthly leaderboard modes with rolling windows ([508a348](https://github.com/Namankatiyar/ojeet-tracker/commit/508a3488fdc861a4731efe2f645143db7b786461))
+
 # [2.5.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.4.0...v2.5.0) (2026-07-19)
 
 
