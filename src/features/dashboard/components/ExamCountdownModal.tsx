@@ -5,6 +5,7 @@ import { ExamEntry, ExamSyllabus, Subject, SubjectData } from '../../../shared/t
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
 import { SyllabusScopePickerModal } from './SyllabusScopePickerModal';
 import { calculateDaysRemaining } from '../../../shared/utils/date';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 
 interface ExamCountdownModalProps {
   examDates: ExamEntry[];
@@ -29,6 +30,7 @@ export function ExamCountdownModal({
   subjectData,
   onClose,
 }: ExamCountdownModalProps) {
+  const { subjects } = useActiveSubjects();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
@@ -42,7 +44,7 @@ export function ExamCountdownModal({
     if (!exam.syllabus || !subjectData) return 'Full syllabus';
     let totalSelected = 0;
     let totalChapters = 0;
-    (['physics', 'chemistry', 'maths'] as const).forEach((subj) => {
+    subjects.forEach((subj) => {
       const data = subjectData[subj];
       if (data) {
         totalChapters += data.chapters.length;
