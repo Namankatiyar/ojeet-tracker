@@ -16,6 +16,7 @@ import {
   ChapterDetailProgress,
 } from '../../shared/types';
 import { SyncTombstoneMap, SYNC_DEFAULT_PLANNER_HISTORY_DAYS } from '../../features/sync/syncTypes';
+import { type ExamMode } from '../../shared/config/subjects';
 import { useSubjectData } from './SubjectDataContext';
 import { useTheme } from './ThemeContext';
 
@@ -32,6 +33,14 @@ interface UserProgressContextType {
   setExamDates: (dates: ExamEntry[] | ((prev: ExamEntry[]) => ExamEntry[])) => void;
   mockExamPresets: MockExamPreset[];
   setMockExamPresets: (
+    presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])
+  ) => void;
+  jeeMockExamPresets: MockExamPreset[];
+  setJeeMockExamPresets: (
+    presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])
+  ) => void;
+  neetMockExamPresets: MockExamPreset[];
+  setNeetMockExamPresets: (
     presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])
   ) => void;
   tombstones: SyncTombstoneMap;
@@ -51,6 +60,8 @@ interface UserProgressContextType {
   setProgressCardSettings: (
     settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)
   ) => void;
+  examMode: ExamMode;
+  setExamMode: (mode: ExamMode) => void;
   dailyQuestionLogs: Record<string, number>;
   setDailyQuestionLogs: (
     logs: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>)
@@ -127,6 +138,10 @@ interface ProgressDataContextType {
   setExamDates: (dates: ExamEntry[] | ((prev: ExamEntry[]) => ExamEntry[])) => void;
   mockExamPresets: MockExamPreset[];
   setMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
+  jeeMockExamPresets: MockExamPreset[];
+  setJeeMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
+  neetMockExamPresets: MockExamPreset[];
+  setNeetMockExamPresets: (presets: MockExamPreset[] | ((prev: MockExamPreset[]) => MockExamPreset[])) => void;
   tombstones: SyncTombstoneMap;
   setTombstones: (tombstones: SyncTombstoneMap | ((prev: SyncTombstoneMap) => SyncTombstoneMap)) => void;
   dailyQuestionLogs: Record<string, number>;
@@ -182,6 +197,8 @@ interface SettingsContextType {
   setDailyResetHour: (hour: number | ((prev: number) => number)) => void;
   progressCardSettings: ProgressCardSettings;
   setProgressCardSettings: (settings: ProgressCardSettings | ((prev: ProgressCardSettings) => ProgressCardSettings)) => void;
+  examMode: ExamMode;
+  setExamMode: (mode: ExamMode) => void;
 }
 
 const ProgressDataContext = createContext<ProgressDataContextType | undefined>(undefined);
@@ -222,6 +239,17 @@ export const defaultMockExamPresets: MockExamPreset[] = [
   },
 ];
 
+const defaultNeetMockExamPresets: MockExamPreset[] = [
+  {
+    id: 'neet',
+    name: 'NEET UG',
+    shortName: 'NEET',
+    paperCount: 1,
+    subjectMaxMarks: { physics: 180, chemistry: 180, maths: 0, biology: 360 },
+    targetScore: 650,
+  },
+];
+
 export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { mergedSubjectData } = useSubjectData();
   const { accentColor } = useTheme();
@@ -243,6 +271,14 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [mockExamPresets, setMockExamPresets] = useLocalStorage<MockExamPreset[]>(
     'jee-tracker-mock-presets',
     defaultMockExamPresets
+  );
+  const [neetMockExamPresets, setNeetMockExamPresets] = useLocalStorage<MockExamPreset[]>(
+    'jee-tracker-mock-presets-neet',
+    defaultNeetMockExamPresets
+  );
+  const [examMode, setExamMode] = useLocalStorage<ExamMode>(
+    'jee-tracker-exam-mode',
+    'jee'
   );
   const [dailyQuestionLogs, setDailyQuestionLogs] = useLocalStorage<Record<string, number>>(
     'jee-tracker-daily-questions',
@@ -294,6 +330,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     }
   }, [mockExamPresets, setMockExamPresets]);
+
+  // Ensure neetMockExamPresets is never empty when in NEET mode
+  useEffect(() => {
+    if (examMode === 'neet' && neetMockExamPresets.length === 0) {
+      setNeetMockExamPresets(defaultNeetMockExamPresets);
+    }
+  }, [examMode, neetMockExamPresets.length]);
 
   // Ensure biology progress object exists for legacy users
   useEffect(() => {
@@ -1323,12 +1366,13 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     (score: Omit<MockScore, 'id'>) => {
       const newScore: MockScore = {
         ...score,
+        examMode: score.examMode ?? examMode, // stamp active mode if not already set
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         updatedAt: score.updatedAt || new Date().toISOString(),
       };
       setMockScores((prev) => [...prev, newScore]);
     },
-    [setMockScores]
+    [setMockScores, examMode]
   );
 
   const handleDeleteMockScore = useCallback(
@@ -1417,25 +1461,48 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const handleAddMockExamPreset = useCallback(
     (preset: MockExamPreset) => {
       const presetWithTime = { ...preset, updatedAt: preset.updatedAt || new Date().toISOString() };
-      setMockExamPresets((prev) => [...prev, presetWithTime]);
+      if (examMode === 'neet') {
+        setNeetMockExamPresets((prev) => [...prev, presetWithTime]);
+      } else {
+        setMockExamPresets((prev) => [...prev, presetWithTime]);
+      }
     },
-    [setMockExamPresets]
+    [examMode, setMockExamPresets, setNeetMockExamPresets]
   );
 
   const handleDeleteMockExamPreset = useCallback(
     (id: string) => {
-      setMockExamPresets((prev) => prev.filter((p) => p.id !== id));
+      if (examMode === 'neet') {
+        setNeetMockExamPresets((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        setMockExamPresets((prev) => prev.filter((p) => p.id !== id));
+      }
       recordTombstone('mockExamPresets', id);
     },
-    [setMockExamPresets, recordTombstone]
+    [examMode, setMockExamPresets, setNeetMockExamPresets, recordTombstone]
   );
 
   const handleUpdateMockExamPreset = useCallback(
     (preset: MockExamPreset) => {
       const presetWithTime = { ...preset, updatedAt: new Date().toISOString() };
-      setMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? presetWithTime : p)));
+      if (examMode === 'neet') {
+        setNeetMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? presetWithTime : p)));
+      } else {
+        setMockExamPresets((prev) => prev.map((p) => (p.id === preset.id ? presetWithTime : p)));
+      }
     },
-    [setMockExamPresets]
+    [examMode, setMockExamPresets, setNeetMockExamPresets]
+  );
+
+  const setMockExamPresetsModeAware = useCallback(
+    (value: React.SetStateAction<MockExamPreset[]>) => {
+      if (examMode === 'neet') {
+        setNeetMockExamPresets(value);
+      } else {
+        setMockExamPresets(value);
+      }
+    },
+    [examMode, setNeetMockExamPresets, setMockExamPresets]
   );
 
   // PERF-006: Split into 3 sub-context values so that e.g. studySessions changes
@@ -1451,8 +1518,12 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setMockScores,
       examDates,
       setExamDates,
-      mockExamPresets,
-      setMockExamPresets,
+      mockExamPresets: examMode === 'neet' ? neetMockExamPresets : mockExamPresets,
+      setMockExamPresets: setMockExamPresetsModeAware,
+      jeeMockExamPresets: mockExamPresets,
+      setJeeMockExamPresets: setMockExamPresets,
+      neetMockExamPresets,
+      setNeetMockExamPresets,
       tombstones,
       setTombstones,
       dailyQuestionLogs,
@@ -1497,8 +1568,11 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setMockScores,
       examDates,
       setExamDates,
+      examMode,
       mockExamPresets,
+      neetMockExamPresets,
       setMockExamPresets,
+      setMockExamPresetsModeAware,
       tombstones,
       setTombstones,
       dailyQuestionLogs,
@@ -1533,6 +1607,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleAddMockExamPreset,
       handleDeleteMockExamPreset,
       handleUpdateMockExamPreset,
+      setNeetMockExamPresets,
     ]
   );
 
@@ -1565,6 +1640,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setDailyResetHour,
       progressCardSettings,
       setProgressCardSettings,
+      examMode,
+      setExamMode,
     }),
     [
       disableAutoShift,
@@ -1577,6 +1654,8 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setDailyResetHour,
       progressCardSettings,
       setProgressCardSettings,
+      examMode,
+      setExamMode,
     ]
   );
 

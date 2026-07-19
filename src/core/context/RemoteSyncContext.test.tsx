@@ -131,6 +131,12 @@ vi.mock('./UserProgressContext', () => ({
     setDisableAutoShift: vi.fn(),
     mockExamPresets: [],
     setMockExamPresets: vi.fn(),
+    jeeMockExamPresets: [],
+    setJeeMockExamPresets: vi.fn(),
+    neetMockExamPresets: [],
+    setNeetMockExamPresets: vi.fn(),
+    examMode: 'jee',
+    setExamMode: vi.fn(),
     progressCardSettings: {
       userName: '',
       customAvatarUrl: '',

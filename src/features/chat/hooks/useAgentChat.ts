@@ -195,8 +195,10 @@ export function useAgentChat() {
     physicsProgress,
     chemistryProgress,
     mathsProgress,
+    biologyProgress,
     overallProgress,
     lectureCounter,
+    examMode,
   } = useUserProgress();
   const { mergedSubjectData: _sd } = useSubjectData();
   const { recommendations, studyShares, totalWeeklyHours } = useStudyCoPilot();
@@ -266,12 +268,14 @@ export function useAgentChat() {
       physicsProgress,
       chemistryProgress,
       mathsProgress,
+      biologyProgress,
       overallProgress,
       recommendations,
       studyShares,
       totalWeeklyHours,
       lectureCounter,
       parkedSessions,
+      examMode,
     };
     return buildAgentSystemPrompt(ctx);
   }, [
@@ -284,12 +288,14 @@ export function useAgentChat() {
     physicsProgress,
     chemistryProgress,
     mathsProgress,
+    biologyProgress,
     overallProgress,
     recommendations,
     studyShares,
     totalWeeklyHours,
     lectureCounter,
     parkedSessions,
+    examMode,
   ]);
 
   // ── Append UI message to Active Session ───────────────────────────────────

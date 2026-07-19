@@ -34,6 +34,14 @@ vi.mock('../../../core/context/RemoteAuthContext', () => ({
   }),
 }));
 
+const mockSetExamMode = vi.fn();
+vi.mock('../../../core/context/UserProgressContext', () => ({
+  useUserProgress: () => ({
+    examMode: 'jee',
+    setExamMode: mockSetExamMode,
+  }),
+}));
+
 const mockSyncNow = vi.fn();
 vi.mock('../../../core/context/RemoteSyncContext', () => ({
   useRemoteSync: () => ({
@@ -271,5 +279,24 @@ describe('SettingsModal', () => {
     );
     expect(screen.getByText('Daily Progress Reset Time')).toBeDefined();
     expect(screen.getByText('12:00 AM (Midnight - Default)')).toBeDefined();
+  });
+
+  it('renders exam mode toggle and triggers setExamMode on click', () => {
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText('Exam Mode')).toBeDefined();
+
+    const jeeBtn = screen.getByText('JEE');
+    const neetBtn = screen.getByText('NEET');
+
+    expect(jeeBtn).toBeDefined();
+    expect(neetBtn).toBeDefined();
+
+    fireEvent.click(neetBtn);
+    expect(mockSetExamMode).toHaveBeenCalledWith('neet');
   });
 });

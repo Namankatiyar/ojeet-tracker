@@ -14,6 +14,7 @@ import {
   getMockPercentage,
   getMockSubjectTotals,
   getMockTotalMarks,
+  filterMockScoresByMode,
 } from '../../../shared/utils/mockScores';
 
 interface MockScoresPanelProps {
@@ -25,8 +26,13 @@ interface MockScoresPanelProps {
 
 export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenCockpit }: MockScoresPanelProps) {
   const { theme } = useTheme();
-  const { mockExamPresets } = useUserProgress();
+  const { mockExamPresets, examMode } = useUserProgress();
   const [examType, setExamType] = useState<MockExamType>('jm');
+
+  const filteredScores = useMemo(
+    () => filterMockScoresByMode(mockScores, examMode),
+    [mockScores, examMode]
+  );
 
   useEffect(() => {
     if (!mockExamPresets.find((p) => p.id === examType) && mockExamPresets.length > 0) {
@@ -39,11 +45,11 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenC
     [mockExamPresets, examType]
   );
 
-  const { sortedScores, chartData } = useMockScoresAnalytics(mockScores, examType, mockExamPresets);
+  const { sortedScores, chartData } = useMockScoresAnalytics(filteredScores, examType, mockExamPresets);
   const maxMarks = useMemo(() => {
-    if (sortedScores.length === 0) return getMockDefaultMaxMarks(examType, mockExamPresets);
+    if (sortedScores.length === 0) return activePreset ? getMockDefaultMaxMarks(activePreset) : 300;
     return Math.max(...sortedScores.map((score) => getMockMaxMarks(score, mockExamPresets)));
-  }, [examType, sortedScores, mockExamPresets]);
+  }, [activePreset, sortedScores, mockExamPresets]);
 
   const chartOptions = useMemo(() => getChartOptions(theme, 'mock', maxMarks), [maxMarks, theme]);
 
@@ -195,9 +201,15 @@ export function MockScoresPanel({ mockScores, onAddClick, onDeleteScore, onOpenC
                   <span className="text-chemistry" style={{ color: 'var(--color-chemistry)' }}>
                     {subjectTotals.chemistry}
                   </span>
-                  <span className="text-maths" style={{ color: 'var(--color-maths)' }}>
-                    {subjectTotals.maths}
-                  </span>
+                  {examMode === 'neet' ? (
+                    <span className="text-biology" style={{ color: 'var(--color-biology)' }}>
+                      {subjectTotals.biology}
+                    </span>
+                  ) : (
+                    <span className="text-maths" style={{ color: 'var(--color-maths)' }}>
+                      {subjectTotals.maths}
+                    </span>
+                  )}
                   <span className="total-score">{totalDisplay}</span>
                 </div>
                 <button className="delete-mock-btn" onClick={() => onDeleteScore(score.id)}>

@@ -7,6 +7,7 @@ import {
   getMockPercentage,
 } from '../../../shared/utils/mockScores';
 import { getSubjectColors, createGradient } from '../../dashboard/utils/analyticsUtils';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 export interface WeakAreaFrequency {
   id: string;
@@ -22,6 +23,7 @@ export function useDetailedMockAnalytics(
   examType: MockExamType | 'all',
   presets: MockExamPreset[] = []
 ) {
+  const { examMode } = useUserProgress();
   const sortedScores = useMemo(() => {
     return mockScores
       .filter((score) => (examType === 'all' ? true : getMockExamType(score) === examType))
@@ -44,7 +46,7 @@ export function useDetailedMockAnalytics(
         highestScoreName: '-',
         latestScore: 0,
         latestTrend: 0,
-        subjectAverages: { physics: 0, chemistry: 0, maths: 0 },
+        subjectAverages: { physics: 0, chemistry: 0, maths: 0, biology: 0 },
       };
     }
 
@@ -55,6 +57,7 @@ export function useDetailedMockAnalytics(
     let sumPhysics = 0;
     let sumChemistry = 0;
     let sumMaths = 0;
+    let sumBiology = 0;
 
     sortedScores.forEach((s) => {
       const total = getMockTotalMarks(s, preset);
@@ -66,6 +69,7 @@ export function useDetailedMockAnalytics(
       sumPhysics += sub.physics;
       sumChemistry += sub.chemistry;
       sumMaths += sub.maths;
+      sumBiology += sub.biology ?? 0;
 
       if (total > highestScore) {
         highestScore = total;
@@ -93,6 +97,7 @@ export function useDetailedMockAnalytics(
         physics: Math.round(sumPhysics / totalTestsTaken),
         chemistry: Math.round(sumChemistry / totalTestsTaken),
         maths: Math.round(sumMaths / totalTestsTaken),
+        biology: Math.round(sumBiology / totalTestsTaken),
       },
     };
   }, [sortedScores, preset, presets]);
@@ -108,8 +113,10 @@ export function useDetailedMockAnalytics(
     const physicsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).physics);
     const chemistryData = sortedScores.map((s) => getMockSubjectTotals(s, preset).chemistry);
     const mathsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).maths);
+    const biologyData = sortedScores.map((s) => getMockSubjectTotals(s, preset).biology ?? 0);
 
     // 1. Trend Chart Data
+    const isNeet = examMode === 'neet';
     const datasets: any[] = [
       {
         label: 'Total Marks',
@@ -150,19 +157,33 @@ export function useDetailedMockAnalytics(
         fill: 'start',
         borderWidth: 2,
       },
-      {
-        label: 'Maths',
-        data: mathsData,
-        borderColor: subjectColors.maths,
-        backgroundColor: createGradient(subjectColors.maths, mathsData),
-        pointBackgroundColor: subjectColors.maths,
-        pointBorderColor: '#fff',
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        tension: 0.4,
-        fill: 'start',
-        borderWidth: 2,
-      },
+      isNeet
+        ? {
+            label: 'Biology',
+            data: biologyData,
+            borderColor: subjectColors.biology || '#00b330',
+            backgroundColor: createGradient(subjectColors.biology || '#00b330', biologyData),
+            pointBackgroundColor: subjectColors.biology || '#00b330',
+            pointBorderColor: '#fff',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: 'start',
+            borderWidth: 2,
+          }
+        : {
+            label: 'Maths',
+            data: mathsData,
+            borderColor: subjectColors.maths,
+            backgroundColor: createGradient(subjectColors.maths, mathsData),
+            pointBackgroundColor: subjectColors.maths,
+            pointBorderColor: '#fff',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: 'start',
+            borderWidth: 2,
+          },
     ];
 
     if (examType !== 'all' && preset && preset.targetScore !== undefined) {
@@ -189,18 +210,18 @@ export function useDetailedMockAnalytics(
 
     // 2. Subject Share (Doughnut)
     const subjectShareChartData = {
-      labels: ['Physics', 'Chemistry', 'Maths'],
+      labels: isNeet ? ['Physics', 'Chemistry', 'Biology'] : ['Physics', 'Chemistry', 'Maths'],
       datasets: [
         {
           data: [
             summaryStats.subjectAverages.physics,
             summaryStats.subjectAverages.chemistry,
-            summaryStats.subjectAverages.maths,
+            isNeet ? summaryStats.subjectAverages.biology : summaryStats.subjectAverages.maths,
           ],
           backgroundColor: [
             subjectColors.physics,
             subjectColors.chemistry,
-            subjectColors.maths,
+            isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
           ],
           borderWidth: 2,
           borderColor: 'var(--bg-secondary)',
@@ -228,21 +249,32 @@ export function useDetailedMockAnalytics(
           backgroundColor: subjectColors.chemistry,
           borderRadius: 4,
         },
-        {
-          label: 'Maths (mins)',
-          data: timeLoggedScores.map((s) => s.timeSpent?.maths || 0),
-          backgroundColor: subjectColors.maths,
-          borderRadius: 4,
-        },
+        isNeet
+          ? {
+              label: 'Biology (mins)',
+              data: timeLoggedScores.map((s) => s.timeSpent?.biology || 0),
+              backgroundColor: subjectColors.biology || '#00b330',
+              borderRadius: 4,
+            }
+          : {
+              label: 'Maths (mins)',
+              data: timeLoggedScores.map((s) => s.timeSpent?.maths || 0),
+              backgroundColor: subjectColors.maths,
+              borderRadius: 4,
+            },
       ],
     };
 
     const totalTimeData = timeLoggedScores.map((s) =>
-      (s.timeSpent?.physics || 0) + (s.timeSpent?.chemistry || 0) + (s.timeSpent?.maths || 0)
+      (s.timeSpent?.physics || 0) +
+      (s.timeSpent?.chemistry || 0) +
+      (isNeet ? (s.timeSpent?.biology || 0) : (s.timeSpent?.maths || 0))
     );
     const timePhysicsData = timeLoggedScores.map((s) => s.timeSpent?.physics || 0);
     const timeChemistryData = timeLoggedScores.map((s) => s.timeSpent?.chemistry || 0);
-    const timeMathsData = timeLoggedScores.map((s) => s.timeSpent?.maths || 0);
+    const timeMathsOrBioData = timeLoggedScores.map((s) =>
+      isNeet ? (s.timeSpent?.biology || 0) : (s.timeSpent?.maths || 0)
+    );
 
     const timeSpentTrendChartData = {
       labels: timeLabels,
@@ -287,11 +319,11 @@ export function useDetailedMockAnalytics(
           borderWidth: 2,
         },
         {
-          label: 'Maths',
-          data: timeMathsData,
-          borderColor: subjectColors.maths,
-          backgroundColor: createGradient(subjectColors.maths, timeMathsData),
-          pointBackgroundColor: subjectColors.maths,
+          label: isNeet ? 'Biology' : 'Maths',
+          data: timeMathsOrBioData,
+          borderColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
+          backgroundColor: createGradient(isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths, timeMathsOrBioData),
+          pointBackgroundColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,
@@ -316,11 +348,11 @@ export function useDetailedMockAnalytics(
             const att =
               (s.attemptedQuestions?.physics || 0) +
               (s.attemptedQuestions?.chemistry || 0) +
-              (s.attemptedQuestions?.maths || 0);
+              (isNeet ? (s.attemptedQuestions?.biology || 0) : (s.attemptedQuestions?.maths || 0));
             const wr =
               (s.wrongQuestions?.physics || 0) +
               (s.wrongQuestions?.chemistry || 0) +
-              (s.wrongQuestions?.maths || 0);
+              (isNeet ? (s.wrongQuestions?.biology || 0) : (s.wrongQuestions?.maths || 0));
             return Math.max(0, att - wr);
           }),
           backgroundColor: '#10b981', // green
@@ -332,7 +364,7 @@ export function useDetailedMockAnalytics(
             return (
               (s.wrongQuestions?.physics || 0) +
               (s.wrongQuestions?.chemistry || 0) +
-              (s.wrongQuestions?.maths || 0)
+              (isNeet ? (s.wrongQuestions?.biology || 0) : (s.wrongQuestions?.maths || 0))
             );
           }),
           backgroundColor: '#ef4444', // red
@@ -351,11 +383,11 @@ export function useDetailedMockAnalytics(
       const att =
         (s.attemptedQuestions?.physics || 0) +
         (s.attemptedQuestions?.chemistry || 0) +
-        (s.attemptedQuestions?.maths || 0);
+        (isNeet ? (s.attemptedQuestions?.biology || 0) : (s.attemptedQuestions?.maths || 0));
       const wr =
         (s.wrongQuestions?.physics || 0) +
         (s.wrongQuestions?.chemistry || 0) +
-        (s.wrongQuestions?.maths || 0);
+        (isNeet ? (s.wrongQuestions?.biology || 0) : (s.wrongQuestions?.maths || 0));
       return getSubAcc(att, wr);
     });
     const physAccData = qLoggedScores.map((s) =>
@@ -364,8 +396,10 @@ export function useDetailedMockAnalytics(
     const chemAccData = qLoggedScores.map((s) =>
       getSubAcc(s.attemptedQuestions?.chemistry || 0, s.wrongQuestions?.chemistry || 0)
     );
-    const mathsAccData = qLoggedScores.map((s) =>
-      getSubAcc(s.attemptedQuestions?.maths || 0, s.wrongQuestions?.maths || 0)
+    const mathsOrBioAccData = qLoggedScores.map((s) =>
+      isNeet
+        ? getSubAcc(s.attemptedQuestions?.biology || 0, s.wrongQuestions?.biology || 0)
+        : getSubAcc(s.attemptedQuestions?.maths || 0, s.wrongQuestions?.maths || 0)
     );
 
     const accuracyTrendChartData = {
@@ -411,11 +445,11 @@ export function useDetailedMockAnalytics(
           borderWidth: 2,
         },
         {
-          label: 'Maths',
-          data: mathsAccData,
-          borderColor: subjectColors.maths,
-          backgroundColor: createGradient(subjectColors.maths, mathsAccData),
-          pointBackgroundColor: subjectColors.maths,
+          label: isNeet ? 'Biology' : 'Maths',
+          data: mathsOrBioAccData,
+          borderColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
+          backgroundColor: createGradient(isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths, mathsOrBioAccData),
+          pointBackgroundColor: isNeet ? (subjectColors.biology || '#00b330') : subjectColors.maths,
           pointBorderColor: '#fff',
           pointRadius: 4,
           pointHoverRadius: 6,

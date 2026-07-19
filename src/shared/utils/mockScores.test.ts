@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { MockScore } from '../types';
+import { MockScore, MockExamPreset } from '../types';
 import {
   getMockExamType,
+  getMockDefaultMaxMarks,
   getMockMaxMarks,
   getMockPaperTotal,
   getMockSubjectTotals,
   getMockTotalMarks,
+  filterMockScoresByMode,
 } from './mockScores';
 
 describe('mockScores utils', () => {
@@ -25,6 +27,7 @@ describe('mockScores utils', () => {
       physics: 71,
       chemistry: 65,
       maths: 80,
+      biology: undefined,
     });
     expect(getMockTotalMarks(score)).toBe(216);
     expect(getMockMaxMarks(score)).toBe(300);
@@ -59,6 +62,7 @@ describe('mockScores utils', () => {
       physics: 82,
       chemistry: 74,
       maths: 91,
+      biology: 0,
     });
     expect(getMockTotalMarks(score)).toBe(247);
     expect(getMockMaxMarks(score)).toBe(360);
@@ -80,8 +84,56 @@ describe('mockScores utils', () => {
       physics: -12,
       chemistry: 5,
       maths: -8,
+      biology: undefined,
     });
     expect(getMockTotalMarks(score)).toBe(-15);
     expect(getMockMaxMarks(score)).toBe(300);
+  });
+});
+
+describe('getMockDefaultMaxMarks with biology', () => {
+  const neetPreset: MockExamPreset = {
+    id: 'neet',
+    name: 'NEET UG',
+    shortName: 'NEET',
+    paperCount: 1,
+    subjectMaxMarks: { physics: 180, chemistry: 180, maths: 0, biology: 360 },
+    targetScore: 650,
+  };
+
+  it('sums biology marks when present', () => {
+    expect(getMockDefaultMaxMarks(neetPreset)).toBe(720); // 180+180+360
+  });
+
+  it('ignores maths: 0 in sum', () => {
+    const marks = getMockDefaultMaxMarks(neetPreset);
+    expect(marks).not.toBe(0);
+  });
+});
+
+describe('filterMockScoresByMode', () => {
+  const jeeScore: MockScore = {
+    id: '1', name: 'JEE test', date: '2026-01-01',
+    physicsMarks: 90, chemistryMarks: 80, mathsMarks: 70, totalMarks: 240,
+    examMode: 'jee',
+  };
+  const neetScore: MockScore = {
+    id: '2', name: 'NEET test', date: '2026-01-02',
+    physicsMarks: 150, chemistryMarks: 140, mathsMarks: 0, biologyMarks: 300, totalMarks: 590,
+    examMode: 'neet',
+  };
+  const untaggedScore: MockScore = {
+    id: '3', name: 'Old test', date: '2025-01-01',
+    physicsMarks: 70, chemistryMarks: 60, mathsMarks: 50, totalMarks: 180,
+  };
+
+  it('jee mode returns jee and untagged scores', () => {
+    const result = filterMockScoresByMode([jeeScore, neetScore, untaggedScore], 'jee');
+    expect(result.map(s => s.id)).toEqual(['1', '3']);
+  });
+
+  it('neet mode returns only neet scores', () => {
+    const result = filterMockScoresByMode([jeeScore, neetScore, untaggedScore], 'neet');
+    expect(result.map(s => s.id)).toEqual(['2']);
   });
 });

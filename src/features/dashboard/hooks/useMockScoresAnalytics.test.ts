@@ -1,7 +1,15 @@
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { useMockScoresAnalytics } from './useMockScoresAnalytics';
 import { MockScore } from '../../../shared/types';
+
+let mockExamMode = 'jee';
+
+vi.mock('../../../core/context/UserProgressContext', () => ({
+  useUserProgress: () => ({
+    examMode: mockExamMode,
+  }),
+}));
 
 describe('useMockScoresAnalytics', () => {
   const mockScores: MockScore[] = [
@@ -104,5 +112,30 @@ describe('useMockScoresAnalytics', () => {
 
     const { result } = renderHook(() => useMockScoresAnalytics(manyScores, 'jm'));
     expect(result.current.chartData.labels).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('should generate correct chart data for NEET including biology', () => {
+    mockExamMode = 'neet';
+    const neetScores: MockScore[] = [
+      {
+        id: 'neet-1',
+        name: 'NEET 1',
+        date: '2025-03-01',
+        examType: 'neet',
+        physicsMarks: 120,
+        chemistryMarks: 110,
+        mathsMarks: 0,
+        biologyMarks: 320,
+        totalMarks: 550,
+      },
+    ];
+
+    const { result } = renderHook(() => useMockScoresAnalytics(neetScores, 'neet'));
+    const { chartData } = result.current;
+
+    expect(chartData.datasets[3].label).toBe('Biology');
+    expect(chartData.datasets[3].data).toEqual([320]);
+    // Reset back to jee for other tests
+    mockExamMode = 'jee';
   });
 });

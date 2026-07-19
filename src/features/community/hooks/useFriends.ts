@@ -3,6 +3,10 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { RemoteProfile, LiveActivity } from '../../../shared/types';
+import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/backoff';
+
+const LIVE_POLL_BACKOFF_BASE_MS = 30_000; // 30 seconds
+const LIVE_POLL_BACKOFF_MAX_MS = 300_000; // 5 minutes
 
 // Persist last full profile fetch across route navigations
 let globalLastFullFetchTime = 0;
@@ -78,10 +82,16 @@ export function useFriends() {
   );
 
   const lastPollTimeRef = useRef<number>(0);
+  // Consecutive live-activity poll failures, used to back off the next attempt.
+  const pollFailCountRef = useRef<number>(0);
+  const pollPausedUntilRef = useRef<number>(0);
 
   const pollLiveActivity = useCallback(async () => {
     const friendIds = friendIdsRef.current;
     if (!isConfigured || !supabase || friendIds.length === 0) return;
+    // Skip while offline or inside a post-failure backoff window; the interval
+    // will retry on its next tick.
+    if (!isOnline() || Date.now() < pollPausedUntilRef.current) return;
 
     try {
       const { data, error } = await supabase
@@ -100,14 +110,30 @@ export function useFriends() {
         return updated;
       });
       lastPollTimeRef.current = Date.now();
+      pollFailCountRef.current = 0;
+      pollPausedUntilRef.current = 0;
     } catch (err) {
       console.warn('Failed to poll live activity', err);
+      // Widen the effective interval with jittered exponential backoff instead of
+      // hammering a struggling backend every 30s.
+      pollFailCountRef.current += 1;
+      const backoff = calculateBackoffWithJitter(
+        pollFailCountRef.current - 1,
+        LIVE_POLL_BACKOFF_BASE_MS,
+        LIVE_POLL_BACKOFF_MAX_MS
+      );
+      pollPausedUntilRef.current = Date.now() + backoff;
     }
   }, [isConfigured]);
 
   const fetchFriends = useCallback(
     async (force = false) => {
       if (!user || !isConfigured || !supabase) {
+        setIsLoading(false);
+        return;
+      }
+      // Skip network work while offline; cached friends remain displayed.
+      if (!isOnline()) {
         setIsLoading(false);
         return;
       }

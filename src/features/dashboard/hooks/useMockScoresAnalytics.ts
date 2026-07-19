@@ -6,12 +6,14 @@ import {
   getMockTotalMarks,
 } from '../../../shared/utils/mockScores';
 import { getSubjectColors, createGradient } from '../utils/analyticsUtils';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 export function useMockScoresAnalytics(
   mockScores: MockScore[],
   examType: MockExamType,
   presets: MockExamPreset[] = []
 ) {
+  const { examMode } = useUserProgress();
   const sortedScores = useMemo(() => {
     return mockScores
       .filter((score) => getMockExamType(score) === examType)
@@ -31,7 +33,9 @@ export function useMockScoresAnalytics(
     const physicsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).physics);
     const chemistryData = sortedScores.map((s) => getMockSubjectTotals(s, preset).chemistry);
     const mathsData = sortedScores.map((s) => getMockSubjectTotals(s, preset).maths);
+    const biologyData = sortedScores.map((s) => getMockSubjectTotals(s, preset).biology ?? 0);
 
+    const isNeet = examMode === 'neet';
     const datasets: any[] = [
       {
         label: 'Total',
@@ -72,19 +76,33 @@ export function useMockScoresAnalytics(
         fill: 'start',
         borderWidth: 2,
       },
-      {
-        label: 'Maths',
-        data: mathsData,
-        borderColor: subjectColors.maths,
-        backgroundColor: createGradient(subjectColors.maths, mathsData),
-        pointBackgroundColor: subjectColors.maths,
-        pointBorderColor: '#fff',
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        tension: 0.4,
-        fill: 'start',
-        borderWidth: 2,
-      },
+      isNeet
+        ? {
+            label: 'Biology',
+            data: biologyData,
+            borderColor: subjectColors.biology || '#00b330',
+            backgroundColor: createGradient(subjectColors.biology || '#00b330', biologyData),
+            pointBackgroundColor: subjectColors.biology || '#00b330',
+            pointBorderColor: '#fff',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: 'start',
+            borderWidth: 2,
+          }
+        : {
+            label: 'Maths',
+            data: mathsData,
+            borderColor: subjectColors.maths,
+            backgroundColor: createGradient(subjectColors.maths, mathsData),
+            pointBackgroundColor: subjectColors.maths,
+            pointBorderColor: '#fff',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: 'start',
+            borderWidth: 2,
+          },
     ];
 
     if (preset && preset.targetScore !== undefined) {

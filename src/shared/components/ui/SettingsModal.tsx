@@ -16,6 +16,7 @@ import {
 import { Vibrant } from 'node-vibrant/browser';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { supabase } from '../../../shared/lib/supabase';
 import { runPwaRecoveryAndReload } from '../../utils/pwaBridge';
 import { GoogleSignInButton } from './GoogleSignInButton';
@@ -151,6 +152,7 @@ export function SettingsModal({
     remoteStudyAggregate,
     syncNow,
   } = useRemoteSync();
+  const { examMode, setExamMode } = useUserProgress();
   const releaseChannel = import.meta.env.VITE_RELEASE_CHANNEL ?? 'stable';
   const [isResetting, setIsResetting] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -540,6 +542,28 @@ export function SettingsModal({
                   onChange={(val) => onDailyResetHourChange(Number(val))}
                   size="small"
                 />
+              </div>
+            </div>
+            <div className="settings-row vertical" style={{ marginTop: 'var(--space-4)' }}>
+              <div className="setting-info">
+                <span className="setting-label">Exam Mode</span>
+                <span className="setting-description">
+                  Your data is always preserved when switching.
+                </span>
+              </div>
+              <div className="view-toggles">
+                <button
+                  className={`view-btn ${examMode === 'jee' ? 'active' : ''}`}
+                  onClick={() => setExamMode('jee')}
+                >
+                  JEE
+                </button>
+                <button
+                  className={`view-btn ${examMode === 'neet' ? 'active' : ''}`}
+                  onClick={() => setExamMode('neet')}
+                >
+                  NEET
+                </button>
               </div>
             </div>
           </div>

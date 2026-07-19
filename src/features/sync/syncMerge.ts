@@ -247,8 +247,18 @@ export function mergePayloadDomainsWithPolicy(
   }
 
   const presetsResult = mergeItemList<MockExamPreset>(
-    localPayload.domains.settings.mockExamPresets || [],
-    remotePayload.domains.settings.mockExamPresets || [],
+    localPayload.domains.settings?.mockExamPresets || [],
+    remotePayload.domains.settings?.mockExamPresets || [],
+    localPayload.domains.tombstones?.mockExamPresets,
+    remotePayload.domains.tombstones?.mockExamPresets,
+    fallbackLocalTime,
+    fallbackRemoteTime,
+    options.hasLocalUnsyncedEdit('settings')
+  );
+
+  const neetPresetsResult = mergeItemList<MockExamPreset>(
+    localPayload.domains.settings?.neetMockExamPresets || [],
+    remotePayload.domains.settings?.neetMockExamPresets || [],
     localPayload.domains.tombstones?.mockExamPresets,
     remotePayload.domains.tombstones?.mockExamPresets,
     fallbackLocalTime,
@@ -276,6 +286,7 @@ export function mergePayloadDomainsWithPolicy(
   const mergedSettings = {
     ...winningSettingsBase,
     mockExamPresets: presetsResult.mergedItems,
+    neetMockExamPresets: neetPresetsResult.mergedItems,
   };
 
   // 4. Subjects singleton
@@ -306,8 +317,14 @@ export function mergePayloadDomainsWithPolicy(
     mergedTombstones.mockScores = scoresResult.mergedTombstones;
   if (examsResult.mergedTombstones.length > 0)
     mergedTombstones.examDates = examsResult.mergedTombstones;
-  if (presetsResult.mergedTombstones.length > 0)
-    mergedTombstones.mockExamPresets = presetsResult.mergedTombstones;
+  const mergedPresetsTombstones = [
+    ...presetsResult.mergedTombstones,
+    ...neetPresetsResult.mergedTombstones.filter(
+      (nt) => !presetsResult.mergedTombstones.some((pt) => pt.id === nt.id)
+    ),
+  ];
+  if (mergedPresetsTombstones.length > 0)
+    mergedTombstones.mockExamPresets = mergedPresetsTombstones;
 
   const mergedModifiedAt: { settings?: string; subjects?: string } = {};
   const winningSettingsTimeStr = useLocalSettings

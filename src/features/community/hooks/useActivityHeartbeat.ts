@@ -4,6 +4,10 @@ import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { supabase } from '../../../shared/lib/supabase';
 import { Subject } from '../../../shared/types';
+import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/backoff';
+
+const HEARTBEAT_BACKOFF_BASE_MS = 60_000; // 1 minute
+const HEARTBEAT_BACKOFF_MAX_MS = 300_000; // 5 minutes
 
 /**
  * PERF-008: Live activity heartbeat — extracted from useProfileSync so it only
@@ -45,6 +49,16 @@ export function useActivityHeartbeat() {
       try {
         const now = Date.now();
         if (now < heartbeatPausedUntilRef.current) {
+          return;
+        }
+        // Skip while the tab is backgrounded: a hidden Community tab shouldn't
+        // keep broadcasting an "active" study state or spend upserts.
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+          return;
+        }
+        // Don't attempt writes while offline — avoids guaranteed failures that
+        // would otherwise trip the failure backoff.
+        if (!isOnline()) {
           return;
         }
         // Throttle to 60 seconds unless forced by interval
@@ -152,9 +166,18 @@ export function useActivityHeartbeat() {
       } catch (err) {
         console.warn('Failed to send heartbeat', err);
         heartbeatFailCountRef.current += 1;
+        // Progressive jittered backoff instead of a fixed 5-minute pause, so
+        // recovering clients don't all retry in a synchronized wave.
         if (heartbeatFailCountRef.current >= 2) {
-          console.warn('Heartbeat failed twice consecutively. Pausing heartbeats for 5 minutes.');
-          heartbeatPausedUntilRef.current = Date.now() + 300_000;
+          const pauseMs = calculateBackoffWithJitter(
+            heartbeatFailCountRef.current - 2,
+            HEARTBEAT_BACKOFF_BASE_MS,
+            HEARTBEAT_BACKOFF_MAX_MS
+          );
+          console.warn(
+            `Heartbeat failed ${heartbeatFailCountRef.current} times. Pausing heartbeats for ${Math.round(pauseMs / 1000)}s.`
+          );
+          heartbeatPausedUntilRef.current = Date.now() + pauseMs;
         }
       }
     };

@@ -21,7 +21,9 @@ import {
   X,
   BookOpen,
   Target,
+  Dna,
 } from 'lucide-react';
+import { useActiveSubjects } from '../../hooks/useActiveSubjects';
 import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
 import { UserAvatar } from '../ui/Avatar';
@@ -73,6 +75,7 @@ interface HeaderProps {
   physicsProgress: number;
   chemistryProgress: number;
   mathsProgress: number;
+  biologyProgress?: number;
   examDate: string;
   progressCardSettings: ProgressCardSettings;
   onProgressCardSettingsChange: (settings: ProgressCardSettings) => void;
@@ -123,6 +126,7 @@ export function Header({
   physicsProgress,
   chemistryProgress,
   mathsProgress,
+  biologyProgress,
   examDate,
   progressCardSettings,
   onProgressCardSettingsChange,
@@ -202,15 +206,31 @@ export function Header({
     };
   }, [isMobileMenuOpen, isSubjectsMenuOpen]);
 
+  const { subjects, subjectMeta } = useActiveSubjects();
+
+  const SUBJECT_ICON_MAP: Record<string, React.ComponentType<any>> = {
+    atom: Atom,
+    'flask-conical': FlaskConical,
+    pi: Pi,
+    dna: Dna,
+  };
+
+  const subjectNavItems = subjectMeta.map((meta) => {
+    const Icon = SUBJECT_ICON_MAP[meta.iconKey] ?? FlaskConical;
+    return {
+      key: meta.key,
+      label: meta.label,
+      icon: <Icon size={20} />,
+    };
+  });
+
   const navItems: {
     key: 'dashboard' | 'planner' | 'studyclock' | 'reports' | 'mockscores' | 'community' | Subject;
     label: string;
     icon: React.ReactNode;
   }[] = [
     { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-    { key: 'physics', label: 'Physics', icon: <Atom size={20} /> },
-    { key: 'chemistry', label: 'Chemistry', icon: <FlaskConical size={20} /> },
-    { key: 'maths', label: 'Maths', icon: <Pi size={20} /> },
+    ...subjectNavItems,
     { key: 'planner', label: 'Planner', icon: <Calendar size={20} /> },
     { key: 'studyclock', label: 'Study Clock', icon: <Clock size={20} /> },
     { key: 'reports', label: 'Reports', icon: <BarChart2 size={20} /> },
@@ -454,7 +474,7 @@ export function Header({
           </button>
           <button
             type="button"
-            className={`mobile-bottom-nav-item ${['physics', 'chemistry', 'maths'].includes(currentView) || isSubjectsMenuOpen ? 'active' : ''}`}
+            className={`mobile-bottom-nav-item ${subjects.includes(currentView as Subject) || isSubjectsMenuOpen ? 'active' : ''}`}
             onClick={() => {
               setIsSubjectsMenuOpen(!isSubjectsMenuOpen);
               setIsMobileMenuOpen(false);
@@ -495,30 +515,51 @@ export function Header({
                 </button>
               </div>
               <div className="mobile-subjects-grid">
-                {[
-                  { key: 'physics' as const, label: 'Physics', icon: <Atom size={22} />, progress: physicsProgress, color: '#3b82f6' },
-                  { key: 'chemistry' as const, label: 'Chemistry', icon: <FlaskConical size={22} />, progress: chemistryProgress, color: '#f59e0b' },
-                  { key: 'maths' as const, label: 'Mathematics', icon: <Pi size={22} />, progress: mathsProgress, color: '#10b981' },
-                ].map(({ key, label, icon, progress, color }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className={`mobile-subject-card ${currentView === key ? 'active' : ''}`}
-                    onClick={() => {
-                      onNavigate(key);
-                      setIsSubjectsMenuOpen(false);
-                    }}
-                  >
-                    <div className="mobile-subject-icon" style={{ color }}>{icon}</div>
-                    <div className="mobile-subject-info">
-                      <span className="mobile-subject-name">{label}</span>
-                      <div className="mobile-subject-progress-bar">
-                        <div className="mobile-subject-progress-fill" style={{ width: `${Math.min(100, Math.max(0, progress))}%`, backgroundColor: color }} />
+                {subjectMeta.map((meta) => {
+                  let progress = 0;
+                  if (meta.key === 'physics') progress = physicsProgress;
+                  else if (meta.key === 'chemistry') progress = chemistryProgress;
+                  else if (meta.key === 'maths') progress = mathsProgress;
+                  else if (meta.key === 'biology') progress = biologyProgress ?? 0;
+
+                  const colors: Record<string, string> = {
+                    physics: '#3b82f6',
+                    chemistry: '#f59e0b',
+                    maths: '#10b981',
+                    biology: '#00b330',
+                  };
+                  const color = colors[meta.key] || '#10b981';
+                  const Icon = SUBJECT_ICON_MAP[meta.iconKey] ?? FlaskConical;
+
+                  return (
+                    <button
+                      key={meta.key}
+                      type="button"
+                      className={`mobile-subject-card ${currentView === meta.key ? 'active' : ''}`}
+                      onClick={() => {
+                        onNavigate(meta.key);
+                        setIsSubjectsMenuOpen(false);
+                      }}
+                    >
+                      <div className="mobile-subject-icon" style={{ color }}>
+                        <Icon size={22} />
                       </div>
-                    </div>
-                    <span className="mobile-subject-percent">{Math.round(progress)}%</span>
-                  </button>
-                ))}
+                      <div className="mobile-subject-info">
+                        <span className="mobile-subject-name">{meta.label}</span>
+                        <div className="mobile-subject-progress-bar">
+                          <div
+                            className="mobile-subject-progress-fill"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, progress))}%`,
+                              backgroundColor: color,
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <span className="mobile-subject-percent">{Math.round(progress)}%</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </>,
@@ -582,9 +623,15 @@ export function Header({
                       >
                         <span className="mobile-sidebar-item-icon">{icon}</span>
                         <span className="mobile-sidebar-item-label">{label}</span>
-                        {['physics', 'chemistry', 'maths'].includes(key) && (
+                        {subjects.includes(key as Subject) && (
                           <span className="mobile-sidebar-item-badge">
-                            {key === 'physics' ? `${Math.round(physicsProgress)}%` : key === 'chemistry' ? `${Math.round(chemistryProgress)}%` : `${Math.round(mathsProgress)}%`}
+                            {key === 'physics'
+                              ? `${Math.round(physicsProgress)}%`
+                              : key === 'chemistry'
+                              ? `${Math.round(chemistryProgress)}%`
+                              : key === 'maths'
+                              ? `${Math.round(mathsProgress)}%`
+                              : `${Math.round(biologyProgress ?? 0)}%`}
                           </span>
                         )}
                       </button>

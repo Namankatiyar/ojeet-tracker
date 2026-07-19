@@ -1,8 +1,9 @@
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { X, BookOpen, Type, Search, ChevronRight, Minus, Plus } from 'lucide-react';
 import { Subject, SubjectData, PlannerTask, AppProgress } from '../../../shared/types';
 import { useTaskForm, TaskType } from '../hooks/useTaskForm';
 import { TimePicker, TimePickerHandle } from '../../../shared/components/ui/TimePicker';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -175,6 +176,8 @@ function TaskTypeToggle({
 }
 
 function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
+  const { subjects } = useActiveSubjects();
+
   return (
     <>
       <div className="form-group">
@@ -193,12 +196,12 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
           Subject <span className="optional-label">(optional)</span>
         </label>
         <div className="material-pills">
-          {(['physics', 'chemistry', 'maths'] as Subject[]).map((subj) => (
+          {subjects.map((subj) => (
             <button
               key={subj}
               className={`material-pill custom-subject-pill ${form.customSubject === subj ? 'selected' : ''}`}
               onClick={() => form.selectCustomSubject(subj)}
-              style={{ '--pill-color': `var(--color-${subj})` } as any}
+              style={{ '--pill-color': `var(--color-${subj})` } as React.CSSProperties}
             >
               {subj.charAt(0).toUpperCase() + subj.slice(1)}
             </button>
@@ -206,7 +209,7 @@ function CustomTaskFields({ form }: { form: ReturnType<typeof useTaskForm> }) {
           <button
             className={`material-pill custom-subject-pill ${form.customSubject === 'none' ? 'selected' : ''}`}
             onClick={() => form.selectCustomSubject('none')}
-            style={{ '--pill-color': 'var(--text-secondary)' } as any}
+            style={{ '--pill-color': 'var(--text-secondary)' } as React.CSSProperties}
           >
             None
           </button>
@@ -252,17 +255,19 @@ function ChapterTaskFields({
   progress: AppProgress;
   subjectData: Record<Subject, SubjectData | null>;
 }) {
+  const { subjects } = useActiveSubjects();
+
   return (
     <>
       <div className="form-group">
         <label>Subject</label>
         <div className="subject-selector">
-          {(['physics', 'chemistry', 'maths'] as Subject[]).map((subj) => (
+          {subjects.map((subj) => (
             <button
               key={subj}
               className={`subject-option ${form.selectedSubject === subj ? 'selected' : ''}`}
               onClick={() => form.selectChapterSubject(subj)}
-              style={{ '--subj-color': `var(--color-${subj})` } as any}
+              style={{ '--subj-color': `var(--color-${subj})` } as React.CSSProperties}
             >
               {subj.charAt(0).toUpperCase() + subj.slice(1)}
             </button>

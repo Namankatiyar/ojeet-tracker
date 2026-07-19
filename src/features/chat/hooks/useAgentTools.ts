@@ -7,6 +7,7 @@ import { type Tool, type FunctionDeclaration, Type } from '@google/genai';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { useStudyCoPilot } from '../../../shared/hooks/useStudyCoPilot';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 import {
   Subject,
   Priority,
@@ -68,6 +69,7 @@ function err(message: string): string {
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
 export function useAgentTools() {
+  const { subjects } = useActiveSubjects();
   const {
     plannerTasks,
     mockScores,
@@ -94,6 +96,7 @@ export function useAgentTools() {
     handleAddExam,
     handleDeleteExam,
     handleSetPrimaryExam,
+    examMode,
   } = useUserProgress();
 
   const { mergedSubjectData } = useSubjectData();
@@ -394,6 +397,7 @@ export function useAgentTools() {
       physicsMarks: number,
       chemistryMarks: number,
       mathsMarks: number,
+      biologyMarks?: number,
       maxMarks?: number,
       examType?: string,
       paper1Marks?: MockSubjectMarks,
@@ -406,7 +410,9 @@ export function useAgentTools() {
       weakSubtopics?: Array<{ subject: Subject; chapter_name: string; subtopic_name: string }>,
       footnotes?: string
     ): string => {
-      const totalMarks = physicsMarks + chemistryMarks + mathsMarks;
+      const isNeet = examMode === 'neet';
+      const totalMarks = physicsMarks + chemistryMarks + (isNeet ? (biologyMarks ?? 0) : mathsMarks);
+      const defaultMax = isNeet ? 720 : 300;
 
       const resolvedWeakChapters = (weakChapters || [])
         .map((wc) => {
@@ -454,9 +460,11 @@ export function useAgentTools() {
         examType,
         physicsMarks,
         chemistryMarks,
-        mathsMarks,
+        mathsMarks: isNeet ? 0 : mathsMarks,
+        biologyMarks: isNeet ? (biologyMarks ?? 0) : undefined,
+        examMode,
         totalMarks,
-        maxMarks: maxMarks ?? 300,
+        maxMarks: maxMarks ?? defaultMax,
         paper1Marks,
         paper2Marks,
         attemptedQuestions,
@@ -468,11 +476,15 @@ export function useAgentTools() {
         footnotes: footnotes?.trim() || undefined,
       });
 
+      const scoreDetailString = isNeet
+        ? `P${physicsMarks} C${chemistryMarks} B${biologyMarks ?? 0}`
+        : `P${physicsMarks} C${chemistryMarks} M${mathsMarks}`;
+
       return ok(
-        `Logged mock "${name}" on ${date}: P${physicsMarks} C${chemistryMarks} M${mathsMarks} = ${totalMarks}.`
+        `Logged mock "${name}" on ${date}: ${scoreDetailString} = ${totalMarks}.`
       );
     },
-    [handleAddMockScore, mergedSubjectData]
+    [handleAddMockScore, mergedSubjectData, examMode]
   );
 
   const updateMockScore = useCallback(
@@ -483,6 +495,7 @@ export function useAgentTools() {
       physicsMarks?: number,
       chemistryMarks?: number,
       mathsMarks?: number,
+      biologyMarks?: number,
       maxMarks?: number,
       examType?: string,
       paper1Marks?: MockSubjectMarks,
@@ -501,7 +514,10 @@ export function useAgentTools() {
       const resolvedPhysics = physicsMarks !== undefined ? physicsMarks : existing.physicsMarks;
       const resolvedChemistry = chemistryMarks !== undefined ? chemistryMarks : existing.chemistryMarks;
       const resolvedMaths = mathsMarks !== undefined ? mathsMarks : existing.mathsMarks;
-      const resolvedTotal = resolvedPhysics + resolvedChemistry + resolvedMaths;
+      const resolvedBiology = biologyMarks !== undefined ? biologyMarks : existing.biologyMarks;
+
+      const isNeet = (existing.examMode ?? examMode) === 'neet';
+      const resolvedTotal = resolvedPhysics + resolvedChemistry + (isNeet ? (resolvedBiology ?? 0) : resolvedMaths);
 
       const resolvedWeakChapters =
         weakChapters !== undefined
@@ -556,7 +572,8 @@ export function useAgentTools() {
         examType: examType !== undefined ? examType : existing.examType,
         physicsMarks: resolvedPhysics,
         chemistryMarks: resolvedChemistry,
-        mathsMarks: resolvedMaths,
+        mathsMarks: isNeet ? 0 : resolvedMaths,
+        biologyMarks: isNeet ? (resolvedBiology ?? 0) : undefined,
         totalMarks: resolvedTotal,
         maxMarks: maxMarks !== undefined ? maxMarks : existing.maxMarks,
         paper1Marks: paper1Marks !== undefined ? paper1Marks : existing.paper1Marks,
@@ -573,7 +590,7 @@ export function useAgentTools() {
       handleEditMockScore(updatedScore);
       return ok(`Updated mock score "${updatedScore.name}".`);
     },
-    [mockScores, handleEditMockScore, mergedSubjectData]
+    [mockScores, handleEditMockScore, mergedSubjectData, examMode]
   );
 
   const deleteMockScore = useCallback(
@@ -603,11 +620,13 @@ export function useAgentTools() {
       physicsMax: number,
       chemistryMax: number,
       mathsMax: number,
-      enabledSubjects?: { physics?: boolean; chemistry?: boolean; maths?: boolean }
+      biologyMax?: number,
+      enabledSubjects?: { physics?: boolean; chemistry?: boolean; maths?: boolean; biology?: boolean }
     ): string => {
       if (mockExamPresets.some((p) => p.id === id)) {
         return err(`Preset with ID "${id}" already exists.`);
       }
+      const isNeet = examMode === 'neet';
       const preset: MockExamPreset = {
         id,
         name,
@@ -616,18 +635,20 @@ export function useAgentTools() {
         subjectMaxMarks: {
           physics: physicsMax,
           chemistry: chemistryMax,
-          maths: mathsMax,
+          maths: isNeet ? 0 : mathsMax,
+          biology: isNeet ? (biologyMax ?? 360) : undefined,
         },
         enabledSubjects: {
           physics: enabledSubjects?.physics ?? true,
           chemistry: enabledSubjects?.chemistry ?? true,
-          maths: enabledSubjects?.maths ?? true,
+          maths: isNeet ? false : (enabledSubjects?.maths ?? true),
+          biology: isNeet ? (enabledSubjects?.biology ?? true) : undefined,
         },
       };
       handleAddMockExamPreset(preset);
       return ok(`Added mock exam preset "${name}" (${shortName}).`);
     },
-    [mockExamPresets, handleAddMockExamPreset]
+    [mockExamPresets, handleAddMockExamPreset, examMode]
   );
 
   const updateMockPreset = useCallback(
@@ -639,11 +660,13 @@ export function useAgentTools() {
       physicsMax?: number,
       chemistryMax?: number,
       mathsMax?: number,
-      enabledSubjects?: { physics?: boolean; chemistry?: boolean; maths?: boolean }
+      biologyMax?: number,
+      enabledSubjects?: { physics?: boolean; chemistry?: boolean; maths?: boolean; biology?: boolean }
     ): string => {
       const existing = mockExamPresets.find((p) => p.id === presetId);
       if (!existing) return err(`Preset with ID "${presetId}" not found.`);
 
+      const isNeet = examMode === 'neet';
       const updated: MockExamPreset = {
         ...existing,
         name: name !== undefined ? name : existing.name,
@@ -652,14 +675,16 @@ export function useAgentTools() {
         subjectMaxMarks: {
           physics: physicsMax !== undefined ? physicsMax : existing.subjectMaxMarks.physics,
           chemistry: chemistryMax !== undefined ? chemistryMax : existing.subjectMaxMarks.chemistry,
-          maths: mathsMax !== undefined ? mathsMax : existing.subjectMaxMarks.maths,
+          maths: isNeet ? 0 : (mathsMax !== undefined ? mathsMax : existing.subjectMaxMarks.maths),
+          biology: isNeet ? (biologyMax !== undefined ? biologyMax : existing.subjectMaxMarks.biology) : undefined,
         },
         enabledSubjects:
           enabledSubjects !== undefined
             ? {
                 physics: enabledSubjects.physics ?? existing.enabledSubjects?.physics ?? true,
                 chemistry: enabledSubjects.chemistry ?? existing.enabledSubjects?.chemistry ?? true,
-                maths: enabledSubjects.maths ?? existing.enabledSubjects?.maths ?? true,
+                maths: isNeet ? false : (enabledSubjects.maths ?? existing.enabledSubjects?.maths ?? true),
+                biology: isNeet ? (enabledSubjects.biology ?? existing.enabledSubjects?.biology ?? true) : undefined,
               }
             : existing.enabledSubjects,
       };
@@ -667,7 +692,7 @@ export function useAgentTools() {
       handleUpdateMockExamPreset(updated);
       return ok(`Updated mock exam preset "${updated.name}".`);
     },
-    [mockExamPresets, handleUpdateMockExamPreset]
+    [mockExamPresets, handleUpdateMockExamPreset, examMode]
   );
 
   const deleteMockPreset = useCallback(
@@ -841,6 +866,7 @@ export function useAgentTools() {
           args.physics_marks as number,
           args.chemistry_marks as number,
           args.maths_marks as number,
+          args.biology_marks as number | undefined,
           args.max_marks as number | undefined,
           args.exam_type as string | undefined,
           args.paper1_marks as MockSubjectMarks | undefined,
@@ -861,6 +887,7 @@ export function useAgentTools() {
           args.physics_marks as number | undefined,
           args.chemistry_marks as number | undefined,
           args.maths_marks as number | undefined,
+          args.biology_marks as number | undefined,
           args.max_marks as number | undefined,
           args.exam_type as string | undefined,
           args.paper1_marks as MockSubjectMarks | undefined,
@@ -886,6 +913,7 @@ export function useAgentTools() {
           args.physics_max as number,
           args.chemistry_max as number,
           args.maths_max as number,
+          args.biology_max as number | undefined,
           args.enabled_subjects as any
         ),
       update_mock_preset: (args: Record<string, unknown>) =>
@@ -897,6 +925,7 @@ export function useAgentTools() {
           args.physics_max as number | undefined,
           args.chemistry_max as number | undefined,
           args.maths_max as number | undefined,
+          args.biology_max as number | undefined,
           args.enabled_subjects as any
         ),
       delete_mock_preset: (args: Record<string, unknown>) =>
@@ -988,8 +1017,8 @@ export function useAgentTools() {
           properties: {
             subject: {
               type: Type.STRING,
-              description: 'One of: physics, chemistry, maths',
-              enum: ['physics', 'chemistry', 'maths'],
+              description: `One of: ${subjects.join(', ')}`,
+              enum: subjects,
             },
           },
           required: ['subject'],
@@ -1002,7 +1031,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING, description: 'Chapter name (fuzzy matched)' },
           },
           required: ['subject', 'chapter_name'],
@@ -1046,7 +1075,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING, description: 'Chapter name (fuzzy matched)' },
             material: { type: Type.STRING, description: 'Material name e.g. NCERT, PYQs, Modules' },
           },
@@ -1059,7 +1088,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING },
             subtopic_name: { type: Type.STRING, description: 'Subtopic name (fuzzy matched)' },
             material: { type: Type.STRING },
@@ -1073,7 +1102,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING },
             subtopic_name: { type: Type.STRING },
             material: { type: Type.STRING },
@@ -1088,7 +1117,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING },
             priority: { type: Type.STRING, enum: ['high', 'medium', 'low', 'none'] },
           },
@@ -1101,7 +1130,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING },
             confidence: { type: Type.NUMBER, description: 'Confidence level 1-5 (optional)' },
           },
@@ -1114,7 +1143,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING },
             subtopic_name: { type: Type.STRING },
             date: { type: Type.STRING, description: 'YYYY-MM-DD date or omit to clear' },
@@ -1132,7 +1161,7 @@ export function useAgentTools() {
             title: { type: Type.STRING, description: 'Task title' },
             date: { type: Type.STRING, description: 'YYYY-MM-DD date for the task' },
             time: { type: Type.STRING, description: 'HH:mm time (default: 08:00)' },
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: {
               type: Type.STRING,
               description: 'Optional chapter name (fuzzy matched)',
@@ -1178,7 +1207,7 @@ export function useAgentTools() {
         parameters: {
           type: Type.OBJECT,
           properties: {
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING },
           },
           required: ['subject', 'chapter_name'],
@@ -1193,7 +1222,7 @@ export function useAgentTools() {
           properties: {
             title: { type: Type.STRING },
             duration_minutes: { type: Type.NUMBER, description: 'Duration in minutes' },
-            subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+            subject: { type: Type.STRING, enum: subjects },
             chapter_name: { type: Type.STRING },
             material: { type: Type.STRING },
             date: { type: Type.STRING, description: 'YYYY-MM-DD (defaults to today)' },
@@ -1224,43 +1253,40 @@ export function useAgentTools() {
             physics_marks: { type: Type.NUMBER },
             chemistry_marks: { type: Type.NUMBER },
             maths_marks: { type: Type.NUMBER },
-            max_marks: { type: Type.NUMBER, description: 'Max total marks (default 300)' },
+            biology_marks: { type: Type.NUMBER },
+            max_marks: { type: Type.NUMBER, description: `Max total marks (default ${examMode === 'neet' ? 720 : 300})` },
             exam_type: { type: Type.STRING, description: 'e.g. jm, ja, bt' },
             paper1_marks: {
               type: Type.OBJECT,
               description: 'Optional subject breakdown for Paper 1',
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             paper2_marks: {
               type: Type.OBJECT,
               description: 'Optional subject breakdown for Paper 2',
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             attempted_questions: {
               type: Type.OBJECT,
               description: 'Optional questions attempted per subject',
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             wrong_questions: {
               type: Type.OBJECT,
               description: 'Optional wrong questions per subject',
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             total_time_allotted: {
               type: Type.NUMBER,
@@ -1269,11 +1295,10 @@ export function useAgentTools() {
             time_spent: {
               type: Type.OBJECT,
               description: 'Optional time spent per subject in minutes',
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             weak_chapters: {
               type: Type.ARRAY,
@@ -1281,7 +1306,7 @@ export function useAgentTools() {
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  subject: { type: Type.STRING, enum: subjects },
                   chapter_name: { type: Type.STRING, description: 'Chapter name' },
                 },
                 required: ['subject', 'chapter_name'],
@@ -1293,7 +1318,7 @@ export function useAgentTools() {
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  subject: { type: Type.STRING, enum: subjects },
                   chapter_name: { type: Type.STRING, description: 'Chapter name' },
                   subtopic_name: { type: Type.STRING, description: 'Subtopic name' },
                 },
@@ -1305,7 +1330,9 @@ export function useAgentTools() {
               description: 'Optional notes, reflections, or key takeaways from the mock exam',
             },
           },
-          required: ['name', 'date', 'physics_marks', 'chemistry_marks', 'maths_marks'],
+          required: examMode === 'neet'
+            ? ['name', 'date', 'physics_marks', 'chemistry_marks', 'biology_marks']
+            : ['name', 'date', 'physics_marks', 'chemistry_marks', 'maths_marks'],
         },
       },
       {
@@ -1320,55 +1347,51 @@ export function useAgentTools() {
             physics_marks: { type: Type.NUMBER },
             chemistry_marks: { type: Type.NUMBER },
             maths_marks: { type: Type.NUMBER },
+            biology_marks: { type: Type.NUMBER },
             max_marks: { type: Type.NUMBER },
             exam_type: { type: Type.STRING },
             paper1_marks: {
               type: Type.OBJECT,
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             paper2_marks: {
               type: Type.OBJECT,
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             attempted_questions: {
               type: Type.OBJECT,
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             wrong_questions: {
               type: Type.OBJECT,
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             total_time_allotted: { type: Type.NUMBER },
             time_spent: {
               type: Type.OBJECT,
-              properties: {
-                physics: { type: Type.NUMBER },
-                chemistry: { type: Type.NUMBER },
-                maths: { type: Type.NUMBER },
-              },
+              properties: subjects.reduce((acc, sub) => {
+                acc[sub] = { type: Type.NUMBER };
+                return acc;
+              }, {} as Record<string, any>),
             },
             weak_chapters: {
               type: Type.ARRAY,
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  subject: { type: Type.STRING, enum: subjects },
                   chapter_name: { type: Type.STRING },
                 },
                 required: ['subject', 'chapter_name'],
@@ -1379,7 +1402,7 @@ export function useAgentTools() {
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  subject: { type: Type.STRING, enum: ['physics', 'chemistry', 'maths'] },
+                  subject: { type: Type.STRING, enum: subjects },
                   chapter_name: { type: Type.STRING },
                   subtopic_name: { type: Type.STRING },
                 },
@@ -1420,16 +1443,20 @@ export function useAgentTools() {
             physics_max: { type: Type.NUMBER, description: 'Max physics marks per paper' },
             chemistry_max: { type: Type.NUMBER, description: 'Max chemistry marks per paper' },
             maths_max: { type: Type.NUMBER, description: 'Max maths marks per paper' },
+            biology_max: { type: Type.NUMBER, description: 'Max biology marks per paper' },
             enabled_subjects: {
               type: Type.OBJECT,
               properties: {
                 physics: { type: Type.BOOLEAN },
                 chemistry: { type: Type.BOOLEAN },
                 maths: { type: Type.BOOLEAN },
+                biology: { type: Type.BOOLEAN },
               },
             },
           },
-          required: ['id', 'name', 'short_name', 'paper_count', 'physics_max', 'chemistry_max', 'maths_max'],
+          required: examMode === 'neet'
+            ? ['id', 'name', 'short_name', 'paper_count', 'physics_max', 'chemistry_max', 'biology_max']
+            : ['id', 'name', 'short_name', 'paper_count', 'physics_max', 'chemistry_max', 'maths_max'],
         },
       },
       {
@@ -1445,12 +1472,14 @@ export function useAgentTools() {
             physics_max: { type: Type.NUMBER },
             chemistry_max: { type: Type.NUMBER },
             maths_max: { type: Type.NUMBER },
+            biology_max: { type: Type.NUMBER },
             enabled_subjects: {
               type: Type.OBJECT,
               properties: {
                 physics: { type: Type.BOOLEAN },
                 chemistry: { type: Type.BOOLEAN },
                 maths: { type: Type.BOOLEAN },
+                biology: { type: Type.BOOLEAN },
               },
             },
           },
@@ -1507,7 +1536,7 @@ export function useAgentTools() {
     ];
 
     return { functionDeclarations: declarations };
-  }, []);
+  }, [subjects, examMode]);
 
   return { toolDeclarations, executeToolCall, isDestructive };
 }

@@ -131,6 +131,8 @@ export interface MockScore {
   physicsMarks: number;
   chemistryMarks: number;
   mathsMarks: number;
+  biologyMarks?: number;
+  examMode?: 'jee' | 'neet';
   totalMarks: number; // Sum of all three
   maxMarks?: number; // Optional, defaults to 300
   paper1Marks?: MockSubjectMarks;

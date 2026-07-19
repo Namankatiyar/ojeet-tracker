@@ -72,6 +72,7 @@ export const subjectColors = {
   physics: '#6366f1',
   chemistry: '#10b981',
   maths: '#f59e0b',
+  biology: '#00b330',
   custom: '#ff57c7',
   overall: '#22c55e',
 };
@@ -80,6 +81,7 @@ const subjectColorVars = {
   physics: '--color-physics',
   chemistry: '--color-chemistry',
   maths: '--color-maths',
+  biology: '--color-biology',
   custom: '--color-custom',
 };
 
@@ -99,6 +101,7 @@ export const getSubjectColors = () => {
     physics: read(subjectColorVars.physics, subjectColors.physics),
     chemistry: read(subjectColorVars.chemistry, subjectColors.chemistry),
     maths: read(subjectColorVars.maths, subjectColors.maths),
+    biology: read(subjectColorVars.biology, subjectColors.biology),
     custom: read(subjectColorVars.custom, subjectColors.custom),
   };
 };
