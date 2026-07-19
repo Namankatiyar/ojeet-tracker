@@ -61,7 +61,10 @@ export const getStudyTimeBySubject = (studySessions: StudySession[], dateStr: st
     maths:
       daySessions.filter((s) => s.subject === 'maths').reduce((acc, s) => acc + s.duration, 0) /
       3600,
-    other: daySessions.filter((s) => !s.subject).reduce((acc, s) => acc + s.duration, 0) / 3600,
+    biology:
+      daySessions.filter((s) => s.subject === 'biology').reduce((acc, s) => acc + s.duration, 0) /
+      3600,
+    other: daySessions.filter((s) => !['physics', 'chemistry', 'maths', 'biology'].includes(s.subject || '')).reduce((acc, s) => acc + s.duration, 0) / 3600,
   };
 };
 

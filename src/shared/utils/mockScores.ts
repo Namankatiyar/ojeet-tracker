@@ -72,7 +72,7 @@ export const getMockSubjectTotals = (
 
 export const getMockPaperTotal = (score: MockScore, paper: 'paper1' | 'paper2'): number => {
   const marks = getMockPaperMarks(score, paper);
-  return marks.physics + marks.chemistry + marks.maths;
+  return marks.physics + marks.chemistry + marks.maths + (marks.biology ?? 0);
 };
 
 export const getMockTotalMarks = (score: MockScore, preset?: MockExamPreset): number => {

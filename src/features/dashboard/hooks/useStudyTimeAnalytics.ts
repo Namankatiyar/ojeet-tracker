@@ -8,12 +8,14 @@ import {
   getSubjectColors,
   createGradient,
 } from '../utils/analyticsUtils';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 
 interface RemoteAggregateBucketEntry {
   overall?: number;
   physics?: number;
   chemistry?: number;
   maths?: number;
+  biology?: number;
 }
 
 const HISTORY_WINDOW_DAYS = 60;
@@ -31,15 +33,18 @@ export function useStudyTimeAnalytics(
   mode: 'weekly' | 'monthly',
   remoteDailyBuckets?: Record<string, RemoteAggregateBucketEntry>
 ) {
+  const { subjects, subjectMeta } = useActiveSubjects();
+
   const analyticsData = useMemo(() => {
     const subjectColors = getSubjectColors();
     if (mode === 'weekly') {
       const weekDays = getWeekDays(offset);
       const labels = weekDays.map((d) => d.toLocaleDateString('en-US', { weekday: 'short' }));
 
-      const physicsData: number[] = [];
-      const chemistryData: number[] = [];
-      const mathsData: number[] = [];
+      const subjectDataArrays = subjects.reduce((acc, subj) => {
+        acc[subj] = [];
+        return acc;
+      }, {} as Record<string, number[]>);
       const customData: number[] = [];
 
       weekDays.forEach((day) => {
@@ -48,57 +53,31 @@ export function useStudyTimeAnalytics(
         const remote = remoteDailyBuckets?.[dateStr];
         const useLocalOnly = isWithinHistory(day);
 
-        physicsData.push(
-          Number(
-            (useLocalOnly
-              ? times.physics
-              : Math.max(times.physics, (remote?.physics ?? 0) / 3600)
-            ).toFixed(2)
-          )
-        );
-        chemistryData.push(
-          Number(
-            (useLocalOnly
-              ? times.chemistry
-              : Math.max(times.chemistry, (remote?.chemistry ?? 0) / 3600)
-            ).toFixed(2)
-          )
-        );
-        mathsData.push(
-          Number(
-            (useLocalOnly
-              ? times.maths
-              : Math.max(times.maths, (remote?.maths ?? 0) / 3600)
-            ).toFixed(2)
-          )
-        );
+        subjects.forEach((subj) => {
+          const localVal = times[subj] || 0;
+          const remoteVal = (remote?.[subj] ?? 0) / 3600;
+          subjectDataArrays[subj].push(
+            Number(
+              (useLocalOnly ? localVal : Math.max(localVal, remoteVal)).toFixed(2)
+            )
+          );
+        });
         customData.push(Number(times.other.toFixed(2)));
       });
 
       return {
         labels,
         datasets: [
-          {
-            label: 'Physics',
-            data: physicsData,
-            backgroundColor: subjectColors.physics,
-            borderRadius: 4,
-            barPercentage: 0.7,
-          },
-          {
-            label: 'Chemistry',
-            data: chemistryData,
-            backgroundColor: subjectColors.chemistry,
-            borderRadius: 4,
-            barPercentage: 0.7,
-          },
-          {
-            label: 'Maths',
-            data: mathsData,
-            backgroundColor: subjectColors.maths,
-            borderRadius: 4,
-            barPercentage: 0.7,
-          },
+          ...subjects.map((subj) => {
+            const meta = subjectMeta.find((m) => m.key === subj);
+            return {
+              label: meta?.label ?? subj.charAt(0).toUpperCase() + subj.slice(1),
+              data: subjectDataArrays[subj],
+              backgroundColor: subjectColors[subj as keyof typeof subjectColors] || subjectColors.custom,
+              borderRadius: 4,
+              barPercentage: 0.7,
+            };
+          }),
           {
             label: 'Custom',
             data: customData,
@@ -112,10 +91,11 @@ export function useStudyTimeAnalytics(
       const monthDays = getMonthDays(offset);
       const labels = monthDays.map((d) => d.getDate().toString());
 
+      const subjectDataArrays = subjects.reduce((acc, subj) => {
+        acc[subj] = [];
+        return acc;
+      }, {} as Record<string, number[]>);
       const overallData: number[] = [];
-      const physicsData: number[] = [];
-      const chemistryData: number[] = [];
-      const mathsData: number[] = [];
       const customData: number[] = [];
 
       monthDays.forEach((day) => {
@@ -123,41 +103,24 @@ export function useStudyTimeAnalytics(
         const times = getStudyTimeBySubject(studySessions, dateStr);
         const remote = remoteDailyBuckets?.[dateStr];
         const useLocalOnly = isWithinHistory(day);
-        const localOverall = times.physics + times.chemistry + times.maths + times.other;
+        const localOverall = subjects.reduce((sum, subj) => sum + (times[subj] || 0), 0) + times.other;
         const remoteOverallHours = (remote?.overall ?? 0) / 3600;
         const overallHours = useLocalOnly
           ? localOverall
           : Math.max(localOverall, remoteOverallHours);
 
         overallData.push(Number(overallHours.toFixed(2)));
-        physicsData.push(
-          Number(
-            (useLocalOnly
-              ? times.physics
-              : Math.max(times.physics, (remote?.physics ?? 0) / 3600)
-            ).toFixed(2)
-          )
-        );
-        chemistryData.push(
-          Number(
-            (useLocalOnly
-              ? times.chemistry
-              : Math.max(times.chemistry, (remote?.chemistry ?? 0) / 3600)
-            ).toFixed(2)
-          )
-        );
-        mathsData.push(
-          Number(
-            (useLocalOnly
-              ? times.maths
-              : Math.max(times.maths, (remote?.maths ?? 0) / 3600)
-            ).toFixed(2)
-          )
-        );
+        subjects.forEach((subj) => {
+          const localVal = times[subj] || 0;
+          const remoteVal = (remote?.[subj] ?? 0) / 3600;
+          subjectDataArrays[subj].push(
+            Number(
+              (useLocalOnly ? localVal : Math.max(localVal, remoteVal)).toFixed(2)
+            )
+          );
+        });
         customData.push(Number(times.other.toFixed(2)));
       });
-
-
 
       return {
         labels,
@@ -174,47 +137,25 @@ export function useStudyTimeAnalytics(
             pointHoverRadius: 5,
             tension: 0.4,
             borderWidth: 3,
-            order: 5,
+            order: subjects.length + 2,
           },
-          {
-            label: 'Physics',
-            data: physicsData,
-            fill: true,
-            backgroundColor: createGradient(subjectColors.physics, physicsData),
-            borderColor: subjectColors.physics,
-            pointBackgroundColor: subjectColors.physics,
-            pointBorderColor: '#fff',
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            tension: 0.4,
-            order: 4,
-          },
-          {
-            label: 'Chemistry',
-            data: chemistryData,
-            fill: true,
-            backgroundColor: createGradient(subjectColors.chemistry, chemistryData),
-            borderColor: subjectColors.chemistry,
-            pointBackgroundColor: subjectColors.chemistry,
-            pointBorderColor: '#fff',
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            tension: 0.4,
-            order: 3,
-          },
-          {
-            label: 'Maths',
-            data: mathsData,
-            fill: true,
-            backgroundColor: createGradient(subjectColors.maths, mathsData),
-            borderColor: subjectColors.maths,
-            pointBackgroundColor: subjectColors.maths,
-            pointBorderColor: '#fff',
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            tension: 0.4,
-            order: 2,
-          },
+          ...subjects.map((subj, index) => {
+            const meta = subjectMeta.find((m) => m.key === subj);
+            const color = subjectColors[subj as keyof typeof subjectColors] || subjectColors.custom;
+            return {
+              label: meta?.label ?? subj.charAt(0).toUpperCase() + subj.slice(1),
+              data: subjectDataArrays[subj],
+              fill: true,
+              backgroundColor: createGradient(color, subjectDataArrays[subj]),
+              borderColor: color,
+              pointBackgroundColor: color,
+              pointBorderColor: '#fff',
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              tension: 0.4,
+              order: subjects.length + 1 - index,
+            };
+          }),
           {
             label: 'Custom',
             data: customData,
@@ -231,7 +172,7 @@ export function useStudyTimeAnalytics(
         ],
       };
     }
-  }, [studySessions, offset, mode, remoteDailyBuckets]);
+  }, [studySessions, offset, mode, remoteDailyBuckets, subjects, subjectMeta]);
 
   return analyticsData;
 }
