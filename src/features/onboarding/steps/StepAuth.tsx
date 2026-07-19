@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, Loader, WifiOff } from 'lucide-react';
+import { ArrowRight, Check, Loader, WifiOff } from 'lucide-react';
 
 const stagger = {
   animate: { transition: { staggerChildren: 0.06 } },
@@ -20,7 +20,7 @@ interface StepAuthProps {
   userEmail?: string;
   onGoogle: () => void;
   onOffline: () => void;
-  onBack: () => void;
+  onNext: () => void;
 }
 
 export function StepAuth({
@@ -28,7 +28,7 @@ export function StepAuth({
   userEmail,
   onGoogle,
   onOffline,
-  onBack,
+  onNext,
 }: StepAuthProps) {
   const [loading, setLoading] = useState(false);
 
@@ -53,17 +53,10 @@ export function StepAuth({
             <span className="ob-signed-in-email">{userEmail}</span>
           </span>
         </motion.div>
-        <motion.div className="ob-nav-row" variants={fadeUp}>
-          <button
-            className="ob-back-btn"
-            onClick={onBack}
-            type="button"
-          >
-            <ArrowLeft size={16} />
-            Back
-          </button>
-          <button className="primary-btn ob-continue-btn" onClick={onOffline} type="button">
-            Enter workspace
+        <motion.div className="ob-nav-row end-only" variants={fadeUp}>
+          <button className="primary-btn ob-continue-btn" onClick={onNext} type="button">
+            Continue
+            <ArrowRight size={16} />
           </button>
         </motion.div>
       </motion.div>
@@ -73,7 +66,7 @@ export function StepAuth({
   return (
     <motion.div variants={stagger} initial="initial" animate="animate">
       <motion.h1 className="ob-step-heading" variants={fadeUp}>
-        One last thing
+        Sign in
       </motion.h1>
       <motion.p className="ob-step-subtext" variants={fadeUp}>
         Sign in to sync your progress across devices, or continue offline with
@@ -119,17 +112,6 @@ export function StepAuth({
         >
           <WifiOff size={18} />
           Continue offline
-        </button>
-      </motion.div>
-      <motion.div className="ob-nav-row" variants={fadeUp}>
-        <button
-          className="ob-back-btn"
-          onClick={onBack}
-          type="button"
-          disabled={loading}
-        >
-          <ArrowLeft size={16} />
-          Back
         </button>
       </motion.div>
     </motion.div>

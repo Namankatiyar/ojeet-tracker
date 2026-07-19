@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUserProgress } from '../../core/context/UserProgressContext';
 import { useRemoteAuth } from '../../core/context/RemoteAuthContext';
@@ -79,6 +79,15 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     []
   );
 
+  useEffect(() => {
+    if (user && !data.name) {
+      const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+      if (googleName) {
+        updateData('name', googleName);
+      }
+    }
+  }, [user, data.name, updateData]);
+
   const goNext = useCallback(() => {
     if (step < TOTAL_STEPS) {
       setDirection(1);
@@ -94,7 +103,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }, [step]);
 
   const handleComplete = useCallback(
-    async (authMethod: 'google' | 'offline') => {
+    async () => {
       // Write collected settings to existing localStorage hooks
       setProgressCardSettings((prev) => ({
         ...prev,
@@ -112,13 +121,6 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       // Suppress the Discord popup since user saw it in onboarding
       localStorage.setItem('ojee_discord_dismissed', 'true');
 
-      if (authMethod === 'google' && !user) {
-        // signInWithGoogle() triggers an OAuth redirect.
-        // The flag is already set, so when the user returns they skip onboarding.
-        await signInWithGoogle();
-        return;
-      }
-
       onComplete();
     },
     [
@@ -127,8 +129,6 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       setDailyResetHour,
       setEnableAIAgent,
       setEnableMusicPlayer,
-      user,
-      signInWithGoogle,
       onComplete,
     ]
   );
@@ -137,13 +137,24 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     switch (step) {
       case 1:
         return (
-          <StepName
-            value={data.name}
-            onChange={(v) => updateData('name', v)}
+          <StepAuth
+            isSignedIn={!!user}
+            userEmail={user?.email}
+            onGoogle={signInWithGoogle}
+            onOffline={goNext}
             onNext={goNext}
           />
         );
       case 2:
+        return (
+          <StepName
+            value={data.name}
+            onChange={(v) => updateData('name', v)}
+            onNext={goNext}
+            onBack={goBack}
+          />
+        );
+      case 3:
         return (
           <StepResetTime
             value={data.resetTime}
@@ -152,7 +163,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             onBack={goBack}
           />
         );
-      case 3:
+      case 4:
         return (
           <StepPersonalize
             aiEnabled={data.aiAssistantEnabled}
@@ -163,24 +174,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             onBack={goBack}
           />
         );
-      case 4:
+      case 5:
         return (
           <StepDiscord
             onJoin={() => {
               updateData('discordJoined', true);
-              goNext();
+              handleComplete();
             }}
-            onSkip={goNext}
-            onBack={goBack}
-          />
-        );
-      case 5:
-        return (
-          <StepAuth
-            isSignedIn={!!user}
-            userEmail={user?.email}
-            onGoogle={() => handleComplete('google')}
-            onOffline={() => handleComplete('offline')}
+            onSkip={handleComplete}
             onBack={goBack}
           />
         );
