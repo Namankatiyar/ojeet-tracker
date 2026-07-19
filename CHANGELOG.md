@@ -1,3 +1,31 @@
+# [2.4.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.3.0...v2.4.0) (2026-07-19)
+
+
+### Bug Fixes
+
+* **context:** make setMockExamPresets mode-aware for NEET/JEE ([d3a3d2a](https://github.com/Namankatiyar/ojeet-tracker/commit/d3a3d2ac3cb48be155d6bf26b7027e078ab75823))
+* **mock:** preserve examMode on editing score, correct biology color fallback ([834d2b8](https://github.com/Namankatiyar/ojeet-tracker/commit/834d2b89e2dd3fc07a9b7bc232405c8e702aac88))
+
+
+### Features
+
+* add biologyMarks and examMode fields to MockScore ([a05ab8f](https://github.com/Namankatiyar/ojeet-tracker/commit/a05ab8f5e70b8a63426a90b79d4edf69933a2d10))
+* **mock:** stamp examMode, filter analytics by mode, add biology ([c5b0670](https://github.com/Namankatiyar/ojeet-tracker/commit/c5b06705756fa8a719c4be07c67386c4874c1b2d))
+* **neet:** add biology syllabus and db migration for neet support ([795b798](https://github.com/Namankatiyar/ojeet-tracker/commit/795b798cd0456eb9a931b16c5a4859adb7101bf3))
+* **neet:** add Exam Mode toggle to Settings Behavior section ([17b98e9](https://github.com/Namankatiyar/ojeet-tracker/commit/17b98e9554bd1bb081a30da359aa0b91c6d885c8))
+* **neet:** add examMode setting to SettingsContext ([ab7cd70](https://github.com/Namankatiyar/ojeet-tracker/commit/ab7cd70a10b3f7c326e81fd5d93feaabb1715c0c))
+* **neet:** add subjects config module and useActiveSubjects hook ([1dcdc9a](https://github.com/Namankatiyar/ojeet-tracker/commit/1dcdc9ad8e5ad926279f60922cdba87e97c51a18))
+* **neet:** extend settings sync payload with examMode and NEET preset set ([0c2e092](https://github.com/Namankatiyar/ojeet-tracker/commit/0c2e09266721912b9ad4e11cb8b5fb22dffe4e85))
+* **neet:** separate NEET preset storage and extend max-marks for biology ([01011a1](https://github.com/Namankatiyar/ojeet-tracker/commit/01011a196685b0d492dc7d605ad3d6e8e324787d))
+* **neet:** swap header nav subjects dynamically via useActiveSubjects ([f12e7b3](https://github.com/Namankatiyar/ojeet-tracker/commit/f12e7b355d452de9e648606b9c6eca3edb95bd58))
+* **neet:** update AI agent tools and prompt builder for NEET mode awareness ([37c34a2](https://github.com/Namankatiyar/ojeet-tracker/commit/37c34a28043041dd95669882eb2293a05f78f6e0))
+* **neet:** wire DailyAnalytics subject iteration to useActiveSubjects ([7d0b2b3](https://github.com/Namankatiyar/ojeet-tracker/commit/7d0b2b3823a23218e9ac993cd16310dbf2099982))
+* **neet:** wire TaskModal subject pickers to useActiveSubjects ([dbb9fb5](https://github.com/Namankatiyar/ojeet-tracker/commit/dbb9fb51726bd7fb562b6ad7e1cd7ea527fbb07d))
+* **sync:** add jittered exponential backoff and offline status helpers ([6d1620c](https://github.com/Namankatiyar/ojeet-tracker/commit/6d1620c137d6bcf76c0300d63e31048ecfde1055))
+* **sync:** apply backoff utility and offline check to profile sync ([95bc241](https://github.com/Namankatiyar/ojeet-tracker/commit/95bc241ea081405eb8ebf12d8993f1fce93b15a9))
+* **sync:** apply backoff utility and visibility cadence adjustment to remote sync ([2e62daf](https://github.com/Namankatiyar/ojeet-tracker/commit/2e62daf1b4b910fdef5305ce3404b8427f4a5cb8))
+* **sync:** back off community heartbeat and friends hooks on failure ([0d5de6f](https://github.com/Namankatiyar/ojeet-tracker/commit/0d5de6fa337b0d82a419ff32b598071ee49c7608))
+
 # [2.4.0-develop.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.4.0-develop.1...v2.4.0-develop.2) (2026-07-19)
 
 
