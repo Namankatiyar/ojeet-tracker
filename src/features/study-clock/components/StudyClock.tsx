@@ -26,6 +26,7 @@ import { PresetManager } from './Presets/PresetManager';
 import { SessionHistory } from './SessionHistory';
 import { SessionStatistics } from './SessionStatistics';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 import {
   requestNotificationPermission,
   dispatchNotification,
@@ -101,6 +102,7 @@ export function StudyClock({
 }: StudyClockProps) {
   const { accentColor, backgroundUrl } = useTheme();
   const { dailyResetHour } = useUserProgress();
+  const { subjectMeta } = useActiveSubjects();
 
   // ── Task selection state (Persisted for Pomodoro cycle transitions) ──
   const [taskType, setTaskType] = useLocalStorage<'chapter' | 'custom' | 'task'>(
@@ -152,6 +154,14 @@ export function StudyClock({
     }
     return () => document.body.classList.remove('hide-global-fabs');
   }, [isFullscreen]);
+
+  // Reset subject selection when mode changes and current selection is invalid
+  useEffect(() => {
+    const validKeys = subjectMeta.map((m) => m.key);
+    if (selectedSubject && !validKeys.includes(selectedSubject)) {
+      setSelectedSubject(subjectMeta[0]?.key ?? 'physics');
+    }
+  }, [subjectMeta, selectedSubject, setSelectedSubject]);
 
   // ── Task title helper ──
   const getTaskTitle = useCallback((): string => {
@@ -657,11 +667,10 @@ export function StudyClock({
                           setSelectedChapter('');
                           setSelectedMaterial('');
                         }}
-                        options={[
-                          { value: 'physics', label: 'Physics' },
-                          { value: 'chemistry', label: 'Chemistry' },
-                          { value: 'maths', label: 'Maths' },
-                        ]}
+                        options={subjectMeta.map((meta) => ({
+                          value: meta.key,
+                          label: meta.label,
+                        }))}
                         placeholder="Select Subject"
                         disabled={!isIdle}
                       />
