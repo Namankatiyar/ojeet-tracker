@@ -1,7 +1,8 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Subject, SubjectData, StudySession } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
+import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 
 interface SessionStatisticsProps {
   sessions: StudySession[];
@@ -26,6 +27,7 @@ function getSessionDate(session: StudySession): Date {
 }
 
 export function SessionStatistics({ sessions, subjectData }: SessionStatisticsProps) {
+  const { subjects, subjectMeta } = useActiveSubjects();
   const [statsSubject, setStatsSubject] = useState<Subject | 'all'>('all');
   const [statsChapter, setStatsChapter] = useState<number | 'all'>('all');
   const [statsMaterial, setStatsMaterial] = useState<string | 'all'>('all');
@@ -37,6 +39,12 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
     const saved = localStorage.getItem('breakdownPeriod');
     return (saved as any) || 'overall';
   });
+
+  useEffect(() => {
+    if (statsSubject !== 'all' && !subjects.includes(statsSubject)) {
+      setStatsSubject('all');
+    }
+  }, [statsSubject, subjects]);
 
   const getFilteredSessions = useCallback(() => {
     return sessions.filter((s) => {
@@ -167,6 +175,15 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
     monthly: "This Month's Study Time",
   };
 
+  const distributionItems = [
+    ...subjectMeta.map((meta) => ({
+      key: meta.key,
+      label: meta.label,
+      time: subjectDistribution[meta.key as keyof typeof subjectDistribution] || 0,
+    })),
+    { key: 'custom', label: 'Custom', time: subjectDistribution.custom },
+  ];
+
   return (
     <>
       <div className="statistics-card">
@@ -188,9 +205,11 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
               }}
               options={[
                 { value: 'all', label: 'All Subjects' },
-                { value: 'physics', label: 'Physics' },
-                { value: 'chemistry', label: 'Chemistry' },
-                { value: 'maths', label: 'Maths' },
+                ...subjectMeta.map((meta) => ({
+                  value: meta.key,
+                  label: meta.label,
+                  color: meta.colorVar,
+                })),
               ]}
               placeholder="Select Subject"
             />
@@ -263,12 +282,7 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
             </div>
             <div className="distribution-section-title">Time by Subject</div>
             <div className="distribution-chart">
-              {[
-                { key: 'physics', label: 'Physics', time: subjectDistribution.physics },
-                { key: 'chemistry', label: 'Chemistry', time: subjectDistribution.chemistry },
-                { key: 'maths', label: 'Maths', time: subjectDistribution.maths },
-                { key: 'custom', label: 'Custom', time: subjectDistribution.custom },
-              ].map((item) => {
+              {distributionItems.map((item) => {
                 const isOpen =
                   item.key !== 'custom' && openChapterGraphs.includes(item.key as Subject);
                 const topChapters = isOpen ? getTopChaptersForSubject(item.key as Subject) : [];
