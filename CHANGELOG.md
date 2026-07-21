@@ -1,3 +1,19 @@
+# [3.0.0-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.8.0-develop.1...v3.0.0-develop.1) (2026-07-21)
+
+
+* feat!: declare OJEET Tracker 3.0 major release with NEET mode ([182e7dc](https://github.com/Namankatiyar/ojeet-tracker/commit/182e7dc2e05f8d6cf47b2f45674c1b86d09a1f02))
+
+
+### BREAKING CHANGES
+
+* the product is rebranded from OJEE Tracker to OJEET
+Tracker and NEET mode is now a first-class experience. New canonical
+routes (/neet-syllabus-tracker, /neet-study-planner, /neet-study-timer,
+/neet-mock-scores) are the supported entry points and legacy paths
+redirect based on the active exam mode. Bumps the major version to 3.0.0.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
 # [2.8.0-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.7.0...v2.8.0-develop.1) (2026-07-21)
 
 
