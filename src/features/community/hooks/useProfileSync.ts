@@ -343,6 +343,15 @@ export function useProfileSync() {
       }
     }
 
+    // Guard: never persist base64 data URIs to profiles.avatar_url/banner_url.
+    // Only internet image URLs are allowed. A legacy data: URI left in
+    // localStorage would otherwise re-sync a ~257 KB blob into every profile
+    // row (and into the leaderboard snapshot + friend fetches). Drop it.
+    const sanitizeImageUrl = (value?: string): string | null => {
+      if (!value || /^data:/i.test(value)) return null;
+      return value;
+    };
+
     // NOTE: weekly_hours is intentionally NOT written here. It is owned solely by
     // the DB trigger `sync_weekly_hours_to_profile` (fires on user_study_aggregate
     // upsert) to avoid a dual-writer conflict where the client's rolling-7-day value
@@ -351,8 +360,8 @@ export function useProfileSync() {
       grade_status: progressCardSettings.gradeStatus || null,
       target_exam: progressCardSettings.targetExam || null,
       display_name: progressCardSettings.userName || null,
-      avatar_url: progressCardSettings.customAvatarUrl || null,
-      banner_url: progressCardSettings.bannerUrl || null,
+      avatar_url: sanitizeImageUrl(progressCardSettings.customAvatarUrl),
+      banner_url: sanitizeImageUrl(progressCardSettings.bannerUrl),
       custom_status: progressCardSettings.customStatus || null,
       today_study_seconds: todayStudyTimeSec,
       today_questions: todayQuestions,

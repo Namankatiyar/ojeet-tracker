@@ -891,6 +891,13 @@ html[data-theme^='dark-'] .progress-card-settings {
   font-size: 0.875rem;
 }
 
+.progress-card-settings .setting-error {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  color: var(--color-priority-high);
+  margin-top: 0.25rem;
+}
+
 .progress-card-settings .avatar-actions {
   display: flex;
   gap: 0.5rem;
