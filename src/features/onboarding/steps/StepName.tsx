@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const stagger = {
   animate: { transition: { staggerChildren: 0.06 } },
@@ -19,9 +19,10 @@ interface StepNameProps {
   value: string;
   onChange: (value: string) => void;
   onNext: () => void;
+  onBack: () => void;
 }
 
-export function StepName({ value, onChange, onNext }: StepNameProps) {
+export function StepName({ value, onChange, onNext, onBack }: StepNameProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -58,7 +59,11 @@ export function StepName({ value, onChange, onNext }: StepNameProps) {
           autoComplete="given-name"
         />
       </motion.div>
-      <motion.div className="ob-nav-row end-only" variants={fadeUp}>
+      <motion.div className="ob-nav-row" variants={fadeUp}>
+        <button className="ob-back-btn" onClick={onBack} type="button">
+          <ArrowLeft size={16} />
+          Back
+        </button>
         <button
           className="primary-btn ob-continue-btn"
           disabled={!value.trim()}

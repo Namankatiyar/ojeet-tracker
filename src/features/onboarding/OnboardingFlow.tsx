@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUserProgress } from '../../core/context/UserProgressContext';
 import { useRemoteAuth } from '../../core/context/RemoteAuthContext';
@@ -9,16 +9,18 @@ import { StepResetTime } from './steps/StepResetTime';
 import { StepPersonalize } from './steps/StepPersonalize';
 import { StepDiscord } from './steps/StepDiscord';
 import { StepAuth } from './steps/StepAuth';
+import { StepExamSelect } from './steps/StepExamSelect';
 
 interface OnboardingData {
   name: string;
+  examMode: 'jee' | 'neet';
   resetTime: string;
   aiAssistantEnabled: boolean;
   musicPlayerEnabled: boolean;
   discordJoined: boolean;
 }
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 const stepVariants = {
   enter: (direction: number) => ({
@@ -58,6 +60,8 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setEnableAIAgent,
     enableMusicPlayer,
     setEnableMusicPlayer,
+    examMode,
+    setExamMode,
   } = useUserProgress();
 
   const { user, signInWithGoogle } = useRemoteAuth();
@@ -66,6 +70,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [direction, setDirection] = useState(1);
   const [data, setData] = useState<OnboardingData>(() => ({
     name: progressCardSettings.userName || '',
+    examMode: examMode || 'jee',
     resetTime: `${String(dailyResetHour).padStart(2, '0')}:00`,
     aiAssistantEnabled: enableAIAgent,
     musicPlayerEnabled: enableMusicPlayer,
@@ -78,6 +83,15 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     },
     []
   );
+
+  useEffect(() => {
+    if (user && !data.name) {
+      const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+      if (googleName) {
+        updateData('name', googleName);
+      }
+    }
+  }, [user, data.name, updateData]);
 
   const goNext = useCallback(() => {
     if (step < TOTAL_STEPS) {
@@ -94,11 +108,18 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }, [step]);
 
   const handleComplete = useCallback(
-    async (authMethod: 'google' | 'offline') => {
+    async () => {
+      // Set the selected examMode
+      setExamMode(data.examMode);
+
+      // Determine targetExam value based on the chosen examMode
+      const targetExam = data.examMode === 'neet' ? 'NEET 2026' : 'JEE 2026';
+
       // Write collected settings to existing localStorage hooks
       setProgressCardSettings((prev) => ({
         ...prev,
         userName: data.name,
+        targetExam,
       }));
 
       const hour = parseInt(data.resetTime.split(':')[0], 10);
@@ -112,23 +133,15 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       // Suppress the Discord popup since user saw it in onboarding
       localStorage.setItem('ojee_discord_dismissed', 'true');
 
-      if (authMethod === 'google' && !user) {
-        // signInWithGoogle() triggers an OAuth redirect.
-        // The flag is already set, so when the user returns they skip onboarding.
-        await signInWithGoogle();
-        return;
-      }
-
       onComplete();
     },
     [
       data,
+      setExamMode,
       setProgressCardSettings,
       setDailyResetHour,
       setEnableAIAgent,
       setEnableMusicPlayer,
-      user,
-      signInWithGoogle,
       onComplete,
     ]
   );
@@ -137,13 +150,33 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     switch (step) {
       case 1:
         return (
-          <StepName
-            value={data.name}
-            onChange={(v) => updateData('name', v)}
+          <StepAuth
+            isSignedIn={!!user}
+            userEmail={user?.email}
+            onGoogle={signInWithGoogle}
+            onOffline={goNext}
             onNext={goNext}
           />
         );
       case 2:
+        return (
+          <StepExamSelect
+            value={data.examMode}
+            onChange={(v) => updateData('examMode', v)}
+            onNext={goNext}
+            onBack={goBack}
+          />
+        );
+      case 3:
+        return (
+          <StepName
+            value={data.name}
+            onChange={(v) => updateData('name', v)}
+            onNext={goNext}
+            onBack={goBack}
+          />
+        );
+      case 4:
         return (
           <StepResetTime
             value={data.resetTime}
@@ -152,7 +185,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             onBack={goBack}
           />
         );
-      case 3:
+      case 5:
         return (
           <StepPersonalize
             aiEnabled={data.aiAssistantEnabled}
@@ -163,24 +196,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             onBack={goBack}
           />
         );
-      case 4:
+      case 6:
         return (
           <StepDiscord
             onJoin={() => {
               updateData('discordJoined', true);
-              goNext();
+              handleComplete();
             }}
-            onSkip={goNext}
-            onBack={goBack}
-          />
-        );
-      case 5:
-        return (
-          <StepAuth
-            isSignedIn={!!user}
-            userEmail={user?.email}
-            onGoogle={() => handleComplete('google')}
-            onOffline={() => handleComplete('offline')}
+            onSkip={handleComplete}
             onBack={goBack}
           />
         );
