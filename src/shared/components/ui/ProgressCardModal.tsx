@@ -447,7 +447,7 @@ export function ProgressCardModal({
               />
               <div className="card-title">
                 <h2>{settings.userName || 'My Progress'}</h2>
-                <span className="card-subtitle">OJEE Tracker</span>
+                <span className="card-subtitle">OJEET Tracker</span>
               </div>
             </div>
 
@@ -472,7 +472,7 @@ export function ProgressCardModal({
             </div>
 
             <div className="card-footer">
-              <span className="card-watermark">Generated with OJEE Tracker</span>
+              <span className="card-watermark">Generated with OJEET Tracker</span>
             </div>
           </div>
         </div>

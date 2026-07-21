@@ -12,7 +12,7 @@ export function TermsOfServicePage() {
         <div className="legal-content">
           <h2>Acceptance</h2>
           <p>
-            By using OJEE Tracker, you agree to these terms and accept responsibility for how you
+            By using OJEET Tracker, you agree to these terms and accept responsibility for how you
             use the app and manage your local data.
           </p>
 

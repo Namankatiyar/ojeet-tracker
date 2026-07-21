@@ -1,6 +1,6 @@
-# OJEE Tracker: Technical Project Overview
+# OJEET Tracker: Technical Project Overview
 
-This documentation provides an exhaustive technical analysis of the OJEE Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
+This documentation provides an exhaustive technical analysis of the OJEET Tracker project. It is designed to empower LLM-based agents with the full context required for complex coding tasks, including feature implementation, bug fixing, and UI/UX enhancements.
 
 To get entire essence of this codebase you have following files at your disposal:
 
@@ -12,13 +12,13 @@ To get entire essence of this codebase you have following files at your disposal
 6. .ai_workflow/DESIGN_SYSTEM.md
 7. .ai_workflow/src/ (this is virtual directory created by running the prompt guideForSummaries.md)
 
-**Last Updated:** 2026-03-01
+**Last Updated:** 2026-07-21
 
 ---
 
 ## 1. Project Essence & Objective
 
-**OJEE Tracker** is a high-performance, offline-first progress tracking application specifically optimized for academic preparation. It solves the problem of tracking granular completion across multiple subjects (Physics, Chemistry, Maths) and diverse study materials (NCERT, PyQs, Modules, etc.).
+**OJEET Tracker** is a high-performance, offline-first progress tracking application specifically optimized for JEE and NEET preparation. It solves the problem of tracking granular completion across multiple subjects (Physics, Chemistry, Maths, Biology) and diverse study materials (NCERT, PYQs, Modules, etc.), with dual **JEE Mode (PCM)** and **NEET Mode (PCB)** support.
 
 ### Key Philosophies:
 
