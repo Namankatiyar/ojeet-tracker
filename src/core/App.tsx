@@ -82,18 +82,20 @@ function AppContent() {
     biologyProgress,
     progressCardSettings,
     setProgressCardSettings,
+    examMode,
   } = useUserProgress();
 
   const [plannerDateToOpen, setPlannerDateToOpen] = useState<string | null>(null);
+  const isNeet = examMode === 'neet';
 
   // Determine current view from path
   const getCurrentView = (): View => {
     const path = location.pathname.substring(1);
-    if (path === 'jee-syllabus-tracker') return 'dashboard';
-    if (path === 'jee-study-planner') return 'planner';
-    if (path === 'jee-study-timer') return 'studyclock';
+    if (path === 'jee-syllabus-tracker' || path === 'neet-syllabus-tracker') return 'dashboard';
+    if (path === 'jee-study-planner' || path === 'neet-study-planner') return 'planner';
+    if (path === 'jee-study-timer' || path === 'neet-study-timer') return 'studyclock';
     if (path === 'reports') return 'reports';
-    if (path === 'jee-mock-scores') return 'mockscores';
+    if (path === 'jee-mock-scores' || path === 'neet-mock-scores') return 'mockscores';
     if (path === 'support') return 'support';
     if (path === 'community') return 'community';
     return path as View;
@@ -101,24 +103,47 @@ function AppContent() {
 
   const currentView = getCurrentView();
 
-  const handleNavigate = (view: View) => {
-    if (view === 'dashboard') navigate('/jee-syllabus-tracker');
-    else if (view === 'planner') navigate('/jee-study-planner');
-    else if (view === 'studyclock') navigate('/jee-study-timer');
-    else if (view === 'reports') navigate('/reports');
-    else if (view === 'mockscores') navigate('/jee-mock-scores');
-    else if (view === 'support') navigate('/support');
-    else if (view === 'community') navigate('/community');
-    else navigate(`/${view}`);
-  };
+  const handleNavigate = useCallback(
+    (view: View) => {
+      if (view === 'dashboard')
+        navigate(isNeet ? '/neet-syllabus-tracker' : '/jee-syllabus-tracker');
+      else if (view === 'planner')
+        navigate(isNeet ? '/neet-study-planner' : '/jee-study-planner');
+      else if (view === 'studyclock')
+        navigate(isNeet ? '/neet-study-timer' : '/jee-study-timer');
+      else if (view === 'reports') navigate('/reports');
+      else if (view === 'mockscores')
+        navigate(isNeet ? '/neet-mock-scores' : '/jee-mock-scores');
+      else if (view === 'support') navigate('/support');
+      else if (view === 'community') navigate('/community');
+      else navigate(`/${view}`);
+    },
+    [isNeet, navigate]
+  );
 
   const handleQuickAddTask = useCallback(
     (date: string) => {
       setPlannerDateToOpen(date);
-      navigate('/jee-study-planner');
+      navigate(isNeet ? '/neet-study-planner' : '/jee-study-planner');
     },
-    [navigate]
+    [navigate, isNeet]
   );
+
+  // Sync mode-specific routes when examMode changes
+  useEffect(() => {
+    const currentPath = location.pathname;
+    if (isNeet) {
+      if (currentPath === '/jee-syllabus-tracker') navigate('/neet-syllabus-tracker', { replace: true });
+      else if (currentPath === '/jee-study-planner') navigate('/neet-study-planner', { replace: true });
+      else if (currentPath === '/jee-study-timer') navigate('/neet-study-timer', { replace: true });
+      else if (currentPath === '/jee-mock-scores') navigate('/neet-mock-scores', { replace: true });
+    } else {
+      if (currentPath === '/neet-syllabus-tracker') navigate('/jee-syllabus-tracker', { replace: true });
+      else if (currentPath === '/neet-study-planner') navigate('/jee-study-planner', { replace: true });
+      else if (currentPath === '/neet-study-timer') navigate('/jee-study-timer', { replace: true });
+      else if (currentPath === '/neet-mock-scores') navigate('/jee-mock-scores', { replace: true });
+    }
+  }, [isNeet, location.pathname, navigate]);
 
   const onQuickAddTaskStatic = useCallback(() => {
     handleQuickAddTask(getLogicalTodayStr(dailyResetHour));

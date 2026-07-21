@@ -1,6 +1,6 @@
-# AGENTS.md — ojee-tracker
+# AGENTS.md — ojeet-tracker
 
-Offline-first JEE syllabus tracker & study planner. Vite + React 18.3.1 + TypeScript.
+Offline-first JEE & NEET syllabus tracker & study planner. Vite + React 18.3.1 + TypeScript.
 
 ## Hard Rules (never violate)
 - **Package manager**: pnpm only — `pnpm install`, `pnpm run dev`, `pnpm run build`, `pnpm test`, `pnpm exec`. Never `npm`/`yarn`/`bun`.
@@ -15,10 +15,10 @@ Offline-first JEE syllabus tracker & study planner. Vite + React 18.3.1 + TypeSc
 - Charts: `chart.js` · Icons: `lucide-react` · Celebrations: `canvas-confetti`
 
 ## Directory Structure
-- `public/data/` — JEE 2026 syllabus JSON (`physics.json`, `chemistry.json`, `maths.json`)
-- `src/core/` — Context providers (Auth, Sync, Theme, Subject Data, User Progress) + routing
+- `public/data/` — JEE & NEET syllabus JSON (`physics.json`, `chemistry.json`, `maths.json`, `biology.json`)
+- `src/core/` — Context providers (Auth, Sync, Theme, Settings, Subject Data, User Progress) + routing
 - `src/features/` — feature modules: `subjects`, `dashboard`, `planner`, `study-clock`
-- `src/shared/` — types, shared components, hooks, utilities
+- `src/shared/` — types, shared components, hooks, utilities, subject/mode configs
 - `src/styles/` — CSS organized by cascade layer (below)
 
 ## CSS Architecture

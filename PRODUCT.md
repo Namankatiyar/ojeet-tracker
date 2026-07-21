@@ -5,10 +5,10 @@
 product
 
 ## Users
-JEE aspirants using it as a focused, offline-first study planner and tracker. They need a highly optimized tool during intensive study sessions.
+JEE & NEET aspirants using OJEET Tracker as a focused, offline-first study planner and tracker. They need a highly optimized tool during intensive study sessions.
 
 ## Product Purpose
-To log study time, track syllabus completion across Physics, Chemistry, and Maths, and analyze progress to prepare for the JEE exam. Success means the user feels in control, motivated, and aware of their preparation status without distractions.
+To log study time, track syllabus completion across Physics, Chemistry, Maths, and Biology, and analyze progress to prepare for JEE & NEET exams. Success means the user feels in control, motivated, and aware of their preparation status without distractions.
 
 ## Brand Personality
 High-focus, premium, and precise. It should evoke feelings of confidence, clarity, and calm through glassmorphism and clean typography.

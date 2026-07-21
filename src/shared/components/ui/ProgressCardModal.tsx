@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Download,
-  Upload,
   RotateCcw,
   Eye,
   EyeOff,
@@ -62,9 +61,9 @@ export function ProgressCardModal({
   mathsProgress,
 }: ProgressCardModalProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [avatarUrlError, setAvatarUrlError] = useState('');
 
   // Render handled by AnimatePresence
 
@@ -211,22 +210,30 @@ export function ProgressCardModal({
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // Avatars are internet image URLs only — no local file uploads. Storing
+  // base64 data URIs here previously bloated profiles.avatar_url (avg ~257 KB
+  // per row) and got copied into the leaderboard snapshot and friend fetches.
+  const handleAvatarUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.trim();
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      onSettingsChange({
-        ...settings,
-        customAvatarUrl: dataUrl,
-      });
-    };
-    reader.readAsDataURL(file);
+    if (!value) {
+      setAvatarUrlError('');
+    } else if (/^data:/i.test(value)) {
+      setAvatarUrlError('Data URIs are not allowed. Paste an image link (https://…).');
+    } else if (!/^https?:\/\//i.test(value)) {
+      setAvatarUrlError('Enter a full image URL starting with http:// or https://');
+    } else {
+      setAvatarUrlError('');
+    }
+
+    onSettingsChange({
+      ...settings,
+      customAvatarUrl: value,
+    });
   };
 
   const handleResetAvatar = () => {
+    setAvatarUrlError('');
     onSettingsChange({
       ...settings,
       customAvatarUrl: '',
@@ -384,27 +391,24 @@ export function ProgressCardModal({
               />
             </div>
             <div className="setting-row">
-              <label>Avatar</label>
+              <label htmlFor="pc-avatar-url">Avatar URL</label>
+              <input
+                id="pc-avatar-url"
+                type="url"
+                inputMode="url"
+                value={settings.customAvatarUrl}
+                onChange={handleAvatarUrlChange}
+                placeholder="https://example.com/photo.jpg"
+                className="modal-input name-input"
+              />
+              {avatarUrlError && <span className="setting-error">{avatarUrlError}</span>}
               <div className="avatar-actions">
-                <button
-                  className="action-btn small outline"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload size={14} /> Upload
-                </button>
                 {settings.customAvatarUrl && (
                   <button className="action-btn small outline" onClick={handleResetAvatar}>
                     <RotateCcw size={14} /> Reset
                   </button>
                 )}
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-              />
             </div>
             <div className="setting-row vertical">
               <label>Visible Stats</label>
@@ -447,7 +451,7 @@ export function ProgressCardModal({
               />
               <div className="card-title">
                 <h2>{settings.userName || 'My Progress'}</h2>
-                <span className="card-subtitle">OJEE Tracker</span>
+                <span className="card-subtitle">OJEET Tracker</span>
               </div>
             </div>
 
@@ -472,7 +476,7 @@ export function ProgressCardModal({
             </div>
 
             <div className="card-footer">
-              <span className="card-watermark">Generated with OJEE Tracker</span>
+              <span className="card-watermark">Generated with OJEET Tracker</span>
             </div>
           </div>
         </div>

@@ -88,7 +88,7 @@ export const UserProfileCard = memo(function UserProfileCard({
   isPinned = false,
   onPinToggle,
 }: UserProfileCardProps) {
-  const { progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs, dailyResetHour } =
+  const { progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs, dailyResetHour, examMode } =
     useUserProgress();
 
   const { user, signInWithGoogle } = useRemoteAuth();
@@ -529,7 +529,7 @@ export const UserProfileCard = memo(function UserProfileCard({
                   {!remoteProfileData && !previewMode && (
                     <button
                       className="profile-card-add-task-btn"
-                      onClick={() => navigate('/jee-study-planner')}
+                      onClick={() => navigate(examMode === 'neet' ? '/neet-study-planner' : '/jee-study-planner')}
                     >
                       <Plus size={12} />
                       Add task

@@ -164,86 +164,97 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     handleSetPrimaryExam,
     handleSetFavouriteExam,
     handleSetExamSyllabus,
+    examMode,
   } = useUserProgress();
 
   const dailyQuote = useDailyQuote();
+  const isNeet = examMode === 'neet';
+  const defaultDashboardPath = isNeet ? '/neet-syllabus-tracker' : '/jee-syllabus-tracker';
+  const defaultPlannerPath = isNeet ? '/neet-study-planner' : '/jee-study-planner';
+  const defaultStudyTimerPath = isNeet ? '/neet-study-timer' : '/jee-study-timer';
+
+  const dashboardElement = (
+    <Dashboard
+      physicsProgress={physicsProgress}
+      chemistryProgress={chemistryProgress}
+      mathsProgress={mathsProgress}
+      biologyProgress={biologyProgress}
+      overallProgress={overallProgress}
+      subjectData={mergedSubjectData}
+      onNavigate={onNavigate}
+      quote={dailyQuote}
+      plannerTasks={plannerTasks}
+      onToggleTask={handleTogglePlannerTask}
+      examDates={examDates}
+      onAddExam={handleAddExam}
+      onDeleteExam={handleDeleteExam}
+      onUpdateExam={handleUpdateExam}
+      onSetPrimaryExam={handleSetPrimaryExam}
+      onSetFavouriteExam={handleSetFavouriteExam}
+      onSetExamSyllabus={handleSetExamSyllabus}
+      onQuickAdd={onQuickAddTask}
+      studySessions={studySessions}
+      mockScores={mockScores}
+      onAddMockScore={handleAddMockScore}
+      onDeleteMockScore={handleDeleteMockScore}
+    />
+  );
+
+  const plannerElement = (
+    <Planner
+      tasks={plannerTasks}
+      onAddTask={handleAddPlannerTask}
+      onEditTask={handleEditPlannerTask}
+      onToggleTask={handleTogglePlannerTask}
+      onDeleteTask={handleDeletePlannerTask}
+      subjectData={mergedSubjectData}
+      examDate={primaryExamDate}
+      examDates={examDates}
+      initialOpenDate={plannerDateToOpen}
+      onConsumeInitialDate={onConsumeInitialDate}
+      sessions={studySessions}
+      progress={progress}
+    />
+  );
+
+  const studyClockElement = (
+    <StudyClock
+      subjectData={mergedSubjectData}
+      sessions={studySessions}
+      onAddSession={handleAddStudySession}
+      onDeleteSession={handleDeleteStudySession}
+      onEditSession={handleEditStudySession}
+      plannerTasks={plannerTasks}
+      progress={progress}
+      onToggleTask={handleTogglePlannerTask}
+    />
+  );
 
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Redirects from old paths to SEO paths */}
-        <Route path="/" element={<RedirectWithHash to="/jee-syllabus-tracker" />} />
-        <Route path="/planner" element={<RedirectWithHash to="/jee-study-planner" />} />
-        <Route path="/studyclock" element={<RedirectWithHash to="/jee-study-timer" />} />
+        {/* Redirects from old paths to SEO paths based on active mode */}
+        <Route path="/" element={<RedirectWithHash to={defaultDashboardPath} />} />
+        <Route path="/planner" element={<RedirectWithHash to={defaultPlannerPath} />} />
+        <Route path="/studyclock" element={<RedirectWithHash to={defaultStudyTimerPath} />} />
 
-        <Route
-          path="/jee-syllabus-tracker"
-          element={
-            <Dashboard
-              physicsProgress={physicsProgress}
-              chemistryProgress={chemistryProgress}
-              mathsProgress={mathsProgress}
-              biologyProgress={biologyProgress}
-              overallProgress={overallProgress}
-              subjectData={mergedSubjectData}
-              onNavigate={onNavigate}
-              quote={dailyQuote}
-              plannerTasks={plannerTasks}
-              onToggleTask={handleTogglePlannerTask}
-              examDates={examDates}
-              onAddExam={handleAddExam}
-              onDeleteExam={handleDeleteExam}
-              onUpdateExam={handleUpdateExam}
-              onSetPrimaryExam={handleSetPrimaryExam}
-              onSetFavouriteExam={handleSetFavouriteExam}
-              onSetExamSyllabus={handleSetExamSyllabus}
-              onQuickAdd={onQuickAddTask}
-              studySessions={studySessions}
-              mockScores={mockScores}
-              onAddMockScore={handleAddMockScore}
-              onDeleteMockScore={handleDeleteMockScore}
-            />
-          }
-        />
+        {/* Dashboard Routes */}
+        <Route path="/jee-syllabus-tracker" element={dashboardElement} />
+        <Route path="/neet-syllabus-tracker" element={dashboardElement} />
 
-        <Route
-          path="/jee-study-planner"
-          element={
-            <Planner
-              tasks={plannerTasks}
-              onAddTask={handleAddPlannerTask}
-              onEditTask={handleEditPlannerTask}
-              onToggleTask={handleTogglePlannerTask}
-              onDeleteTask={handleDeletePlannerTask}
-              subjectData={mergedSubjectData}
-              examDate={primaryExamDate}
-              examDates={examDates}
-              initialOpenDate={plannerDateToOpen}
-              onConsumeInitialDate={onConsumeInitialDate}
-              sessions={studySessions}
-              progress={progress}
-            />
-          }
-        />
+        {/* Planner Routes */}
+        <Route path="/jee-study-planner" element={plannerElement} />
+        <Route path="/neet-study-planner" element={plannerElement} />
 
-        <Route
-          path="/jee-study-timer"
-          element={
-            <StudyClock
-              subjectData={mergedSubjectData}
-              sessions={studySessions}
-              onAddSession={handleAddStudySession}
-              onDeleteSession={handleDeleteStudySession}
-              onEditSession={handleEditStudySession}
-              plannerTasks={plannerTasks}
-              progress={progress}
-              onToggleTask={handleTogglePlannerTask}
-            />
-          }
-        />
+        {/* Study Timer Routes */}
+        <Route path="/jee-study-timer" element={studyClockElement} />
+        <Route path="/neet-study-timer" element={studyClockElement} />
 
         <Route path="/reports" element={<ReportsPage />} />
+
+        {/* Mock Score Routes */}
         <Route path="/jee-mock-scores" element={<MockScoresPage />} />
+        <Route path="/neet-mock-scores" element={<MockScoresPage />} />
 
         {/* Subject Routes */}
         {(['physics', 'chemistry', 'maths', 'biology'] as Subject[]).map((subject) => (

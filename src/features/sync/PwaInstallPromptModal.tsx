@@ -19,7 +19,7 @@ export function PwaInstallPromptModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content pwa-install-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Install OJEE Tracker</h3>
+          <h3>Install OJEET Tracker</h3>
           <button className="close-btn" onClick={onClose} aria-label="Close">
             <X size={18} />
           </button>

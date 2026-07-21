@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=6C63FF&amp;height=200&amp;section=header&amp;text=OJEE-Tracker&amp;fontSize=72&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Your%20Premium%20JEE%20Study%20Command%20Centre&amp;descAlignY=60&amp;descSize=18" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=6C63FF&amp;height=200&amp;section=header&amp;text=OJEET-Tracker&amp;fontSize=72&amp;fontColor=ffffff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Your%20Premium%20JEE%20%26%20NEET%20Study%20Command%20Centre&amp;descAlignY=60&amp;descSize=18" width="100%"/>
 
 <br/>
 
@@ -17,7 +17,7 @@
 
 <br/>
 
-> **Offline-first. Built for JEE aspirants who mean business.**
+> **Offline-first. Built for JEE & NEET aspirants who mean business.**
 
 <br/>
 
@@ -25,13 +25,13 @@
 
 ---
 
-## ✨ What is OJEE-Tracker?
+## ✨ What is OJEET-Tracker?
 
-**OJEE-Tracker** is a specialized, offline-first study planner and syllabus tracker designed for **JEE** aspirants. Grounded in a high-density, premium glassmorphism design system, it enables students to:
+**OJEET-Tracker** is a specialized, offline-first study planner and syllabus tracker designed for **JEE** and **NEET** aspirants. Grounded in a high-density, premium glassmorphism design system, it enables students to:
 
 - ⏱️ **Log** active study time with precision
-- 📋 **Track** syllabus completion down to granular subtopics
-- 📈 **Analyze** daily progress through rich visual dashboards
+- 📋 **Track** syllabus completion down to granular subtopics across Physics, Chemistry, Maths & Biology
+- 📈 **Analyze** daily progress through rich visual dashboards tailored to JEE & NEET mock patterns
 - 🤝 **Connect** with peers and stay motivated together
 
 <br/>
@@ -42,12 +42,20 @@
 
 <br/>
 
+### 🎯 Exam Mode Switcher (JEE & NEET)
+
+- **Mode Selection** — Seamlessly toggle between **JEE Mode (PCM)** and **NEET Mode (PCB)** via Settings or during initial Onboarding.
+- **Dynamic Subject Filtering** — Navigation, analytics heatmaps, task modals, and AI advice dynamically adapt to active subjects (Physics, Chemistry, Maths for JEE; Physics, Chemistry, Biology for NEET).
+- **Dedicated Mock Score Storage** — Independent preset management and score analytics tailored for JEE Main, JEE Advanced, and NEET UG patterns.
+
+<br/>
+
 ### 📊 Premium Bento Analytics Dashboard
 
 | Feature                        | Description                                                                              |
 | ------------------------------ | ---------------------------------------------------------------------------------------- |
 | **12-Column Grid Layout**      | Single-glance dashboard organizing stats, active items, and trends into responsive cards |
-| **7-Day Weekly Heatmap**       | Interactive stacked bar chart — Physics, Chemistry, Maths — relative to selected date    |
+| **7-Day Weekly Heatmap**       | Interactive stacked bar chart — Physics, Chemistry, Maths & Biology — relative to selected date |
 | **24-Hour Histogram Timeline** | Dynamic hourly capsules with subject-colored gradient glows for active study intervals   |
 | **Delta Progress Indicators**  | Real-time metrics comparing today's performance to yesterday                             |
 | **Exam Countdown**             | Dynamic timer that shifts Green → Yellow → Red as exam day approaches                    |
@@ -57,7 +65,7 @@
 
 ### 📚 Subject & Subtopics Workspace _(V2)_
 
-Granular syllabus tracking across the full **Physics**, **Chemistry**, and **Maths** syllabus with:
+Granular syllabus tracking across **Physics**, **Chemistry**, **Maths**, and **Biology** with:
 
 - **Collapsible Row-Based Subtopics** — Clean, expandable rows replacing card clutter
 - **Standardized Resource Dots** — Track preparation across three domains per subtopic:
@@ -115,7 +123,7 @@ Granular syllabus tracking across the full **Physics**, **Chemistry**, and **Mat
 
 ## 🏗️ Architecture
 
-OJEE-Tracker is a single-page application (SPA) prioritizing **performance**, **security**, and **aesthetics**.
+OJEET-Tracker is a single-page application (SPA) prioritizing **performance**, **security**, and **aesthetics**.
 
 ```
 Frontend:         React 18 + TypeScript + Vite
@@ -131,6 +139,7 @@ Backend (opt.):   Supabase (Auth, Storage, Realtime)
 | Context               | Responsibility                                           |
 | --------------------- | -------------------------------------------------------- |
 | `ThemeContext`        | Appearance, dark/light modes, glassmorphism variables    |
+| `SettingsContext`     | Exam mode (`jee` / `neet`), reset hour, sound preferences|
 | `SubjectDataContext`  | Syllabus metadata, column headers, subject tables        |
 | `UserProgressContext` | Completion percentages, schedules, mock scores           |
 | `RemoteAuthContext`   | Supabase Auth, Google OAuth, session tokens              |
@@ -143,17 +152,17 @@ Backend (opt.):   Supabase (Auth, Storage, Realtime)
 ## 📂 Project Structure
 
 ```
-ojee-tracker/
-├── public/                 # Static assets & syllabus JSON files (Physics, Chemistry, Maths)
+ojeet-tracker/
+├── public/                 # Static assets & syllabus JSON files (Physics, Chemistry, Maths, Biology)
 ├── src/
 │   ├── core/               # Application bootstrapper
-│   │   ├── context/        # Core state providers (Theme, SubjectData, UserProgress, Auth, Sync)
+│   │   ├── context/        # Core state providers (Theme, Settings, SubjectData, UserProgress, Auth, Sync)
 │   │   ├── hooks/          # Cross-cutting hooks (Keyboard shortcuts, Quotes)
 │   │   └── AppRoutes.tsx   # Central routing manifest
 │   ├── features/           # Domain-driven features
 │   │   ├── community/      # Peer syncing, profiles, invite handler, and social dashboard
 │   │   ├── dashboard/      # Bento grid metrics, mock presets, and countdowns
-│   │   ├── legal/          # Privacy policy and terms views
+│   │   ├── legal/          # Privacy policy, terms, and changelog views
 │   │   ├── planner/        # Drag-and-drop scheduler and monthly calendar
 │   │   ├── reports/        # Bento grid daily analytics, weekly subject bars, and timelines
 │   │   ├── study-clock/    # Stopwatch & countdown clock
@@ -162,7 +171,8 @@ ojee-tracker/
 │   │   └── sync/           # Payload compression and conflict handlers
 │   ├── shared/             # General utilities
 │   │   ├── components/     # UI elements (Avatars, Modals, Buttons)
-│   │   ├── hooks/          # Custom utility hooks (useLocalStorage, useProgress)
+│   │   ├── config/         # Subject definitions & NEET/JEE exam mode configurations
+│   │   ├── hooks/          # Custom utility hooks (useLocalStorage, useActiveSubjects)
 │   │   ├── lib/            # Third-party SDK wrappers (Supabase client)
 │   │   └── types/          # Shared TypeScript models and interfaces
 │   └── main.tsx            # Main Entrypoint
@@ -185,8 +195,8 @@ ojee-tracker/
 ### 1. 📥 Installation
 
 ```bash
-git clone https://github.com/Namankatiyar/ojee-tracker.git
-cd ojee-tracker
+git clone https://github.com/Namankatiyar/ojeet-tracker.git
+cd ojeet-tracker
 pnpm install
 ```
 
@@ -219,7 +229,7 @@ pnpm build
 
 <div align="center">
 
-**500+ aspirants are already tracking their JEE journey with OJEE-Tracker.**
+**500+ aspirants are already tracking their JEE & NEET journey with OJEET-Tracker.**
 
 Join the community, share progress, and study together!
 
@@ -235,7 +245,7 @@ Join the community, share progress, and study together!
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=6C63FF&height=120&section=footer" width="100%"/>
 
-**Made with ❤️ for JEE aspirants**
+**Made with ❤️ for JEE & NEET aspirants**
 
 _Good luck with your preparation. You've got this. 🚀_
 

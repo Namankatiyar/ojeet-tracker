@@ -328,9 +328,9 @@ export const SupportPage: React.FC = () => {
         <section className="letter-section">
           <h1>Hi, fellow aspirant.</h1>
           <p>
-            OJEE-Tracker was built during my own JEE prep to make studying feel a little less
+            OJEET Tracker was built during my own prep to make studying feel a little less
             unorganized. It helps track chapters, tasks, study sessions, and progress across
-            Physics, Chemistry, and Maths.
+            Physics, Chemistry, Maths, and Biology for JEE & NEET.
           </p>
           <p>
             It is free to use, and I hope to keep it that way. If it has helped you stay on track, a
@@ -639,9 +639,9 @@ export const SupportPage: React.FC = () => {
                 <div>
                   <strong>Spread the word!</strong>
                   <p>
-                    Tell your friends, classmates, or study groups about OJEE-Tracker. Share it on
+                    Tell your friends, classmates, or study groups about OJEET Tracker. Share it on
                     Reddit, WhatsApp, Instagram, or just mention it to someone who's preparing for
-                    JEE.
+                    JEE or NEET.
                   </p>
                 </div>
               </div>
@@ -699,11 +699,11 @@ export const SupportPage: React.FC = () => {
 
             <div className="spread-modal-body">
               <p>
-                Your support means the world to me. It directly helps in keeping OJEE-Tracker alive,
+                Your support means the world to me. It directly helps in keeping OJEET Tracker alive,
                 maintaining the servers, and improving the experience for every aspirant.
               </p>
               <p>
-                Wishing you the absolute best for your JEE preparation! Keep tracking, keep
+                Wishing you the absolute best for your JEE & NEET preparation! Keep tracking, keep
                 studying, and you'll do great.
               </p>
             </div>

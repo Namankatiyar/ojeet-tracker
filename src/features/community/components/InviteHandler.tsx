@@ -215,7 +215,7 @@ export function InviteHandler() {
               marginBottom: 'var(--space-4)',
             }}
           >
-            Connect with friends to share your JEE syllabus progress, time study sessions, check
+            Connect with friends to share your JEE & NEET syllabus progress, time study sessions, check
             daily agendas, and keep each other accountable.
           </p>
 

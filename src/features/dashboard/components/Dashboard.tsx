@@ -38,7 +38,7 @@ function LeaderboardActiveModal({ onClose }: LeaderboardActiveModalProps) {
             <Trophy size={48} className="gold-icon" style={{ color: 'var(--color-priority-medium)' }} />
           </div>
           <p style={{ margin: 0, textAlign: 'center', fontWeight: 500, color: 'var(--text-primary)' }}>
-            Track weekly study hours and compare rankings with JEE/OJEE aspirants.
+            Track weekly study hours and compare rankings with JEE & NEET aspirants.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -568,7 +568,7 @@ export function Dashboard({
       items.push({
         id: PWA_INSTALL_CONTEXT,
         title: 'Install As App',
-        message: 'Install OJEE Tracker for faster access and an app-like fullscreen experience.',
+        message: 'Install OJEET Tracker for faster access and an app-like fullscreen experience.',
         unread: !notificationMeta.readContexts[PWA_INSTALL_CONTEXT],
         primaryAction: {
           label: 'Open Install Prompt',
@@ -664,7 +664,7 @@ export function Dashboard({
       initial="hidden"
       animate="show"
     >
-      <h1 className="sr-only">The Ultimate Offline-First JEE Tracker for Aspirants</h1>
+      <h1 className="sr-only">The Ultimate Offline-First JEE & NEET Tracker for Aspirants</h1>
       {showActiveModal && <LeaderboardActiveModal onClose={handleDismissModal} />}
       <motion.div className="dashboard-header" variants={itemVariants}>
         {quote ? (
@@ -931,7 +931,7 @@ export function Dashboard({
           mockScores={mockScores}
           onAddMockScore={onAddMockScore}
           onDeleteMockScore={onDeleteMockScore}
-          onOpenCockpit={() => navigate('/jee-mock-scores')}
+          onOpenCockpit={() => navigate(examMode === 'neet' ? '/neet-mock-scores' : '/jee-mock-scores')}
         />
       </motion.div>
 
