@@ -590,7 +590,7 @@ export function StudyClock({
           <Clock size={28} /> Study Clock
         </h1>
         <h2 className="sr-only">
-          JEE Pomodoro Timer and Free Digital Study Stopwatch to log study hours for JEE Main exam
+          JEE & NEET Pomodoro Timer and Free Digital Study Stopwatch to log study hours for competitive exams
         </h2>
         <p>Track your study sessions and analyze your progress</p>
       </motion.div>

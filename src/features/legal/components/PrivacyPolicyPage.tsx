@@ -12,7 +12,7 @@ export function PrivacyPolicyPage() {
         <div className="legal-content">
           <h2>Overview</h2>
           <p>
-            OJEE Tracker is an offline-first app with optional cloud sync. Your study progress,
+            OJEET Tracker is an offline-first app with optional cloud sync. Your study progress,
             planner data, and personal settings are stored locally in your browser, and can also be
             synced when you sign in.
           </p>

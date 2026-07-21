@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
 import { DiscordIcon } from '../ui/DiscordInviteModal';
 import { Github, WifiOff, Code2, ShieldCheck, ArrowRight } from 'lucide-react';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 export function Footer() {
+  const { examMode } = useUserProgress();
+  const isNeet = examMode === 'neet';
+
   return (
     <footer className="footer" itemScope itemType="https://schema.org/WPFooter">
       <div className="footer-container">
@@ -27,14 +31,14 @@ export function Footer() {
         <div className="footer-main-grid">
           {/* Brand & Trust */}
           <div className="footer-brand" itemScope itemType="https://schema.org/Organization">
-            <Link to="/" className="footer-logo" title="OJEE Tracker" itemProp="url">
+            <Link to="/" className="footer-logo" title="OJEET Tracker" itemProp="url">
               <span className="logo-text" itemProp="name">
-                OJEE Tracker
+                OJEET Tracker
               </span>
             </Link>
             <p className="footer-description" itemProp="description">
-              A high-performance, offline-first study companion optimized for competitive exam
-              preparation.
+              Offline-first study planner and syllabus tracker for JEE & NEET aspirants. Built by an
+              aspirant, for aspirants.
             </p>
             <div className="footer-trust-badges">
               <span className="footer-trust-badge">
@@ -57,16 +61,32 @@ export function Footer() {
               itemScope
               itemType="https://schema.org/SiteNavigationElement"
             >
-              <Link to="/jee-syllabus-tracker" className="bottom-link" itemProp="url">
+              <Link
+                to={isNeet ? '/neet-syllabus-tracker' : '/jee-syllabus-tracker'}
+                className="bottom-link"
+                itemProp="url"
+              >
                 Dashboard
               </Link>
-              <Link to="/jee-study-planner" className="bottom-link" itemProp="url">
+              <Link
+                to={isNeet ? '/neet-study-planner' : '/jee-study-planner'}
+                className="bottom-link"
+                itemProp="url"
+              >
                 Planner
               </Link>
-              <Link to="/jee-study-timer" className="bottom-link" itemProp="url">
+              <Link
+                to={isNeet ? '/neet-study-timer' : '/jee-study-timer'}
+                className="bottom-link"
+                itemProp="url"
+              >
                 Study Clock
               </Link>
-              <Link to="/jee-mock-scores" className="bottom-link" itemProp="url">
+              <Link
+                to={isNeet ? '/neet-mock-scores' : '/jee-mock-scores'}
+                className="bottom-link"
+                itemProp="url"
+              >
                 Mock Scores
               </Link>
             </nav>

@@ -6,6 +6,11 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://tracker.ojeet.tech/neet-syllabus-tracker</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
     <loc>https://tracker.ojeet.tech/physics</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -21,12 +26,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tracker.ojeet.tech/biology</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://tracker.ojeet.tech/jee-study-planner</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tracker.ojeet.tech/neet-study-planner</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://tracker.ojeet.tech/jee-study-timer</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tracker.ojeet.tech/neet-study-timer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
