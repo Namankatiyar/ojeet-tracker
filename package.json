@@ -1,6 +1,6 @@
 {
   "name": "ojeet-tracker",
-  "version": "2.4.0-develop.2",
+  "version": "2.4.0-develop.3",
   "type": "module",
   "bin": "server.cjs",
   "pkg": {

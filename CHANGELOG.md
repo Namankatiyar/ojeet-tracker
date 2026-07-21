@@ -1,3 +1,10 @@
+# [2.4.0-develop.3](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.4.0-develop.2...v2.4.0-develop.3) (2026-07-21)
+
+
+### Features
+
+* **seo:** overhaul branding to OJEET Tracker and add NEET mode routes & docs ([29a97e2](https://github.com/Namankatiyar/ojeet-tracker/commit/29a97e23a0fd09bfda2faa44301cd146907d1d38))
+
 # [2.4.0-develop.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.4.0-develop.1...v2.4.0-develop.2) (2026-07-19)
 
 
