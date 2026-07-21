@@ -1,3 +1,18 @@
+# [2.8.0-develop.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.7.0...v2.8.0-develop.1) (2026-07-21)
+
+
+### Bug Fixes
+
+* **community:** allow only internet image URLs for avatars ([8ecb970](https://github.com/Namankatiyar/ojeet-tracker/commit/8ecb97090e93f2bc633152b815b8a1a781fb8ecc))
+* **sync:** pin search_path on SECURITY DEFINER functions ([267bc27](https://github.com/Namankatiyar/ojeet-tracker/commit/267bc27dddb4356df29fd0282a8b10a6d47fd42d))
+* **sync:** stop client from overwriting profiles.weekly_hours ([6f6f1eb](https://github.com/Namankatiyar/ojeet-tracker/commit/6f6f1eb2589e80cf2a6c610b3451c7c756138711))
+* **sync:** widen daily leaderboard to rolling 24h window ([1cf2a63](https://github.com/Namankatiyar/ojeet-tracker/commit/1cf2a63796b0652c9f1fbf1db19799aff023d8e6))
+
+
+### Features
+
+* **seo:** overhaul branding to OJEET Tracker and add NEET mode routes & docs ([5454c9b](https://github.com/Namankatiyar/ojeet-tracker/commit/5454c9bce42400de21a276f915c20430a06c46f0))
+
 # [2.7.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.6.0...v2.7.0) (2026-07-21)
 
 
