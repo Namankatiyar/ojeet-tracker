@@ -1,3 +1,11 @@
+# [2.7.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.6.0...v2.7.0) (2026-07-21)
+
+
+### Features
+
+* **onboarding:** add exam select step with custom emoji shower ([c360dc3](https://github.com/Namankatiyar/ojeet-tracker/commit/c360dc3d1f928ac0c424938f0923c1d6003dd8e0))
+* **onboarding:** restructure steps and prefill name from Google ([ca32a7c](https://github.com/Namankatiyar/ojeet-tracker/commit/ca32a7c799a728692e49f34a1b86f4f67ed9ed4b))
+
 # [2.6.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.5.0...v2.6.0) (2026-07-19)
 
 
