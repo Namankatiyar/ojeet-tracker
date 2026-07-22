@@ -16,7 +16,7 @@ export function OnboardingLayout({ children }: OnboardingLayoutProps) {
         <div className="ob-branding">
         <img src="/logo.png" alt="" className="ob-branding-logo" />
         <div className="ob-branding-divider" />
-        <span className="ob-branding-text">OJEE Tracker</span>
+        <span className="ob-branding-text">OJEET Tracker</span>
         </div>
       </div>
       <div className="ob-form-pane">

@@ -270,7 +270,7 @@ export default async function handler(req, res) {
                   fontFamily: 'sans-serif',
                 },
               },
-              'OJEE Tracker'
+              'OJEET Tracker'
             )
           ),
           // Domain pill

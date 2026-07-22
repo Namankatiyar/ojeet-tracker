@@ -46,8 +46,8 @@ export default defineConfig({
           globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,json,webmanifest}'],
         },
         manifest: {
-          name: 'OJEE-Tracker',
-          short_name: 'OJEE-Tracker',
+          name: 'OJEET-Tracker',
+          short_name: 'OJEET-Tracker',
           description:
             'Track your IIT JEE syllabus progress, daily planner, and study clock offline.',
           theme_color: '#06b6d4',

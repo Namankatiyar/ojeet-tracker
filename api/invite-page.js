@@ -77,7 +77,7 @@ export default async function handler(req, res) {
       html = html.replace('<head>', `<head>${preamble}`);
     }
 
-    const ogTitle = `Connect with ${displayName} | OJEE Tracker`;
+    const ogTitle = `Connect with ${displayName} | OJEET Tracker`;
     const ogDescription = `Join their study workspace to track JEE syllabus progress, plan daily tasks, and study together.`;
     const ogImageUrl = `https://${host}/api/invite-image?code=${inviteCode}`;
 

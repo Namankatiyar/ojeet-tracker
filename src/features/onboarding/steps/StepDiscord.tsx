@@ -38,7 +38,7 @@ export function StepDiscord({ onJoin, onSkip, onBack }: StepDiscordProps) {
         together.
       </motion.p>
       <motion.div className="ob-discord-card" variants={fadeUp}>
-        <h3 className="ob-discord-title">OJEE Tracker Discord</h3>
+        <h3 className="ob-discord-title">OJEET Tracker Discord</h3>
         <p className="ob-discord-desc">
           Get study tips, discuss problems, share your progress, and meet fellow
           aspirants preparing for JEE.

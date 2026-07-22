@@ -260,7 +260,7 @@ export function Header({
         </div>
 
         <div className="logo">
-          <span className="logo-text">OJEE Tracker</span>
+          <span className="logo-text">OJEET Tracker</span>
           <div className="header-avatar">
             <UserAvatar
               name={progressCardSettings.userName || 'Student'}
@@ -382,7 +382,7 @@ export function Header({
               className="theme-toggle"
               onClick={() => onNavigate('support')}
               aria-label="Support OJEE-Tracker"
-              title="Support OJEE-Tracker"
+              title="Support OJEET-Tracker"
             >
               <span className="theme-toggle-icon">
                 <Heart
@@ -423,7 +423,7 @@ export function Header({
           className="header-support-mobile"
           onClick={() => onNavigate('support')}
           aria-label="Support OJEE-Tracker"
-          title="Support OJEE-Tracker"
+          title="Support OJEET-Tracker"
         >
           <Heart
             size={20}

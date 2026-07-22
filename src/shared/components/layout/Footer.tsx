@@ -146,7 +146,7 @@ export function Footer() {
               <span className="badge-pulse"></span> Version {__APP_VERSION__}
             </span>
             <span className="copyright">
-              &copy; {new Date().getFullYear()} OJEE Tracker. All rights reserved.
+              &copy; {new Date().getFullYear()} OJEET Tracker. All rights reserved.
             </span>
           </div>
           <p className="attribution">

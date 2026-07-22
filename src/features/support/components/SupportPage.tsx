@@ -245,7 +245,7 @@ export const SupportPage: React.FC = () => {
         amount: order.amount,
         currency: order.currency,
         name: 'OJEE-Tracker',
-        description: 'Support for OJEE-Tracker',
+        description: 'Support for OJEET-Tracker',
         order_id: order.id,
         prefill: {
           name: prefillName || undefined,
@@ -375,7 +375,7 @@ export const SupportPage: React.FC = () => {
                 {user ? 'Choose what feels right' : 'Sign in required'}
               </span>
               <h2 className="donation-card-title">
-                {user ? 'Even a small contribution means a lot.' : 'Join to support OJEE-Tracker'}
+                {user ? 'Even a small contribution means a lot.' : 'Join to support OJEET-Tracker'}
               </h2>
               <div className="donation-card-accent-line" aria-hidden="true" />
             </div>
@@ -492,7 +492,7 @@ export const SupportPage: React.FC = () => {
                     disabled={isProcessing}
                   >
                     <SparkleIcon />
-                    <span>{isProcessing ? 'Processing...' : 'Support OJEE-Tracker'}</span>
+                    <span>{isProcessing ? 'Processing...' : 'Support OJEET-Tracker'}</span>
                     {!isProcessing && <span className="cta-heart-beat">❤️</span>}
                   </button>
                 </div>
@@ -567,7 +567,7 @@ export const SupportPage: React.FC = () => {
             </div>
 
             <p className="donation-disclaimer">
-              Contributions are voluntary and do not unlock paid features. OJEE-Tracker stays free
+              Contributions are voluntary and do not unlock paid features. OJEET-Tracker stays free
               for everyone.
             </p>
           </div>
@@ -590,7 +590,7 @@ export const SupportPage: React.FC = () => {
             />
           </svg>
           <p className="footer-gratitude-title">With a lot of gratitude,</p>
-          <p className="footer-signature">— Naman, creator of OJEE-Tracker 🌸</p>
+          <p className="footer-signature">— Naman, creator of OJEET-Tracker 🌸</p>
           <div className="footer-hearts">
             <DoodleHeart style={{ position: 'relative', width: '20px', height: '20px' }} />
             <DoodleHeart style={{ position: 'relative', width: '20px', height: '20px' }} />
@@ -601,7 +601,7 @@ export const SupportPage: React.FC = () => {
             preparation should feel less chaotic.
           </p>
           <a
-            href="https://github.com/namankatiyar/ojee-tracker"
+            href="https://github.com/namankatiyar/ojeet-tracker"
             target="_blank"
             rel="noopener noreferrer"
             className="github-link"
@@ -629,7 +629,7 @@ export const SupportPage: React.FC = () => {
 
             <div className="spread-modal-body">
               <p>
-                Hey, don't worry at all! OJEE-Tracker is <strong>free for everyone</strong> and
+                Hey, don't worry at all! OJEET-Tracker is <strong>free for everyone</strong> and
                 it'll stay that way. You don't need to spend a single rupee.
               </p>
               <p>If you'd still like to help, here's the best thing you can do:</p>
@@ -660,7 +660,7 @@ export const SupportPage: React.FC = () => {
                   <strong>Give feedback</strong>
                   <p>
                     Report bugs, suggest features, or just tell us what you liked. Every bit of
-                    feedback makes OJEE-Tracker better for everyone.
+                    feedback makes OJEET-Tracker better for everyone.
                   </p>
                 </div>
               </div>
