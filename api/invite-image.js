@@ -17,14 +17,23 @@ export default async function handler(req, res) {
       return res.status(400).send('Missing invite code');
     }
 
-    const supabaseUrl = (process.env.VITE_SUPABASE_URL || '').replace(/^"|"$/g, '');
-    const supabaseAnonKey = (process.env.VITE_SUPABASE_ANON_KEY || '').replace(/^"|"$/g, '');
+    const supabaseUrl = (
+      process.env.SUPABASE_URL ||
+      process.env.VITE_SUPABASE_URL ||
+      ''
+    ).replace(/^"|"$/g, '');
+    const supabaseKey = (
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      ''
+    ).replace(/^"|"$/g, '');
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return res.status(500).send('Supabase URL or Anon Key is missing in environment variables');
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).send('Supabase URL or Key is missing in environment variables');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     let data, error;
     try {
@@ -48,8 +57,32 @@ export default async function handler(req, res) {
       return str.startsWith('http://') || str.startsWith('https://');
     };
 
+    const fetchImageAsBase64 = async (url, timeoutMs = 5000) => {
+      if (!isValidHttpUrl(url)) return null;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        if (!response.ok) return null;
+        const arrayBuffer = await response.arrayBuffer();
+        const mimeType = response.headers.get('content-type') || 'image/jpeg';
+        const base64 = Buffer.from(arrayBuffer).toString('base64');
+        return `data:${mimeType};base64,${base64}`;
+      } catch (err) {
+        clearTimeout(timer);
+        console.error('Failed to fetch image for OG rendering:', err);
+        return null;
+      }
+    };
+
     const validAvatarUrl = isValidHttpUrl(avatar_url) ? avatar_url : null;
     const validBannerUrl = isValidHttpUrl(banner_url) ? banner_url : null;
+
+    const [avatarDataUri, bannerDataUri] = await Promise.all([
+      fetchImageAsBase64(validAvatarUrl),
+      fetchImageAsBase64(validBannerUrl),
+    ]);
 
     // --- Name initials for fallback avatar ---
     const initials = (display_name || '?')
@@ -78,9 +111,9 @@ export default async function handler(req, res) {
           boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
         },
       },
-      validAvatarUrl
+      avatarDataUri
         ? h('img', {
-            src: avatar_url,
+            src: avatarDataUri,
             width: avatarSize,
             height: avatarSize,
             style: {
@@ -146,9 +179,9 @@ export default async function handler(req, res) {
       },
 
       // ─── Background Layer: Banner or solid gradient ───
-      validBannerUrl
+      bannerDataUri
         ? h('img', {
-            src: banner_url,
+            src: bannerDataUri,
             width: 1200,
             height: 630,
             style: {
@@ -172,7 +205,7 @@ export default async function handler(req, res) {
           }),
 
       // ─── Dark gradient overlay for text legibility (darker for high contrast) ───
-      validBannerUrl
+      bannerDataUri
         ? h('div', {
             style: {
               position: 'absolute',

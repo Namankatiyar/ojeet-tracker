@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
@@ -27,7 +27,9 @@ export function useProfileSync() {
   const plannerTasksRef = useRef(plannerTasks);
   const progressCardSettingsRef = useRef(progressCardSettings);
   const isFetchingProfileRef = useRef(false);
-  const initialFetchDoneRef = useRef(false);
+  const [isInitialFetchDone, setIsInitialFetchDone] = useState(false);
+  const lastSnapshotRef = useRef<string | null>(null);
+  const [timerUpdateTrigger, setTimerUpdateTrigger] = useState(0);
 
   useEffect(() => {
     subjectDataRef.current = subjectData;
@@ -44,7 +46,8 @@ export function useProfileSync() {
   useEffect(() => {
     // If we transitioned from a logged-in user to null (logout)
     if (prevUserRef.current && !user && !isLoading) {
-      initialFetchDoneRef.current = false;
+      setIsInitialFetchDone(false);
+      lastSnapshotRef.current = null;
       setProgressCardSettings((prev) => ({
         ...prev,
         inviteCode: '',
@@ -119,7 +122,7 @@ export function useProfileSync() {
   useEffect(() => {
     const client = supabase;
     if (!user || !isConfigured || !client) {
-      initialFetchDoneRef.current = false;
+      setIsInitialFetchDone(false);
       return;
     }
 
@@ -140,46 +143,42 @@ export function useProfileSync() {
         if (!error && data) {
           setProgressCardSettings((prev) => {
             const updates: Partial<typeof prev> = {};
-            if (data.invite_code && prev.inviteCode !== data.invite_code) {
+            if (data.invite_code !== undefined && data.invite_code !== null && prev.inviteCode !== data.invite_code) {
               updates.inviteCode = data.invite_code;
             }
-            if (data.discord_tag && prev.discordSpecialTag !== data.discord_tag) {
+            if (data.discord_tag !== undefined && data.discord_tag !== null && prev.discordSpecialTag !== data.discord_tag) {
               updates.discordSpecialTag = data.discord_tag;
             }
 
             // Database values take priority over localStorage
-            if (data.display_name && prev.userName !== data.display_name) {
-              updates.userName = data.display_name;
-            } else if (!prev.userName && !data.display_name && googleName) {
+            if (data.display_name !== undefined) {
+              const nextName = data.display_name !== null ? data.display_name : '';
+              if (prev.userName !== nextName) updates.userName = nextName;
+            } else if (!prev.userName && googleName) {
               updates.userName = googleName;
             }
 
-            if (data.avatar_url && prev.customAvatarUrl !== data.avatar_url) {
-              updates.customAvatarUrl = data.avatar_url;
-            } else if (!prev.customAvatarUrl && !data.avatar_url && googleAvatar) {
+            if (data.avatar_url !== undefined) {
+              const nextAvatar = data.avatar_url !== null ? data.avatar_url : '';
+              if (prev.customAvatarUrl !== nextAvatar) updates.customAvatarUrl = nextAvatar;
+            } else if (!prev.customAvatarUrl && googleAvatar) {
               updates.customAvatarUrl = googleAvatar;
             }
 
-            if (data.banner_url && prev.bannerUrl !== data.banner_url) {
-              updates.bannerUrl = data.banner_url;
+            if (data.banner_url !== undefined) {
+              const nextBanner = data.banner_url !== null ? data.banner_url : '';
+              if (prev.bannerUrl !== nextBanner) updates.bannerUrl = nextBanner;
             }
-            if (data.custom_status && prev.customStatus !== data.custom_status) {
-              updates.customStatus = data.custom_status;
+            if (data.custom_status !== undefined) {
+              const nextStatus = data.custom_status !== null ? data.custom_status : '';
+              if (prev.customStatus !== nextStatus) updates.customStatus = nextStatus;
             }
             // Prefill grade status and target exam if missing locally or if they are the default values
-            if (
-              data.grade_status &&
-              (!prev.gradeStatus || prev.gradeStatus === 'Class 12') &&
-              prev.gradeStatus !== data.grade_status
-            ) {
-              updates.gradeStatus = data.grade_status;
+            if (data.grade_status !== undefined && data.grade_status !== null) {
+              if (prev.gradeStatus !== data.grade_status) updates.gradeStatus = data.grade_status;
             }
-            if (
-              data.target_exam &&
-              (!prev.targetExam || prev.targetExam === 'JEE 2026') &&
-              prev.targetExam !== data.target_exam
-            ) {
-              updates.targetExam = data.target_exam;
+            if (data.target_exam !== undefined && data.target_exam !== null) {
+              if (prev.targetExam !== data.target_exam) updates.targetExam = data.target_exam;
             }
 
             return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
@@ -226,7 +225,7 @@ export function useProfileSync() {
         console.warn('Failed to fetch profile details', err);
       } finally {
         isFetchingProfileRef.current = false;
-        initialFetchDoneRef.current = true;
+        setIsInitialFetchDone(true);
       }
     };
 
@@ -241,8 +240,27 @@ export function useProfileSync() {
     studySessionsRef.current = studySessions;
   }, [studySessions]);
 
+  // Timer sync listener
+  useEffect(() => {
+    const handleTimerChange = () => setTimerUpdateTrigger((t) => t + 1);
+    window.addEventListener('jee-timer-state-change', handleTimerChange);
+    const handleStorage = (e: StorageEvent) => {
+      if (
+        e.key === 'jee-timer-engine' ||
+        e.key === 'studyClock_taskType' ||
+        e.key === 'studyClock_selectedTaskId'
+      ) {
+        handleTimerChange();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('jee-timer-state-change', handleTimerChange);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
   // 2. Debounced Profile Snapshot Sync
-  const lastSnapshotRef = useRef<string | null>(null);
   const lastShowAgendaRef = useRef<boolean | null>(null);
   const debounceTimeoutRef = useRef<number | null>(null);
   const retryTimeoutRef = useRef<number | null>(null);
@@ -251,7 +269,7 @@ export function useProfileSync() {
   useEffect(() => {
     const client = supabase;
     if (!user || !isConfigured || !client) return;
-    if (!initialFetchDoneRef.current || isFetchingProfileRef.current) return;
+    if (!isInitialFetchDone || isFetchingProfileRef.current) return;
 
     const todayStr = new Date().toLocaleDateString('en-CA');
     const currentStudySessions = studySessionsRef.current;
@@ -402,7 +420,7 @@ export function useProfileSync() {
 
     debounceTimeoutRef.current = window.setTimeout(async () => {
       const executeSync = async () => {
-        if (!initialFetchDoneRef.current || isFetchingProfileRef.current || !user || !client) return;
+        if (!isInitialFetchDone || isFetchingProfileRef.current || !user || !client) return;
         // Skip while offline; the next local change re-triggers the debounce.
         if (!isOnline()) return;
         try {
@@ -458,5 +476,8 @@ export function useProfileSync() {
     progressCardSettings,
     plannerTasks,
     dailyQuestionLogs,
+    studySessions,
+    isInitialFetchDone,
+    timerUpdateTrigger,
   ]);
 }

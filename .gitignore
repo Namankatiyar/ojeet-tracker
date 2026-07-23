@@ -83,3 +83,5 @@ sample.html
 
 # Database CLI temp files
 supabase/.temp/
+public/posters
+
