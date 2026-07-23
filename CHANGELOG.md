@@ -1,3 +1,11 @@
+## [3.0.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.0.0...v3.0.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* **api:** convert external images to base64 data URIs for satori og generation ([65b4433](https://github.com/Namankatiyar/ojeet-tracker/commit/65b4433c431de36e14f2694ab7b94c8fdcb25f9e))
+* **sync:** resolve profile stale data bugs ([91dcdcf](https://github.com/Namankatiyar/ojeet-tracker/commit/91dcdcf0fe7c465082327ac139749ff8e631739e))
+
 # [3.0.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v2.7.0...v3.0.0) (2026-07-21)
 
 
