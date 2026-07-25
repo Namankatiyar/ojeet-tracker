@@ -301,7 +301,14 @@ export function useFriends() {
       const isVisible = document.visibilityState === 'visible';
       const isFocused = document.hasFocus();
 
-      if (isVisible && isFocused) {
+      if (!isVisible) {
+        stopPolling();
+        return;
+      }
+
+      startPolling();
+
+      if (isFocused) {
         const now = Date.now();
         // Throttle immediate re-fetch to once every 60 seconds
         if (now - lastPollTimeRef.current > 60000) {
@@ -310,10 +317,6 @@ export function useFriends() {
 
         // Refresh full profiles on window focus (respects 5-minute cache)
         fetchFriends(false);
-
-        startPolling();
-      } else {
-        stopPolling();
       }
     };
 
@@ -331,13 +334,11 @@ export function useFriends() {
 
     document.addEventListener('visibilitychange', handleFocusOrVisible);
     window.addEventListener('focus', handleFocusOrVisible);
-    window.addEventListener('blur', handleFocusOrVisible);
 
     return () => {
       stopPolling();
       document.removeEventListener('visibilitychange', handleFocusOrVisible);
       window.removeEventListener('focus', handleFocusOrVisible);
-      window.removeEventListener('blur', handleFocusOrVisible);
     };
   }, [pollLiveActivity, fetchFriends]);
 
