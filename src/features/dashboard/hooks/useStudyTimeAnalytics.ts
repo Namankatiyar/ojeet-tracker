@@ -31,14 +31,15 @@ export function useStudyTimeAnalytics(
   studySessions: StudySession[],
   offset: number,
   mode: 'weekly' | 'monthly',
-  remoteDailyBuckets?: Record<string, RemoteAggregateBucketEntry>
+  remoteDailyBuckets?: Record<string, RemoteAggregateBucketEntry>,
+  resetHour = 0
 ) {
   const { subjects, subjectMeta } = useActiveSubjects();
 
   const analyticsData = useMemo(() => {
     const subjectColors = getSubjectColors();
     if (mode === 'weekly') {
-      const weekDays = getWeekDays(offset);
+      const weekDays = getWeekDays(offset, resetHour);
       const labels = weekDays.map((d) => d.toLocaleDateString('en-US', { weekday: 'short' }));
 
       const subjectDataArrays = subjects.reduce((acc, subj) => {
@@ -88,7 +89,7 @@ export function useStudyTimeAnalytics(
         ],
       };
     } else {
-      const monthDays = getMonthDays(offset);
+      const monthDays = getMonthDays(offset, resetHour);
       const labels = monthDays.map((d) => d.getDate().toString());
 
       const subjectDataArrays = subjects.reduce((acc, subj) => {
@@ -172,7 +173,7 @@ export function useStudyTimeAnalytics(
         ],
       };
     }
-  }, [studySessions, offset, mode, remoteDailyBuckets, subjects, subjectMeta]);
+  }, [studySessions, offset, mode, remoteDailyBuckets, subjects, subjectMeta, resetHour]);
 
   return analyticsData;
 }

@@ -1,11 +1,11 @@
 import { StudySession } from '../../../shared/types';
-import { formatDateLocal } from '../../../shared/utils/date';
+import { formatDateLocal, getLogicalDate } from '../../../shared/utils/date';
 
 /**
  * Get week days for the selected week offset
  */
-export const getWeekDays = (offset: number) => {
-  const today = new Date();
+export const getWeekDays = (offset: number, resetHour = 0) => {
+  const today = getLogicalDate(resetHour);
   const monday = new Date(today);
   // Adjust to Monday of the target week
   monday.setDate(today.getDate() - today.getDay() + 1 + offset * 7);
@@ -22,8 +22,8 @@ export const getWeekDays = (offset: number) => {
 /**
  * Get month days for the selected month offset
  */
-export const getMonthDays = (offset: number) => {
-  const today = new Date();
+export const getMonthDays = (offset: number, resetHour = 0) => {
+  const today = getLogicalDate(resetHour);
   const targetMonth = new Date(today.getFullYear(), today.getMonth() + offset, 1);
   let daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
 

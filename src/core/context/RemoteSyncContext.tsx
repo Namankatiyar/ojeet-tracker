@@ -1039,21 +1039,31 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearScheduledSync, isConfigured, user]);
 
+  const checkPendingChanges = useCallback(() => {
+    const hasDomainEdits = domainKeys.some((domain) => hasLocalUnsyncedEdit(domain));
+    const hasPendingLogs = pendingSessionLogsRef.current.length > 0;
+    return hasDomainEdits || hasPendingLogs;
+  }, []);
+
   // When the tab returns to the foreground, pull the next scheduled sync back to
-  // the active cadence. scheduleSync only shortens an existing timer, so a pending
-  // retry or sooner sync is preserved.
+  // the active cadence. If pending changes exist or > 10 minutes elapsed, sync immediately.
   useEffect(() => {
     if (!user || !isConfigured) return;
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        scheduleSync(SYNC_BATCH_INTERVAL_MS);
+        const isStale = Date.now() - lastSyncCompletedAtRef.current > 10 * 60 * 1000;
+        if (checkPendingChanges() || isStale) {
+          scheduleSync(0);
+        } else {
+          scheduleSync(SYNC_BATCH_INTERVAL_MS);
+        }
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, isConfigured, scheduleSync]);
+  }, [user, isConfigured, scheduleSync, checkPendingChanges]);
 
   // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
   const lastPushedAggregateRef = useRef<string | null>(null);
@@ -1106,12 +1116,6 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Focus/visibility-triggered syncs intentionally removed.
   // App follows a time-based polling model: sync on start, then every 10 minutes.
-
-  const checkPendingChanges = useCallback(() => {
-    const hasDomainEdits = domainKeys.some((domain) => hasLocalUnsyncedEdit(domain));
-    const hasPendingLogs = pendingSessionLogsRef.current.length > 0;
-    return hasDomainEdits || hasPendingLogs;
-  }, []);
 
   const value = useMemo<RemoteSyncContextType>(
     () => ({

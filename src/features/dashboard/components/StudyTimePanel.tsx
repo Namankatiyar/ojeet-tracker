@@ -5,6 +5,7 @@ import { StudySession } from '../../../shared/types';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useStudyTimeAnalytics } from '../hooks/useStudyTimeAnalytics';
 import { getChartOptions, getWeekDays } from '../utils/analyticsUtils';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 interface StudyTimePanelProps {
   studySessions: StudySession[];
@@ -18,6 +19,7 @@ type StudyViewMode = 'weekly' | 'monthly';
 
 export function StudyTimePanel({ studySessions, remoteDailyBuckets }: StudyTimePanelProps) {
   const { theme } = useTheme();
+  const { dailyResetHour } = useUserProgress();
   const [studyViewMode, setStudyViewMode] = useState<StudyViewMode>('weekly');
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
@@ -26,7 +28,8 @@ export function StudyTimePanel({ studySessions, remoteDailyBuckets }: StudyTimeP
     studySessions,
     studyViewMode === 'weekly' ? weekOffset : monthOffset,
     studyViewMode,
-    remoteDailyBuckets
+    remoteDailyBuckets,
+    dailyResetHour
   );
 
   const chartOptions = useMemo(
@@ -36,7 +39,7 @@ export function StudyTimePanel({ studySessions, remoteDailyBuckets }: StudyTimeP
 
   // Get week/month display label
   const getWeekLabel = () => {
-    const weekDays = getWeekDays(weekOffset);
+    const weekDays = getWeekDays(weekOffset, dailyResetHour);
     const start = weekDays[0];
     const end = weekDays[6];
     return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;

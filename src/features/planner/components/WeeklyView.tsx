@@ -1,6 +1,7 @@
 import { DayColumn } from './DayColumn';
 import { PlannerTask, ExamEntry } from '../../../shared/types';
-import { formatDateLocal } from '../../../shared/utils/date';
+import { formatDateLocal, getLogicalDate } from '../../../shared/utils/date';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 interface WeeklyViewProps {
   reorderedWeekDays: Date[];
@@ -27,7 +28,8 @@ export function WeeklyView({
   onMoveTask,
   onDuplicateTask,
 }: WeeklyViewProps) {
-  const today = new Date();
+  const { dailyResetHour } = useUserProgress();
+  const today = getLogicalDate(dailyResetHour);
   today.setHours(0, 0, 0, 0);
 
   return (

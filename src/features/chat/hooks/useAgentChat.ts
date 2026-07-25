@@ -11,6 +11,7 @@ import { buildAgentSystemPrompt, AgentContext } from '../utils/agentPromptBuilde
 import { useAgentTools } from './useAgentTools';
 import { type Tool } from '@google/genai';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
+import { getLogicalTodayStr } from '../../../shared/utils/date';
 
 // ── Message Types ──────────────────────────────────────────────────────────────
 export type MessageRole = 'user' | 'model' | 'tool' | 'system';
@@ -199,6 +200,7 @@ export function useAgentChat() {
     overallProgress,
     lectureCounter,
     examMode,
+    dailyResetHour,
   } = useUserProgress();
   const { mergedSubjectData: _sd } = useSubjectData();
   const { recommendations, studyShares, totalWeeklyHours } = useStudyCoPilot();
@@ -259,7 +261,7 @@ export function useAgentChat() {
   const buildAgentPrompt = useCallback((): string => {
     const ctx: AgentContext = {
       nowIso: new Date().toISOString(),
-      todayStr: new Date().toLocaleDateString('en-CA'),
+      todayStr: getLogicalTodayStr(dailyResetHour),
       plannerTasks,
       mockScores,
       mockExamPresets,

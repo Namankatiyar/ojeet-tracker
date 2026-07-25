@@ -15,19 +15,19 @@ const MODE_CONFIG: Record<
   daily: {
     label: 'Today',
     hoursSuffix: 'hrs / day',
-    description: 'Ranked by study hours in the last 24 hours. Refreshes daily at midnight.',
+    description: 'Ranked by study hours today. Refreshes every 15 minutes.',
     icon: Sun,
   },
   weekly: {
     label: 'This week',
     hoursSuffix: 'hrs / wk',
-    description: 'Ranked by study hours over the last 7 days. Refreshes daily at midnight.',
+    description: 'Ranked by study hours over the last 7 days. Refreshes every 15 minutes.',
     icon: Calendar,
   },
   monthly: {
     label: 'This month',
     hoursSuffix: 'hrs / mo',
-    description: 'Ranked by study hours over the last 30 days. Refreshes daily at midnight.',
+    description: 'Ranked by study hours over the last 30 days. Refreshes every 15 minutes.',
     icon: Trophy,
   },
 };

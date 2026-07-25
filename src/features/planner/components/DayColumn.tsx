@@ -12,7 +12,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { PlannerTask } from '../../../shared/types';
-import { formatDateLocal, formatTime12Hour } from '../../../shared/utils/date';
+import { formatDateLocal, formatTime12Hour, getLogicalDate } from '../../../shared/utils/date';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 interface DayColumnProps {
   date: Date;
@@ -42,9 +43,11 @@ export function DayColumn({
   onDuplicateTask,
 }: DayColumnProps) {
   const navigate = useNavigate();
+  const { dailyResetHour } = useUserProgress();
   const [isDragOver, setIsDragOver] = useState(false);
   const [isShiftHeld, setIsShiftHeld] = useState(false);
-  const isToday = new Date().toDateString() === date.toDateString();
+  const logicalToday = getLogicalDate(dailyResetHour);
+  const isToday = formatDateLocal(date) === formatDateLocal(logicalToday);
 
   const isOverdue = (task: PlannerTask) => {
     if (task.completed) return false;

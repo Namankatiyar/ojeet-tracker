@@ -3,6 +3,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useStudyTimeAnalytics } from './useStudyTimeAnalytics';
 import { StudySession } from '../../../shared/types';
 
+vi.mock('../../../core/context/UserProgressContext', () => ({
+  useUserProgress: () => ({
+    examMode: 'jee',
+  }),
+}));
+
 describe('useStudyTimeAnalytics', () => {
   const mockSessions: StudySession[] = [
     {

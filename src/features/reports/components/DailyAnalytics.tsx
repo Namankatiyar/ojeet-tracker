@@ -21,11 +21,8 @@ import {
 /* ───────────────────────────────────────────── */
 /* Date Helpers                                  */
 /* ───────────────────────────────────────────── */
-const getLocalDateString = (offsetDays = 0): string => {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  return d.toLocaleDateString('en-CA'); // YYYY-MM-DD
-};
+import { getLogicalTodayStr } from '../../../shared/utils/date';
+
 
 const getSessionDate = (s: StudySession): string => s.localDate ?? s.startTime.slice(0, 10);
 
@@ -65,10 +62,10 @@ const formatDateDisplay = (dateStr: string): string => {
 /* Component                                     */
 /* ───────────────────────────────────────────── */
 export const DailyAnalytics: React.FC = () => {
-  const { studySessions, plannerTasks, dailyQuestionLogs } = useUserProgress();
+  const { studySessions, plannerTasks, dailyQuestionLogs, dailyResetHour } = useUserProgress();
   const { subjects } = useActiveSubjects();
 
-  const todayStr = getLocalDateString(0);
+  const todayStr = getLogicalTodayStr(dailyResetHour);
 
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);

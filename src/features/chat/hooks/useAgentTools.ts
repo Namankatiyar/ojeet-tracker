@@ -8,6 +8,7 @@ import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { useStudyCoPilot } from '../../../shared/hooks/useStudyCoPilot';
 import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
+import { getLogicalTodayStr } from '../../../shared/utils/date';
 import {
   Subject,
   Priority,
@@ -97,6 +98,7 @@ export function useAgentTools() {
     handleDeleteExam,
     handleSetPrimaryExam,
     examMode,
+    dailyResetHour,
   } = useUserProgress();
 
   const { mergedSubjectData } = useSubjectData();
@@ -325,7 +327,7 @@ export function useAgentTools() {
       material?: string,
       date?: string
     ): string => {
-      const localDate = date ?? new Date().toLocaleDateString('en-CA');
+      const localDate = date ?? getLogicalTodayStr(dailyResetHour);
       const endTime = new Date().toISOString();
       const startTime = new Date(Date.now() - durationMinutes * 60 * 1000).toISOString();
       let chapterSerial: number | undefined;

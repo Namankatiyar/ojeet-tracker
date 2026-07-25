@@ -2,6 +2,7 @@ import React, { createContext, useContext, useCallback, useEffect, useRef, useMe
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { useProgress } from '../../shared/hooks/useProgress';
 import { triggerSmallConfetti } from '../../shared/utils/confetti';
+import { getLogicalTodayStr } from '../../shared/utils/date';
 import {
   AppProgress,
   Subject,
@@ -486,6 +487,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const progressRef = useRef(progress);
   const pendingProgressRef = useRef(progress);
   const plannerTasksRef = useRef(plannerTasks);
+  const dailyResetHourRef = useRef(dailyResetHour);
   useEffect(() => {
     progressRef.current = progress;
     pendingProgressRef.current = progress;
@@ -493,6 +495,9 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     plannerTasksRef.current = plannerTasks;
   }, [plannerTasks]);
+  useEffect(() => {
+    dailyResetHourRef.current = dailyResetHour;
+  }, [dailyResetHour]);
 
   const handleToggleMaterial = useCallback(
     (subject: Subject, chapterSerial: number, material: string) => {
@@ -697,7 +702,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const diff = safeCount - currentCount;
 
       if (diff !== 0) {
-        const todayStr = new Date().toLocaleDateString('en-CA');
+        const todayStr = getLogicalTodayStr(dailyResetHourRef.current);
         setDailyQuestionLogs((prevLogs) => ({
           ...prevLogs,
           [todayStr]: (prevLogs[todayStr] || 0) + diff,
@@ -899,7 +904,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         });
 
         if (diff !== 0) {
-          const todayStr = new Date().toLocaleDateString('en-CA');
+          const todayStr = getLogicalTodayStr(dailyResetHourRef.current);
           setDailyQuestionLogs((prevLogs) => ({
             ...prevLogs,
             [todayStr]: (prevLogs[todayStr] || 0) + diff,
@@ -998,7 +1003,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           netChange = newCount - currentCount;
 
           if (netChange !== 0) {
-            const todayStr = new Date().toLocaleDateString('en-CA');
+            const todayStr = getLogicalTodayStr(dailyResetHourRef.current);
             setDailyQuestionLogs((prevLogs) => ({
               ...prevLogs,
               [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + netChange),
@@ -1006,7 +1011,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
           }
         } else if (task.questions && task.questions > 0) {
           const change = newStatus ? task.questions : -task.questions;
-          const todayStr = new Date().toLocaleDateString('en-CA');
+          const todayStr = getLogicalTodayStr(dailyResetHourRef.current);
           setDailyQuestionLogs((prevLogs) => ({
             ...prevLogs,
             [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + change),
@@ -1030,7 +1035,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
             : currentAttempted,
           lectureCount: nextLectureCount,
           revisionCount: nextRevisionCount,
-          ...(task.isRevision && newStatus ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
+          ...(task.isRevision && newStatus ? { lastRevised: getLogicalTodayStr(dailyResetHourRef.current) } : {}),
         };
 
         const updatedCompleted = task.material
@@ -1077,7 +1082,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
               : prevAttempted,
             lectureCount: nextLectures,
             revisionCount: nextRevisions,
-            ...(task.isRevision && newStatus ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
+            ...(task.isRevision && newStatus ? { lastRevised: getLogicalTodayStr(dailyResetHourRef.current) } : {}),
           };
 
           const updatedComp = task.material
@@ -1099,7 +1104,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         });
       } else if (task.questions && task.questions > 0) {
         const change = newStatus ? task.questions : -task.questions;
-        const todayStr = new Date().toLocaleDateString('en-CA');
+        const todayStr = getLogicalTodayStr(dailyResetHourRef.current);
         setDailyQuestionLogs((prevLogs) => ({
           ...prevLogs,
           [todayStr]: Math.max(0, (prevLogs[todayStr] || 0) + change),
@@ -1212,7 +1217,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                       ...detail,
                       lectureCount: nextLectures,
                       revisionCount: nextRevisions,
-                      ...(diffRev > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
+                      ...(diffRev > 0 ? { lastRevised: getLogicalTodayStr(dailyResetHourRef.current) } : {}),
                     },
                   },
                 },
@@ -1235,7 +1240,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     ...detail,
                     lectureCount: nextLectures,
                     revisionCount: nextRevisions,
-                    ...(diffRev > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
+                    ...(diffRev > 0 ? { lastRevised: getLogicalTodayStr(dailyResetHourRef.current) } : {}),
                   },
                 },
               },
@@ -1306,7 +1311,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                       ...detail,
                       lectureCount: nextLectures,
                       revisionCount: nextRevisions,
-                      ...(newRevisionVal > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
+                      ...(newRevisionVal > 0 ? { lastRevised: getLogicalTodayStr(dailyResetHourRef.current) } : {}),
                     },
                   },
                 },
@@ -1329,7 +1334,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     ...detail,
                     lectureCount: nextLectures,
                     revisionCount: nextRevisions,
-                    ...(newRevisionVal > 0 ? { lastRevised: new Date().toLocaleDateString('en-CA') } : {}),
+                    ...(newRevisionVal > 0 ? { lastRevised: getLogicalTodayStr(dailyResetHourRef.current) } : {}),
                   },
                 },
               },

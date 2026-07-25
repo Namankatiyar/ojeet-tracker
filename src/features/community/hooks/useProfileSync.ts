@@ -6,6 +6,7 @@ import { useSubjectData } from '../../../core/context/SubjectDataContext';
 import { supabase } from '../../../shared/lib/supabase';
 import { StudySession } from '../../../shared/types';
 import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/backoff';
+import { getLogicalTodayStr, getLogicalDate } from '../../../shared/utils/date';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -20,6 +21,7 @@ export function useProfileSync() {
     studySessions,
     plannerTasks,
     dailyQuestionLogs,
+    dailyResetHour,
   } = useUserProgress();
   const { subjectData } = useSubjectData();
 
@@ -271,7 +273,7 @@ export function useProfileSync() {
     if (!user || !isConfigured || !client) return;
     if (!isInitialFetchDone || isFetchingProfileRef.current) return;
 
-    const todayStr = new Date().toLocaleDateString('en-CA');
+    const todayStr = getLogicalTodayStr(dailyResetHour);
     const currentStudySessions = studySessionsRef.current;
 
     const todayStudyTimeSec = currentStudySessions
@@ -315,9 +317,9 @@ export function useProfileSync() {
 
     const heatmapData = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
+      const d = getLogicalDate(dailyResetHour, new Date());
       d.setDate(d.getDate() - i);
-      const dateStr = d.toLocaleDateString('en-CA');
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const dayOfWeek = d.getDay();
       const seconds = currentStudySessions
         .filter((s) => getSessionDate(s) === dateStr)
@@ -338,11 +340,11 @@ export function useProfileSync() {
         .reduce((acc, s) => acc + s.duration, 0);
     };
 
-    const checkDate = new Date();
-    const todayStrLocal = checkDate.toLocaleDateString('en-CA');
+    const checkDate = getLogicalDate(dailyResetHour, new Date());
+    const todayStrLocal = getLogicalTodayStr(dailyResetHour);
     const yesterday = new Date(checkDate);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
     const hasToday = getDailyStudyTime(todayStrLocal) >= 60;
     const hasYesterday = getDailyStudyTime(yesterdayStr) >= 60;
@@ -351,7 +353,7 @@ export function useProfileSync() {
     if (hasToday || hasYesterday) {
       const startCheckDate = hasToday ? checkDate : yesterday;
       while (true) {
-        const dateStr = startCheckDate.toLocaleDateString('en-CA');
+        const dateStr = `${startCheckDate.getFullYear()}-${String(startCheckDate.getMonth() + 1).padStart(2, '0')}-${String(startCheckDate.getDate()).padStart(2, '0')}`;
         if (getDailyStudyTime(dateStr) >= 60) {
           calculatedStreak++;
           startCheckDate.setDate(startCheckDate.getDate() - 1);

@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { DayTile } from './DayTile';
 import { PlannerTask, StudySession, ExamEntry } from '../../../shared/types';
-import { formatDateLocal } from '../../../shared/utils/date';
+import { formatDateLocal, getLogicalDate } from '../../../shared/utils/date';
 import { useMonthlyData } from '../hooks/useMonthlyData';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 
 interface CalendarGridProps {
   monthDays: { date: Date; isCurrentMonth: boolean }[];
@@ -26,7 +27,8 @@ export function CalendarGrid({
   month,
   onDayClick,
 }: CalendarGridProps) {
-  const today = new Date();
+  const { dailyResetHour } = useUserProgress();
+  const today = getLogicalDate(dailyResetHour);
   today.setHours(0, 0, 0, 0);
 
   const { getDayData } = useMonthlyData(tasks, sessions, year, month);
