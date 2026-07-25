@@ -61,10 +61,7 @@ export function useActivityHeartbeat() {
         if (!isOnline()) {
           return;
         }
-        // Throttle to 60 seconds unless forced by interval
-        if (!force && now - lastHeartbeatSentAtRef.current < 60000) {
-          return;
-        }
+        // Throttle check is deferred to after payload computation so state changes trigger immediate heartbeats
 
         let isActive = false;
         let subject: string | null = null;
@@ -150,8 +147,10 @@ export function useActivityHeartbeat() {
         const comparePayload = { ...payload, updated_at: null };
         const payloadStr = JSON.stringify(comparePayload);
 
-        const isPeriodicActiveUpdate = isActive && (now - lastHeartbeatSentAtRef.current >= 120000);
-        if (!force && !isPeriodicActiveUpdate && payloadStr === lastHeartbeatPayloadRef.current) {
+        const stateChanged = payloadStr !== lastHeartbeatPayloadRef.current;
+
+        // Skip if not forced, state hasn't changed, and less than 60s since last heartbeat sent
+        if (!force && !stateChanged && now - lastHeartbeatSentAtRef.current < 60000) {
           return;
         }
 
@@ -189,19 +188,36 @@ export function useActivityHeartbeat() {
       sendHeartbeat(false);
     }
 
-    const handleTimerChange = () => {
+    const handleFocusOrVisible = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
       sendHeartbeat(false);
     };
 
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleFocusOrVisible);
+    }
     if (typeof window !== 'undefined') {
-      window.addEventListener('jee-timer-state-change', handleTimerChange);
+      window.addEventListener('focus', handleFocusOrVisible);
+      window.addEventListener('jee-timer-state-change', handleFocusOrVisible);
     }
 
-    const intervalId = setInterval(() => sendHeartbeat(false), 60000);
+    const intervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
+      sendHeartbeat(false);
+    }, 60000);
+
     return () => {
       clearInterval(intervalId);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleFocusOrVisible);
+      }
       if (typeof window !== 'undefined') {
-        window.removeEventListener('jee-timer-state-change', handleTimerChange);
+        window.removeEventListener('focus', handleFocusOrVisible);
+        window.removeEventListener('jee-timer-state-change', handleFocusOrVisible);
       }
     };
   }, [user, isConfigured]);
