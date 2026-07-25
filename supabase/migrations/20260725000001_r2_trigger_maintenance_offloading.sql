@@ -24,7 +24,7 @@ BEGIN
   IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cron_prune_stale_entity_logs') THEN
     PERFORM cron.unschedule('cron_prune_stale_entity_logs');
   END IF;
-  PERFORM cron.schedule('cron_prune_stale_entity_logs', '0 2 * * *', $$SELECT public.cron_prune_stale_entity_logs()$$);
+  PERFORM cron.schedule('cron_prune_stale_entity_logs', '0 2 * * *', 'SELECT public.cron_prune_stale_entity_logs()');
 END $$;
 
 -- 4. Update sync_weekly_hours_to_profile trigger function with guard clause
