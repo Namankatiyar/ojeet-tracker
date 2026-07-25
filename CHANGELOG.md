@@ -1,3 +1,20 @@
+# [3.1.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.0.1...v3.1.0) (2026-07-25)
+
+
+### Bug Fixes
+
+* **community:** append cache-buster to public avatar URL after upload ([61d0b08](https://github.com/Namankatiyar/ojeet-tracker/commit/61d0b089c72ff25938b22f1dcc2c8b2b864bbbb2))
+* **community:** do not suppress inactive heartbeat updates ([2976a69](https://github.com/Namankatiyar/ojeet-tracker/commit/2976a693bd3571a7158bce8815eea3a4ad79ff8e))
+* **community:** remove redundant blur listener causing spurious poll restarts ([f257446](https://github.com/Namankatiyar/ojeet-tracker/commit/f257446abed4e328343cab636aadd9df08a06d52))
+* **db:** add WITH CHECK clause to avatar upload RLS policy ([4e11feb](https://github.com/Namankatiyar/ojeet-tracker/commit/4e11feb349d3fdacad5f83ed5ca1cbace01356f7))
+* **db:** fix trigger boundary and remove sync prune log query ([d7b7ab9](https://github.com/Namankatiyar/ojeet-tracker/commit/d7b7ab9a84c5bf6aec554b2f691973e7cb337b36))
+* **db:** resolve DO block syntax error in migration 2 ([702994d](https://github.com/Namankatiyar/ojeet-tracker/commit/702994d1295161bdaffb88aed264f93aea41e43a))
+
+
+### Features
+
+* **core:** support custom daily reset hour in app features ([ca7d658](https://github.com/Namankatiyar/ojeet-tracker/commit/ca7d658104e1f114f7d2ff4117798d3ad2331586))
+
 ## [3.0.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.0.0...v3.0.1) (2026-07-23)
 
 
