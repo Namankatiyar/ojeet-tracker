@@ -1,11 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X, Upload, Loader2 } from 'lucide-react';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 import { ProgressCardSettings } from '../../../shared/types';
 import { UserProfileCard } from './UserProfileCard';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
+import { supabase } from '../../../shared/lib/supabase';
 
 const GRADE_OPTIONS = [
   { value: 'Class 11', label: 'Class 11' },
@@ -32,6 +33,10 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
     customAvatarUrl: settings.customAvatarUrl || googleAvatar,
   });
 
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarUploadError, setAvatarUploadError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Sync draft when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -40,6 +45,8 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
         userName: settings.userName || googleName,
         customAvatarUrl: settings.customAvatarUrl || googleAvatar,
       });
+      setAvatarUploadError('');
+      setIsUploadingAvatar(false);
     }
   }, [isOpen, settings, googleName, googleAvatar]);
 
@@ -47,8 +54,83 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
     setDraft((prev) => ({ ...prev, [field]: value }));
   }, []);
 
+  const handleAvatarUrlInputChange = (value: string) => {
+    if (/^data:/i.test(value.trim())) {
+      setAvatarUploadError('Data URIs are not allowed. Please upload an image file or enter an HTTP(S) URL.');
+      return;
+    }
+    setAvatarUploadError('');
+    handleChange('customAvatarUrl', value);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarUploadError('');
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarUploadError('Please select a valid image file (JPEG, PNG, WebP, GIF).');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarUploadError('File size exceeds the 2 MB limit.');
+      return;
+    }
+
+    if (!supabase || !user?.id) {
+      setAvatarUploadError('You must be signed in to upload an avatar.');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop() || 'png';
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          upsert: true,
+          contentType: file.type,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      if (publicUrlData?.publicUrl) {
+        handleChange('customAvatarUrl', `${publicUrlData.publicUrl}?t=${Date.now()}`);
+      }
+    } catch (err: any) {
+      console.error('Avatar upload failed:', err);
+      setAvatarUploadError(err.message || 'Failed to upload avatar image.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSubmit = useCallback(() => {
-    onSave({ ...draft });
+    const cleanAvatarUrl = draft.customAvatarUrl && /^data:/i.test(draft.customAvatarUrl)
+      ? ''
+      : draft.customAvatarUrl;
+    const cleanBannerUrl = draft.bannerUrl && /^data:/i.test(draft.bannerUrl)
+      ? ''
+      : draft.bannerUrl;
+
+    onSave({
+      ...draft,
+      customAvatarUrl: cleanAvatarUrl,
+      bannerUrl: cleanBannerUrl,
+    });
     onClose();
   }, [draft, onSave, onClose]);
 
@@ -101,13 +183,38 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
 
               <div className="profile-edit-field">
                 <label htmlFor="pe-avatar">Avatar URL</label>
-                <input
-                  id="pe-avatar"
-                  type="url"
-                  value={draft.customAvatarUrl}
-                  onChange={(e) => handleChange('customAvatarUrl', e.target.value)}
-                  placeholder="https://..."
-                />
+                <div style={{ display: 'flex', gap: 'var(--space-2, 8px)', alignItems: 'center' }}>
+                  <input
+                    id="pe-avatar"
+                    type="url"
+                    value={draft.customAvatarUrl}
+                    onChange={(e) => handleAvatarUrlInputChange(e.target.value)}
+                    placeholder="https://..."
+                    style={{ flex: 1 }}
+                  />
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
+                  >
+                    {isUploadingAvatar ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                    {isUploadingAvatar ? 'Uploading...' : 'Upload'}
+                  </button>
+                </div>
+                {avatarUploadError && (
+                  <span className="field-hint" style={{ color: 'var(--color-priority-high, #ef4444)' }}>
+                    {avatarUploadError}
+                  </span>
+                )}
               </div>
 
               <div className="profile-edit-field">
@@ -208,3 +315,4 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
     document.body
   );
 }
+
