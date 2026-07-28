@@ -900,6 +900,7 @@ export function StudyClock({
             onDeleteSession={onDeleteSession}
             onEditSession={onEditSession}
             onAddSession={onAddSession}
+            plannerTasks={plannerTasks}
           />
         </motion.div>
       </motion.div>

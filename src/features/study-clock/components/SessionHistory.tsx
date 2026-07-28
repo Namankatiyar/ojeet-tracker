@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Trash2, Clock, X, Pencil, Plus, Calendar } from 'lucide-react';
-import { Subject, SubjectData, StudySession } from '../../../shared/types';
+import { Subject, SubjectData, StudySession, PlannerTask } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
 import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
@@ -13,6 +13,7 @@ interface SessionHistoryProps {
   onDeleteSession: (sessionId: string) => void;
   onEditSession: (session: StudySession) => void;
   onAddSession: (session: StudySession) => void;
+  plannerTasks?: PlannerTask[];
 }
 
 function formatDuration(seconds: number): string {
@@ -27,6 +28,7 @@ export function SessionHistory({
   onDeleteSession,
   onEditSession,
   onAddSession,
+  plannerTasks,
 }: SessionHistoryProps) {
   const { subjectMeta } = useActiveSubjects();
   // Edit modal state
@@ -46,6 +48,7 @@ export function SessionHistory({
   const [manualSubject, setManualSubject] = useState<Subject | ''>('');
   const [manualMaterial, setManualMaterial] = useState('');
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [manualTaskId, setManualTaskId] = useState('');
 
   const [logMode, setLogMode] = useState<'duration' | 'time'>('duration');
   const [manualStartTime, setManualStartTime] = useState('');
@@ -112,6 +115,7 @@ export function SessionHistory({
     setManualHours(0);
     setManualMinutes(30);
     setManualDate(new Date().toISOString().split('T')[0]);
+    setManualTaskId('');
     setManualSubject('');
     setManualMaterial('');
 
@@ -170,12 +174,41 @@ export function SessionHistory({
 
     if (duration <= 0 || !manualTitle.trim()) return;
 
+    let finalType: 'chapter' | 'custom' | 'task' = manualSubject ? 'chapter' : 'custom';
+    let finalChapterSerial: number | undefined = undefined;
+    let finalChapterName: string | undefined = undefined;
+    let finalSubject: Subject | undefined = manualSubject || undefined;
+    let finalMaterial: string | undefined = manualMaterial || undefined;
+
+    if (manualTaskId && plannerTasks) {
+      const task = plannerTasks.find((t) => t.id === manualTaskId);
+      if (task) {
+        if (task.subject) {
+          finalSubject = task.subject;
+          if (task.chapterSerial != null) {
+            finalChapterSerial = task.chapterSerial;
+            finalChapterName = subjectData[task.subject]?.chapters.find(
+              (c) => c.serial === task.chapterSerial
+            )?.name;
+            finalMaterial = task.material || undefined;
+            finalType = 'chapter';
+          } else {
+            finalType = 'custom';
+          }
+        } else {
+          finalType = 'custom';
+        }
+      }
+    }
+
     const session: StudySession = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       title: manualTitle.trim(),
-      subject: manualSubject || undefined,
-      material: manualMaterial || undefined,
-      type: manualSubject ? 'chapter' : 'custom',
+      subject: finalSubject,
+      chapterSerial: finalChapterSerial,
+      chapterName: finalChapterName,
+      material: finalMaterial,
+      type: finalType,
       startTime: entryStartTimeStr,
       endTime: entryEndTimeStr,
       localDate: formatDateLocal(entryDate),
@@ -418,6 +451,30 @@ export function SessionHistory({
                   </span>
                   <Calendar size={18} className="calendar-icon" />
                 </button>
+              </div>
+              <div className="edit-form-group">
+                <label>Task (optional)</label>
+                <CustomSelect
+                  value={manualTaskId}
+                  onChange={(val) => {
+                    const taskId = val as string;
+                    setManualTaskId(taskId);
+                    const task = plannerTasks?.find((t) => t.id === taskId);
+                    if (task) {
+                      setManualTitle(task.title);
+                      if (task.subject) setManualSubject(task.subject);
+                      if (task.material) setManualMaterial(task.material);
+                    }
+                  }}
+                  options={[
+                    { value: '', label: 'None' },
+                    ...(plannerTasks?.filter((t) => t.date === manualDate).map((task) => ({
+                      value: task.id,
+                      label: `${task.title}${task.subtitle ? ` - ${task.subtitle}` : ''}`,
+                    })) || []),
+                  ]}
+                  placeholder="Select Task"
+                />
               </div>
               <div className="edit-form-group">
                 <label>Subject (optional)</label>
