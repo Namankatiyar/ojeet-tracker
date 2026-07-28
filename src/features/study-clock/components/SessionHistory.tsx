@@ -25,6 +25,7 @@ function formatDuration(seconds: number): string {
 
 export function SessionHistory({
   sessions,
+  subjectData,
   onDeleteSession,
   onEditSession,
   onAddSession,
