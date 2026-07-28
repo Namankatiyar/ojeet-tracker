@@ -1,3 +1,15 @@
+# [3.2.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.1.0...v3.2.0) (2026-07-28)
+
+
+### Bug Fixes
+
+* **study-clock:** destructure subjectData in SessionHistory ([1ae3e3f](https://github.com/Namankatiyar/ojeet-tracker/commit/1ae3e3fad8ca146a236693ae4bbcf1ba64efa44f))
+
+
+### Features
+
+* **study-clock:** add optional task selection for manual study logs ([a6a63f9](https://github.com/Namankatiyar/ojeet-tracker/commit/a6a63f9dde55acd5565997886b8f63485cadb1e9))
+
 # [3.1.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.0.1...v3.1.0) (2026-07-25)
 
 
