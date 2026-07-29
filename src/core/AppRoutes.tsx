@@ -129,6 +129,8 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     handleRenameChapter,
     handleReorderChapters,
     handleReorderMaterials,
+    handleAddSubtopic,
+    handleRemoveSubtopic,
   } = useSubjectData();
   const {
     progress,
@@ -151,6 +153,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
     handleToggleSubtopicMaterial,
     handleUpdateSubtopicAttempted,
     handleSetSubtopicLastRevised,
+    handleClearSubtopicProgress,
     handleDeletePlannerTask,
     handleEditPlannerTask,
     handleAddStudySession,
@@ -290,6 +293,11 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
                 onRenameChapter={(serial, name) => handleRenameChapter(subject, serial, name)}
                 onReorderChapters={(chapters) => handleReorderChapters(subject, chapters)}
                 onReorderMaterials={(materials) => handleReorderMaterials(subject, materials)}
+                onAddSubtopic={(serial, name) => handleAddSubtopic(subject, serial, name)}
+                onRemoveSubtopic={(serial, name) => {
+                  handleRemoveSubtopic(subject, serial, name);
+                  handleClearSubtopicProgress(subject, serial, name);
+                }}
               />
             }
           />

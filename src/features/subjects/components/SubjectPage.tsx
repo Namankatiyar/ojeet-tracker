@@ -49,6 +49,8 @@ interface SubjectPageProps {
   onRenameChapter?: (serial: number, name: string) => void;
   onReorderChapters?: (chapters: Chapter[]) => void;
   onReorderMaterials?: (materials: string[]) => void;
+  onAddSubtopic?: (chapterSerial: number, subtopicName: string) => void;
+  onRemoveSubtopic?: (chapterSerial: number, subtopicName: string) => void;
 }
 
 export function SubjectPage({
@@ -69,6 +71,8 @@ export function SubjectPage({
   onRenameChapter,
   onReorderChapters,
   onReorderMaterials,
+  onAddSubtopic,
+  onRemoveSubtopic,
 }: SubjectPageProps) {
   const { accentColor } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
@@ -686,6 +690,16 @@ export function SubjectPage({
             }
             onSetSubtopicLastRevised={(subtopicName, date) =>
               onSetSubtopicLastRevised(selectedChapter.serial, subtopicName, date)
+            }
+            onAddSubtopic={
+              onAddSubtopic
+                ? (name) => onAddSubtopic(selectedChapter.serial, name)
+                : undefined
+            }
+            onRemoveSubtopic={
+              onRemoveSubtopic
+                ? (name) => onRemoveSubtopic(selectedChapter.serial, name)
+                : undefined
             }
           />
         )}

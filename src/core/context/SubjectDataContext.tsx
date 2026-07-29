@@ -55,6 +55,8 @@ interface SubjectDataContextType {
   handleRemoveChapter: (subject: Subject, serial: number) => void;
   handleRenameChapter: (subject: Subject, serial: number, newName: string) => void;
   handleReorderChapters: (subject: Subject, newOrderChapters: any[]) => void;
+  handleAddSubtopic: (subject: Subject, serial: number, name: string) => void;
+  handleRemoveSubtopic: (subject: Subject, serial: number, name: string) => void;
 }
 
 const SubjectDataContext = createContext<SubjectDataContextType | undefined>(undefined);
@@ -250,6 +252,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
           serial: maxSerial + 1,
           name: name.trim(),
           materials: data.materialNames,
+          isCustom: true as const,
         };
 
         return {
@@ -318,6 +321,49 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     [setSubjectData]
   );
 
+  const handleAddSubtopic = useCallback(
+    (subject: Subject, serial: number, name: string) => {
+      if (!name.trim()) return;
+      setSubjectData((prev) => {
+        const data = prev[subject];
+        if (!data) return prev;
+        return {
+          ...prev,
+          [subject]: {
+            ...data,
+            chapters: data.chapters.map((c) =>
+              c.serial === serial
+                ? { ...c, subtopics: [...(c.subtopics || []), name.trim()] }
+                : c
+            ),
+          },
+        };
+      });
+    },
+    [setSubjectData]
+  );
+
+  const handleRemoveSubtopic = useCallback(
+    (subject: Subject, serial: number, name: string) => {
+      setSubjectData((prev) => {
+        const data = prev[subject];
+        if (!data) return prev;
+        return {
+          ...prev,
+          [subject]: {
+            ...data,
+            chapters: data.chapters.map((c) =>
+              c.serial === serial
+                ? { ...c, subtopics: (c.subtopics || []).filter((s) => s !== name) }
+                : c
+            ),
+          },
+        };
+      });
+    },
+    [setSubjectData]
+  );
+
   const contextValue = useMemo(
     () => ({
       subjectData,
@@ -336,6 +382,8 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       handleRemoveChapter,
       handleRenameChapter,
       handleReorderChapters,
+      handleAddSubtopic,
+      handleRemoveSubtopic,
     }),
     [
       subjectData,
@@ -354,6 +402,8 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       handleRemoveChapter,
       handleRenameChapter,
       handleReorderChapters,
+      handleAddSubtopic,
+      handleRemoveSubtopic,
     ]
   );
 
