@@ -8,6 +8,7 @@ export interface Chapter {
   name: string;
   materials: string[];
   subtopics?: string[];
+  isCustom?: boolean;
 }
 
 export interface SubtopicState {

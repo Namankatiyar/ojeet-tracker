@@ -104,6 +104,11 @@ interface UserProgressContextType {
     subtopicName: string,
     date: string | undefined
   ) => void;
+  handleClearSubtopicProgress: (
+    subject: Subject,
+    chapterSerial: number,
+    subtopicName: string
+  ) => void;
   handleAddPlannerTask: (task: PlannerTask) => void;
   handleTogglePlannerTask: (taskId: string) => void;
   handleDeletePlannerTask: (taskId: string) => void;
@@ -161,6 +166,7 @@ interface ProgressDataContextType {
   handleToggleSubtopicMaterial: (subject: Subject, chapterSerial: number, subtopicName: string, material: string) => void;
   handleUpdateSubtopicAttempted: (subject: Subject, chapterSerial: number, subtopicName: string, material: string, count: number) => void;
   handleSetSubtopicLastRevised: (subject: Subject, chapterSerial: number, subtopicName: string, date: string | undefined) => void;
+  handleClearSubtopicProgress: (subject: Subject, chapterSerial: number, subtopicName: string) => void;
   handleAddPlannerTask: (task: PlannerTask) => void;
   handleTogglePlannerTask: (taskId: string) => void;
   handleDeletePlannerTask: (taskId: string) => void;
@@ -860,6 +866,30 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     [mergedSubjectData, setProgress]
   );
 
+  const handleClearSubtopicProgress = useCallback(
+    (subject: Subject, chapterSerial: number, subtopicName: string) => {
+      setProgress((prev) => {
+        const subjectProgress = prev[subject];
+        const chapterProgress = subjectProgress?.[chapterSerial];
+        if (!chapterProgress?.subtopics?.[subtopicName]) return prev;
+
+        const { [subtopicName]: _removed, ...remainingSubtopics } = chapterProgress.subtopics;
+        return {
+          ...prev,
+          [subject]: {
+            ...subjectProgress,
+            [chapterSerial]: {
+              ...chapterProgress,
+              subtopics: remainingSubtopics,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+        };
+      });
+    },
+    [setProgress]
+  );
+
   const handleSetPriority = useCallback(
     (subject: Subject, chapterSerial: number, priority: Priority) => {
       setProgress((prev) => {
@@ -1547,6 +1577,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleToggleSubtopicMaterial,
       handleUpdateSubtopicAttempted,
       handleSetSubtopicLastRevised,
+      handleClearSubtopicProgress,
       handleAddPlannerTask,
       handleTogglePlannerTask,
       handleDeletePlannerTask,
@@ -1596,6 +1627,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
       handleToggleSubtopicMaterial,
       handleUpdateSubtopicAttempted,
       handleSetSubtopicLastRevised,
+      handleClearSubtopicProgress,
       handleAddPlannerTask,
       handleTogglePlannerTask,
       handleDeletePlannerTask,

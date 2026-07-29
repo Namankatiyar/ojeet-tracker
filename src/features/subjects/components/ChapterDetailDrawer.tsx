@@ -10,6 +10,7 @@ import {
 } from '../../../shared/types';
 import { PrioritySelector } from '../../../shared/components/ui/PrioritySelector';
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
+import { InputModal } from '../../../shared/components/ui/InputModal';
 import { formatDateLocal, parseDateLocal } from '../../../shared/utils/date';
 
 interface ChapterDetailDrawerProps {
@@ -23,6 +24,8 @@ interface ChapterDetailDrawerProps {
   onToggleSubtopicMaterial: (subtopicName: string, material: string) => void;
   onUpdateSubtopicAttempted: (subtopicName: string, material: string, count: number) => void;
   onSetSubtopicLastRevised: (subtopicName: string, date: string | undefined) => void;
+  onAddSubtopic?: (name: string) => void;
+  onRemoveSubtopic?: (name: string) => void;
 }
 
 const confidenceColorsList = [
@@ -77,6 +80,7 @@ interface SubtopicRowProps {
   onToggleMaterial: (subtopic: string, material: string) => void;
   onUpdateAttempted: (subtopic: string, material: string, count: number) => void;
   onSetRevised: (subtopic: string, date: string | undefined) => void;
+  onRemove?: (subtopic: string) => void;
 }
 
 const SubtopicRow = memo(function SubtopicRow({
@@ -88,6 +92,7 @@ const SubtopicRow = memo(function SubtopicRow({
   onToggleMaterial,
   onUpdateAttempted,
   onSetRevised,
+  onRemove,
 }: SubtopicRowProps) {
   const subCompleted = subState.completed || {};
   const attempted = subState.attemptedByMaterial || {};
@@ -131,6 +136,17 @@ const SubtopicRow = memo(function SubtopicRow({
           <span className="subtopic-row-count">
             {completedMaterialCount}/{materialNames.length}
           </span>
+          {onRemove && (
+            <button
+              type="button"
+              className="icon-btn-reset"
+              onClick={(e) => { e.stopPropagation(); onRemove(subtopic); }}
+              title={`Remove subtopic "${subtopic}"`}
+              style={{ marginLeft: '4px', lineHeight: 1 }}
+            >
+              <X size={12} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -239,6 +255,8 @@ export function ChapterDetailDrawer({
   onToggleSubtopicMaterial,
   onUpdateSubtopicAttempted,
   onSetSubtopicLastRevised,
+  onAddSubtopic,
+  onRemoveSubtopic,
 }: ChapterDetailDrawerProps) {
   const completed = progress?.completed || {};
   const priority = progress?.priority || 'none';
@@ -247,6 +265,7 @@ export function ChapterDetailDrawer({
   const [expandedSubtopics, setExpandedSubtopics] = useState<Set<string>>(new Set());
   const [isRevisionTargetOpen, setIsRevisionTargetOpen] = useState(false);
   const [isLectureTargetOpen, setIsLectureTargetOpen] = useState(false);
+  const [isAddSubtopicModalOpen, setIsAddSubtopicModalOpen] = useState(false);
 
   const currentRevision = detail?.revisionCount || 0;
   const targetRevision = detail?.targetRevisionCount || 0;
@@ -716,18 +735,31 @@ export function ChapterDetailDrawer({
             </div>
 
             {/* ── Subtopic Breakdown ── */}
-            {chapter.subtopics && chapter.subtopics.length > 0 && (
+            {((chapter.subtopics && chapter.subtopics.length > 0) || !!onAddSubtopic) && (
               <div className="drawer-section">
                 <div className="subtopics-section-header">
                   <h3 className="drawer-section-title">Subtopics</h3>
-                  {subtopicProgress && (
-                    <span className="subtopics-progress-chip">
-                      {subtopicProgress.done}/{subtopicProgress.total}
-                    </span>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {subtopicProgress && (
+                      <span className="subtopics-progress-chip">
+                        {subtopicProgress.done}/{subtopicProgress.total}
+                      </span>
+                    )}
+                    {onAddSubtopic && (
+                      <button
+                        type="button"
+                        className="secondary-btn"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', fontSize: 'var(--text-sm)' }}
+                        onClick={() => setIsAddSubtopicModalOpen(true)}
+                      >
+                        <Plus size={13} />
+                        Add
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="subtopics-container">
-                  {chapter.subtopics.map((subtopic) => (
+                  {(chapter.subtopics || []).map((subtopic) => (
                     <SubtopicRow
                       key={subtopic}
                       subtopic={subtopic}
@@ -741,8 +773,14 @@ export function ChapterDetailDrawer({
                       onToggleMaterial={onToggleSubtopicMaterial}
                       onUpdateAttempted={onUpdateSubtopicAttempted}
                       onSetRevised={onSetSubtopicLastRevised}
+                      onRemove={onRemoveSubtopic}
                     />
                   ))}
+                  {onAddSubtopic && (!chapter.subtopics || chapter.subtopics.length === 0) && (
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', margin: '8px 0 4px' }}>
+                      No subtopics yet. Add one to track finer progress.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -771,6 +809,19 @@ export function ChapterDetailDrawer({
           setIsDatePickerOpen(false);
         }}
         onClose={() => setIsDatePickerOpen(false)}
+      />
+
+      <InputModal
+        isOpen={isAddSubtopicModalOpen}
+        title="Add Subtopic"
+        message="Enter a name for the new subtopic."
+        placeholder="e.g. Newton's Laws"
+        confirmLabel="Add"
+        onConfirm={(name) => {
+          onAddSubtopic?.(name);
+          setIsAddSubtopicModalOpen(false);
+        }}
+        onCancel={() => setIsAddSubtopicModalOpen(false)}
       />
     </>
   );
