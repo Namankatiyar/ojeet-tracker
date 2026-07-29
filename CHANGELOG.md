@@ -1,3 +1,10 @@
+# [3.3.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.2.0...v3.3.0) (2026-07-29)
+
+
+### Features
+
+* **subjects:** add subtopic management for all chapters ([678a3f1](https://github.com/Namankatiyar/ojeet-tracker/commit/678a3f1ca69310bf56811f237711caf16272c297))
+
 # [3.2.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.1.0...v3.2.0) (2026-07-28)
 
 
