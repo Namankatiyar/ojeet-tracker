@@ -1,3 +1,15 @@
+# [3.4.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.3.0...v3.4.0) (2026-08-01)
+
+
+### Bug Fixes
+
+* **core:** enforce high-water mark for remote study aggregate ([fbcf763](https://github.com/Namankatiyar/ojeet-tracker/commit/fbcf763f3267fed331fa4910da33ee157c88cb49)), closes [hi#water](https://github.com/hi/issues/water)
+
+
+### Features
+
+* **study-clock:** add per-cycle task planning to pomodoro ([78f1f4a](https://github.com/Namankatiyar/ojeet-tracker/commit/78f1f4add937912993036edc0de89b2f07ebaa55))
+
 # [3.3.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.2.0...v3.3.0) (2026-07-29)
 
 
