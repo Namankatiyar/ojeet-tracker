@@ -101,6 +101,16 @@ export interface StudySession {
   sourceVideoId?: string;
 }
 
+/** Task metadata for a single Pomodoro work cycle. */
+export interface PomodoroCycleTask {
+  taskType: 'chapter' | 'custom' | 'task';
+  selectedSubject: Subject | '';
+  selectedChapter: number | '';
+  selectedMaterial: string;
+  customTitle: string;
+  selectedTaskId: string;
+}
+
 export interface MockSubjectMarks {
   physics: number;
   chemistry: number;

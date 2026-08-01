@@ -1,15 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, Trash2, Play, Palette } from 'lucide-react';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { BgSettingsModal, ClockBgSettings } from './Timer/BgSettingsModal';
+import { PomodoroCyclePlanner, EMPTY_CYCLE_TASK } from './Timer/PomodoroCyclePlanner';
+import { CycleTaskQueue } from './Timer/CycleTaskQueue';
 import {
   Subject,
   SubjectData,
   StudySession,
   PlannerTask,
   AppProgress,
+  PomodoroCycleTask,
 } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { triggerSmallConfetti } from '../../../shared/utils/confetti';
@@ -130,6 +133,16 @@ export function StudyClock({
     'studyClock_parkedSessions',
     []
   );
+  // ── Per-cycle Pomodoro task planning state ──
+  const [cycleTaskMode, setCycleTaskMode] = useLocalStorage<'uniform' | 'perCycle'>(
+    'studyClock_cycleTaskMode',
+    'uniform'
+  );
+  const [cycleTasks, setCycleTasks] = useLocalStorage<PomodoroCycleTask[]>(
+    'studyClock_cycleTasks',
+    []
+  );
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [bgSettings, setBgSettings] = useLocalStorage<ClockBgSettings>('studyClock_bgSettings', {
@@ -199,6 +212,90 @@ export function StudyClock({
     return undefined;
   }, [selectedSubject, selectedChapter, subjectData]);
 
+  // ── Refs for per-cycle state (used in callbacks that can't depend on engine) ──
+  const cycleTaskModeRef = useRef(cycleTaskMode);
+  cycleTaskModeRef.current = cycleTaskMode;
+  const cycleTasksRef = useRef(cycleTasks);
+  cycleTasksRef.current = cycleTasks;
+
+  /** Resolve cycle task by index from refs (safe inside callbacks). */
+  const resolveCycleTaskByIndex = useCallback(
+    (cycleIndex: number): PomodoroCycleTask | null => {
+      const mode = cycleTaskModeRef.current;
+      const tasks = cycleTasksRef.current;
+      if (mode !== 'perCycle' || tasks.length === 0) return null;
+      if (cycleIndex < tasks.length) return tasks[cycleIndex];
+      return tasks[tasks.length - 1];
+    },
+    []
+  );
+
+  /** Get a display title from a PomodoroCycleTask. */
+  const getCycleTaskTitle = useCallback(
+    (task: PomodoroCycleTask): string => {
+      if (task.taskType === 'custom') return task.customTitle || 'Untitled Session';
+      if (task.taskType === 'task' && task.selectedTaskId) {
+        const found = plannerTasks.find((t) => t.id === task.selectedTaskId);
+        if (found) return found.title + (found.subtitle ? ` - ${found.subtitle}` : '');
+      }
+      const parts: string[] = [];
+      if (task.selectedSubject)
+        parts.push(task.selectedSubject.charAt(0).toUpperCase() + task.selectedSubject.slice(1));
+      if (task.selectedChapter && task.selectedSubject) {
+        const chapter = subjectData[task.selectedSubject]?.chapters.find(
+          (c) => c.serial === task.selectedChapter
+        );
+        if (chapter) parts.push(chapter.name);
+      }
+      if (task.selectedMaterial) parts.push(task.selectedMaterial);
+      return parts.length > 0 ? parts.join(' > ') : 'Untitled Session';
+    },
+    [plannerTasks, subjectData]
+  );
+
+  /** Derive session metadata from a PomodoroCycleTask. */
+  const getSessionMetaForCycleTask = useCallback(
+    (task: PomodoroCycleTask) => {
+      let sessionSubject: Subject | undefined = undefined;
+      let sessionChapterSerial: number | undefined = undefined;
+      let sessionChapterName: string | undefined = undefined;
+      let sessionMaterial: string | undefined = undefined;
+      let sessionType: 'chapter' | 'custom' | 'task' = task.taskType;
+
+      if (task.taskType === 'chapter' && task.selectedSubject) {
+        sessionSubject = task.selectedSubject;
+        sessionChapterSerial = (task.selectedChapter as number) || undefined;
+        sessionChapterName = task.selectedSubject && task.selectedChapter
+          ? subjectData[task.selectedSubject]?.chapters.find(
+              (c) => c.serial === task.selectedChapter
+            )?.name
+          : undefined;
+        sessionMaterial = task.selectedMaterial || undefined;
+      } else if (task.taskType === 'task' && task.selectedTaskId) {
+        const found = plannerTasks.find((t) => t.id === task.selectedTaskId);
+        if (found) {
+          const meta = plannerTaskSessionMeta(found, subjectData);
+          sessionSubject = meta.sessionSubject;
+          sessionChapterSerial = meta.sessionChapterSerial;
+          sessionChapterName = meta.sessionChapterName;
+          sessionMaterial = meta.sessionMaterial;
+          sessionType = meta.sessionType;
+        } else {
+          sessionType = 'custom';
+        }
+      }
+
+      return {
+        sessionSubject,
+        sessionChapterSerial,
+        sessionChapterName,
+        sessionMaterial,
+        sessionType,
+      };
+    },
+    [plannerTasks, subjectData]
+  );
+
   // ── Timer engine ──
   const engine = useTimerEngine({
     onPhaseChange: useCallback((newPhase: TimerPhase) => {
@@ -217,35 +314,65 @@ export function StudyClock({
       if (durationSec <= 0) return;
       const endAtMs = completedAtMs ?? Date.now();
 
-      // Build session metadata
+      // Resolve per-cycle task using refs (engine.cycleCount not available here)
+      // The cycle count for the *just-completed* work phase is tracked by the engine
+      // internally. Since we can't access engine.cycleCount here (it's being constructed),
+      // we use a simple counter approach: count completed sessions as a proxy.
+      // However, actually the onWorkComplete callback runs inside reconcileTimerState
+      // which is called from a useEffect, at which point engine IS fully constructed.
+      // The closure captures getTaskForCycle via ref, which is safe.
+      // For the callback, we just use the resolveCycleTaskByIndex with a rough index.
+      // Actually, the simpler approach: the onWorkComplete callback fires with completedWorkDurations
+      // which are the durations of each completed work phase. We need the index.
+      // Since we don't have access to the exact cycle index, we use the ref-based approach.
+      // The engine tracks cycleCount and it's available via the timerState ref inside the hook.
+      // At callback time, the cycleCount in the state is the PREVIOUS value (before increment).
+      // So we can use a session-count based approach, but actually the simplest thing:
+      // We use a ref to track a "completedWorkCount" counter.
+      const cycleTask = resolveCycleTaskByIndex(completedWorkCountRef.current);
+      completedWorkCountRef.current += 1;
+
       let sessionSubject: Subject | undefined = undefined;
       let sessionChapterSerial: number | undefined = undefined;
       let sessionChapterName: string | undefined = undefined;
       let sessionMaterial: string | undefined = undefined;
       let sessionType: 'chapter' | 'custom' | 'task' = taskType;
+      let title = getTaskTitle();
 
-      if (taskType === 'chapter' && selectedSubject) {
-        sessionSubject = selectedSubject;
-        sessionChapterSerial = (selectedChapter as number) || undefined;
-        sessionChapterName = getChapterName();
-        sessionMaterial = selectedMaterial || undefined;
-      } else if (taskType === 'task' && selectedTaskId) {
-        const task = plannerTasks.find((t) => t.id === selectedTaskId);
-        if (task) {
-          const meta = plannerTaskSessionMeta(task, subjectData);
-          sessionSubject = meta.sessionSubject;
-          sessionChapterSerial = meta.sessionChapterSerial;
-          sessionChapterName = meta.sessionChapterName;
-          sessionMaterial = meta.sessionMaterial;
-          sessionType = meta.sessionType;
-        } else {
-          sessionType = 'custom';
+      if (cycleTask) {
+        // Per-cycle mode
+        const meta = getSessionMetaForCycleTask(cycleTask);
+        sessionSubject = meta.sessionSubject;
+        sessionChapterSerial = meta.sessionChapterSerial;
+        sessionChapterName = meta.sessionChapterName;
+        sessionMaterial = meta.sessionMaterial;
+        sessionType = meta.sessionType;
+        title = getCycleTaskTitle(cycleTask);
+      } else {
+        // Uniform mode
+        if (taskType === 'chapter' && selectedSubject) {
+          sessionSubject = selectedSubject;
+          sessionChapterSerial = (selectedChapter as number) || undefined;
+          sessionChapterName = getChapterName();
+          sessionMaterial = selectedMaterial || undefined;
+        } else if (taskType === 'task' && selectedTaskId) {
+          const task = plannerTasks.find((t) => t.id === selectedTaskId);
+          if (task) {
+            const meta = plannerTaskSessionMeta(task, subjectData);
+            sessionSubject = meta.sessionSubject;
+            sessionChapterSerial = meta.sessionChapterSerial;
+            sessionChapterName = meta.sessionChapterName;
+            sessionMaterial = meta.sessionMaterial;
+            sessionType = meta.sessionType;
+          } else {
+            sessionType = 'custom';
+          }
         }
       }
 
       const session: StudySession = {
         id: crypto.randomUUID(),
-        title: getTaskTitle(),
+        title,
         subject: sessionSubject,
         chapterSerial: sessionChapterSerial,
         chapterName: sessionChapterName,
@@ -266,40 +393,80 @@ export function StudyClock({
     },
   });
 
+  // ── Per-cycle helpers (depend on engine) ──
+  const isPerCyclePomodoro = engine.mode === 'pomodoro' && cycleTaskMode === 'perCycle';
+
+  /** Resolve the task for a given cycle index. Falls back to the last defined task. */
+  const getTaskForCycle = useCallback(
+    (cycleIndex: number): PomodoroCycleTask | null => {
+      if (!isPerCyclePomodoro || cycleTasks.length === 0) return null;
+      if (cycleIndex < cycleTasks.length) return cycleTasks[cycleIndex];
+      return cycleTasks[cycleTasks.length - 1];
+    },
+    [isPerCyclePomodoro, cycleTasks]
+  );
+
+  /** Get the effective title for the current state (respects per-cycle mode). */
+  const getEffectiveTitle = useCallback(
+    (cycleIndex?: number): string => {
+      if (isPerCyclePomodoro) {
+        const task = getTaskForCycle(cycleIndex ?? engine.cycleCount);
+        if (task) return getCycleTaskTitle(task);
+      }
+      return getTaskTitle();
+    },
+    [isPerCyclePomodoro, getTaskForCycle, getCycleTaskTitle, engine.cycleCount, getTaskTitle]
+  );
+
+  // Track completed work cycles for per-cycle task assignment in onWorkComplete
+  const completedWorkCountRef = useRef(0);
+
   // ── Manual end (stopwatch) — creates session from elapsed time ──
   const handleEnd = useCallback(
     (e?: React.MouseEvent) => {
       const latestElapsedMs = engine.syncNow();
       const elapsedSec = Math.floor(latestElapsedMs / 1000);
       if (elapsedSec > 0) {
+        const cycleTask = getTaskForCycle(engine.cycleCount);
         let sessionSubject: Subject | undefined = undefined;
         let sessionChapterSerial: number | undefined = undefined;
         let sessionChapterName: string | undefined = undefined;
         let sessionMaterial: string | undefined = undefined;
         let sessionType: 'chapter' | 'custom' | 'task' = taskType;
+        let title = getTaskTitle();
 
-        if (taskType === 'chapter' && selectedSubject) {
-          sessionSubject = selectedSubject;
-          sessionChapterSerial = (selectedChapter as number) || undefined;
-          sessionChapterName = getChapterName();
-          sessionMaterial = selectedMaterial || undefined;
-        } else if (taskType === 'task' && selectedTaskId) {
-          const task = plannerTasks.find((t) => t.id === selectedTaskId);
-          if (task) {
-            const meta = plannerTaskSessionMeta(task, subjectData);
-            sessionSubject = meta.sessionSubject;
-            sessionChapterSerial = meta.sessionChapterSerial;
-            sessionChapterName = meta.sessionChapterName;
-            sessionMaterial = meta.sessionMaterial;
-            sessionType = meta.sessionType;
-          } else {
-            sessionType = 'custom';
+        if (cycleTask) {
+          const meta = getSessionMetaForCycleTask(cycleTask);
+          sessionSubject = meta.sessionSubject;
+          sessionChapterSerial = meta.sessionChapterSerial;
+          sessionChapterName = meta.sessionChapterName;
+          sessionMaterial = meta.sessionMaterial;
+          sessionType = meta.sessionType;
+          title = getCycleTaskTitle(cycleTask);
+        } else {
+          if (taskType === 'chapter' && selectedSubject) {
+            sessionSubject = selectedSubject;
+            sessionChapterSerial = (selectedChapter as number) || undefined;
+            sessionChapterName = getChapterName();
+            sessionMaterial = selectedMaterial || undefined;
+          } else if (taskType === 'task' && selectedTaskId) {
+            const task = plannerTasks.find((t) => t.id === selectedTaskId);
+            if (task) {
+              const meta = plannerTaskSessionMeta(task, subjectData);
+              sessionSubject = meta.sessionSubject;
+              sessionChapterSerial = meta.sessionChapterSerial;
+              sessionChapterName = meta.sessionChapterName;
+              sessionMaterial = meta.sessionMaterial;
+              sessionType = meta.sessionType;
+            } else {
+              sessionType = 'custom';
+            }
           }
         }
 
         const session: StudySession = {
           id: crypto.randomUUID(),
-          title: getTaskTitle(),
+          title,
           subject: sessionSubject,
           chapterSerial: sessionChapterSerial,
           chapterName: sessionChapterName,
@@ -324,6 +491,7 @@ export function StudyClock({
         playSaveAndEndSound();
       }
       engine.reset();
+      completedWorkCountRef.current = 0;
       setIsFullscreen(false);
     },
     [
@@ -339,6 +507,9 @@ export function StudyClock({
       getChapterName,
       onAddSession,
       accentColor,
+      getTaskForCycle,
+      getSessionMetaForCycleTask,
+      getCycleTaskTitle,
     ]
   );
 
@@ -351,6 +522,7 @@ export function StudyClock({
     setSelectedMaterial('');
     setCustomTitle('');
     setSelectedTaskId('');
+    completedWorkCountRef.current = 0;
   }, [engine]);
 
   const handlePark = useCallback(() => {
@@ -541,7 +713,7 @@ export function StudyClock({
             {displayTime}
           </div>
           <div className="fullscreen-info-group">
-            <h2 className="fullscreen-title">{getTaskTitle()}</h2>
+            <h2 className="fullscreen-title">{getEffectiveTitle()}</h2>
             <div className="fullscreen-state-label">
               {phaseLabel}
               {engine.mode === 'pomodoro' && ` • CYCLE ${engine.cycleCount + 1}`}
@@ -602,12 +774,33 @@ export function StudyClock({
             {!isIdle ? (
               <div className="collapsed-task-info">
                 <div className="collapsed-task-label">Studying:</div>
-                <div className="collapsed-task-title">{getTaskTitle()}</div>
+                <div className="collapsed-task-title">{getEffectiveTitle()}</div>
                 {engine.mode !== 'stopwatch' && (
                   <div className="collapsed-mode-badge">{engine.mode}</div>
                 )}
                 {engine.mode === 'pomodoro' && (
                   <div className="collapsed-cycle-info">Cycle {engine.cycleCount + 1}</div>
+                )}
+                {/* Per-cycle task queue shown during active Pomodoro sessions */}
+                {isPerCyclePomodoro && (
+                  <CycleTaskQueue
+                    cycleTasks={cycleTasks}
+                    currentCycleIndex={engine.cycleCount}
+                    subjectData={subjectData}
+                    plannerTasks={plannerTasks}
+                    onEditCycleTask={() => { /* TODO: inline cycle task editor */ }}
+                    canMarkCurrentComplete={(() => {
+                      const ct = getTaskForCycle(engine.cycleCount);
+                      if (!ct || ct.taskType !== 'task' || !ct.selectedTaskId || !onToggleTask) return false;
+                      return !plannerTasks.find((t) => t.id === ct.selectedTaskId)?.completed;
+                    })()}
+                    onMarkCurrentComplete={() => {
+                      const ct = getTaskForCycle(engine.cycleCount);
+                      if (ct?.taskType === 'task' && ct.selectedTaskId && onToggleTask) {
+                        onToggleTask(ct.selectedTaskId);
+                      }
+                    }}
+                  />
                 )}
               </div>
             ) : (
@@ -632,6 +825,46 @@ export function StudyClock({
                   />
                 )}
 
+                {/* Per-cycle task mode toggle (Pomodoro only) */}
+                {engine.mode === 'pomodoro' && (
+                  <div className="cycle-task-mode-toggle">
+                    <button
+                      className={`cycle-mode-btn ${cycleTaskMode === 'uniform' ? 'active' : ''}`}
+                      onClick={() => setCycleTaskMode('uniform')}
+                      disabled={!isIdle}
+                    >
+                      Same Task
+                    </button>
+                    <button
+                      className={`cycle-mode-btn ${cycleTaskMode === 'perCycle' ? 'active' : ''}`}
+                      onClick={() => {
+                        setCycleTaskMode('perCycle');
+                        // Initialize cycleTasks if empty
+                        if (cycleTasks.length === 0) {
+                          const count = engine.config.pomodoro?.cyclesBeforeLongBreak ?? 4;
+                          setCycleTasks(Array.from({ length: count }, () => ({ ...EMPTY_CYCLE_TASK })));
+                        }
+                      }}
+                      disabled={!isIdle}
+                    >
+                      Per-Cycle Plan
+                    </button>
+                  </div>
+                )}
+
+                {/* Per-cycle planner UI (replaces uniform task selectors when perCycle) */}
+                {isPerCyclePomodoro ? (
+                  <PomodoroCyclePlanner
+                    cycleTasks={cycleTasks}
+                    onCycleTasksChange={setCycleTasks}
+                    cyclesBeforeLongBreak={engine.config.pomodoro?.cyclesBeforeLongBreak ?? 4}
+                    subjectData={subjectData}
+                    plannerTasks={plannerTasks}
+                    progress={progress}
+                    disabled={!isIdle}
+                  />
+                ) : (
+                  <>
                 <div className="task-type-toggle">
                   <button
                     className={`type-btn ${taskType === 'chapter' ? 'active' : ''}`}
@@ -790,6 +1023,8 @@ export function StudyClock({
                   <div className="current-task-preview">
                     <span>Session:</span> {getTaskTitle()}
                   </div>
+                )}
+                  </>
                 )}
               </>
             )}
