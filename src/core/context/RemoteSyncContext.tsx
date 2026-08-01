@@ -807,10 +807,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
         const mergedAggregateRow = {
           user_id: user.id,
-          total_seconds_overall: localAggregate.total_seconds_overall,
-          total_seconds_physics: localAggregate.total_seconds_physics,
-          total_seconds_chemistry: localAggregate.total_seconds_chemistry,
-          total_seconds_maths: localAggregate.total_seconds_maths,
+          total_seconds_overall: Math.max(localAggregate.total_seconds_overall, remoteAggregate?.total_seconds_overall ?? 0),
+          total_seconds_physics: Math.max(localAggregate.total_seconds_physics, remoteAggregate?.total_seconds_physics ?? 0),
+          total_seconds_chemistry: Math.max(localAggregate.total_seconds_chemistry, remoteAggregate?.total_seconds_chemistry ?? 0),
+          total_seconds_maths: Math.max(localAggregate.total_seconds_maths, remoteAggregate?.total_seconds_maths ?? 0),
           buckets_daily_json: localAggregate.buckets_daily_json,
           buckets_weekly_json: localAggregate.buckets_weekly_json,
           buckets_monthly_json: localAggregate.buckets_monthly_json,
