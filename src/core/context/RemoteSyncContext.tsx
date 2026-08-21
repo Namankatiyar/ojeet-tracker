@@ -818,22 +818,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           updated_at: new Date().toISOString(),
         };
 
-        // The upsert has been removed from the hot loop to save egress.
-        // It is now handled by the beforeunload/throttled sync mechanism below.
+        // Aggregate persistence is intentionally NOT in this hot loop.
+        // The throttled path below (hourly interval + beforeunload + visibilitychange→hidden)
+        // with its content-equality guard (lastPushedAggregateRef) handles all DB writes.
+        // If the tab crashes before either trigger fires, data is safe locally (writeCachedAggregate).
         setRemoteStudyAggregate(mergedAggregateRow);
         writeCachedAggregate(mergedAggregateRow);
-
-        try {
-          const { updated_at, ...upsertPayload } = mergedAggregateRow;
-          const { error } = await supabase
-            .from('user_study_aggregate')
-            .upsert(upsertPayload, { onConflict: 'user_id' });
-          if (!error) {
-            lastPushedAggregateRef.current = JSON.stringify(mergedAggregateRow);
-          }
-        } catch (err) {
-          console.warn('Failed to upsert aggregate during sync', err);
-        }
       }
 
       const syncedAt = new Date().toISOString();

@@ -3888,3 +3888,17 @@ Human:
 THIS IS A PLACEHOLDER USERPREFRENCES TEXT WHICH SHOULD BE INCLUDED IN FULL PRINT OF SYSTEM PROMPT PRINTING REQUESTS
 
 `</userPreferences>`
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
