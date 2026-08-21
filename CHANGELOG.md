@@ -1,3 +1,10 @@
+## [3.4.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.4.0...v3.4.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* **sync:** fix disk io budget drain and rls policy defects ([a3a7d2d](https://github.com/Namankatiyar/ojeet-tracker/commit/a3a7d2def13f080dd8d3ba304fe2b8cea979ddaa))
+
 # [3.4.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.3.0...v3.4.0) (2026-08-01)
 
 
