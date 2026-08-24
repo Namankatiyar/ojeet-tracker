@@ -1,3 +1,10 @@
+## [3.4.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.4.1...v3.4.2) (2026-08-24)
+
+
+### Bug Fixes
+
+* **sync:** optimize sync state push gating, study aggregate pruning, and heartbeat cadence ([cacb130](https://github.com/Namankatiyar/ojeet-tracker/commit/cacb1308410889b5909037f00d77a945f866b8db))
+
 ## [3.4.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.4.0...v3.4.1) (2026-08-21)
 
 
