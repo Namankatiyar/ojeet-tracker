@@ -152,6 +152,37 @@ export function computeLocalStudyAggregate(studySessions: StudySession[]) {
   };
 }
 
+// ─── Aggregate bucket pruning ──────────────────────────────────────────────
+
+/**
+ * PERF (Issue #2): Daily-bucket retention window. Older daily entries are dropped
+ * before every aggregate push so `buckets_daily_json` stays bounded (~90 keys,
+ * ~7 KB) instead of growing one key per study day forever and rewriting an
+ * ever-larger JSONB blob on every upsert. Weekly and monthly buckets are compact
+ * and retained in full for historical charts.
+ */
+export const AGGREGATE_DAILY_RETENTION_DAYS = 90;
+
+export function pruneAggregateBuckets<T extends { buckets_daily_json: AggregateBucketMap }>(
+  aggregate: T,
+  retentionDays: number = AGGREGATE_DAILY_RETENTION_DAYS
+): T {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - retentionDays);
+  const cutoffStr = formatDateLocal(cutoff);
+
+  const prunedDaily: AggregateBucketMap = {};
+  for (const [key, value] of Object.entries(aggregate.buckets_daily_json)) {
+    // Keys are YYYY-MM-DD strings — lexicographic comparison is date-correct.
+    if (key >= cutoffStr) prunedDaily[key] = value;
+  }
+
+  return {
+    ...aggregate,
+    buckets_daily_json: prunedDaily,
+  };
+}
+
 // ─── Subject / timestamp normalization ──────────────────────────────────────
 
 export function normalizeSubject(raw: unknown): Subject | undefined {

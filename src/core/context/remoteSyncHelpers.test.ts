@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { StudySession } from '../../shared/types';
+import { formatDateLocal } from '../../shared/utils/date';
 import {
   buildBucketEntry,
   addToBucket,
@@ -9,6 +10,7 @@ import {
   mergeRemoteVideoLogsIntoSessions,
   computeSessionDelta,
   applyDeltaLogs,
+  pruneAggregateBuckets,
   getWeekKey,
   getMonthKey,
   AggregateBucketMap,
@@ -597,5 +599,116 @@ describe('applyDeltaLogs', () => {
     const result = applyDeltaLogs([], logs, ownClientId);
     expect(result.changed).toBe(true);
     expect(result.sessions).toHaveLength(200);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// pruneAggregateBuckets
+// ═══════════════════════════════════════════════════════════════════════════
+
+function daysAgoLocalDate(daysAgo: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return formatDateLocal(d);
+}
+
+function makeAggregate(daily: AggregateBucketMap) {
+  return {
+    total_seconds_overall: 7200,
+    total_seconds_physics: 3600,
+    total_seconds_chemistry: 1800,
+    total_seconds_maths: 1800,
+    buckets_daily_json: daily,
+    buckets_weekly_json: {
+      '2026-W10': { overall: 7200, physics: 3600, chemistry: 1800, maths: 1800 },
+    },
+    buckets_monthly_json: {
+      '2026-03': { overall: 7200, physics: 3600, chemistry: 1800, maths: 1800 },
+    },
+  };
+}
+
+describe('pruneAggregateBuckets', () => {
+  it('keeps recent days and drops entries older than the 90-day default', () => {
+    const aggregate = makeAggregate({
+      [daysAgoLocalDate(1)]: { overall: 600, physics: 600, chemistry: 0, maths: 0 },
+      [daysAgoLocalDate(30)]: { overall: 1200, physics: 0, chemistry: 1200, maths: 0 },
+      [daysAgoLocalDate(89)]: { overall: 300, physics: 300, chemistry: 0, maths: 0 },
+      // Boundary: exactly cutoffStr is kept (>= comparison)
+      [daysAgoLocalDate(90)]: { overall: 100, physics: 100, chemistry: 0, maths: 0 },
+      [daysAgoLocalDate(91)]: { overall: 50, physics: 50, chemistry: 0, maths: 0 },
+      [daysAgoLocalDate(365)]: { overall: 25, physics: 25, chemistry: 0, maths: 0 },
+    });
+
+    const pruned = pruneAggregateBuckets(aggregate);
+    const keys = Object.keys(pruned.buckets_daily_json);
+
+    expect(keys).toHaveLength(4);
+    expect(keys).toContain(daysAgoLocalDate(1));
+    expect(keys).toContain(daysAgoLocalDate(90));
+    expect(keys).not.toContain(daysAgoLocalDate(91));
+    expect(keys).not.toContain(daysAgoLocalDate(365));
+  });
+
+  it('honors a custom retention window', () => {
+    const aggregate = makeAggregate({
+      [daysAgoLocalDate(2)]: { overall: 600, physics: 600, chemistry: 0, maths: 0 },
+      [daysAgoLocalDate(7)]: { overall: 1200, physics: 0, chemistry: 1200, maths: 0 },
+      [daysAgoLocalDate(14)]: { overall: 300, physics: 300, chemistry: 0, maths: 0 },
+    });
+
+    const pruned = pruneAggregateBuckets(aggregate, 7);
+    const keys = Object.keys(pruned.buckets_daily_json);
+
+    expect(keys).toHaveLength(2);
+    expect(keys).toContain(daysAgoLocalDate(2));
+    expect(keys).toContain(daysAgoLocalDate(7));
+    expect(keys).not.toContain(daysAgoLocalDate(14));
+  });
+
+  it('leaves weekly and monthly buckets untouched', () => {
+    const aggregate = makeAggregate({
+      [daysAgoLocalDate(200)]: { overall: 600, physics: 600, chemistry: 0, maths: 0 },
+      [daysAgoLocalDate(1)]: { overall: 60, physics: 60, chemistry: 0, maths: 0 },
+    });
+
+    const pruned = pruneAggregateBuckets(aggregate);
+
+    expect(pruned.buckets_weekly_json).toEqual(aggregate.buckets_weekly_json);
+    expect(pruned.buckets_monthly_json).toEqual(aggregate.buckets_monthly_json);
+  });
+
+  it('preserves totals and other fields from the input row', () => {
+    const aggregate = {
+      ...makeAggregate({
+        [daysAgoLocalDate(400)]: { overall: 600, physics: 600, chemistry: 0, maths: 0 },
+      }),
+      user_id: 'user-1',
+    };
+
+    const pruned = pruneAggregateBuckets(aggregate);
+
+    expect(pruned.user_id).toBe('user-1');
+    expect(pruned.total_seconds_overall).toBe(7200);
+    expect(Object.keys(pruned.buckets_daily_json)).toHaveLength(0);
+  });
+
+  it('handles an empty daily map without changing anything else', () => {
+    const aggregate = makeAggregate({});
+
+    const pruned = pruneAggregateBuckets(aggregate);
+
+    expect(pruned.buckets_daily_json).toEqual({});
+    expect(pruned.total_seconds_overall).toBe(7200);
+  });
+
+  it('does not mutate the input aggregate', () => {
+    const oldKey = daysAgoLocalDate(200);
+    const daily = { [oldKey]: { overall: 600, physics: 600, chemistry: 0, maths: 0 } };
+    const aggregate = makeAggregate(daily);
+
+    pruneAggregateBuckets(aggregate);
+
+    expect(Object.keys(aggregate.buckets_daily_json)).toContain(oldKey);
   });
 });

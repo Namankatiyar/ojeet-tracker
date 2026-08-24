@@ -198,9 +198,10 @@ describe('Stress & Edge Case Empirical Verification Suite', () => {
       });
       expect(failingUpsertSpy).toHaveBeenCalledTimes(1);
 
-      // Advance 65 seconds to trigger 2nd heartbeat attempt
+      // Advance past the 2-minute active heartbeat interval to trigger the
+      // 2nd heartbeat attempt (interval raised from 60s → 120s in Issue #5).
       await act(async () => {
-        vi.advanceTimersByTime(65000);
+        vi.advanceTimersByTime(130_000);
         await Promise.resolve();
       });
       expect(failingUpsertSpy).toHaveBeenCalledTimes(2);
@@ -263,7 +264,12 @@ describe('Stress & Edge Case Empirical Verification Suite', () => {
           select: vi.fn().mockReturnThis(),
           in: vi.fn().mockResolvedValue({ data: [], error: null }),
           or: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({ data: [{ user_id_1: 'user-stress-999', user_id_2: 'friend-1' }], error: null }),
+          eq: vi
+            .fn()
+            .mockResolvedValue({
+              data: [{ user_id_1: 'user-stress-999', user_id_2: 'friend-1' }],
+              error: null,
+            }),
         };
       });
 

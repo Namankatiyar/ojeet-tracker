@@ -6,15 +6,21 @@ import { supabase } from '../../../shared/lib/supabase';
 import { Subject } from '../../../shared/types';
 import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/backoff';
 
-const HEARTBEAT_BACKOFF_BASE_MS = 60_000; // 1 minute
+const HEARTBEAT_BACKOFF_BASE_MS = 120_000; // 2 minutes
 const HEARTBEAT_BACKOFF_MAX_MS = 300_000; // 5 minutes
+// PERF (Issue #5): Active sessions beat every 2 minutes (halved from 1 min).
+// Idle users — timer not running but Community page open — are throttled to one
+// write per 5 minutes instead of paying the active cadence.
+const HEARTBEAT_ACTIVE_INTERVAL_MS = 120_000;
+const HEARTBEAT_IDLE_INTERVAL_MS = 300_000;
 
 /**
  * PERF-008: Live activity heartbeat — extracted from useProfileSync so it only
  * runs while the CommunityPage is mounted, instead of globally at the app root.
  *
- * Sends an upsert to the `live_activity` table every 60 seconds with the
- * current study-clock state (running / paused / idle).
+ * Sends an upsert to the `live_activity` table every 2 minutes with the
+ * current study-clock state (running / paused / idle), throttled to once per
+ * 5 minutes while the timer is not running.
  */
 export function useActivityHeartbeat() {
   const { user, isConfigured } = useRemoteAuth();
@@ -84,8 +90,12 @@ export function useActivityHeartbeat() {
               ? timerState.runStartedAtMs - (timerState.accumulatedActiveMs || 0)
               : timerState.startTimestamp || null;
             if (startMs) {
-              // Round to nearest second to prevent JS timer drift from causing unnecessary heartbeat updates
-              const roundedStartMs = Math.round(startMs / 1000) * 1000;
+              // PERF (Issue #5): Round to the nearest minute, not second. started_at is
+              // derived as runStartedAtMs - accumulatedActiveMs, which shifts every
+              // second while the timer runs — per-second rounding still drifted between
+              // heartbeats and defeated payload dedup, causing an upsert on every tick.
+              // Minute granularity keeps started_at stable for a full minute of elapsed time.
+              const roundedStartMs = Math.round(startMs / 60_000) * 60_000;
               startedAt = new Date(roundedStartMs).toISOString();
             }
 
@@ -149,8 +159,13 @@ export function useActivityHeartbeat() {
 
         const stateChanged = payloadStr !== lastHeartbeatPayloadRef.current;
 
-        // Skip if not forced, state hasn't changed, and less than 60s since last heartbeat sent
-        if (!force && !stateChanged && now - lastHeartbeatSentAtRef.current < 60000) {
+        // Skip if not forced, state hasn't changed, and we're inside the throttle window.
+        // Idle state uses a much longer window: an inactive user with the Community page
+        // open drops from 1 write/min → 1 write/5 min.
+        const throttleWindowMs = isActive
+          ? HEARTBEAT_ACTIVE_INTERVAL_MS
+          : HEARTBEAT_IDLE_INTERVAL_MS;
+        if (!force && !stateChanged && now - lastHeartbeatSentAtRef.current < throttleWindowMs) {
           return;
         }
 
@@ -158,7 +173,9 @@ export function useActivityHeartbeat() {
         lastHeartbeatPayloadRef.current = payloadStr;
         try {
           sessionStorage.setItem('ojee-last-heartbeat-payload', payloadStr);
-        } catch { /* quota exceeded – non-fatal */ }
+        } catch {
+          /* quota exceeded – non-fatal */
+        }
 
         await client.from('live_activity').upsert(payload, { onConflict: 'user_id' });
         heartbeatFailCountRef.current = 0;
@@ -208,7 +225,7 @@ export function useActivityHeartbeat() {
         return;
       }
       sendHeartbeat(false);
-    }, 60000);
+    }, HEARTBEAT_ACTIVE_INTERVAL_MS);
 
     return () => {
       clearInterval(intervalId);

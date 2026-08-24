@@ -52,6 +52,7 @@ import {
   computeLocalStudyAggregate,
   computeSessionDelta,
   mergeRemoteVideoLogsIntoSessions,
+  pruneAggregateBuckets,
 } from './remoteSyncHelpers';
 import type { StudySessionLogEntry, UserStudyAggregateRow } from './remoteSyncHelpers';
 
@@ -389,6 +390,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     settings: null,
     subjects: null,
   });
+  // PERF (Issue #1): Per-domain checksums from the last *successful* push. Gating
+  // pushes on the overall checksum alone re-uploads the full ~70 KB payload whenever
+  // any byte changes (e.g. progress ticks during an active study session). With
+  // per-domain checksums, a cycle whose merged output is identical to what was last
+  // pushed skips the write entirely.
+  const lastPushedDomainChecksumsRef = useRef<Record<string, string>>({});
   const syncInFlightRef = useRef(false);
   const scheduledTimerRef = useRef<number | null>(null);
   const scheduledDueAtRef = useRef<number | null>(null);
@@ -695,7 +702,20 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       const encoded = await encodeSyncPayload(mergedPayload);
       const remoteChecksum = row?.checksum ?? '';
-      const shouldPush = !row || encoded.checksum !== remoteChecksum;
+
+      // PERF (Issue #1): Domain-dirty push gating. Studying continuously mutates the
+      // progress domain, which used to re-upload the entire payload nearly every cycle
+      // even though the merged output was unchanged. Only push when the overall
+      // checksum differs AND at least one domain's merged content actually differs
+      // from what was last successfully pushed.
+      const mergedDomainChecksums: Record<string, string> = {};
+      for (const [key, value] of Object.entries(mergedPayload.domains)) {
+        mergedDomainChecksums[key] = await computeChecksum(JSON.stringify(value));
+      }
+      const anyDomainDirty = Object.entries(mergedDomainChecksums).some(
+        ([key, hash]) => hash !== lastPushedDomainChecksumsRef.current[key]
+      );
+      const shouldPush = !row || (encoded.checksum !== remoteChecksum && anyDomainDirty);
 
       if (shouldPush) {
         const nextPayloadVersion = (row?.payload_version ?? 0) + 1;
@@ -731,6 +751,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           if (chunkError) throw new Error(chunkError.message);
         }
         // Database triggers automatically prune old chunks when the user_sync_state is updated.
+        // Remember what was pushed so future cycles can skip no-op rewrites.
+        lastPushedDomainChecksumsRef.current = mergedDomainChecksums;
       }
 
       // Cache the remote checksum locally to enable checksum-gating on next cycle
@@ -803,14 +825,30 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // --- Strategy 5 (cont.): Only compute aggregate for local state ---
       const pushHadEdits = pendingToPush.length > 0;
       if (pushHadEdits || applyDeltaChanges || videoMergeResult.changed) {
-        const localAggregate = computeLocalStudyAggregate(finalSessionsForAggregate);
+        // PERF (Issue #2): cap daily buckets at the retention window before the
+        // aggregate row is cached/queued so pushes never carry unbounded history.
+        const localAggregate = pruneAggregateBuckets(
+          computeLocalStudyAggregate(finalSessionsForAggregate)
+        );
 
         const mergedAggregateRow = {
           user_id: user.id,
-          total_seconds_overall: Math.max(localAggregate.total_seconds_overall, remoteAggregate?.total_seconds_overall ?? 0),
-          total_seconds_physics: Math.max(localAggregate.total_seconds_physics, remoteAggregate?.total_seconds_physics ?? 0),
-          total_seconds_chemistry: Math.max(localAggregate.total_seconds_chemistry, remoteAggregate?.total_seconds_chemistry ?? 0),
-          total_seconds_maths: Math.max(localAggregate.total_seconds_maths, remoteAggregate?.total_seconds_maths ?? 0),
+          total_seconds_overall: Math.max(
+            localAggregate.total_seconds_overall,
+            remoteAggregate?.total_seconds_overall ?? 0
+          ),
+          total_seconds_physics: Math.max(
+            localAggregate.total_seconds_physics,
+            remoteAggregate?.total_seconds_physics ?? 0
+          ),
+          total_seconds_chemistry: Math.max(
+            localAggregate.total_seconds_chemistry,
+            remoteAggregate?.total_seconds_chemistry ?? 0
+          ),
+          total_seconds_maths: Math.max(
+            localAggregate.total_seconds_maths,
+            remoteAggregate?.total_seconds_maths ?? 0
+          ),
           buckets_daily_json: localAggregate.buckets_daily_json,
           buckets_weekly_json: localAggregate.buckets_weekly_json,
           buckets_monthly_json: localAggregate.buckets_monthly_json,
@@ -1069,16 +1107,19 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const pushAggregate = async () => {
       const currentAgg = remoteStudyAggregateRef.current;
       if (!currentAgg) return;
-      const currentStr = JSON.stringify(currentAgg);
-      if (currentStr === lastPushedAggregateRef.current) return;
 
       try {
-        // Strip updated_at to ensure single query variant and faster execution
+        // Strip updated_at to ensure single query variant and faster execution.
+        // PERF (Issue #2): prune daily buckets on the write side too so the JSONB
+        // blob stays bounded regardless of how much history accumulated remotely.
         const { updated_at, ...upsertPayload } = currentAgg;
+        const prunedUpsertPayload = pruneAggregateBuckets(upsertPayload);
+        const currentStr = JSON.stringify(prunedUpsertPayload);
+        if (currentStr === lastPushedAggregateRef.current) return;
 
         const { error } = await supabaseClient
           .from('user_study_aggregate')
-          .upsert(upsertPayload, { onConflict: 'user_id' }); // Removing .select() suppresses RETURNING *
+          .upsert(prunedUpsertPayload, { onConflict: 'user_id' }); // Removing .select() suppresses RETURNING *
         if (!error) {
           lastPushedAggregateRef.current = currentStr;
         }
