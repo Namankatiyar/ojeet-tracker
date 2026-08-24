@@ -35,26 +35,14 @@ For any non-trivial task, invoke the matching skill(s) below *before* writing co
 
 | Situation | Skill(s), in order |
 |---|---|
-| New feature | `brainstorming` → `writing-plans` → `executing-plans` |
-| Confusing bug | `systematic-debugging` |
-| Correctness-critical code | `test-driven-development` |
-| Ready to ship | `verification-before-completion` |
-| Multiple parallel tasks | `subagent-driven-development` |
-| Acting on review feedback | `receiving-code-review` |
-| Before requesting merge | `requesting-code-review` |
-| Merging / branch cleanup | `finishing-a-development-branch` |
-| Any UI or styling work | `ojee-tracker-design` + `frontend-design` |
+| Confusing bug | `diagnosing-bugs` |
+| Correctness-critical code | `tdd` |
 
-**Firebase work** (only if touching Firebase): CLI is always `pnpm dlx firebase-tools@latest`.
-- `firebase-basics` — setup/config
-- `firebase-auth-basics` — auth rules, sign-in
-- `firebase-firestore` — queries, security rules, indexes (activate unconditionally if Firestore is touched)
-- `firebase-ai-logic-basics` — Gemini API, multimodal, structured output
+Other available skills: `code-review`, `codebase-design`, `domain-modeling`, `prototype`, `research`, `resolving-merge-conflicts`, `scaffold-exercises`, `setup-pre-commit`, `wizard`, `writing-for-agents`, `grilling`, `migrate-to-shoehorn`, `git-guardrails-claude-code`.
 
 ## Git & GitHub
 - PRs: push to remote, base `develop`, use `.github/pull_request_template.md`
 - Versioning (semantic-release): `feat` → minor, `fix` → patch, `!` or `BREAKING CHANGE` → major
-- Full instructions: `git-github-workflow` skill
 
 ## Design Context (from PRODUCT.md)
 **Register:** Product (App UI, dashboards, planner tools)
