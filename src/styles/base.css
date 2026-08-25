@@ -27,17 +27,24 @@ html {
   min-height: 100vh;
 }
 
-/* Custom Background Image Layer - DARK MODE ONLY */
-html[data-theme^='dark-'] body.has-custom-bg::before {
+/* Background Canvas Layer (GPU-composited fixed pseudo-element) */
+body::before {
   content: '';
   position: fixed;
   inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Custom Background Image Layer - DARK MODE ONLY */
+html[data-theme^='dark-'] body.has-custom-bg::before {
   background-image: var(--custom-bg-url, none);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   z-index: -2;
-  pointer-events: none;
 }
 
 /* Dimming Overlay - DARK MODE ONLY */
@@ -48,11 +55,12 @@ html[data-theme^='dark-'] body.has-custom-bg::after {
   background: rgba(0, 0, 0, var(--dim-level, 0));
   z-index: -1;
   pointer-events: none;
+  transform: translateZ(0);
   transition: background var(--transition-normal);
 }
 
-/* Background Gradients - on body, but transparent when custom bg is used */
-html[data-theme^='dark-'] body {
+/* Background Gradients - on fixed body::before layer */
+html[data-theme='dark-glass'] body::before {
   background:
     /* Primary accent blob - top left */
     radial-gradient(
@@ -97,14 +105,11 @@ html[data-theme^='dark-'] body {
         transparent 30%
       ),
     /* Base dark gradient */ linear-gradient(180deg, #0a0a12 0%, #0f0f18 50%, #0a0a0f 100%);
-  background-attachment: fixed;
 }
 
-@media (max-width: 48rem) {
-  html[data-theme^='dark-'] body {
-    background-attachment: scroll;
-    /* Performance fix for mobile scrolling */
-  }
+/* Make body background transparent in dark-glass so body::before gradient shows without stacking issues */
+html[data-theme='dark-glass'] body {
+  background: transparent;
 }
 
 /* When custom background is set, make body's gradient transparent to show image and create a stacking context */
@@ -115,6 +120,10 @@ body.has-custom-bg {
 
 /* Custom Grid Background for Dark Solid */
 html[data-theme='dark-solid'] body.has-grid-bg {
+  background: transparent;
+}
+
+html[data-theme='dark-solid'] body.has-grid-bg::before {
   /* Pure base black color, no accent colored gradients */
   background-color: var(--bg-primary);
   
@@ -125,7 +134,6 @@ html[data-theme='dark-solid'] body.has-grid-bg {
      - Plus sign and dot exactly at the intersections 
   */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50'%3E%3Cpath d='M0 10.5 L50 10.5 M0 20.5 L50 20.5 M0 30.5 L50 30.5 M0 40.5 L50 40.5 M10.5 0 L10.5 50 M20.5 0 L20.5 50 M30.5 0 L30.5 50 M40.5 0 L40.5 50' fill='none' stroke='rgba(255,255,255,0.015)' stroke-width='1'/%3E%3Cpath d='M0 25.5 L50 25.5 M25.5 0 L25.5 50' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3Cpath d='M21 25.5 L30 25.5 M25.5 21 L25.5 30' fill='none' stroke='rgba(255,255,255,0.15)' stroke-width='1'/%3E%3Ccircle cx='25.5' cy='25.5' r='1' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E");
-  background-attachment: fixed;
   background-size: 50px 50px;
   background-position: center top;
 }
@@ -192,38 +200,4 @@ body.has-custom-bg {
   background: color-mix(in srgb, var(--accent), rgba(255, 255, 255, 0.2) 20%);
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 50%);
   background-clip: padding-box;
-}
-
-/* Dark Mode glass tokens handled in theme.css */
-
-/* Fallback for Mobile - Solid Colors for Performance */
-@media (max-width: 47.9375rem) {
-  html[data-theme^='dark-'] .overall-progress-card,
-  html[data-theme^='dark-'] .exam-countdown-card,
-  html[data-theme^='dark-'] .agenda-card,
-  html[data-theme^='dark-'] .task-log-card,
-  html[data-theme^='dark-'] .subject-card,
-  html[data-theme^='dark-'] .chapter-card,
-  html[data-theme^='dark-'] .timer-card,
-  html[data-theme^='dark-'] .statistics-card,
-  html[data-theme^='dark-'] .session-log-card,
-  html[data-theme^='dark-'] .day-column,
-  html[data-theme^='dark-'] .monthly-calendar,
-  html[data-theme^='dark-'] .settings-panel,
-  html[data-theme^='dark-'] .modal-content,
-  html[data-theme^='dark-'] .view-toggles,
-  html[data-theme^='dark-'] .dh-date-nav-bar,
-  html[data-theme^='dark-'] .dh-bento-hero,
-  html[data-theme^='dark-'] .dh-bento-weekly,
-  html[data-theme^='dark-'] .dh-bento-unified-stats,
-  html[data-theme^='dark-'] .dh-bento-subjects,
-  html[data-theme^='dark-'] .dh-bento-insights,
-  html[data-theme^='dark-'] .dh-empty-state,
-  html[data-theme^='dark-'] .reports-empty-state,
-  html[data-theme^='dark-'] .nudge-table-container {
-    background: var(--bg-secondary);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border: 1px solid var(--border);
-  }
 }
