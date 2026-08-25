@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -67,60 +67,92 @@ export function ProgressCardModal({
 
   // Render handled by AnimatePresence
 
-  // Calculate stats
-  const highestMockScore = mockScores.reduce<{ total: number; max: number }>(
-    (best, score) => {
-      const total = getMockTotalMarks(score);
-      if (total > best.total) {
-        return { total, max: getMockMaxMarks(score) };
+  // Calculate stats only when modal is open
+  const {
+    highestMockScore,
+    totalStudyTime,
+    physicsTime,
+    chemistryTime,
+    mathsTime,
+    highestDailyHours,
+    highestWeekAverage,
+  } = useMemo(() => {
+    if (!isOpen) {
+      return {
+        highestMockScore: { total: 0, max: 300 },
+        totalStudyTime: 0,
+        physicsTime: 0,
+        chemistryTime: 0,
+        mathsTime: 0,
+        highestDailyHours: 0,
+        highestWeekAverage: 0,
+      };
+    }
+
+    const highestMockScore = mockScores.reduce<{ total: number; max: number }>(
+      (best, score) => {
+        const total = getMockTotalMarks(score);
+        if (total > best.total) {
+          return { total, max: getMockMaxMarks(score) };
+        }
+        return best;
+      },
+      { total: 0, max: 300 }
+    );
+
+    let totalStudyTime = 0;
+    let physicsTime = 0;
+    let chemistryTime = 0;
+    let mathsTime = 0;
+    const sessionsByDay: Record<string, number> = {};
+    const sessionsByWeek: Record<string, { total: number; days: Set<string> }> = {};
+
+    const getWeekKey = (dateStr: string) => {
+      const date = new Date(dateStr);
+      const startOfYear = new Date(date.getFullYear(), 0, 1);
+      const days = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+      return `${date.getFullYear()}-W${Math.ceil((days + 1) / 7)}`;
+    };
+
+    studySessions.forEach((s) => {
+      const duration = s.duration;
+      totalStudyTime += duration;
+
+      if (s.subject === 'physics') {
+        physicsTime += duration;
+      } else if (s.subject === 'chemistry') {
+        chemistryTime += duration;
+      } else if (s.subject === 'maths') {
+        mathsTime += duration;
       }
-      return best;
-    },
-    { total: 0, max: 300 }
-  );
 
-  let totalStudyTime = 0;
-  let physicsTime = 0;
-  let chemistryTime = 0;
-  let mathsTime = 0;
-  const sessionsByDay: Record<string, number> = {};
-  const sessionsByWeek: Record<string, { total: number; days: Set<string> }> = {};
+      const date = s.startTime.split('T')[0];
+      sessionsByDay[date] = (sessionsByDay[date] || 0) + duration;
 
-  const getWeekKey = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const startOfYear = new Date(date.getFullYear(), 0, 1);
-    const days = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
-    return `${date.getFullYear()}-W${Math.ceil((days + 1) / 7)}`;
-  };
+      const weekKey = getWeekKey(date);
+      if (!sessionsByWeek[weekKey]) {
+        sessionsByWeek[weekKey] = { total: 0, days: new Set() };
+      }
+      sessionsByWeek[weekKey].total += duration;
+      sessionsByWeek[weekKey].days.add(date);
+    });
 
-  studySessions.forEach((s) => {
-    const duration = s.duration;
-    totalStudyTime += duration;
+    const highestDailySeconds = Math.max(...Object.values(sessionsByDay), 0);
+    const highestDailyHours = highestDailySeconds / 3600;
 
-    if (s.subject === 'physics') {
-      physicsTime += duration;
-    } else if (s.subject === 'chemistry') {
-      chemistryTime += duration;
-    } else if (s.subject === 'maths') {
-      mathsTime += duration;
-    }
+    const weekAverages = Object.values(sessionsByWeek).map((w) => w.total / Math.max(w.days.size, 1));
+    const highestWeekAverage = weekAverages.length > 0 ? Math.max(...weekAverages) / 3600 : 0;
 
-    const date = s.startTime.split('T')[0];
-    sessionsByDay[date] = (sessionsByDay[date] || 0) + duration;
-
-    const weekKey = getWeekKey(date);
-    if (!sessionsByWeek[weekKey]) {
-      sessionsByWeek[weekKey] = { total: 0, days: new Set() };
-    }
-    sessionsByWeek[weekKey].total += duration;
-    sessionsByWeek[weekKey].days.add(date);
-  });
-
-  const highestDailySeconds = Math.max(...Object.values(sessionsByDay), 0);
-  const highestDailyHours = highestDailySeconds / 3600;
-
-  const weekAverages = Object.values(sessionsByWeek).map((w) => w.total / Math.max(w.days.size, 1));
-  const highestWeekAverage = weekAverages.length > 0 ? Math.max(...weekAverages) / 3600 : 0;
+    return {
+      highestMockScore,
+      totalStudyTime,
+      physicsTime,
+      chemistryTime,
+      mathsTime,
+      highestDailyHours,
+      highestWeekAverage,
+    };
+  }, [isOpen, mockScores, studySessions]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);

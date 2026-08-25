@@ -326,25 +326,17 @@ function ApiKeyPanel({ onSaved }: ApiKeyPanelProps) {
   );
 }
 
-// ── Main Drawer Component ─────────────────────────────────────────────────────
-export function ChatDrawer() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+// ── Drawer Panel Content Component ──────────────────────────────────────────
+interface ChatDrawerModalProps {
+  onClose: () => void;
+  isMobile: boolean;
+}
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+function ChatDrawerModal({ onClose, isMobile }: ChatDrawerModalProps) {
   const [keyVersion, setKeyVersion] = useState(0);
   const [showApiKeyPanel, setShowApiKeyPanel] = useState(() => !loadApiKey());
   const [activeView, setActiveView] = useState<'chat' | 'history'>('chat');
   const [confirmClear, setConfirmClear] = useState(false);
-  const [tooltipDismissed, setTooltipDismissed] = useLocalStorage<boolean>(
-    'fab_tooltip_dismissed_chat',
-    false
-  );
 
   const {
     sessions,
@@ -383,22 +375,18 @@ export function ChatDrawer() {
 
   // Focus textarea when drawer opens and activeView is chat
   useEffect(() => {
-    if (isOpen && activeView === 'chat') {
+    if (activeView === 'chat') {
       setTimeout(() => textareaRef.current?.focus(), 350);
     }
-  }, [isOpen, activeView]);
+  }, [activeView]);
 
   // Prevent background scrolling when chat drawer is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, []);
 
   const handleSend = useCallback(() => {
     const trimmed = input.trim();
@@ -429,8 +417,6 @@ export function ChatDrawer() {
     }
   };
 
-  const toggleOpen = () => setIsOpen((prev) => !prev);
-  const handleClose = () => setIsOpen(false);
   const handleSuggestionClick = (text: string) => {
     if (isLoading) return;
     sendMessage(text);
@@ -445,30 +431,27 @@ export function ChatDrawer() {
 
   return (
     <>
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* ── Overlay ──────────────────────────────────────────────── */}
-            <motion.div
-              className="chat-overlay motion-animated chat-overlay--visible"
-              onClick={handleClose}
-              aria-hidden="true"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            />
+      {/* ── Overlay ──────────────────────────────────────────────── */}
+      <motion.div
+        className="chat-overlay motion-animated chat-overlay--visible"
+        onClick={onClose}
+        aria-hidden="true"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
 
-            {/* ── Drawer Panel ──────────────────────────────────────────── */}
-            <motion.div
-              className="chat-drawer motion-animated chat-drawer--open"
-              role="dialog"
-              aria-label="AI Study Assistant"
-              aria-modal="true"
-              initial={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
-              animate={{ x: 0, y: 0 }}
-              exit={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
-              transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            >
+      {/* ── Drawer Panel ──────────────────────────────────────────── */}
+      <motion.div
+        className="chat-drawer motion-animated chat-drawer--open"
+        role="dialog"
+        aria-label="AI Study Assistant"
+        aria-modal="true"
+        initial={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
+        animate={{ x: 0, y: 0 }}
+        exit={isMobile ? { y: '100%', x: 0 } : { x: '100%', y: 0 }}
+        transition={{ type: "spring", stiffness: 320, damping: 28 }}
+      >
         {/* Header */}
         <div className="chat-header">
           <div className="chat-header-avatar">
@@ -512,7 +495,7 @@ export function ChatDrawer() {
             <button
               id="chat-close-btn"
               className="chat-icon-btn"
-              onClick={handleClose}
+              onClick={onClose}
               title="Close chat"
               aria-label="Close chat"
             >
@@ -709,9 +692,33 @@ export function ChatDrawer() {
             )}
           </>
         )}
-            </motion.div>
-          </>
-        )}
+      </motion.div>
+    </>
+  );
+}
+
+// ── Main Drawer Component ─────────────────────────────────────────────────────
+export function ChatDrawer() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  const [tooltipDismissed, setTooltipDismissed] = useLocalStorage<boolean>(
+    'fab_tooltip_dismissed_chat',
+    false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleOpen = () => setIsOpen((prev) => !prev);
+  const handleClose = () => setIsOpen(false);
+
+  return (
+    <>
+      <AnimatePresence>
+        {isOpen && <ChatDrawerModal onClose={handleClose} isMobile={isMobile} />}
       </AnimatePresence>
 
       {/* ── FAB ───────────────────────────────────────────────────── */}
