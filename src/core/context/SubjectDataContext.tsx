@@ -3,6 +3,24 @@ import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { Subject, SubjectData } from '../../shared/types';
 import { parseSubjectJSON } from '../../shared/utils/jsonParser';
 
+import { ExamMode, getActiveSubjects } from '../../shared/config/subjects';
+
+const getStoredExamMode = (): ExamMode => {
+  if (typeof window === 'undefined') return 'jee';
+  try {
+    const raw = window.localStorage.getItem('jee-tracker-exam-mode');
+    if (!raw) return 'jee';
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed === 'neet' ? 'neet' : 'jee';
+    } catch {
+      return raw === 'neet' ? 'neet' : 'jee';
+    }
+  } catch {
+    return 'jee';
+  }
+};
+
 // Graceful migration from old CSV syllabus data to new JSON syllabus (v2026)
 if (typeof window !== 'undefined') {
   const isOldVersion =
@@ -147,10 +165,14 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     };
 
-    if (!subjectData.physics) loadSubjectData('physics');
-    if (!subjectData.chemistry) loadSubjectData('chemistry');
-    if (!subjectData.maths) loadSubjectData('maths');
-    if (!subjectData.biology) loadSubjectData('biology');
+    const mode = getStoredExamMode();
+    const activeSubjects = getActiveSubjects(mode);
+
+    activeSubjects.forEach((sub) => {
+      if (!subjectData[sub]) {
+        loadSubjectData(sub);
+      }
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge CSV data with custom columns and filter excluded ones

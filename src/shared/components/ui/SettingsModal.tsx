@@ -13,10 +13,9 @@ import {
   Cloud,
   LogOut,
 } from 'lucide-react';
-import { Vibrant } from 'node-vibrant/browser';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
-import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { useSettings } from '../../../core/context/UserProgressContext';
 import { supabase } from '../../../shared/lib/supabase';
 import { runPwaRecoveryAndReload } from '../../utils/pwaBridge';
 import { GoogleSignInButton } from './GoogleSignInButton';
@@ -152,7 +151,7 @@ export function SettingsModal({
     remoteStudyAggregate,
     syncNow,
   } = useRemoteSync();
-  const { examMode, setExamMode } = useUserProgress();
+  const { examMode, setExamMode } = useSettings();
   const releaseChannel = import.meta.env.VITE_RELEASE_CHANNEL ?? 'stable';
   const [isResetting, setIsResetting] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -350,9 +349,9 @@ export function SettingsModal({
           const compressedUrl = canvas.toDataURL('image/jpeg', 0.7);
           onBackgroundUrlChange(compressedUrl);
 
-          // Extract accent color using Vibrant
-          Vibrant.from(img)
-            .getPalette()
+          // Extract accent color using Vibrant (dynamically imported)
+          import('node-vibrant/browser')
+            .then(({ Vibrant }) => Vibrant.from(img).getPalette())
             .then((palette: any) => {
               // Try to get the most vibrant color
               const vibrantColor =

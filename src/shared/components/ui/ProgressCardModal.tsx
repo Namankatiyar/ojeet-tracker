@@ -15,7 +15,6 @@ import {
   FlaskConical,
   Pi,
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import { UserAvatar } from './Avatar';
 import { StudySession, MockScore, ProgressCardSettings } from '../../types';
 import { getMockMaxMarks, getMockTotalMarks } from '../../utils/mockScores';
@@ -176,6 +175,8 @@ export function ProgressCardModal({
 
       // Clone the card element to avoid modifying the original
       const cardElement = cardRef.current;
+
+      const html2canvas = (await import('html2canvas')).default;
 
       // Use a solid background for the export with higher resolution
       const canvas = await html2canvas(cardElement, {

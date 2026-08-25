@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import ReactPlayer from 'react-player';
+import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const ReactPlayer = lazy(() => import('react-player'));
 import {
   X,
   Play,
@@ -519,22 +520,24 @@ export function MusicPlayerDrawer() {
     <>
       {/* Hidden ReactPlayer for audio streams */}
       {currentTrack && !isSpotify && (
-        <ReactPlayer
-          src={currentTrack.type === 'local' ? localObjectUrl || undefined : currentTrack.url}
-          playing={playing}
-          volume={volume}
-          muted={muted}
-          loop={false}
-          onEnded={handleTrackEnded}
-          onWaiting={() => setIsBuffering(true)}
-          onPlaying={() => setIsBuffering(false)}
-          onPlay={() => setIsBuffering(false)}
-          onError={() => setIsBuffering(false)}
-          onReady={() => setIsBuffering(false)}
-          width="0"
-          height="0"
-          style={{ display: 'none' }}
-        />
+        <Suspense fallback={null}>
+          <ReactPlayer
+            src={currentTrack.type === 'local' ? localObjectUrl || undefined : currentTrack.url}
+            playing={playing}
+            volume={volume}
+            muted={muted}
+            loop={false}
+            onEnded={handleTrackEnded}
+            onWaiting={() => setIsBuffering(true)}
+            onPlaying={() => setIsBuffering(false)}
+            onPlay={() => setIsBuffering(false)}
+            onError={() => setIsBuffering(false)}
+            onReady={() => setIsBuffering(false)}
+            width="0"
+            height="0"
+            style={{ display: 'none' }}
+          />
+        </Suspense>
       )}
 
       <AnimatePresence>
