@@ -19,7 +19,6 @@ import {
 import { SyncTombstoneMap, SYNC_DEFAULT_PLANNER_HISTORY_DAYS } from '../../features/sync/syncTypes';
 import { type ExamMode } from '../../shared/config/subjects';
 import { useSubjectData } from './SubjectDataContext';
-import { useTheme } from './ThemeContext';
 
 interface UserProgressContextType {
   progress: AppProgress;
@@ -259,7 +258,6 @@ const defaultNeetMockExamPresets: MockExamPreset[] = [
 
 export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { mergedSubjectData } = useSubjectData();
-  const { accentColor } = useTheme();
 
   const [progress, setProgress] = useLocalStorage<AppProgress>(
     'jee-tracker-progress',
@@ -1010,7 +1008,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       const newStatus = !task.completed;
       if (newStatus) {
-        triggerSmallConfetti(accentColor);
+        triggerSmallConfetti();
       }
 
       if (task.subject && task.chapterSerial) {
@@ -1156,7 +1154,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
         })
       );
     },
-    [accentColor, setPlannerTasks, setProgress, setDailyQuestionLogs]
+    [setPlannerTasks, setProgress, setDailyQuestionLogs]
   );
 
   const handleDeletePlannerTask = useCallback(

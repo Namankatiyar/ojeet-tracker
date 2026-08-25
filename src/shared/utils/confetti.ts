@@ -1,11 +1,20 @@
 import confetti from 'canvas-confetti';
 
-export function triggerConfetti(accentColor: string = '#6366f1') {
+function getAccentColor(): string {
+  if (typeof window !== 'undefined') {
+    const color = getComputedStyle(document.documentElement).getPropertyValue('--accent')?.trim();
+    if (color) return color;
+  }
+  return '#6366f1';
+}
+
+export function triggerConfetti(accentColor?: string) {
+  const resolvedAccent = accentColor?.trim() || getAccentColor();
   const duration = 1200; // Reduced from 2000
   const end = Date.now() + duration;
 
   // Use the accent color along with some festive defaults
-  const colors = [accentColor, '#ffffff'];
+  const colors = [resolvedAccent, '#ffffff'];
 
   (function frame() {
     // Reduced particle count from 3 to 2 per side
@@ -31,8 +40,9 @@ export function triggerConfetti(accentColor: string = '#6366f1') {
 }
 
 // Smaller confetti for task completion, optional targeted origin
-export function triggerSmallConfetti(accentColor: string = '#6366f1', x?: number, y?: number) {
-  const colors = [accentColor, '#ffffff'];
+export function triggerSmallConfetti(accentColor?: string, x?: number, y?: number) {
+  const resolvedAccent = accentColor?.trim() || getAccentColor();
+  const colors = [resolvedAccent, '#ffffff'];
   const origin = x !== undefined && y !== undefined ? { x, y } : { y: 0.6 };
 
   confetti({
