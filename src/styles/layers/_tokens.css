@@ -241,7 +241,7 @@
   --panel-bg-hover: var(--glass-bg-hover);
   --panel-border: var(--glass-border);
   --panel-border-light: var(--glass-border-light);
-  --panel-blur: blur(var(--glass-blur)) var(--glass-refraction);
+  --panel-blur: blur(var(--glass-blur));
   --panel-shadow: var(--glass-shadow);
   --panel-shadow-hover: var(--glass-shadow);
   --panel-inner-glow: var(--glass-inner-glow);
@@ -292,9 +292,9 @@
   --panel-border: var(--color-border);
   --panel-border-light: var(--color-border-hover);
   --panel-blur: none;
-  --panel-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(255,255,255, 0.02);
-  --panel-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0, 0, 0, 0.5);
-  --panel-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.6);
+  --panel-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --panel-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --panel-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.7);
 
   /* Card/Modal Backgrounds */
   --bg-card: #000000;
@@ -304,6 +304,18 @@
   /* Gradient Background tokens */
   --gradient-start: #000000;
   --gradient-end: #000000;
+}
+
+/* Mobile Glass Fallback (Viewport < 48rem) */
+@media (max-width: 47.9375rem) {
+  :root,
+  [data-theme='dark-glass'],
+  [data-theme='dark-solid'] {
+    --panel-blur: none;
+    --glass-blur: 0px;
+    --glass-bg: var(--color-bg-secondary);
+    --glass-border: var(--color-border);
+  }
 }
 
 /* ===== Utility Classes for Subject Colors ===== */
