@@ -226,6 +226,20 @@ export const SessionHistory = memo(function SessionHistory({
       ? manualHours === 0 && manualMinutes === 0
       : !manualStartTime || !manualEndTime || manualStartTime === manualEndTime);
 
+  const PAGE_SIZE = 20;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const reversedSessions = useMemo(() => sessions.slice().reverse(), [sessions]);
+  const visibleSessions = useMemo(
+    () => reversedSessions.slice(0, visibleCount),
+    [reversedSessions, visibleCount]
+  );
+  const hasMore = visibleCount < reversedSessions.length;
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + PAGE_SIZE);
+  };
+
   return (
     <>
       <div className="session-log-card">
@@ -243,10 +257,8 @@ export const SessionHistory = memo(function SessionHistory({
               <span>Start a timer to track your study time</span>
             </div>
           ) : (
-            sessions
-              .slice()
-              .reverse()
-              .map((session) => (
+            <>
+              {visibleSessions.map((session) => (
                 <div key={session.id} className="session-log-item">
                   <div className="session-info">
                     <div className="session-title">{session.title}</div>
@@ -282,7 +294,17 @@ export const SessionHistory = memo(function SessionHistory({
                     </button>
                   </div>
                 </div>
-              ))
+              ))}
+              {hasMore && (
+                <button
+                  type="button"
+                  className="session-load-more-btn"
+                  onClick={handleLoadMore}
+                >
+                  Load More ({reversedSessions.length - visibleCount} remaining)
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
