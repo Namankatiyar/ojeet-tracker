@@ -4,6 +4,8 @@ import { Header } from '../shared/components/layout/Header';
 import { Footer } from '../shared/components/layout/Footer';
 import { DiscordInviteModal } from '../shared/components/ui/DiscordInviteModal';
 import { ThemeOnboardingModal } from '../shared/components/ui/ThemeOnboardingModal';
+import { TopLoader } from '../shared/components/ui/TopLoader';
+import { topLoader } from '../shared/hooks/useTopLoader';
 import { Subject } from '../shared/types';
 import { getLogicalTodayStr } from '../shared/utils/date';
 
@@ -105,6 +107,7 @@ function AppContent() {
 
   const handleNavigate = useCallback(
     (view: View) => {
+      topLoader.start();
       if (view === 'dashboard')
         navigate(isNeet ? '/neet-syllabus-tracker' : '/jee-syllabus-tracker');
       else if (view === 'planner')
@@ -123,6 +126,7 @@ function AppContent() {
 
   const handleQuickAddTask = useCallback(
     (date: string) => {
+      topLoader.start();
       setPlannerDateToOpen(date);
       navigate(isNeet ? '/neet-study-planner' : '/jee-study-planner');
     },
@@ -179,6 +183,7 @@ function AppContent() {
 
   return (
     <div className={`app ${enableAIAgent ? 'has-chat-fab' : ''}`}>
+      <TopLoader />
       <ProfileSyncManager />
       <Header
         currentView={currentView}
