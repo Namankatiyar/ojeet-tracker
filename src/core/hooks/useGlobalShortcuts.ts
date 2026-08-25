@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getLogicalTodayStr } from '../../shared/utils/date';
-import { useUserProgress } from '../context/UserProgressContext';
+import { useSettings } from '../context/UserProgressContext';
 
 export const useGlobalShortcuts = (onQuickAddTask: (date: string) => void) => {
   const navigate = useNavigate();
-  const { dailyResetHour } = useUserProgress();
+  const { dailyResetHour } = useSettings();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

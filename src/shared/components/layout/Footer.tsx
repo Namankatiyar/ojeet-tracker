@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { DiscordIcon } from '../ui/DiscordInviteModal';
 import { Github, WifiOff, Code2, ShieldCheck, ArrowRight } from 'lucide-react';
-import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { useSettings } from '../../../core/context/UserProgressContext';
 
 export function Footer() {
-  const { examMode } = useUserProgress();
+  const { examMode } = useSettings();
   const isNeet = examMode === 'neet';
 
   return (

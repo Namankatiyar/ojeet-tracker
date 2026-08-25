@@ -35,7 +35,7 @@ import {
   dispatchNotification,
 } from '../../../shared/utils/notifications';
 import { formatDateLocal, getLogicalDate } from '../../../shared/utils/date';
-import { useUserProgress } from '../../../core/context/UserProgressContext';
+import { useSettings } from '../../../core/context/UserProgressContext';
 
 function plannerTaskSessionMeta(
   task: PlannerTask,
@@ -104,7 +104,7 @@ export function StudyClock({
   onToggleTask,
 }: StudyClockProps) {
   const { accentColor, backgroundUrl } = useTheme();
-  const { dailyResetHour } = useUserProgress();
+  const { dailyResetHour } = useSettings();
   const { subjectMeta } = useActiveSubjects();
 
   // ── Task selection state (Persisted for Pomodoro cycle transitions) ──

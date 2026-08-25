@@ -40,6 +40,10 @@ vi.mock('../../../core/context/UserProgressContext', () => ({
     examMode: 'jee',
     setExamMode: mockSetExamMode,
   }),
+  useSettings: () => ({
+    examMode: 'jee',
+    setExamMode: mockSetExamMode,
+  }),
 }));
 
 const mockSyncNow = vi.fn();

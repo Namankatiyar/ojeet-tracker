@@ -132,7 +132,7 @@ interface UserProgressContextType {
 // PERF-006: Internal sub-contexts to avoid monolithic re-renders.
 // Components that only need settings won't re-render when studySessions changes, etc.
 
-interface ProgressDataContextType {
+export interface ProgressDataContextType {
   progress: AppProgress;
   setProgress: (progress: AppProgress | ((prev: AppProgress) => AppProgress)) => void;
   plannerTasks: PlannerTask[];
@@ -184,7 +184,7 @@ interface ProgressDataContextType {
   handleUpdateMockExamPreset: (preset: MockExamPreset) => void;
 }
 
-interface StudySessionContextType {
+export interface StudySessionContextType {
   studySessions: StudySession[];
   setStudySessions: (sessions: StudySession[] | ((prev: StudySession[]) => StudySession[])) => void;
   handleAddStudySession: (session: StudySession) => void;
@@ -192,7 +192,7 @@ interface StudySessionContextType {
   handleEditStudySession: (session: StudySession) => void;
 }
 
-interface SettingsContextType {
+export interface SettingsContextType {
   disableAutoShift: boolean;
   setDisableAutoShift: (disable: boolean | ((prev: boolean) => boolean)) => void;
   enableAIAgent: boolean;
@@ -1744,4 +1744,28 @@ export const useUserProgress = (): UserProgressContextType => {
     ...studySessionData,
     ...settingsData,
   };
+};
+
+export const useProgressData = (): ProgressDataContextType => {
+  const context = useContext(ProgressDataContext);
+  if (!context) {
+    throw new Error('useProgressData must be used within a UserProgressProvider');
+  }
+  return context;
+};
+
+export const useStudySessions = (): StudySessionContextType => {
+  const context = useContext(StudySessionContext);
+  if (!context) {
+    throw new Error('useStudySessions must be used within a UserProgressProvider');
+  }
+  return context;
+};
+
+export const useSettings = (): SettingsContextType => {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error('useSettings must be used within a UserProgressProvider');
+  }
+  return context;
 };
