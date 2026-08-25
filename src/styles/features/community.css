@@ -1581,7 +1581,7 @@
       box-shadow var(--transition-fast);
   }
 
-  html[data-theme='dark'] .profile-edit-field input {
+  html[data-theme^='dark-'] .profile-edit-field input {
     background: rgba(0, 0, 0, 0.3);
   }
 
@@ -1621,7 +1621,7 @@
     border: 1px solid var(--accent-border);
   }
 
-  html[data-theme='dark'] .profile-edit-actions .primary-btn {
+  html[data-theme^='dark-'] .profile-edit-actions .primary-btn {
     background: var(--accent) !important;
     color: var(--accent-text) !important;
     border-color: var(--accent) !important;
@@ -1658,7 +1658,7 @@
       box-shadow var(--transition-fast);
   }
 
-  html[data-theme='dark'] .invite-friend-btn {
+  html[data-theme^='dark-'] .invite-friend-btn {
     background: var(--accent) !important;
     color: var(--accent-text) !important;
     border-color: var(--accent-border) !important;
@@ -1748,7 +1748,7 @@
     box-sizing: border-box;
   }
 
-  html[data-theme='dark'] .invite-friend-modal input#invite-friend-code {
+  html[data-theme^='dark-'] .invite-friend-modal input#invite-friend-code {
     background: rgba(0, 0, 0, 0.45);
   }
 
@@ -1792,7 +1792,7 @@
     border: 1px solid var(--accent-border);
   }
 
-  html[data-theme='dark'] .invite-modal-actions .primary-btn {
+  html[data-theme^='dark-'] .invite-modal-actions .primary-btn {
     background: var(--accent) !important;
     color: var(--accent-text) !important;
     border-color: var(--accent) !important;

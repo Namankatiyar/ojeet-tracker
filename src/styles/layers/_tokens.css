@@ -192,6 +192,16 @@
   --bg-card: var(--color-bg-secondary);
   --bg-card-item: var(--color-bg-tertiary);
   --bg-modal: var(--color-bg-secondary);
+
+  /* ======================== */
+  /* === Z-Index Scale === */
+  /* ======================== */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 1000;
+  --z-popover: 1100;
+  --z-toast: 1200;
 }
 
 /* ===== Dark Mode Tokens ===== */
