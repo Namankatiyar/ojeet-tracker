@@ -1579,19 +1579,25 @@ td.material-cell .checkbox-container {
 .chapter-hover-panel {
   position: fixed;
   z-index: 9999;
-  border: 1px solid color-mix(in srgb, var(--border), transparent 20%);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 0;
   pointer-events: none;
-  background: color-mix(in srgb, var(--bg-secondary, #1a1a2e), transparent 15%) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-lg);
+  animation: chpFadeIn 0.14s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+html[data-theme='dark-glass'] .chapter-hover-panel {
+  background: color-mix(in srgb, var(--bg-secondary), transparent 15%);
+  border-color: color-mix(in srgb, var(--border), transparent 20%);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.35),
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  animation: chpFadeIn 0.14s cubic-bezier(0.22, 1, 0.36, 1);
-  overflow: hidden;
 }
 
 .chp-header {
@@ -1633,7 +1639,12 @@ td.material-cell .checkbox-container {
 }
 
 .chapter-hover-panel.colored-panel {
-  background: color-mix(in srgb, var(--bg-tertiary), transparent 15%) !important;
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+}
+
+html[data-theme='dark-glass'] .chapter-hover-panel.colored-panel {
+  background: color-mix(in srgb, var(--bg-tertiary), transparent 15%);
   border-color: color-mix(in srgb, var(--accent), transparent 75%);
 }
 

@@ -546,20 +546,25 @@
 .cal-hover-panel {
   position: fixed;
   z-index: 9999;
-  border: 1px solid color-mix(in srgb, var(--border), transparent 20%);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 0;
   pointer-events: none;
-  /* Stronger glass: opaque-ish base + aggressive blur */
-  background: color-mix(in srgb, var(--bg-secondary, #1a1a2e), transparent 15%) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-lg);
+  animation: chpFadeIn 0.14s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+html[data-theme='dark-glass'] .cal-hover-panel {
+  background: color-mix(in srgb, var(--bg-secondary), transparent 15%);
+  border-color: color-mix(in srgb, var(--border), transparent 20%);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.35),
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  animation: chpFadeIn 0.14s cubic-bezier(0.22, 1, 0.36, 1);
-  overflow: hidden;
 }
 
 @keyframes chpFadeIn {
@@ -1325,7 +1330,6 @@
   transition: all 0.2s;
   font-size: 1.1rem;
   font-weight: 600;
-  backdrop-filter: var(--panel-blur);
 }
 
 .modal-content .type-btn:hover {
@@ -1388,7 +1392,6 @@
   border-radius: 12px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: var(--panel-blur);
   display: flex;
   flex-direction: column;
   max-height: clamp(180px, 38vh, 320px);
@@ -1551,7 +1554,6 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: var(--panel-blur);
   color: var(--text-primary);
   transition: all 0.2s;
 }
@@ -1576,7 +1578,6 @@
 .material-pill {
   padding: 0.35rem 0.75rem;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: var(--panel-blur);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   cursor: pointer;
@@ -1592,7 +1593,6 @@
 
 .material-pill.selected {
   background: color-mix(in srgb, var(--accent), transparent 80%);
-  backdrop-filter: var(--panel-blur);
   color: var(--accent);
   border-color: var(--accent);
   box-shadow: 0 0 10px color-mix(in srgb, var(--accent), transparent 80%);
@@ -1627,7 +1627,6 @@
   justify-content: space-between;
   padding: 0.6rem 1rem 0.6rem 0.9rem;
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: var(--panel-blur);
   border: 1.5px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   cursor: text;
@@ -1796,7 +1795,6 @@
   margin-top: 0.6rem;
   padding: 0.6rem 0.6rem;
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: var(--panel-blur);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   animation: slideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1888,7 +1886,6 @@
   padding: 0.45rem 0.6rem;
   width: 100%;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: var(--panel-blur);
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   cursor: pointer;
