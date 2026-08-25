@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, memo } from 'react';
 import { X } from 'lucide-react';
 import { Subject, SubjectData, StudySession } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
@@ -26,7 +26,7 @@ function getSessionDate(session: StudySession): Date {
   return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
 }
 
-export function SessionStatistics({ sessions, subjectData }: SessionStatisticsProps) {
+export const SessionStatistics = memo(function SessionStatistics({ sessions, subjectData }: SessionStatisticsProps) {
   const { subjects, subjectMeta } = useActiveSubjects();
   const [statsSubject, setStatsSubject] = useState<Subject | 'all'>('all');
   const [statsChapter, setStatsChapter] = useState<number | 'all'>('all');
@@ -352,4 +352,4 @@ export function SessionStatistics({ sessions, subjectData }: SessionStatisticsPr
       )}
     </>
   );
-}
+});

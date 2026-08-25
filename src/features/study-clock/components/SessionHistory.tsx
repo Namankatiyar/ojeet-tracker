@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { Trash2, Clock, X, Pencil, Plus, Calendar } from 'lucide-react';
 import { Subject, SubjectData, StudySession, PlannerTask } from '../../../shared/types';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
@@ -23,7 +23,7 @@ function formatDuration(seconds: number): string {
   return `${mins}m`;
 }
 
-export function SessionHistory({
+export const SessionHistory = memo(function SessionHistory({
   sessions,
   subjectData,
   onDeleteSession,
@@ -531,4 +531,4 @@ export function SessionHistory({
       />
     </>
   );
-}
+});
