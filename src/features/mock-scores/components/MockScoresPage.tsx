@@ -69,7 +69,10 @@ export function MockScoresPage() {
     examMode,
   } = useUserProgress();
 
-  const filteredScores = filterMockScoresByMode(mockScores, examMode);
+  const filteredScores = useMemo(
+    () => filterMockScoresByMode(mockScores, examMode),
+    [mockScores, examMode]
+  );
 
   const [selectedExamType, setSelectedExamType] = useState<MockExamType | 'all'>('all');
   const [activeTab, setActiveTab] = useState<'trend' | 'share' | 'time' | 'accuracy'>('trend');

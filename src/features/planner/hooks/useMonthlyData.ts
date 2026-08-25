@@ -1,10 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { PlannerTask, StudySession } from '../../../shared/types';
 
 interface DayData {
   tasks: PlannerTask[];
   totalStudySeconds: number;
 }
+
+const EMPTY_DAY_DATA: DayData = Object.freeze({
+  tasks: [],
+  totalStudySeconds: 0,
+});
 
 /**
  * Hook to efficiently aggregate tasks and study sessions for a specific month.
@@ -50,9 +55,12 @@ export function useMonthlyData(
     return data;
   }, [tasks, sessions, year, month]);
 
-  const getDayData = (dateStr: string): DayData => {
-    return monthData.get(dateStr) || { tasks: [], totalStudySeconds: 0 };
-  };
+  const getDayData = useCallback(
+    (dateStr: string): DayData => {
+      return monthData.get(dateStr) || EMPTY_DAY_DATA;
+    },
+    [monthData]
+  );
 
   return { monthData, getDayData };
 }
