@@ -12,6 +12,7 @@ import { PrioritySelector } from '../../../shared/components/ui/PrioritySelector
 import { DatePickerModal } from '../../../shared/components/ui/DatePickerModal';
 import { InputModal } from '../../../shared/components/ui/InputModal';
 import { formatDateLocal, parseDateLocal } from '../../../shared/utils/date';
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery';
 
 interface ChapterDetailDrawerProps {
   chapter: Chapter;
@@ -274,13 +275,19 @@ export function ChapterDetailDrawer({
   const currentLecture = detail?.lectureCount || 0;
   const targetLecture = detail?.targetLectureCount || 0;
   const isLectureCompleted = targetLecture > 0 && currentLecture >= targetLecture;
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  const [localNotes, setLocalNotes] = useState(detail?.notes || '');
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    setLocalNotes(detail?.notes || '');
+  }, [chapter.serial, detail?.notes]);
+
+  const handleNotesBlur = () => {
+    if (localNotes !== (detail?.notes || '')) {
+      onUpdateDetail(chapter.serial, { notes: localNotes });
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -791,8 +798,9 @@ export function ChapterDetailDrawer({
               <textarea
                 id={`chapter-notes-${chapter.serial}`}
                 className="modern-textarea"
-                value={detail?.notes || ''}
-                onChange={(event) => onUpdateDetail(chapter.serial, { notes: event.target.value })}
+                value={localNotes}
+                onChange={(event) => setLocalNotes(event.target.value)}
+                onBlur={handleNotesBlur}
                 placeholder="Jot down formulas to review, weak topics, or quick reminders..."
                 rows={4}
               />
