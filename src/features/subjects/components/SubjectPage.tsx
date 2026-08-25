@@ -16,6 +16,7 @@ import { InputModal } from '../../../shared/components/ui/InputModal';
 import { triggerConfetti } from '../../../shared/utils/confetti';
 import { Plus, X as XIcon } from 'lucide-react';
 import { useLocalStorage } from '../../../shared/hooks/useLocalStorage';
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery';
 import { useChapterSort } from '../hooks/useChapterSort';
 
 import { useTheme } from '../../../core/context/ThemeContext';
@@ -75,6 +76,7 @@ export function SubjectPage({
   onRemoveSubtopic,
 }: SubjectPageProps) {
   const { accentColor } = useTheme();
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [isEditing, setIsEditing] = useState(false);
 
   // Priority Filter State - Persistent per subject
@@ -190,27 +192,36 @@ export function SubjectPage({
     setIsEditing((prev) => !prev);
   }, [isEditing, localChapters, localMaterials, onReorderChapters, onRenameChapter, sortedChapters, onReorderMaterials]);
 
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+  const accentColorRef = useRef(accentColor);
+  accentColorRef.current = accentColor;
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
   // Stabilized callbacks for ChapterRow memoization
   const handleToggleMaterialWithConfetti = useCallback(
     (chapterSerial: number, material: string) => {
-      if (!data) return;
+      const currentData = dataRef.current;
+      const currentProgress = progressRef.current;
+      if (!currentData) return;
 
-      const chapterProgress = progress[chapterSerial]?.completed || {};
+      const chapterProgress = currentProgress[chapterSerial]?.completed || {};
       const wasCompleted = !!chapterProgress[material];
 
       // Check if this toggle will complete the chapter
       if (!wasCompleted) {
-        const completedCount = data.materialNames.filter((m) => chapterProgress[m]).length;
-        const willBeComplete = completedCount + 1 === data.materialNames.length;
+        const completedCount = currentData.materialNames.filter((m) => chapterProgress[m]).length;
+        const willBeComplete = completedCount + 1 === currentData.materialNames.length;
 
         if (willBeComplete) {
-          setTimeout(() => triggerConfetti(accentColor), 50);
+          setTimeout(() => triggerConfetti(accentColorRef.current), 50);
         }
       }
 
       onToggleMaterial(chapterSerial, material);
     },
-    [data, progress, onToggleMaterial]
+    [onToggleMaterial]
   );
 
   const handleAddMaterial = useCallback(
@@ -306,312 +317,317 @@ export function SubjectPage({
       />
       </div>
 
-      {hasScrollbar && (
-        <div className="double-scroll-row">
-          <div className="left-scroll-spacer" />
-          <div
-            className="double-scroll-wrapper"
-            ref={topScrollRef}
-            onScroll={() => {
-              if (topScrollRef.current && tableContainerRef.current) {
-                tableContainerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
-              }
-            }}
-          >
-            <div style={{ width: tableWidth, height: '1px' }} />
-          </div>
-          <div className="right-scroll-spacer" />
-        </div>
-      )}
-      <div className="chapter-table-container desktop-chapter-table">
-        {/* Left Table: Serial & Chapter */}
-        <div className="left-table-section">
-          <table className="chapter-table">
-            <thead>
-              <tr>
-                <th className="serial-header">#</th>
-                <th className="chapter-header">Chapter</th>
-              </tr>
-            </thead>
-            {(() => {
-              const rows = data && localChapters.map((chapter, index) => {
-                const chProgress = progress[chapter.serial];
-                const completed = chProgress?.completed || {};
-                const completedCount = data.materialNames.filter((m) => completed[m]).length;
-                const isFullyCompleted =
-                  completedCount === data.materialNames.length && data.materialNames.length > 0;
-                const priority = chProgress?.priority || 'none';
-                const priorityClass = isEditing
-                  ? ''
-                  : isFullyCompleted
-                    ? 'completed'
-                    : priority !== 'none'
-                      ? `priority-${priority}`
-                      : '';
+      {!isMobile ? (
+        <>
+          {hasScrollbar && (
+            <div className="double-scroll-row">
+              <div className="left-scroll-spacer" />
+              <div
+                className="double-scroll-wrapper"
+                ref={topScrollRef}
+                onScroll={() => {
+                  if (topScrollRef.current && tableContainerRef.current) {
+                    tableContainerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+                  }
+                }}
+              >
+                <div style={{ width: tableWidth, height: '1px' }} />
+              </div>
+              <div className="right-scroll-spacer" />
+            </div>
+          )}
+          <div className="chapter-table-container desktop-chapter-table">
+            {/* Left Table: Serial & Chapter */}
+            <div className="left-table-section">
+              <table className="chapter-table">
+                <thead>
+                  <tr>
+                    <th className="serial-header">#</th>
+                    <th className="chapter-header">Chapter</th>
+                  </tr>
+                </thead>
+                {(() => {
+                  const rows = data && localChapters.map((chapter, index) => {
+                    const chProgress = progress[chapter.serial];
+                    const completed = chProgress?.completed || {};
+                    const completedCount = data.materialNames.filter((m) => completed[m]).length;
+                    const isFullyCompleted =
+                      completedCount === data.materialNames.length && data.materialNames.length > 0;
+                    const priority = chProgress?.priority || 'none';
+                    const priorityClass = isEditing
+                      ? ''
+                      : isFullyCompleted
+                        ? 'completed'
+                        : priority !== 'none'
+                          ? `priority-${priority}`
+                          : '';
 
-                return (
-                  <LeftChapterRow
-                    key={chapter.serial}
-                    chapter={chapter}
-                    index={index}
-                    progress={chProgress}
-                    isEditing={isEditing}
-                    onRename={handleRenameLocal}
-                    onOpenDetails={handleOpenDetails}
-                    isHovered={hoveredChapterSerial === chapter.serial}
-                    onMouseEnter={handleMouseEnterRow}
-                    onMouseLeave={handleMouseLeaveRow}
-                    priorityClass={priorityClass}
-                    onDragEnd={undefined}
-                  />
-                );
-              });
-
-              return isEditing && priorityFilter === 'all' ? (
-                <Reorder.Group
-                  as="tbody"
-                  axis="y"
-                  values={localChapters}
-                  onReorder={setLocalChapters}
-                >
-                  {rows}
-                </Reorder.Group>
-              ) : (
-                <tbody>
-                  {rows}
-                </tbody>
-              );
-            })()}
-          </table>
-        </div>
-
-        {/* Middle Table: Study Materials (scrollable) */}
-        <div
-          className="middle-table-section"
-          ref={tableContainerRef}
-          onScroll={() => {
-            if (tableContainerRef.current && topScrollRef.current) {
-              topScrollRef.current.scrollLeft = tableContainerRef.current.scrollLeft;
-            }
-          }}
-        >
-          <table className="chapter-table" ref={tableRef}>
-            <thead>
-              {isEditing ? (
-                <Reorder.Group
-                  as="tr"
-                  axis="x"
-                  values={localMaterials}
-                  onReorder={setLocalMaterials}
-                >
-                  {data &&
-                    localMaterials.map((material) => (
-                      <Reorder.Item
-                        as="th"
-                        key={material}
-                        value={material}
-                        dragListener={isEditing}
+                    return (
+                      <LeftChapterRow
+                        key={chapter.serial}
+                        chapter={chapter}
+                        index={index}
+                        progress={chProgress}
+                        isEditing={isEditing}
+                        onRename={handleRenameLocal}
+                        onOpenDetails={handleOpenDetails}
+                        isHovered={hoveredChapterSerial === chapter.serial}
+                        onMouseEnter={handleMouseEnterRow}
+                        onMouseLeave={handleMouseLeaveRow}
+                        priorityClass={priorityClass}
                         onDragEnd={undefined}
-                        className={`material-header ${isEditing ? 'material-header-draggable' : ''}`}
-                      >
-                        <div className="material-header-content">
-                          <span>{material}</span>
-                        </div>
-                      </Reorder.Item>
-                    ))}
-                </Reorder.Group>
-              ) : (
-                <tr>
-                  {data &&
-                    localMaterials.map((material) => (
-                      <th
-                        key={material}
-                        className="material-header"
-                      >
-                        <div className="material-header-content">
-                          <span>{material}</span>
-                          {onRemoveMaterial && (
-                            <button
-                              className="remove-material-btn"
-                              onClick={() => setDeleteMaterialState({ isOpen: true, material })}
-                              title="Remove column"
-                            >
-                              <XIcon size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                </tr>
-              )}
-            </thead>
-            <tbody>
-              {data &&
-                localChapters.map((chapter) => {
-                  const chProgress = progress[chapter.serial];
-                  const completed = chProgress?.completed || {};
-                  const completedCount = data.materialNames.filter((m) => completed[m]).length;
-                  const isFullyCompleted =
-                    completedCount === data.materialNames.length && data.materialNames.length > 0;
-                  const priority = chProgress?.priority || 'none';
-                  const priorityClass = isEditing
-                    ? ''
-                    : isFullyCompleted
-                      ? 'completed'
-                      : priority !== 'none'
-                        ? `priority-${priority}`
-                        : '';
-
-                  return (
-                    <MiddleChapterRow
-                      key={chapter.serial}
-                      chapter={chapter}
-                      materialNames={localMaterials}
-                      progress={chProgress}
-                      onToggleMaterial={handleToggleMaterialWithConfetti}
-                      isHovered={hoveredChapterSerial === chapter.serial}
-                      onMouseEnter={handleMouseEnterRow}
-                      onMouseLeave={handleMouseLeaveRow}
-                      priorityClass={priorityClass}
-                      onOpenDetails={handleOpenDetails}
-                      isEditing={isEditing}
-                    />
-                  );
-                })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Right Table: Priority */}
-        <div className="right-table-section">
-          <table className="chapter-table">
-            <thead>
-              <tr>
-                <th className="priority-header">
-                  {isEditing ? (
-                    'Actions'
-                  ) : (
-                    <div className="priority-header-content">
-                      <span>Status</span>
-                      <PriorityFilterDropdown
-                        priorityFilter={priorityFilter}
-                        onFilterChange={setPriorityFilter}
                       />
-                    </div>
-                  )}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data &&
-                localChapters.map((chapter) => {
-                  const chProgress = progress[chapter.serial];
-                  const completed = chProgress?.completed || {};
-                  const completedCount = data.materialNames.filter((m) => completed[m]).length;
-                  const isFullyCompleted =
-                    completedCount === data.materialNames.length && data.materialNames.length > 0;
-                  const priority = chProgress?.priority || 'none';
-                  const priorityClass = isEditing
-                    ? ''
-                    : isFullyCompleted
-                      ? 'completed'
-                      : priority !== 'none'
-                        ? `priority-${priority}`
-                        : '';
+                    );
+                  });
 
-                  return (
-                    <RightChapterRow
-                      key={chapter.serial}
-                      chapter={chapter}
-                      materialNames={localMaterials}
-                      progress={chProgress}
-                      onSetPriority={onSetPriority}
-                      isEditing={isEditing}
-                      onDelete={handleDeleteClick}
-                      isHovered={hoveredChapterSerial === chapter.serial}
-                      onMouseEnter={handleMouseEnterRow}
-                      onMouseLeave={handleMouseLeaveRow}
-                      priorityClass={priorityClass}
-                      onOpenDetails={handleOpenDetails}
-                    />
+                  return isEditing && priorityFilter === 'all' ? (
+                    <Reorder.Group
+                      as="tbody"
+                      axis="y"
+                      values={localChapters}
+                      onReorder={setLocalChapters}
+                    >
+                      {rows}
+                    </Reorder.Group>
+                  ) : (
+                    <tbody>
+                      {rows}
+                    </tbody>
                   );
-                })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                })()}
+              </table>
+            </div>
 
-      {isEditing && (
-        <div className="edit-actions-container">
-          <button
-            onClick={() => setIsAddChapterModalOpen(true)}
-            className="primary-btn add-chapter-btn-wrapper"
-          >
-            <Plus size={18} />
-            Add New Chapter
-          </button>
-        </div>
-      )}
-
-      <div className="mobile-chapter-view">
-        <div className="mobile-chapter-controls">
-          <div className="mobile-priority-filter">
-            <span className="mobile-control-label">Filter</span>
-            <PriorityFilterDropdown
-              priorityFilter={priorityFilter}
-              onFilterChange={setPriorityFilter}
-            />
-          </div>
-          {isEditing && (
-            <button
-              onClick={() => setIsAddChapterModalOpen(true)}
-              className="primary-btn mobile-add-chapter-btn"
+            {/* Middle Table: Study Materials (scrollable) */}
+            <div
+              className="middle-table-section"
+              ref={tableContainerRef}
+              onScroll={() => {
+                if (tableContainerRef.current && topScrollRef.current) {
+                  topScrollRef.current.scrollLeft = tableContainerRef.current.scrollLeft;
+                }
+              }}
             >
-              <Plus size={16} />
-              Add Chapter
-            </button>
+              <table className="chapter-table" ref={tableRef}>
+                <thead>
+                  {isEditing ? (
+                    <Reorder.Group
+                      as="tr"
+                      axis="x"
+                      values={localMaterials}
+                      onReorder={setLocalMaterials}
+                    >
+                      {data &&
+                        localMaterials.map((material) => (
+                          <Reorder.Item
+                            as="th"
+                            key={material}
+                            value={material}
+                            dragListener={isEditing}
+                            onDragEnd={undefined}
+                            className={`material-header ${isEditing ? 'material-header-draggable' : ''}`}
+                          >
+                            <div className="material-header-content">
+                              <span>{material}</span>
+                            </div>
+                          </Reorder.Item>
+                        ))}
+                    </Reorder.Group>
+                  ) : (
+                    <tr>
+                      {data &&
+                        localMaterials.map((material) => (
+                          <th
+                            key={material}
+                            className="material-header"
+                          >
+                            <div className="material-header-content">
+                              <span>{material}</span>
+                              {onRemoveMaterial && (
+                                <button
+                                  className="remove-material-btn"
+                                  onClick={() => setDeleteMaterialState({ isOpen: true, material })}
+                                  title="Remove column"
+                                >
+                                  <XIcon size={14} />
+                                </button>
+                              )}
+                            </div>
+                          </th>
+                        ))}
+                    </tr>
+                  )}
+                </thead>
+                <tbody>
+                  {data &&
+                    localChapters.map((chapter) => {
+                      const chProgress = progress[chapter.serial];
+                      const completed = chProgress?.completed || {};
+                      const completedCount = data.materialNames.filter((m) => completed[m]).length;
+                      const isFullyCompleted =
+                        completedCount === data.materialNames.length &&
+                        data.materialNames.length > 0;
+                      const priority = chProgress?.priority || 'none';
+                      const priorityClass = isEditing
+                        ? ''
+                        : isFullyCompleted
+                          ? 'completed'
+                          : priority !== 'none'
+                            ? `priority-${priority}`
+                            : '';
+
+                      return (
+                        <MiddleChapterRow
+                          key={chapter.serial}
+                          chapter={chapter}
+                          materialNames={localMaterials}
+                          progress={chProgress}
+                          onToggleMaterial={handleToggleMaterialWithConfetti}
+                          isHovered={hoveredChapterSerial === chapter.serial}
+                          onMouseEnter={handleMouseEnterRow}
+                          onMouseLeave={handleMouseLeaveRow}
+                          priorityClass={priorityClass}
+                          onOpenDetails={handleOpenDetails}
+                          isEditing={isEditing}
+                        />
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Right Table: Priority & Actions */}
+            <div className="right-table-section">
+              <table className="chapter-table">
+                <thead>
+                  <tr>
+                    <th className="priority-header">
+                      {isEditing ? (
+                        <span>Actions</span>
+                      ) : (
+                        <div className="priority-header-content">
+                          <span>Priority</span>
+                          <PriorityFilterDropdown
+                            priorityFilter={priorityFilter}
+                            onFilterChange={setPriorityFilter}
+                          />
+                        </div>
+                      )}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data &&
+                    localChapters.map((chapter) => {
+                      const chProgress = progress[chapter.serial];
+                      const completed = chProgress?.completed || {};
+                      const completedCount = data.materialNames.filter((m) => completed[m]).length;
+                      const isFullyCompleted =
+                        completedCount === data.materialNames.length && data.materialNames.length > 0;
+                      const priority = chProgress?.priority || 'none';
+                      const priorityClass = isEditing
+                        ? ''
+                        : isFullyCompleted
+                          ? 'completed'
+                          : priority !== 'none'
+                            ? `priority-${priority}`
+                            : '';
+
+                      return (
+                        <RightChapterRow
+                          key={chapter.serial}
+                          chapter={chapter}
+                          materialNames={localMaterials}
+                          progress={chProgress}
+                          onSetPriority={onSetPriority}
+                          isEditing={isEditing}
+                          onDelete={handleDeleteClick}
+                          isHovered={hoveredChapterSerial === chapter.serial}
+                          onMouseEnter={handleMouseEnterRow}
+                          onMouseLeave={handleMouseLeaveRow}
+                          priorityClass={priorityClass}
+                          onOpenDetails={handleOpenDetails}
+                        />
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {isEditing && (
+            <div className="edit-actions-container">
+              <button
+                onClick={() => setIsAddChapterModalOpen(true)}
+                className="primary-btn add-chapter-btn-wrapper"
+              >
+                <Plus size={18} />
+                Add New Chapter
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="mobile-chapter-view">
+          <div className="mobile-chapter-controls">
+            <div className="mobile-priority-filter">
+              <span className="mobile-control-label">Filter</span>
+              <PriorityFilterDropdown
+                priorityFilter={priorityFilter}
+                onFilterChange={setPriorityFilter}
+              />
+            </div>
+            {isEditing && (
+              <button
+                onClick={() => setIsAddChapterModalOpen(true)}
+                className="primary-btn mobile-add-chapter-btn"
+              >
+                <Plus size={16} />
+                Add Chapter
+              </button>
+            )}
+          </div>
+
+          {isEditing && priorityFilter === 'all' ? (
+            <Reorder.Group
+              as="div"
+              axis="y"
+              values={localChapters}
+              onReorder={setLocalChapters}
+              className="mobile-chapter-list"
+            >
+              {localChapters.map((chapter, index) => (
+                <MobileChapterCard
+                  key={chapter.serial}
+                  chapter={chapter}
+                  index={index}
+                  materialNames={localMaterials}
+                  progress={progress[chapter.serial]}
+                  isEditing={isEditing}
+                  canReorder={true}
+                  onOpenDetails={handleOpenDetails}
+                  onDragEnd={undefined}
+                />
+              ))}
+            </Reorder.Group>
+          ) : (
+            <div className="mobile-chapter-list">
+              {localChapters.map((chapter, index) => (
+                <MobileChapterCard
+                  key={chapter.serial}
+                  chapter={chapter}
+                  index={index}
+                  materialNames={localMaterials}
+                  progress={progress[chapter.serial]}
+                  isEditing={isEditing}
+                  canReorder={false}
+                  onOpenDetails={handleOpenDetails}
+                />
+              ))}
+            </div>
           )}
         </div>
-
-        {isEditing && priorityFilter === 'all' ? (
-          <Reorder.Group
-            as="div"
-            axis="y"
-            values={localChapters}
-            onReorder={setLocalChapters}
-            className="mobile-chapter-list"
-          >
-            {localChapters.map((chapter, index) => (
-              <MobileChapterCard
-                key={chapter.serial}
-                chapter={chapter}
-                index={index}
-                materialNames={localMaterials}
-                progress={progress[chapter.serial]}
-                isEditing={isEditing}
-                canReorder={true}
-                onOpenDetails={handleOpenDetails}
-                onDragEnd={undefined}
-              />
-            ))}
-          </Reorder.Group>
-        ) : (
-          <div className="mobile-chapter-list">
-            {localChapters.map((chapter, index) => (
-              <MobileChapterCard
-                key={chapter.serial}
-                chapter={chapter}
-                index={index}
-                materialNames={localMaterials}
-                progress={progress[chapter.serial]}
-                isEditing={isEditing}
-                canReorder={false}
-                onOpenDetails={handleOpenDetails}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
       <div className="legend">
         <h4>Priority Legend</h4>
