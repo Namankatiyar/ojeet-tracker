@@ -73,7 +73,6 @@
 [data-theme^='dark-'] .primary-action-btn,
 [data-theme^='dark-'] .primary-btn {
   background: color-mix(in srgb, var(--accent), transparent 20%);
-  backdrop-filter: var(--panel-blur);
   border: 1px solid color-mix(in srgb, var(--accent), white 20%);
   box-shadow: var(--panel-inner-glow);
 }
@@ -81,7 +80,6 @@
 [data-theme^='dark-'] .btn-secondary,
 [data-theme^='dark-'] .secondary-btn {
   background: var(--panel-bg);
-  backdrop-filter: var(--panel-blur);
   border: 1px solid var(--panel-border);
 }
 
@@ -219,8 +217,6 @@
 [data-theme^='dark-'] select {
   background: rgba(0, 0, 0, 0.3);
   border-color: var(--panel-border);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 [data-theme^='dark-'] input:focus,

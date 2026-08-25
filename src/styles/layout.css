@@ -115,8 +115,6 @@ html[data-theme^='dark-'] .header {
 html[data-theme^='dark-'] .nav {
   background: rgba(18, 18, 26, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.05),
     0 4px 12px rgba(0, 0, 0, 0.15);
