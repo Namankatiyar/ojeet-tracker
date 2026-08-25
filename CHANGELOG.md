@@ -1,3 +1,31 @@
+# [3.5.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.4.2...v3.5.0) (2026-08-25)
+
+
+### Features
+
+* **ui:** add top loader component for route transitions ([a0423f4](https://github.com/Namankatiyar/ojeet-tracker/commit/a0423f43113248d67c4960def77847cd22d7723a))
+
+
+### Performance Improvements
+
+* **analytics:** memoize filtered scores and stabilize monthly day data reference ([c3f1ae1](https://github.com/Namankatiyar/ojeet-tracker/commit/c3f1ae1247c882f024f473b693c5c382f95cab3f))
+* **assets:** remove unused onboardingImagePink.jpg to reduce precache payload ([1961e19](https://github.com/Namankatiyar/ojeet-tracker/commit/1961e19503aad3a4d3e4dd31da5ee0bdedb757c8))
+* **build:** configure esbuild, manual chunks, and PWA caching ([6820208](https://github.com/Namankatiyar/ojeet-tracker/commit/682020849b0f793d884aa4592d8bff5734963377))
+* **bundle:** dynamically import heavy libraries and exclude inactive subjects ([f9566b4](https://github.com/Namankatiyar/ojeet-tracker/commit/f9566b49c49726a2a684a2ade4ea3ad0b2253af1))
+* **context:** export granular hooks and migrate critical offenders ([17c20d9](https://github.com/Namankatiyar/ojeet-tracker/commit/17c20d9792731dccce0850faab13333c00553d15))
+* **core:** decouple theme slider updates and memoize active subjects ([51be5b4](https://github.com/Namankatiyar/ojeet-tracker/commit/51be5b4a912fd93d0defef79ff001d302adfda11))
+* **css:** polish transitions, theme selectors, and z-index tokens ([3f17948](https://github.com/Namankatiyar/ojeet-tracker/commit/3f179484b57ab9bf0c7a7b868cb26ac1230b467e))
+* **db:** split aggregate sync trigger to optimize when conditions on update ([14ffd42](https://github.com/Namankatiyar/ojeet-tracker/commit/14ffd423e0a6760e2d37287da1a568e268d35e50))
+* **features:** scope hover panel blurs to glass theme and remove modal filters ([d4bafac](https://github.com/Namankatiyar/ojeet-tracker/commit/d4bafac04f0cb4e87232bbcfe525ee3e58bef0bf))
+* **study-clock:** wrap session history and statistics in React.memo ([f09a24a](https://github.com/Namankatiyar/ojeet-tracker/commit/f09a24a009a5245f728854916801fba10b47dc99))
+* **styles:** offload fixed background gradients to composited body pseudo-element ([8ab244f](https://github.com/Namankatiyar/ojeet-tracker/commit/8ab244f883d0c697bae1503ce605e9e08b60b8f8))
+* **styles:** remove nested backdrop filters from buttons, inputs, and nav ([1cf6216](https://github.com/Namankatiyar/ojeet-tracker/commit/1cf6216b4d188e6477e1806dbf1a22ec305e7c86))
+* **subjects:** eliminate dual DOM trees and stabilize callbacks ([77fdd41](https://github.com/Namankatiyar/ojeet-tracker/commit/77fdd41b201505367e4b33e5c60a739e22649025))
+* **subjects:** locally debounce chapter notes textarea ([d950ab2](https://github.com/Namankatiyar/ojeet-tracker/commit/d950ab249aa444efbb061ff8f32e25f5b18e50d3))
+* **tokens:** simplify panel blur shader and add mobile glass fallback ([f68e9de](https://github.com/Namankatiyar/ojeet-tracker/commit/f68e9de43fa7fc24a86108654afd5a85cc4ed763))
+* **ui:** optimize closed modal computations and extract unmounted chat drawer content ([42488ca](https://github.com/Namankatiyar/ojeet-tracker/commit/42488ca1a6b9862c827282b227b14965408436f9))
+* **ui:** paginate session history to prevent DOM bloat ([c5828ef](https://github.com/Namankatiyar/ojeet-tracker/commit/c5828efe1a1ee60e9a132f4bfc93124771388f1d))
+
 ## [3.4.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.4.1...v3.4.2) (2026-08-24)
 
 
