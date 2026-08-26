@@ -7,14 +7,18 @@ Offline-first JEE & NEET syllabus tracker & study planner. Vite + React 18.3.1 +
 - **Styling**: Vanilla CSS, no Tailwind. Every color/spacing/font MUST use a token (`var(--color-...)`) — never hardcode. Check `DESIGN_SYSTEM.md` before writing any CSS.
 - **Branches**: cut from `develop`, never `main`. Prefix with `feature/`, `fix/`, `docs/`, `style/`, `refactor/`, or `chore/`.
 - **Commits**: Conventional Commits format — `type(scope): subject`.
+- **Committing User Changes**: When asked to commit uncommitted work, review and split the work into logical, sequential commits using Conventional Commits.
+- **Testing & Building**: Do not autonomously run `pnpm test` or `pnpm build` before committing. The user prefers to run test suites locally unless explicitly requested.
 - **Before any PR**: `pnpm run lint`, `pnpm run build`, `pnpm test` must all pass locally.
 
 ## Tech Stack
 - Vite + React 18.3.1 + TypeScript
 - State/persistence: React Context + custom `useLocalStorage` hooks
 - Charts: `chart.js` · Icons: `lucide-react` · Celebrations: `canvas-confetti`
+- Serverless & Analytics: Vercel edge functions (`api/`), `@vercel/analytics`, `@vercel/speed-insights`
 
 ## Directory Structure
+- `api/` — Vercel serverless edge functions
 - `public/data/` — JEE & NEET syllabus JSON (`physics.json`, `chemistry.json`, `maths.json`, `biology.json`)
 - `src/core/` — Context providers (Auth, Sync, Theme, Settings, Subject Data, User Progress) + routing
 - `src/features/` — feature modules: `subjects`, `dashboard`, `planner`, `study-clock`
