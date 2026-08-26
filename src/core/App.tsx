@@ -4,6 +4,7 @@ import { Header } from '../shared/components/layout/Header';
 import { Footer } from '../shared/components/layout/Footer';
 import { DiscordInviteModal } from '../shared/components/ui/DiscordInviteModal';
 import { ThemeOnboardingModal } from '../shared/components/ui/ThemeOnboardingModal';
+import { PasswordResetModal } from '../shared/components/ui/PasswordResetModal';
 import { TopLoader } from '../shared/components/ui/TopLoader';
 import { topLoader } from '../shared/hooks/useTopLoader';
 import { Subject } from '../shared/types';
@@ -276,6 +277,7 @@ function App() {
         <SubjectDataProvider>
           <UserProgressProvider>
             <AppShell />
+            <PasswordResetModal />
           </UserProgressProvider>
         </SubjectDataProvider>
       </RemoteAuthProvider>
