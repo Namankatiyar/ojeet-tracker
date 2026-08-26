@@ -238,7 +238,7 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
         <h2>Leaderboard is authenticated-only</h2>
         <p>Sign in to sync your study hours, compete with top JEE/OJEE aspirants, and track standings.</p>
         <button className="primary-btn" onClick={onSignInClick}>
-          Sign in with Google
+          Sign In
         </button>
       </div>
     );

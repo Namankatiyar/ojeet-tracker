@@ -18,7 +18,7 @@ import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 import { useSettings } from '../../../core/context/UserProgressContext';
 import { supabase } from '../../../shared/lib/supabase';
 import { runPwaRecoveryAndReload } from '../../utils/pwaBridge';
-import { GoogleSignInButton } from './GoogleSignInButton';
+import { AuthModal } from './AuthModal';
 import { ConfirmationModal } from './ConfirmationModal';
 import { CustomSelect } from './CustomSelect';
 
@@ -143,7 +143,8 @@ export function SettingsModal({
   const [isRepairingUpdates, setIsRepairingUpdates] = useState(false);
   const [authStatus, setAuthStatus] = useState<string>('');
   const [isAuthBusy, setIsAuthBusy] = useState(false);
-  const { user, isConfigured, signInWithGoogle, signOut, resetPrompt } = useRemoteAuth();
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
+  const { user, isConfigured, signOut, resetPrompt } = useRemoteAuth();
   const {
     status: syncStatus,
     lastSyncedAt,
@@ -388,16 +389,6 @@ export function SettingsModal({
 
   const handleClearBackground = () => {
     onBackgroundUrlChange('');
-  };
-
-  const handleGoogleSignIn = async () => {
-    setIsAuthBusy(true);
-    setAuthStatus('');
-    const { error } = await signInWithGoogle();
-    if (error) {
-      setAuthStatus(error);
-      setIsAuthBusy(false);
-    }
   };
 
   const handleSignOut = async () => {
@@ -837,7 +828,13 @@ export function SettingsModal({
                       {isAuthBusy ? 'Signing out...' : 'Sign Out'}
                     </button>
                   ) : (
-                    <GoogleSignInButton onClick={handleGoogleSignIn} disabled={isAuthBusy} />
+                    <button
+                      type="button"
+                      className="action-btn primary small"
+                      onClick={() => setIsSignInModalOpen(true)}
+                    >
+                      Sign In
+                    </button>
                   )}
                 </div>
                 {user && (
@@ -934,6 +931,12 @@ export function SettingsModal({
         message="Are you sure you want to reset all data? This will permanently delete your progress, planner tasks, study sessions, and mock scores locally and from the cloud. This action cannot be undone."
         onConfirm={confirmResetData}
         onCancel={() => setIsConfirmOpen(false)}
+      />
+      <AuthModal
+        isOpen={isSignInModalOpen}
+        onClose={() => setIsSignInModalOpen(false)}
+        title="Account Sign In"
+        subtitle="Sign in to sync your study data and profile across devices."
       />
     </>,
     modalRoot

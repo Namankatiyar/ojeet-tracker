@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { triggerMassiveConfetti } from '../../../shared/utils/confetti';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
-import { GoogleSignInButton } from '../../../shared/components/ui/GoogleSignInButton';
+import { AuthModal } from '../../../shared/components/ui/AuthModal';
 
 // --- Doodles & Icons ---
 const DoodleHeart = ({
@@ -125,7 +125,7 @@ const loadRazorpayScript = () => {
 
 export const SupportPage: React.FC = () => {
   const { setSupportOverride } = useTheme();
-  const { user, signInWithGoogle } = useRemoteAuth();
+  const { user } = useRemoteAuth();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -143,22 +143,11 @@ export const SupportPage: React.FC = () => {
   const [showThankYouModal, setShowThankYouModal] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Auth & Prefill state
-  const [isAuthBusy, setIsAuthBusy] = useState(false);
-  const [authStatus, setAuthStatus] = useState<string>('');
   const [prefillName, setPrefillName] = useState('');
   const [prefillEmail, setPrefillEmail] = useState('');
-
-  const handleGoogleSignIn = async () => {
-    setIsAuthBusy(true);
-    setAuthStatus('Redirecting to Google...');
-    const { error } = await signInWithGoogle();
-    if (error) {
-      setAuthStatus('Sign in failed');
-      setIsAuthBusy(false);
-    }
-  };
 
   // Parse query parameters and prefill states on mount
   useEffect(() => {
@@ -393,15 +382,16 @@ export const SupportPage: React.FC = () => {
                 }}
               >
                 <p style={{ fontSize: '1rem', color: 'var(--pencil-gray)', lineHeight: '1.5' }}>
-                  To make a contribution, please sign in with Google first. This helps us secure the
-                  checkout process and pre-fill your receipt details.
+                  To make a contribution, please sign in first. This helps us secure the checkout
+                  process and pre-fill your receipt details.
                 </p>
-                <GoogleSignInButton onClick={handleGoogleSignIn} disabled={isAuthBusy} />
-                {authStatus && (
-                  <p className="support-tiny-note" style={{ color: 'var(--red-soft)' }}>
-                    {authStatus}
-                  </p>
-                )}
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={() => setIsAuthModalOpen(true)}
+                >
+                  Sign In
+                </button>
               </div>
             ) : (
               <>
@@ -748,6 +738,12 @@ export const SupportPage: React.FC = () => {
           </div>
         </div>
       )}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        title="Sign In to Support"
+        subtitle="Sign in to secure the contribution process and save your receipt."
+      />
     </div>
   );
 };

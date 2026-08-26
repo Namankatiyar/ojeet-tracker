@@ -28,9 +28,8 @@ import { SettingsModal } from '../ui/SettingsModal';
 import { ColorPickerModal } from '../ui/ColorPickerModal';
 import { UserAvatar } from '../ui/Avatar';
 import { ProgressCardModal } from '../ui/ProgressCardModal';
-import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { CloudSyncIndicator } from './CloudSyncIndicator';
-import { CloudSyncPromptModal } from '../../../features/sync/CloudSyncPromptModal';
+import { AuthModal } from '../ui/AuthModal';
 
 interface HeaderProps {
   currentView:
@@ -138,21 +137,9 @@ export function Header({
   const [isSubjectsMenuOpen, setIsSubjectsMenuOpen] = useState(false);
   const [isProgressCardOpen, setIsProgressCardOpen] = useState(false);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const { signInWithGoogle } = useRemoteAuth();
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const subjectsMenuRef = useRef<HTMLDivElement>(null);
-
-  const handleSignIn = async () => {
-    setIsSigningIn(true);
-    try {
-      await signInWithGoogle();
-    } finally {
-      setIsSigningIn(false);
-      setIsSignInModalOpen(false);
-    }
-  };
 
   // Manage body class for drawer open state so external FABs can adapt
   useEffect(() => {
@@ -812,11 +799,11 @@ export function Header({
         mathsProgress={mathsProgress}
         examDate={examDate}
       />
-      <CloudSyncPromptModal
+      <AuthModal
         isOpen={isSignInModalOpen}
         onClose={() => setIsSignInModalOpen(false)}
-        onSignIn={handleSignIn}
-        isBusy={isSigningIn}
+        title="Sync Across Devices"
+        subtitle="Sign in to back up and sync your progress across multiple devices."
       />
     </header>
   );

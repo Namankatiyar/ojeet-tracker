@@ -12,7 +12,7 @@ import { useFriends, FriendProfile } from '../hooks/useFriends';
 import { useActivityHeartbeat } from '../hooks/useActivityHeartbeat';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
-import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
+import { AuthModal } from '../../../shared/components/ui/AuthModal';
 import { triggerSmallConfetti } from '../../../shared/utils/confetti';
 import { Users, Trophy, CheckCircle, AlertCircle, X } from 'lucide-react';
 
@@ -31,18 +31,8 @@ export function CommunityPage() {
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const { progressCardSettings, setProgressCardSettings } = useUserProgress();
   const { friends, refresh: refreshFriends, disconnectFriend, pinnedIds, togglePin } = useFriends();
-  const { signInWithGoogle, user } = useRemoteAuth();
+  const { user } = useRemoteAuth();
   const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
-  const [isAuthBusy, setIsAuthBusy] = useState(false);
-
-  const handleGoogleSignIn = async () => {
-    setIsAuthBusy(true);
-    const { error } = await signInWithGoogle();
-    if (error) {
-      console.error('Google sign in error:', error);
-      setIsAuthBusy(false);
-    }
-  };
 
   const handleDisconnect = async () => {
     if (!selectedFriendForDisconnect) return;
@@ -254,11 +244,11 @@ export function CommunityPage() {
         isSubmitting={isDisconnecting}
       />
 
-      <CloudSyncPromptModal
+      <AuthModal
         isOpen={isSyncPromptOpen}
         onClose={() => setIsSyncPromptOpen(false)}
-        onSignIn={handleGoogleSignIn}
-        isBusy={isAuthBusy}
+        title="Join Community"
+        subtitle="Sign in to sync your study hours, compete on the leaderboard, and connect with peers."
       />
     </motion.div>
   );

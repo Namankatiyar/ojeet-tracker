@@ -73,7 +73,7 @@ import {
   getLogicalDate,
 } from '../../../shared/utils/date';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
-import { CloudSyncPromptModal } from '../../sync/CloudSyncPromptModal';
+import { AuthModal } from '../../../shared/components/ui/AuthModal';
 import { PwaInstallPromptModal } from '../../sync/PwaInstallPromptModal';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 import {
@@ -175,10 +175,7 @@ export function Dashboard({
     }
   );
   const [pwaBridge, setPwaBridge] = useState(getPwaBridgeState());
-  const [isAuthBusy, setIsAuthBusy] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const { user, isConfigured, isPromptDismissed, dismissPrompt, signInWithGoogle } =
-    useRemoteAuth();
+  const { user, isConfigured, isPromptDismissed, dismissPrompt } = useRemoteAuth();
   const { remoteStudyAggregate } = useRemoteSync();
   const { progress, dailyResetHour } = useUserProgress();
   const { examMode } = useActiveSubjects();
@@ -485,16 +482,6 @@ export function Dashboard({
     setIsSyncPromptOpen(false);
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsAuthBusy(true);
-    setAuthError(null);
-    const { error } = await signInWithGoogle();
-    if (error) {
-      setAuthError(error);
-      setIsAuthBusy(false);
-    }
-  };
-
   const handlePwaPromptClose = () => {
     setIsPwaPromptOpen(false);
   };
@@ -548,9 +535,7 @@ export function Dashboard({
       items.push({
         id: CLOUD_SYNC_CONTEXT,
         title: 'Sync Across Devices',
-        message: authError
-          ? `Sign-in error: ${authError}`
-          : 'Sign in with Google to back up progress and access it from multiple devices.',
+        message: 'Sign in to back up progress and access it from multiple devices.',
         unread: !notificationMeta.readContexts[CLOUD_SYNC_CONTEXT],
         primaryAction: {
           label: 'Open Sign In',
@@ -621,7 +606,6 @@ export function Dashboard({
     notificationMeta.dismissedContexts,
     notificationMeta.readContexts,
     lastAcknowledgedReleaseId,
-    authError,
     deferredInstallPrompt,
     pwaBridge.needRefresh,
     isPwaUpdateBusy,
@@ -957,11 +941,11 @@ export function Dashboard({
           onClose={() => setIsExamModalOpen(false)}
         />
       )}
-      <CloudSyncPromptModal
+      <AuthModal
         isOpen={isSyncPromptOpen}
         onClose={handleSyncPromptClose}
-        onSignIn={handleGoogleSignIn}
-        isBusy={isAuthBusy}
+        title="Sync Across Devices"
+        subtitle="Sign in to back up and sync your progress across multiple devices."
       />
       <PwaInstallPromptModal
         isOpen={isPwaPromptOpen}

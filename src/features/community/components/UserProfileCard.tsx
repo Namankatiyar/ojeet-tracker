@@ -4,7 +4,7 @@ import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { UserAvatar } from '../../../shared/components/ui/Avatar';
-import { GoogleSignInButton } from '../../../shared/components/ui/GoogleSignInButton';
+import { AuthModal } from '../../../shared/components/ui/AuthModal';
 import {
   StudySession,
   PlannerTask,
@@ -91,21 +91,12 @@ export const UserProfileCard = memo(function UserProfileCard({
   const { progressCardSettings, studySessions, plannerTasks, dailyQuestionLogs, dailyResetHour, examMode } =
     useUserProgress();
 
-  const { user, signInWithGoogle } = useRemoteAuth();
+  const { user } = useRemoteAuth();
   const { accentColor } = useTheme();
   const navigate = useNavigate();
-  const [isAuthBusy, setIsAuthBusy] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const isSignedOutCurrentUser = !remoteProfileData && !user && !previewMode;
-
-  const handleGoogleSignIn = async () => {
-    setIsAuthBusy(true);
-    const { error } = await signInWithGoogle();
-    if (error) {
-      console.error('Google sign in error:', error);
-      setIsAuthBusy(false);
-    }
-  };
 
   const todayStr = getLogicalTodayStr(dailyResetHour);
 
@@ -562,14 +553,22 @@ export const UserProfileCard = memo(function UserProfileCard({
             <span className="signedout-overlay-title">
               Sign in to customize your profile card & connect with friends
             </span>
-            <GoogleSignInButton
-              onClick={handleGoogleSignIn}
-              disabled={isAuthBusy}
-              className="signedout-overlay-btn"
-            />
+            <button
+              type="button"
+              className="primary-btn signedout-overlay-btn"
+              onClick={() => setIsAuthModalOpen(true)}
+            >
+              Sign In
+            </button>
           </div>
         </div>
       )}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        title="Sign In"
+        subtitle="Sign in to customize your profile card and connect with friends."
+      />
     </div>
   );
 }, (prev, next) => {
