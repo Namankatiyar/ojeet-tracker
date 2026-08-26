@@ -24,13 +24,29 @@ vi.mock('lucide-react', () => ({
 const mockSignInWithGoogle = vi.fn();
 const mockSignOut = vi.fn();
 const mockResetPrompt = vi.fn();
+const mockSignUpWithEmail = vi.fn();
+const mockSignInWithPassword = vi.fn();
+const mockResetPassword = vi.fn();
+const mockUpdatePassword = vi.fn();
+const mockClearPasswordRecovery = vi.fn();
+
 vi.mock('../../../core/context/RemoteAuthContext', () => ({
   useRemoteAuth: () => ({
     user: { email: 'test@example.com' },
+    session: null,
+    isLoading: false,
     isConfigured: true,
-    signInWithGoogle: mockSignInWithGoogle,
-    signOut: mockSignOut,
+    isPromptDismissed: false,
+    isPasswordRecovery: false,
+    dismissPrompt: vi.fn(),
     resetPrompt: mockResetPrompt,
+    signInWithGoogle: mockSignInWithGoogle,
+    signUpWithEmail: mockSignUpWithEmail,
+    signInWithPassword: mockSignInWithPassword,
+    resetPassword: mockResetPassword,
+    updatePassword: mockUpdatePassword,
+    clearPasswordRecovery: mockClearPasswordRecovery,
+    signOut: mockSignOut,
   }),
 }));
 

@@ -69,10 +69,16 @@ describe('useProfileSync Hook', () => {
       isLoading: false,
       session: null,
       isPromptDismissed: false,
+      isPasswordRecovery: false,
       dismissPrompt: vi.fn(),
       resetPrompt: vi.fn(),
-      signInWithGoogle: vi.fn(),
-      signOut: vi.fn(),
+      signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
+      signUpWithEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
+      signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
+      resetPassword: vi.fn().mockResolvedValue({ error: null }),
+      updatePassword: vi.fn().mockResolvedValue({ error: null }),
+      clearPasswordRecovery: vi.fn(),
+      signOut: vi.fn().mockResolvedValue({ error: null }),
     });
 
     // Default progress mock
@@ -251,10 +257,16 @@ describe('useProfileSync Hook', () => {
       isLoading: false,
       session: null,
       isPromptDismissed: false,
+      isPasswordRecovery: false,
       dismissPrompt: vi.fn(),
       resetPrompt: vi.fn(),
-      signInWithGoogle: vi.fn(),
-      signOut: vi.fn(),
+      signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
+      signUpWithEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
+      signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
+      resetPassword: vi.fn().mockResolvedValue({ error: null }),
+      updatePassword: vi.fn().mockResolvedValue({ error: null }),
+      clearPasswordRecovery: vi.fn(),
+      signOut: vi.fn().mockResolvedValue({ error: null }),
     });
 
     // 3. Trigger rerender with new unauthenticated status

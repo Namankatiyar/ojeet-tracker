@@ -111,9 +111,24 @@ const supabaseState = vi.hoisted(() => {
   return { supabase, tables, fromTables, reset };
 });
 
-vi.mock('../../shared/lib/supabase', () => ({ supabase: supabaseState.supabase }));
 vi.mock('./RemoteAuthContext', () => ({
-  useRemoteAuth: () => ({ user: { id: 'user-1' }, isConfigured: true }),
+  useRemoteAuth: () => ({
+    user: { id: 'user-1' },
+    session: null,
+    isLoading: false,
+    isConfigured: true,
+    isPromptDismissed: false,
+    isPasswordRecovery: false,
+    dismissPrompt: vi.fn(),
+    resetPrompt: vi.fn(),
+    signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
+    signUpWithEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
+    signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
+    resetPassword: vi.fn().mockResolvedValue({ error: null }),
+    updatePassword: vi.fn().mockResolvedValue({ error: null }),
+    clearPasswordRecovery: vi.fn(),
+    signOut: vi.fn().mockResolvedValue({ error: null }),
+  }),
 }));
 vi.mock('./UserProgressContext', () => ({
   useUserProgress: () => ({

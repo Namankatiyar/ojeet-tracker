@@ -8,15 +8,29 @@ interface RemoteAuthContextType {
   isLoading: boolean;
   isConfigured: boolean;
   isPromptDismissed: boolean;
+  isPasswordRecovery: boolean;
   dismissPrompt: () => void;
   resetPrompt: () => void;
   signInWithGoogle: () => Promise<{ error: string | null }>;
+  signUpWithEmail: (
+    email: string,
+    password: string
+  ) => Promise<{ error: string | null; confirmationRequired: boolean }>;
+  signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
+  resetPassword: (email: string) => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
+  clearPasswordRecovery: () => void;
   signOut: () => Promise<{ error: string | null }>;
 }
 
 const SYNC_PROMPT_DISMISSED_KEY = 'ojeet-sync-prompt-dismissed';
 const REMOTE_SYNC_META_PREFIX = 'ojeet-remote-sync-';
 const PROD_OAUTH_REDIRECT_URL = 'https://tracker.ojeet.tech';
+
+const getAuthRedirectUrl = () => {
+  if (typeof window === 'undefined') return PROD_OAUTH_REDIRECT_URL;
+  return window.location.hostname === 'localhost' ? window.location.origin : PROD_OAUTH_REDIRECT_URL;
+};
 
 const readPromptDismissed = () => {
   if (typeof window === 'undefined') return false;
@@ -97,6 +111,7 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(isSupabaseConfigured);
   const [isPromptDismissed, setIsPromptDismissed] = useState<boolean>(readPromptDismissed);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -128,6 +143,9 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession ?? null);
       setUser(nextSession?.user ?? null);
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+      }
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || nextSession) {
         cleanOAuthUrlParams();
       }
@@ -153,13 +171,16 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, []);
 
+  const clearPasswordRecovery = useCallback(() => {
+    setIsPasswordRecovery(false);
+  }, []);
+
   const signInWithGoogle = useCallback(async () => {
     if (!isSupabaseConfigured || !supabase) {
       return { error: 'Cloud sync is not configured yet.' };
     }
 
-    const redirectTo =
-      window.location.hostname === 'localhost' ? window.location.origin : PROD_OAUTH_REDIRECT_URL;
+    const redirectTo = getAuthRedirectUrl();
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -174,6 +195,80 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     return { error: error?.message ?? null };
   }, []);
+
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string) => {
+      if (!isSupabaseConfigured || !supabase) {
+        return { error: 'Cloud sync is not configured yet.', confirmationRequired: false };
+      }
+
+      const emailRedirectTo = getAuthRedirectUrl();
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo,
+        },
+      });
+
+      if (error) {
+        return { error: error.message, confirmationRequired: false };
+      }
+
+      const confirmationRequired = Boolean(data.user && !data.session);
+      return { error: null, confirmationRequired };
+    },
+    []
+  );
+
+  const signInWithPassword = useCallback(
+    async (email: string, password: string) => {
+      if (!isSupabaseConfigured || !supabase) {
+        return { error: 'Cloud sync is not configured yet.' };
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      return { error: error?.message ?? null };
+    },
+    []
+  );
+
+  const resetPassword = useCallback(
+    async (email: string) => {
+      if (!isSupabaseConfigured || !supabase) {
+        return { error: 'Cloud sync is not configured yet.' };
+      }
+
+      const redirectTo = getAuthRedirectUrl();
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+
+      return { error: error?.message ?? null };
+    },
+    []
+  );
+
+  const updatePassword = useCallback(
+    async (newPassword: string) => {
+      if (!isSupabaseConfigured || !supabase) {
+        return { error: 'Cloud sync is not configured yet.' };
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      return { error: error?.message ?? null };
+    },
+    []
+  );
 
   const signOut = useCallback(async () => {
     if (!isSupabaseConfigured || !supabase) {
@@ -193,19 +288,31 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       isLoading,
       isConfigured: isSupabaseConfigured,
       isPromptDismissed,
+      isPasswordRecovery,
       dismissPrompt,
       resetPrompt,
       signInWithGoogle,
+      signUpWithEmail,
+      signInWithPassword,
+      resetPassword,
+      updatePassword,
+      clearPasswordRecovery,
       signOut,
     }),
     [
+      clearPasswordRecovery,
       dismissPrompt,
       isLoading,
+      isPasswordRecovery,
       isPromptDismissed,
+      resetPassword,
       resetPrompt,
       session,
       signInWithGoogle,
+      signInWithPassword,
       signOut,
+      signUpWithEmail,
+      updatePassword,
       user,
     ]
   );
