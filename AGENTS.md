@@ -5,7 +5,7 @@ Offline-first JEE & NEET syllabus tracker & study planner. Vite + React 18.3.1 +
 ## Hard Rules (never violate)
 - **Package manager**: pnpm only — `pnpm install`, `pnpm run dev`, `pnpm run build`, `pnpm test`, `pnpm exec`. Never `npm`/`yarn`/`bun`.
 - **Styling**: Vanilla CSS, no Tailwind. Every color/spacing/font MUST use a token (`var(--color-...)`) — never hardcode. Check `DESIGN_SYSTEM.md` before writing any CSS.
-- **Branches**: cut from `develop`, never `main`. Prefix with `feature/`, `fix/`, `docs/`, `style/`, `refactor/`, or `chore/`.
+- **Branches**: Cut from the current branch always. Prefix with `feature/`, `fix/`, `docs/`, `style/`, `refactor/`, or `chore/`.
 - **Commits**: Conventional Commits format — `type(scope): subject`.
 - **Committing User Changes**: When asked to commit uncommitted work, review and split the work into logical, sequential commits using Conventional Commits.
 - **Testing & Building**: Do not autonomously run `pnpm test` or `pnpm build` before committing. The user prefers to run test suites locally unless explicitly requested.
