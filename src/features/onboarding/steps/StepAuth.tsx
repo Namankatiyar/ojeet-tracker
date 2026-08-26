@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Check, Loader, WifiOff } from 'lucide-react';
+import { ArrowRight, Check, CheckCircle, Eye, EyeOff, Loader, WifiOff } from 'lucide-react';
+import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { PasswordStrengthMeter } from '../../../shared/components/ui/PasswordStrengthMeter';
+import { usePasswordStrength } from '../../../shared/hooks/usePasswordStrength';
+import { validatePassword } from '../../../shared/utils/auth';
 
 const stagger = {
   animate: { transition: { staggerChildren: 0.06 } },
@@ -16,28 +20,125 @@ const fadeUp = {
 };
 
 interface StepAuthProps {
-  isSignedIn: boolean;
-  userEmail?: string;
-  onGoogle: () => void;
   onOffline: () => void;
   onNext: () => void;
+  onPendingConfirmationChange?: (pending: boolean) => void;
 }
 
 export function StepAuth({
-  isSignedIn,
-  userEmail,
-  onGoogle,
   onOffline,
   onNext,
+  onPendingConfirmationChange,
 }: StepAuthProps) {
-  const [loading, setLoading] = useState(false);
+  const {
+    user,
+    signInWithGoogle,
+    signInWithPassword,
+    signUpWithEmail,
+    resetPassword,
+  } = useRemoteAuth();
+
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [loadingForm, setLoadingForm] = useState(false);
+
+  const { score } = usePasswordStrength(password);
 
   const handleGoogle = () => {
-    setLoading(true);
-    onGoogle();
+    setLoadingGoogle(true);
+    signInWithGoogle();
   };
 
-  if (isSignedIn) {
+  const handleTabChange = (mode: 'signin' | 'signup') => {
+    setAuthMode(mode);
+    setIsForgotMode(false);
+    setError(null);
+    setResetSent(false);
+  };
+
+  const handleSignInSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+
+    setError(null);
+    setLoadingForm(true);
+
+    try {
+      const res = await signInWithPassword(email.trim(), password);
+      if (res.error) {
+        setError(res.error);
+        setLoadingForm(false);
+      } else {
+        onNext();
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in.');
+      setLoadingForm(false);
+    }
+  };
+
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+
+    setError(null);
+
+    const validation = validatePassword(password, confirmPassword);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+
+    setLoadingForm(true);
+
+    try {
+      const res = await signUpWithEmail(email.trim(), password);
+      if (res.error) {
+        setError(res.error);
+        setLoadingForm(false);
+      } else {
+        if (res.confirmationRequired) {
+          onPendingConfirmationChange?.(true);
+        }
+        onNext();
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to sign up.');
+      setLoadingForm(false);
+    }
+  };
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setError(null);
+    setResetSent(false);
+    setLoadingForm(true);
+
+    try {
+      const res = await resetPassword(email.trim());
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setResetSent(true);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to send reset link.');
+    } finally {
+      setLoadingForm(false);
+    }
+  };
+
+  if (user) {
     return (
       <motion.div variants={stagger} initial="initial" animate="animate">
         <motion.h1 className="ob-step-heading" variants={fadeUp}>
@@ -50,7 +151,7 @@ export function StepAuth({
           <Check size={18} className="ob-signed-in-icon" />
           <span>
             Signed in as{' '}
-            <span className="ob-signed-in-email">{userEmail}</span>
+            <span className="ob-signed-in-email">{user.email}</span>
           </span>
         </motion.div>
         <motion.div className="ob-nav-row end-only" variants={fadeUp}>
@@ -69,20 +170,19 @@ export function StepAuth({
         Sign in
       </motion.h1>
       <motion.p className="ob-step-subtext" variants={fadeUp}>
-        Sign in to sync your progress across devices, or continue offline with
-        local storage only.
+        Sync your progress across devices, or continue offline.
       </motion.p>
       <motion.div className="ob-auth-options" variants={fadeUp}>
         <button
           className="ob-auth-btn ob-google-btn"
           onClick={handleGoogle}
-          disabled={loading}
+          disabled={loadingGoogle || loadingForm}
           type="button"
         >
-          {loading ? (
-            <Loader size={18} className="spin-icon" />
+          {loadingGoogle ? (
+            <Loader size={16} className="spin-icon" />
           ) : (
-            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
               <path
                 d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
                 fill="#4285F4"
@@ -103,14 +203,267 @@ export function StepAuth({
           )}
           Continue with Google
         </button>
+
         <div className="ob-auth-divider">or</div>
+
+        {isForgotMode ? (
+          <form onSubmit={handleForgotSubmit} className="ob-email-form">
+            <div className="ob-input-group">
+              <label className="ob-label" htmlFor="forgot-email">
+                Email address
+              </label>
+              <input
+                id="forgot-email"
+                type="email"
+                className="ob-input"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loadingForm || resetSent}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            {error && (
+              <div className="ob-auth-error" role="alert">
+                <span>{error}</span>
+              </div>
+            )}
+
+            {resetSent && (
+              <div className="ob-auth-success" role="status">
+                <CheckCircle size={16} />
+                <span>Check your email for the password reset link.</span>
+              </div>
+            )}
+
+            <button
+              className="primary-btn ob-auth-btn"
+              type="submit"
+              disabled={loadingForm || !email.trim() || resetSent}
+            >
+              {loadingForm ? <Loader size={18} className="spin-icon" /> : 'Send reset link'}
+            </button>
+
+            <button
+              type="button"
+              className="ob-forgot-back-btn"
+              onClick={() => {
+                setIsForgotMode(false);
+                setError(null);
+                setResetSent(false);
+              }}
+            >
+              Back to sign in
+            </button>
+          </form>
+        ) : (
+          <div>
+            <div className="ob-auth-tabs" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={authMode === 'signin'}
+                className={`ob-auth-tab ${authMode === 'signin' ? 'active' : ''}`}
+                onClick={() => handleTabChange('signin')}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={authMode === 'signup'}
+                className={`ob-auth-tab ${authMode === 'signup' ? 'active' : ''}`}
+                onClick={() => handleTabChange('signup')}
+              >
+                Sign up
+              </button>
+            </div>
+
+            {authMode === 'signin' ? (
+              <form onSubmit={handleSignInSubmit} className="ob-email-form">
+                <div className="ob-input-group">
+                  <label className="ob-label" htmlFor="signin-email">
+                    Email address
+                  </label>
+                  <input
+                    id="signin-email"
+                    type="email"
+                    className="ob-input"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loadingForm}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+
+                <div className="ob-input-group">
+                  <label className="ob-label" htmlFor="signin-password">
+                    Password
+                  </label>
+                  <div className="ob-password-wrapper">
+                    <input
+                      id="signin-password"
+                      type={showPassword ? 'text' : 'password'}
+                      className="ob-input"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loadingForm}
+                      required
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      className="ob-password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="ob-forgot-link"
+                  onClick={() => {
+                    setIsForgotMode(true);
+                    setError(null);
+                  }}
+                >
+                  Forgot password?
+                </button>
+
+                {error && (
+                  <div className="ob-auth-error" role="alert">
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <button
+                  className="primary-btn ob-auth-btn"
+                  type="submit"
+                  disabled={loadingForm || !email.trim() || !password}
+                >
+                  {loadingForm ? <Loader size={18} className="spin-icon" /> : 'Sign in'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignUpSubmit} className="ob-email-form">
+                <div className="ob-input-group">
+                  <label className="ob-label" htmlFor="signup-email">
+                    Email address
+                  </label>
+                  <input
+                    id="signup-email"
+                    type="email"
+                    className="ob-input"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loadingForm}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+
+                <div className="ob-input-group">
+                  <label className="ob-label" htmlFor="signup-password">
+                    Password
+                  </label>
+                  <div className="ob-password-wrapper">
+                    <input
+                      id="signup-password"
+                      type={showPassword ? 'text' : 'password'}
+                      className="ob-input"
+                      placeholder="Create password (min 8 chars)"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loadingForm}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className="ob-password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <PasswordStrengthMeter password={password} />
+                </div>
+
+                <div className="ob-input-group">
+                  <label className="ob-label" htmlFor="signup-confirm-password">
+                    Confirm password
+                  </label>
+                  <div className="ob-password-wrapper">
+                    <input
+                      id="signup-confirm-password"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      className="ob-input"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={loadingForm}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className="ob-password-toggle"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={
+                        showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'
+                      }
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="ob-auth-error" role="alert">
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <button
+                  className="primary-btn ob-auth-btn"
+                  type="submit"
+                  disabled={
+                    loadingForm ||
+                    !email.trim() ||
+                    score < 2 ||
+                    password !== confirmPassword ||
+                    !confirmPassword
+                  }
+                >
+                  {loadingForm ? <Loader size={18} className="spin-icon" /> : 'Sign up'}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+
+        <div className="ob-auth-divider">or</div>
+
         <button
           className="ob-auth-btn ob-offline-btn"
           onClick={onOffline}
-          disabled={loading}
+          disabled={loadingGoogle || loadingForm}
           type="button"
         >
-          <WifiOff size={18} />
+          <WifiOff size={16} />
           Continue offline
         </button>
       </motion.div>

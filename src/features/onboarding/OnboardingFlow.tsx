@@ -4,6 +4,7 @@ import { useUserProgress } from '../../core/context/UserProgressContext';
 import { useRemoteAuth } from '../../core/context/RemoteAuthContext';
 import { OnboardingLayout } from './OnboardingLayout';
 import { OnboardingProgress } from './OnboardingProgress';
+import { EmailConfirmationBanner } from './components/EmailConfirmationBanner';
 import { StepName } from './steps/StepName';
 import { StepResetTime } from './steps/StepResetTime';
 import { StepPersonalize } from './steps/StepPersonalize';
@@ -64,10 +65,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setExamMode,
   } = useUserProgress();
 
-  const { user, signInWithGoogle } = useRemoteAuth();
+  const { user } = useRemoteAuth();
 
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
+  const [pendingConfirmation, setPendingConfirmation] = useState(false);
+  const [dismissedStep, setDismissedStep] = useState<number | null>(null);
   const [data, setData] = useState<OnboardingData>(() => ({
     name: progressCardSettings.userName || '',
     examMode: examMode || 'jee',
@@ -151,11 +154,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       case 1:
         return (
           <StepAuth
-            isSignedIn={!!user}
-            userEmail={user?.email}
-            onGoogle={signInWithGoogle}
             onOffline={goNext}
             onNext={goNext}
+            onPendingConfirmationChange={setPendingConfirmation}
           />
         );
       case 2:
@@ -215,6 +216,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   return (
     <OnboardingLayout>
       <OnboardingProgress current={step} total={TOTAL_STEPS} />
+      {pendingConfirmation && !user && step > 1 && dismissedStep !== step && (
+        <EmailConfirmationBanner onDismiss={() => setDismissedStep(step)} />
+      )}
       <div className="ob-step-wrapper">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
