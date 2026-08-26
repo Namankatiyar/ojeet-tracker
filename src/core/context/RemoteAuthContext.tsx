@@ -29,7 +29,7 @@ const PROD_OAUTH_REDIRECT_URL = 'https://tracker.ojeet.tech';
 
 const getAuthRedirectUrl = () => {
   if (typeof window === 'undefined') return PROD_OAUTH_REDIRECT_URL;
-  return window.location.hostname === 'localhost' ? window.location.origin : PROD_OAUTH_REDIRECT_URL;
+  return window.location.origin;
 };
 
 const readPromptDismissed = () => {
