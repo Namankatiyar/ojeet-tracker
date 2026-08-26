@@ -38,6 +38,9 @@
   /* ======================== */
 
   /* Priority/Status Colors */
+  --color-status-error: #ef4444;
+  --color-status-success: #22c55e;
+  --color-status-warning: #f59e0b;
   --color-priority-high: #ef4444;
   --color-priority-high-bg: rgba(239, 68, 68, 0.08);
   --color-priority-medium: #f59e0b;
@@ -59,6 +62,9 @@
   --color-custom: #ff57c7;
 
   /* Legacy aliases (for backward compatibility) */
+  --status-error: var(--color-status-error);
+  --status-success: var(--color-status-success);
+  --status-warning: var(--color-status-warning);
   --bg-base: var(--color-bg-base);
   --bg-primary: var(--color-bg-primary);
   --bg-secondary: var(--color-bg-secondary);
