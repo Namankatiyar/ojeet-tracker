@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '../../shared/lib/supabase';
+import { isUnconfirmedEmailError } from '../../shared/utils/auth';
 
 interface RemoteAuthContextType {
   user: User | null;
@@ -9,6 +10,11 @@ interface RemoteAuthContextType {
   isConfigured: boolean;
   isPromptDismissed: boolean;
   isPasswordRecovery: boolean;
+  unconfirmedEmail: string | null;
+  isEmailBannerDismissed: boolean;
+  dismissEmailBanner: () => void;
+  resetEmailBanner: () => void;
+  setPendingUnconfirmedEmail: (email: string | null) => void;
   dismissPrompt: () => void;
   resetPrompt: () => void;
   signInWithGoogle: () => Promise<{ error: string | null }>;
@@ -23,12 +29,13 @@ interface RemoteAuthContextType {
   updateEmail: (
     newEmail: string
   ) => Promise<{ error: string | null; confirmationRequired: boolean }>;
-  resendConfirmationEmail: (email: string) => Promise<{ error: string | null }>;
+  resendConfirmationEmail: (email?: string) => Promise<{ error: string | null }>;
   clearPasswordRecovery: () => void;
   signOut: () => Promise<{ error: string | null }>;
 }
 
 const SYNC_PROMPT_DISMISSED_KEY = 'ojeet-sync-prompt-dismissed';
+const PENDING_UNCONFIRMED_EMAIL_KEY = 'ojeet-pending-unconfirmed-email';
 const REMOTE_SYNC_META_PREFIX = 'ojeet-remote-sync-';
 const PROD_OAUTH_REDIRECT_URL = 'https://tracker.ojeet.tech';
 
@@ -42,9 +49,23 @@ const readPromptDismissed = () => {
   return localStorage.getItem(SYNC_PROMPT_DISMISSED_KEY) === '1';
 };
 
+const readPendingUnconfirmedEmail = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(PENDING_UNCONFIRMED_EMAIL_KEY) || null;
+};
+
+const writePendingUnconfirmedEmail = (email: string | null) => {
+  if (typeof window === 'undefined') return;
+  if (email && email.trim()) {
+    localStorage.setItem(PENDING_UNCONFIRMED_EMAIL_KEY, email.trim());
+  } else {
+    localStorage.removeItem(PENDING_UNCONFIRMED_EMAIL_KEY);
+  }
+};
+
 const clearRemoteSyncMetadata = () => {
   if (typeof window === 'undefined') return;
-  const keysToRemove: string[] = [];
+  const keysToRemove: string[] = [PENDING_UNCONFIRMED_EMAIL_KEY];
 
   for (let i = 0; i < localStorage.length; i += 1) {
     const key = localStorage.key(i);
@@ -117,6 +138,10 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isLoading, setIsLoading] = useState<boolean>(isSupabaseConfigured);
   const [isPromptDismissed, setIsPromptDismissed] = useState<boolean>(readPromptDismissed);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState<boolean>(false);
+  const [pendingUnconfirmedEmail, setPendingUnconfirmedEmailState] = useState<string | null>(
+    readPendingUnconfirmedEmail
+  );
+  const [isEmailBannerDismissed, setIsEmailBannerDismissed] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -160,6 +185,50 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       isMounted = false;
       subscription.unsubscribe();
     };
+  }, []);
+
+  // When user is confirmed or logged in with Google, clear any pending unconfirmed email
+  useEffect(() => {
+    if (user) {
+      const isGoogle = user.app_metadata?.provider === 'google';
+      const isConfirmed = Boolean(user.confirmed_at || user.email_confirmed_at);
+      if ((isGoogle || isConfirmed) && !user.new_email) {
+        setPendingUnconfirmedEmailState(null);
+        writePendingUnconfirmedEmail(null);
+      }
+    }
+  }, [user]);
+
+  const unconfirmedEmail = useMemo(() => {
+    if (user) {
+      if (user.new_email) {
+        return user.new_email;
+      }
+      const isGoogle = user.app_metadata?.provider === 'google';
+      const isConfirmed = Boolean(user.confirmed_at || user.email_confirmed_at);
+      if (!isGoogle && !isConfirmed) {
+        return user.email || pendingUnconfirmedEmail;
+      }
+      return null;
+    }
+    return pendingUnconfirmedEmail;
+  }, [user, pendingUnconfirmedEmail]);
+
+  const dismissEmailBanner = useCallback(() => {
+    setIsEmailBannerDismissed(true);
+  }, []);
+
+  const resetEmailBanner = useCallback(() => {
+    setIsEmailBannerDismissed(false);
+  }, []);
+
+  const setPendingUnconfirmedEmail = useCallback((email: string | null) => {
+    const trimmed = email && email.trim() ? email.trim() : null;
+    setPendingUnconfirmedEmailState(trimmed);
+    writePendingUnconfirmedEmail(trimmed);
+    if (trimmed) {
+      setIsEmailBannerDismissed(false);
+    }
   }, []);
 
   const dismissPrompt = useCallback(() => {
@@ -223,6 +292,12 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
 
       const confirmationRequired = Boolean(data.user && !data.session);
+      if (confirmationRequired || (data.user && !data.user.email_confirmed_at)) {
+        const trimmedEmail = email.trim();
+        setPendingUnconfirmedEmailState(trimmedEmail);
+        writePendingUnconfirmedEmail(trimmedEmail);
+        setIsEmailBannerDismissed(false);
+      }
       return { error: null, confirmationRequired };
     },
     []
@@ -239,7 +314,19 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         password,
       });
 
-      return { error: error?.message ?? null };
+      if (error) {
+        if (isUnconfirmedEmailError(error.message)) {
+          const trimmedEmail = email.trim();
+          setPendingUnconfirmedEmailState(trimmedEmail);
+          writePendingUnconfirmedEmail(trimmedEmail);
+          setIsEmailBannerDismissed(false);
+        }
+        return { error: error.message };
+      }
+
+      setPendingUnconfirmedEmailState(null);
+      writePendingUnconfirmedEmail(null);
+      return { error: null };
     },
     []
   );
@@ -295,38 +382,55 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return { error: error.message, confirmationRequired: false };
       }
 
-      const confirmationRequired = Boolean(data.user);
+      const confirmationRequired = Boolean(data.user?.new_email);
+      if (confirmationRequired) {
+        const trimmedEmail = newEmail.trim();
+        setPendingUnconfirmedEmailState(trimmedEmail);
+        writePendingUnconfirmedEmail(trimmedEmail);
+        setIsEmailBannerDismissed(false);
+      }
       return { error: null, confirmationRequired };
     },
     []
   );
 
-  const resendConfirmationEmail = useCallback(async (email: string) => {
-    if (!isSupabaseConfigured || !supabase) {
-      return { error: 'Cloud sync is not configured yet.' };
-    }
+  const resendConfirmationEmail = useCallback(
+    async (targetEmail?: string) => {
+      const emailToSend = (targetEmail || unconfirmedEmail || user?.email || '').trim();
+      if (!emailToSend) {
+        return { error: 'No email address specified.' };
+      }
 
-    const emailRedirectTo = getAuthRedirectUrl();
+      if (!isSupabaseConfigured || !supabase) {
+        return { error: 'Cloud sync is not configured yet.' };
+      }
 
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: {
-        emailRedirectTo,
-      },
-    });
+      const emailRedirectTo = getAuthRedirectUrl();
 
-    return { error: error?.message ?? null };
-  }, []);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: emailToSend,
+        options: {
+          emailRedirectTo,
+        },
+      });
+
+      return { error: error?.message ?? null };
+    },
+    [unconfirmedEmail, user?.email]
+  );
 
   const signOut = useCallback(async () => {
+    setPendingUnconfirmedEmailState(null);
+    writePendingUnconfirmedEmail(null);
+    setIsEmailBannerDismissed(false);
+    clearRemoteSyncMetadata();
+
     if (!isSupabaseConfigured || !supabase) {
-      clearRemoteSyncMetadata();
       return { error: null };
     }
 
     const { error } = await supabase.auth.signOut();
-    clearRemoteSyncMetadata();
     return { error: error?.message ?? null };
   }, []);
 
@@ -338,6 +442,11 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       isConfigured: isSupabaseConfigured,
       isPromptDismissed,
       isPasswordRecovery,
+      unconfirmedEmail,
+      isEmailBannerDismissed,
+      dismissEmailBanner,
+      resetEmailBanner,
+      setPendingUnconfirmedEmail,
       dismissPrompt,
       resetPrompt,
       signInWithGoogle,
@@ -352,18 +461,23 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }),
     [
       clearPasswordRecovery,
+      dismissEmailBanner,
       dismissPrompt,
+      isEmailBannerDismissed,
       isLoading,
       isPasswordRecovery,
       isPromptDismissed,
       resendConfirmationEmail,
+      resetEmailBanner,
       resetPassword,
       resetPrompt,
       session,
+      setPendingUnconfirmedEmail,
       signInWithGoogle,
       signInWithPassword,
       signOut,
       signUpWithEmail,
+      unconfirmedEmail,
       updateEmail,
       updatePassword,
       user,

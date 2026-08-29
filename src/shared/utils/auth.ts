@@ -91,6 +91,37 @@ export function getAvatarUrl(
 }
 
 /**
+ * Checks whether an auth error indicates that the user's email is not confirmed.
+ */
+export function isUnconfirmedEmailError(error: unknown): boolean {
+  if (!error) return false;
+
+  let rawMessage = '';
+  if (typeof error === 'string') {
+    rawMessage = error;
+  } else if (error instanceof Error) {
+    rawMessage = error.message;
+  } else if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string'
+  ) {
+    rawMessage = (error as { message: string }).message;
+  } else {
+    rawMessage = String(error);
+  }
+
+  const normalized = rawMessage.toLowerCase().trim();
+
+  return (
+    normalized.includes('email not confirmed') ||
+    normalized.includes('not confirmed') ||
+    normalized.includes('email_not_confirmed')
+  );
+}
+
+/**
  * Maps Supabase auth error messages and unexpected exceptions into user-friendly strings.
  */
 export function formatAuthError(error: unknown): string {
@@ -126,11 +157,7 @@ export function formatAuthError(error: unknown): string {
     return 'An account with this email already exists. Try signing in instead.';
   }
 
-  if (
-    normalized.includes('email not confirmed') ||
-    normalized.includes('not confirmed') ||
-    normalized.includes('email_not_confirmed')
-  ) {
+  if (isUnconfirmedEmailError(error)) {
     return 'Your email has not been confirmed yet. Please check your inbox or resend the link.';
   }
 

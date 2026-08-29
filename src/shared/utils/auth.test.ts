@@ -1,8 +1,36 @@
 import { describe, expect, it } from 'vitest';
 import type { User } from '@supabase/supabase-js';
-import { getDisplayName, getAvatarUrl, validatePassword, formatAuthError } from './auth';
+import {
+  getDisplayName,
+  getAvatarUrl,
+  validatePassword,
+  formatAuthError,
+  isUnconfirmedEmailError,
+} from './auth';
 
 describe('auth utils', () => {
+  describe('isUnconfirmedEmailError', () => {
+    it('returns false when error is falsy', () => {
+      expect(isUnconfirmedEmailError('')).toBe(false);
+      expect(isUnconfirmedEmailError(null)).toBe(false);
+      expect(isUnconfirmedEmailError(undefined)).toBe(false);
+    });
+
+    it('returns false for unrelated errors', () => {
+      expect(isUnconfirmedEmailError('Invalid login credentials')).toBe(false);
+      expect(isUnconfirmedEmailError(new Error('Network error'))).toBe(false);
+      expect(isUnconfirmedEmailError({ message: 'User already registered' })).toBe(false);
+    });
+
+    it('detects unconfirmed email strings, errors, and error objects', () => {
+      expect(isUnconfirmedEmailError('Email not confirmed')).toBe(true);
+      expect(isUnconfirmedEmailError('email_not_confirmed')).toBe(true);
+      expect(isUnconfirmedEmailError('User email is not confirmed.')).toBe(true);
+      expect(isUnconfirmedEmailError(new Error('Email not confirmed'))).toBe(true);
+      expect(isUnconfirmedEmailError({ message: 'Email not confirmed' })).toBe(true);
+      expect(isUnconfirmedEmailError({ message: 'email_not_confirmed' })).toBe(true);
+    });
+  });
   describe('formatAuthError', () => {
     it('returns empty string when error is falsy', () => {
       expect(formatAuthError('')).toBe('');
