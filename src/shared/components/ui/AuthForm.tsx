@@ -3,7 +3,7 @@ import { CheckCircle, Eye, EyeOff, Loader, WifiOff } from 'lucide-react';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { usePasswordStrength } from '../../hooks/usePasswordStrength';
-import { validatePassword } from '../../utils/auth';
+import { validatePassword, formatAuthError } from '../../utils/auth';
 
 export interface AuthFormProps {
   onSuccess?: () => void;
@@ -11,6 +11,7 @@ export interface AuthFormProps {
   onPendingConfirmationChange?: (pending: boolean) => void;
   showOfflineOption?: boolean;
   initialMode?: 'signin' | 'signup';
+  initialDisplayName?: string;
   className?: string;
 }
 
@@ -38,14 +39,14 @@ function FormInput({
   required = true,
 }: FormInputProps) {
   return (
-    <div className="ob-input-group">
-      <label className="ob-label" htmlFor={id}>
+    <div className="auth-input-group ob-input-group">
+      <label className="auth-label ob-label" htmlFor={id}>
         {label}
       </label>
       <input
         id={id}
         type={type}
-        className="ob-input"
+        className="auth-input ob-input"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -83,15 +84,15 @@ function PasswordInput({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="ob-input-group">
-      <label className="ob-label" htmlFor={id}>
+    <div className="auth-input-group ob-input-group">
+      <label className="auth-label ob-label" htmlFor={id}>
         {label}
       </label>
-      <div className="ob-password-wrapper">
+      <div className="auth-password-wrapper ob-password-wrapper">
         <input
           id={id}
           type={showPassword ? 'text' : 'password'}
-          className="ob-input"
+          className="auth-input ob-input"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -101,7 +102,7 @@ function PasswordInput({
         />
         <button
           type="button"
-          className="ob-password-toggle"
+          className="auth-password-toggle ob-password-toggle"
           onClick={() => setShowPassword((prev) => !prev)}
           aria-label={showPassword ? 'Hide password' : 'Show password'}
           tabIndex={-1}
@@ -120,42 +121,79 @@ interface SignInFlowProps {
 }
 
 function SignInFlow({ onSuccess, onForgotPassword }: SignInFlowProps) {
-  const { signInWithPassword } = useRemoteAuth();
+  const { signInWithPassword, resendConfirmationEmail } = useRemoteAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isUnconfirmed, setIsUnconfirmed] = useState(false);
+  const [resendingConfirm, setResendingConfirm] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password) return;
 
     setError(null);
+    setIsUnconfirmed(false);
+    setResendSuccess(false);
+    setResendError(null);
     setLoading(true);
 
     try {
       const res = await signInWithPassword(email.trim(), password);
       if (res.error) {
-        setError(res.error);
+        setError(formatAuthError(res.error));
+        const isUnconf =
+          res.error.toLowerCase().includes('email not confirmed') ||
+          res.error.toLowerCase().includes('not confirmed') ||
+          res.error.toLowerCase().includes('email_not_confirmed');
+        setIsUnconfirmed(isUnconf);
         setLoading(false);
       } else {
         onSuccess?.();
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in.');
+      setError(formatAuthError(err));
       setLoading(false);
     }
   };
 
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) return;
+    setResendingConfirm(true);
+    setResendError(null);
+    setResendSuccess(false);
+
+    try {
+      const res = await resendConfirmationEmail(email.trim());
+      if (res.error) {
+        setResendError(formatAuthError(res.error));
+      } else {
+        setResendSuccess(true);
+      }
+    } catch (err: unknown) {
+      setResendError(formatAuthError(err));
+    } finally {
+      setResendingConfirm(false);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="ob-email-form">
+    <form onSubmit={handleSubmit} className="auth-form ob-email-form">
       <FormInput
         id="signin-email"
         label="Email address"
         type="email"
         placeholder="name@example.com"
         value={email}
-        onChange={setEmail}
+        onChange={(val) => {
+          setEmail(val);
+          setIsUnconfirmed(false);
+          setResendSuccess(false);
+          setResendError(null);
+        }}
         disabled={loading}
         autoComplete="email"
       />
@@ -170,18 +208,53 @@ function SignInFlow({ onSuccess, onForgotPassword }: SignInFlowProps) {
         autoComplete="current-password"
       />
 
-      <button type="button" className="ob-forgot-link" onClick={onForgotPassword}>
+      <button type="button" className="auth-forgot-link ob-forgot-link" onClick={onForgotPassword}>
         Forgot password?
       </button>
 
       {error && (
-        <div className="ob-auth-error" role="alert">
+        <div className="auth-error ob-auth-error" role="alert">
           <span>{error}</span>
         </div>
       )}
 
+      {isUnconfirmed && (
+        <div className="auth-unconfirmed-section ob-unconfirmed-section" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+          <button
+            type="button"
+            className="auth-resend-link ob-resend-link"
+            onClick={handleResendConfirmation}
+            disabled={resendingConfirm}
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--accent)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              textDecoration: 'underline',
+              alignSelf: 'flex-start',
+              fontFamily: 'inherit',
+            }}
+          >
+            {resendingConfirm ? 'Resending...' : 'Resend confirmation email'}
+          </button>
+          {resendSuccess && (
+            <div className="auth-success ob-auth-success" role="status">
+              <CheckCircle size={16} />
+              <span>Confirmation email sent. Check your inbox.</span>
+            </div>
+          )}
+          {resendError && (
+            <div className="auth-error ob-auth-error" role="alert">
+              <span>{resendError}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <button
-        className="primary-btn ob-auth-btn"
+        className="primary-btn auth-btn ob-auth-btn"
         type="submit"
         disabled={loading || !email.trim() || !password}
       >
@@ -194,10 +267,12 @@ function SignInFlow({ onSuccess, onForgotPassword }: SignInFlowProps) {
 interface SignUpFlowProps {
   onSuccess?: () => void;
   onPendingConfirmationChange?: (pending: boolean) => void;
+  initialDisplayName?: string;
 }
 
-function SignUpFlow({ onSuccess, onPendingConfirmationChange }: SignUpFlowProps) {
+function SignUpFlow({ onSuccess, onPendingConfirmationChange, initialDisplayName = '' }: SignUpFlowProps) {
   const { signUpWithEmail } = useRemoteAuth();
+  const [displayName, setDisplayName] = useState(initialDisplayName);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -221,9 +296,9 @@ function SignUpFlow({ onSuccess, onPendingConfirmationChange }: SignUpFlowProps)
     setLoading(true);
 
     try {
-      const res = await signUpWithEmail(email.trim(), password);
+      const res = await signUpWithEmail(email.trim(), password, displayName.trim() || undefined);
       if (res.error) {
-        setError(res.error);
+        setError(formatAuthError(res.error));
         setLoading(false);
       } else {
         if (res.confirmationRequired) {
@@ -232,7 +307,7 @@ function SignUpFlow({ onSuccess, onPendingConfirmationChange }: SignUpFlowProps)
         onSuccess?.();
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to sign up.');
+      setError(formatAuthError(err));
       setLoading(false);
     }
   };
@@ -245,7 +320,19 @@ function SignUpFlow({ onSuccess, onPendingConfirmationChange }: SignUpFlowProps)
     !confirmPassword;
 
   return (
-    <form onSubmit={handleSubmit} className="ob-email-form">
+    <form onSubmit={handleSubmit} className="auth-form ob-email-form">
+      <FormInput
+        id="signup-name"
+        label="Your name (optional)"
+        type="text"
+        placeholder="e.g. Rahul Sharma"
+        value={displayName}
+        onChange={setDisplayName}
+        disabled={loading}
+        autoComplete="name"
+        required={false}
+      />
+
       <FormInput
         id="signup-email"
         label="Email address"
@@ -280,13 +367,13 @@ function SignUpFlow({ onSuccess, onPendingConfirmationChange }: SignUpFlowProps)
       />
 
       {error && (
-        <div className="ob-auth-error" role="alert">
+        <div className="auth-error ob-auth-error" role="alert">
           <span>{error}</span>
         </div>
       )}
 
       <button
-        className="primary-btn ob-auth-btn"
+        className="primary-btn auth-btn ob-auth-btn"
         type="submit"
         disabled={isSubmitDisabled}
       >
@@ -318,19 +405,19 @@ function ForgotPasswordFlow({ onBackToSignIn }: ForgotPasswordFlowProps) {
     try {
       const res = await resetPassword(email.trim());
       if (res.error) {
-        setError(res.error);
+        setError(formatAuthError(res.error));
       } else {
         setResetSent(true);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset link.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="ob-email-form">
+    <form onSubmit={handleSubmit} className="auth-form ob-email-form">
       <FormInput
         id="forgot-email"
         label="Email address"
@@ -343,27 +430,27 @@ function ForgotPasswordFlow({ onBackToSignIn }: ForgotPasswordFlowProps) {
       />
 
       {error && (
-        <div className="ob-auth-error" role="alert">
+        <div className="auth-error ob-auth-error" role="alert">
           <span>{error}</span>
         </div>
       )}
 
       {resetSent && (
-        <div className="ob-auth-success" role="status">
+        <div className="auth-success ob-auth-success" role="status">
           <CheckCircle size={16} />
           <span>Check your email for the password reset link.</span>
         </div>
       )}
 
       <button
-        className="primary-btn ob-auth-btn"
+        className="primary-btn auth-btn ob-auth-btn"
         type="submit"
         disabled={loading || !email.trim() || resetSent}
       >
         {loading ? <Loader size={18} className="spin-icon" /> : 'Send reset link'}
       </button>
 
-      <button type="button" className="ob-forgot-back-btn" onClick={onBackToSignIn}>
+      <button type="button" className="auth-forgot-back-btn ob-forgot-back-btn" onClick={onBackToSignIn}>
         Back to sign in
       </button>
     </form>
@@ -376,6 +463,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   onPendingConfirmationChange,
   showOfflineOption = false,
   initialMode = 'signin',
+  initialDisplayName = '',
   className = '',
 }) => {
   const { signInWithGoogle } = useRemoteAuth();
@@ -390,11 +478,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({
     try {
       const res = await signInWithGoogle();
       if (res?.error) {
-        setGoogleError(res.error);
+        setGoogleError(formatAuthError(res.error));
         setLoadingGoogle(false);
       }
     } catch (err: unknown) {
-      setGoogleError(err instanceof Error ? err.message : 'Failed to sign in with Google.');
+      setGoogleError(formatAuthError(err));
       setLoadingGoogle(false);
     }
   };
@@ -408,9 +496,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   const hasOffline = showOfflineOption || Boolean(onOffline);
 
   return (
-    <div className={`ob-auth-options ${className}`.trim()}>
+    <div className={`auth-options ob-auth-options ${className}`.trim()}>
       <button
-        className="ob-auth-btn ob-google-btn"
+        className="auth-btn ob-auth-btn auth-google-btn ob-google-btn"
         onClick={handleGoogle}
         disabled={loadingGoogle}
         type="button"
@@ -441,23 +529,23 @@ export const AuthForm: React.FC<AuthFormProps> = ({
       </button>
 
       {googleError && (
-        <div className="ob-auth-error" role="alert">
+        <div className="auth-error ob-auth-error" role="alert">
           <span>{googleError}</span>
         </div>
       )}
 
-      <div className="ob-auth-divider">or</div>
+      <div className="auth-divider ob-auth-divider">or</div>
 
       {isForgotMode ? (
         <ForgotPasswordFlow onBackToSignIn={() => setIsForgotMode(false)} />
       ) : (
         <div>
-          <div className="ob-auth-tabs" role="tablist">
+          <div className="auth-tabs ob-auth-tabs" role="tablist">
             <button
               type="button"
               role="tab"
               aria-selected={authMode === 'signin'}
-              className={`ob-auth-tab ${authMode === 'signin' ? 'active' : ''}`}
+              className={`auth-tab ob-auth-tab ${authMode === 'signin' ? 'active' : ''}`}
               onClick={() => handleTabChange('signin')}
             >
               Sign in
@@ -466,7 +554,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
               type="button"
               role="tab"
               aria-selected={authMode === 'signup'}
-              className={`ob-auth-tab ${authMode === 'signup' ? 'active' : ''}`}
+              className={`auth-tab ob-auth-tab ${authMode === 'signup' ? 'active' : ''}`}
               onClick={() => handleTabChange('signup')}
             >
               Sign up
@@ -482,6 +570,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             <SignUpFlow
               onSuccess={onSuccess}
               onPendingConfirmationChange={onPendingConfirmationChange}
+              initialDisplayName={initialDisplayName}
             />
           )}
         </div>
@@ -489,9 +578,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({
 
       {hasOffline && (
         <>
-          <div className="ob-auth-divider">or</div>
+          <div className="auth-divider ob-auth-divider">or</div>
           <button
-            className="ob-auth-btn ob-offline-btn"
+            className="auth-btn ob-auth-btn auth-offline-btn ob-offline-btn"
             onClick={onOffline}
             disabled={loadingGoogle}
             type="button"

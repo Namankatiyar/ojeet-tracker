@@ -5,7 +5,7 @@ import { Eye, EyeOff, KeyRound, Loader, X } from 'lucide-react';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { usePasswordStrength } from '../../hooks/usePasswordStrength';
-import { validatePassword } from '../../utils/auth';
+import { validatePassword, formatAuthError } from '../../utils/auth';
 
 export const PasswordResetModal: React.FC = () => {
   const { isPasswordRecovery, updatePassword, clearPasswordRecovery } = useRemoteAuth();
@@ -40,12 +40,12 @@ export const PasswordResetModal: React.FC = () => {
     try {
       const result = await updatePassword(password);
       if (result.error) {
-        setError(result.error);
+        setError(formatAuthError(result.error));
       } else {
         handleClose();
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update password.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -97,16 +97,16 @@ export const PasswordResetModal: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="password-reset-form">
-              <div className="ob-input-group">
-                <label className="ob-label" htmlFor="reset-new-password">
+            <form onSubmit={handleSubmit} className="auth-form password-reset-form">
+              <div className="auth-input-group ob-input-group">
+                <label className="auth-label ob-label" htmlFor="reset-new-password">
                   New password
                 </label>
-                <div className="ob-password-wrapper">
+                <div className="auth-password-wrapper ob-password-wrapper">
                   <input
                     id="reset-new-password"
                     type={showPassword ? 'text' : 'password'}
-                    className="ob-input"
+                    className="auth-input ob-input"
                     placeholder="Enter new password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -116,7 +116,7 @@ export const PasswordResetModal: React.FC = () => {
                   />
                   <button
                     type="button"
-                    className="ob-password-toggle"
+                    className="auth-password-toggle ob-password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     tabIndex={-1}
@@ -127,15 +127,15 @@ export const PasswordResetModal: React.FC = () => {
                 <PasswordStrengthMeter password={password} />
               </div>
 
-              <div className="ob-input-group">
-                <label className="ob-label" htmlFor="reset-confirm-password">
+              <div className="auth-input-group ob-input-group">
+                <label className="auth-label ob-label" htmlFor="reset-confirm-password">
                   Confirm new password
                 </label>
-                <div className="ob-password-wrapper">
+                <div className="auth-password-wrapper ob-password-wrapper">
                   <input
                     id="reset-confirm-password"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    className="ob-input"
+                    className="auth-input ob-input"
                     placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -145,7 +145,7 @@ export const PasswordResetModal: React.FC = () => {
                   />
                   <button
                     type="button"
-                    className="ob-password-toggle"
+                    className="auth-password-toggle ob-password-toggle"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     aria-label={
                       showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'
@@ -158,7 +158,7 @@ export const PasswordResetModal: React.FC = () => {
               </div>
 
               {error && (
-                <div className="ob-auth-error" role="alert">
+                <div className="auth-error ob-auth-error" role="alert">
                   <span>{error}</span>
                 </div>
               )}

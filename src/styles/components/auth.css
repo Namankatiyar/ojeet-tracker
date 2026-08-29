@@ -1,0 +1,517 @@
+/* ===== Auth Component Styles ===== */
+/* Provider-agnostic auth styling under cascade layer components */
+/* Conforms strictly to DESIGN_SYSTEM.md tokens and mobile-first rules */
+
+@layer components {
+  /* ======================== */
+  /* === Auth Options / Shell === */
+  /* ======================== */
+  .auth-options,
+  .ob-auth-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  /* ======================== */
+  /* === Auth Buttons === */
+  /* ======================== */
+  .auth-btn,
+  .ob-auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    min-height: 38px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .auth-btn:hover:not(:disabled),
+  .ob-auth-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .auth-btn:disabled,
+  .ob-auth-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .auth-btn:focus-visible,
+  .ob-auth-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 70%);
+  }
+
+  /* Google Branding (Permitted exception in DESIGN_SYSTEM.md) */
+  .auth-google-btn,
+  .ob-google-btn {
+    background: #ffffff;
+    color: #1f1f1f;
+    border: 1px solid #dadce0;
+  }
+
+  .auth-google-btn:hover:not(:disabled),
+  .ob-google-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+  }
+
+  /* Offline Button */
+  .auth-offline-btn,
+  .ob-offline-btn {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .auth-offline-btn:hover:not(:disabled),
+  .ob-offline-btn:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    border-color: var(--border-hover);
+  }
+
+  /* Primary submit button vibrant styling */
+  .auth-form .primary-btn,
+  .ob-email-form .primary-btn,
+  .auth-btn.primary-btn,
+  .ob-auth-btn.primary-btn {
+    background: var(--accent);
+    color: var(--accent-text);
+    border: 1px solid var(--accent-border);
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  html[data-theme^='dark-'] .auth-form .primary-btn,
+  html[data-theme^='dark-'] .ob-email-form .primary-btn,
+  html[data-theme^='dark-'] .auth-btn.primary-btn,
+  html[data-theme^='dark-'] .ob-auth-btn.primary-btn {
+    background: var(--accent);
+    color: var(--accent-text);
+    border: 1px solid var(--accent-border);
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .auth-form .primary-btn:hover:not(:disabled),
+  .ob-email-form .primary-btn:hover:not(:disabled),
+  .auth-btn.primary-btn:hover:not(:disabled),
+  .ob-auth-btn.primary-btn:hover:not(:disabled) {
+    background: var(--accent-hover);
+    color: var(--accent-text);
+    transform: translateY(-1px);
+  }
+
+  .auth-form .primary-btn:disabled,
+  .ob-email-form .primary-btn:disabled,
+  .auth-btn.primary-btn:disabled,
+  .ob-auth-btn.primary-btn:disabled {
+    background: color-mix(in srgb, var(--accent), var(--bg-tertiary) 40%);
+    color: color-mix(in srgb, var(--accent-text), transparent 25%);
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ======================== */
+  /* === Auth Dividers === */
+  /* ======================== */
+  .auth-divider,
+  .ob-auth-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-1) 0;
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+  }
+
+  .auth-divider::before,
+  .auth-divider::after,
+  .ob-auth-divider::before,
+  .ob-auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ======================== */
+  /* === Auth Tabs === */
+  /* ======================== */
+  .auth-tabs,
+  .ob-auth-tabs {
+    display: flex;
+    gap: var(--space-1);
+    margin-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .auth-tab,
+  .ob-auth-tab {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .auth-tab:hover:not(.active),
+  .ob-auth-tab:hover:not(.active) {
+    color: var(--text-primary);
+  }
+
+  .auth-tab.active,
+  .ob-auth-tab.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--accent);
+  }
+
+  .auth-tab:focus-visible,
+  .ob-auth-tab:focus-visible {
+    outline: none;
+    border-bottom-color: var(--accent);
+  }
+
+  /* ======================== */
+  /* === Forms & Inputs === */
+  /* ======================== */
+  .auth-form,
+  .ob-email-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .auth-input-group,
+  .ob-input-group {
+    margin-bottom: var(--space-2);
+  }
+
+  .auth-label,
+  .ob-label {
+    display: block;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+  }
+
+  .auth-input,
+  .ob-input {
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .auth-input:focus,
+  .ob-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
+  }
+
+  .auth-input::placeholder,
+  .ob-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .auth-password-wrapper,
+  .ob-password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .auth-password-wrapper .auth-input,
+  .auth-password-wrapper .ob-input,
+  .ob-password-wrapper .auth-input,
+  .ob-password-wrapper .ob-input {
+    padding-right: var(--space-10);
+  }
+
+  .auth-password-toggle,
+  .ob-password-toggle {
+    position: absolute;
+    right: var(--space-3);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-1);
+    border-radius: var(--radius-xs);
+    transition: color var(--transition-fast);
+  }
+
+  .auth-password-toggle:hover,
+  .ob-password-toggle:hover {
+    color: var(--text-primary);
+  }
+
+  .auth-password-toggle:focus-visible,
+  .ob-password-toggle:focus-visible {
+    outline: none;
+    color: var(--accent);
+  }
+
+  /* ======================== */
+  /* === Feedback Messages === */
+  /* ======================== */
+  .auth-error,
+  .ob-auth-error {
+    font-size: var(--text-xs);
+    color: var(--color-status-error);
+    padding: var(--space-2) var(--space-3);
+    background: color-mix(in srgb, var(--color-status-error), transparent 92%);
+    border: 1px solid color-mix(in srgb, var(--color-status-error), transparent 80%);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    line-height: 1.4;
+  }
+
+  .auth-success,
+  .ob-auth-success {
+    font-size: var(--text-xs);
+    color: var(--color-status-success);
+    padding: var(--space-2) var(--space-3);
+    background: color-mix(in srgb, var(--color-status-success), transparent 92%);
+    border: 1px solid color-mix(in srgb, var(--color-status-success), transparent 80%);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    line-height: 1.4;
+  }
+
+  .auth-info-note {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    padding: var(--space-3);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    line-height: 1.5;
+  }
+
+  /* ======================== */
+  /* === Links & Buttons === */
+  /* ======================== */
+  .auth-forgot-link,
+  .ob-forgot-link {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    align-self: flex-end;
+    font-family: inherit;
+    transition: color var(--transition-fast);
+  }
+
+  .auth-forgot-link:hover,
+  .ob-forgot-link:hover {
+    color: var(--accent);
+  }
+
+  .auth-forgot-link:focus-visible,
+  .ob-forgot-link:focus-visible {
+    outline: none;
+    color: var(--accent);
+  }
+
+  .auth-forgot-back-btn,
+  .ob-forgot-back-btn {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    align-self: center;
+    margin-top: var(--space-2);
+    font-family: inherit;
+    transition: color var(--transition-fast);
+  }
+
+  .auth-forgot-back-btn:hover,
+  .ob-forgot-back-btn:hover {
+    color: var(--accent);
+  }
+
+  .auth-forgot-back-btn:focus-visible,
+  .ob-forgot-back-btn:focus-visible {
+    outline: none;
+    color: var(--accent);
+  }
+
+  .auth-unconfirmed-section,
+  .ob-unconfirmed-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .auth-resend-link,
+  .ob-resend-link {
+    font-size: var(--text-xs);
+    color: var(--accent);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    align-self: flex-start;
+    font-family: inherit;
+    transition: opacity var(--transition-fast);
+  }
+
+  .auth-resend-link:hover:not(:disabled),
+  .ob-resend-link:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  .auth-resend-link:disabled,
+  .ob-resend-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ======================== */
+  /* === Confirmation Banners === */
+  /* ======================== */
+  .auth-banner,
+  .ob-confirm-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--accent), transparent 90%);
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  .auth-banner.global-email-banner {
+    position: relative;
+    z-index: 100;
+    margin: var(--space-2) var(--space-4) 0 var(--space-4);
+    border-radius: var(--radius-md);
+  }
+
+  .auth-banner-content,
+  .ob-confirm-banner-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .auth-banner-icon,
+  .ob-confirm-banner-icon {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .auth-banner-text,
+  .ob-confirm-banner-text {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .auth-banner-status {
+    font-weight: 600;
+  }
+
+  .auth-banner-status.success {
+    color: var(--color-status-success);
+  }
+
+  .auth-banner-status.error {
+    color: var(--color-status-error);
+  }
+
+  .auth-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  .auth-banner-btn {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent), transparent 85%);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-xs);
+    padding: var(--space-1) var(--space-2);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  .auth-banner-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--accent), transparent 75%);
+  }
+
+  .auth-banner-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .auth-banner-close,
+  .ob-confirm-banner-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-1);
+    border-radius: var(--radius-xs);
+    transition: color var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .auth-banner-close:hover,
+  .ob-confirm-banner-close:hover {
+    color: var(--text-primary);
+  }
+}
