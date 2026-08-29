@@ -64,6 +64,7 @@ seo_plan.md
 !spotify.png
 !og_image.jpg
 .env*
+!.env.example
 !onboardingImage.jpg
 
 # Agent / AI local cache & metadata

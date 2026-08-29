@@ -34,7 +34,7 @@ To get entire essence of this codebase you have following files at your disposal
 - **Advanced Glassmorphism**: Implementation of a **Refractive Index** control that dynamically adjusts saturation, brightness, and prismatic hue-rotation for a high-fidelity "refracted glass" look.
 - **Intelligent Theming**: Automatic accent color extraction from custom wallpapers using `node-vibrant` for a cohesive look.
 - **Multi-Exam Countdown**: Supports tracking multiple competitive exam dates simultaneously with a primary focus and a persistent, space-efficient cyclical secondary counter.
-- **Cloud-Synced Portability**: Seamless Google-backed cloud synchronization across devices via Supabase, utilizing compressed payload chunking for high data integrity.
+- **Cloud-Synced Portability**: Seamless multi-provider (Google OAuth & Email/Password) cloud synchronization across devices via Supabase, utilizing compressed payload chunking for high data integrity.
 - **Layered Styling Architecture**: Uses modern CSS Layers for strict cascade control.
 
 ---
@@ -169,7 +169,7 @@ Glass effects are centralized in `src/styles/components/glass.css` using the `.g
 - **Problem**: Local storage isolation prevented multi-device study tracking and posed a risk of data loss.
 - **Solution**:
   - **Supabase Integration**: Implemented bidirectional sync between `localStorage` and a remote Supabase instance.
-  - **Google OAuth**: Frictionless authentication using `RemoteAuthContext`.
+  - **Multi-Provider Authentication**: Frictionless authentication supporting Google OAuth, Email/Password sign-up, email verification, and password recovery flows via `RemoteAuthContext`.
   - **Payload Optimization**: Data is LZ-compressed and chunked into indexed rows when exceeding 512KB, bypassing DB row-size constraints while maintaining high reliability.
   - **Agile Aggregates**: Study time is aggregated per-subject and stored in a specialized table, permitting lightweight cross-device progress analytics.
   - **Onboarding UX**: Integrated context-aware modals for Cloud Sync prompting and PWA installation.

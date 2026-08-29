@@ -91,9 +91,17 @@ erDiagram
 
 ## 5. Authentication and Authorization Model
 
-- **Sign-in Flow:** OAuth (Google) via `supabase.auth.signInWithOAuth()`.
+- **Supported Auth Providers & Methods:**
+  - **Google OAuth:** One-click OAuth authentication via `supabase.auth.signInWithOAuth()`.
+  - **Email & Password Sign-Up:** Registered via `supabase.auth.signUp()` with customizable display name metadata.
+  - **Email Confirmation:** Handled via confirmation emails with resend capability (`supabase.auth.resend({ type: 'signup' })`) and an in-app banner for unconfirmed accounts.
+  - **Password Recovery:** Triggered via `supabase.auth.resetPasswordForEmail()`, listening for `PASSWORD_RECOVERY` auth events to mount the in-app `PasswordResetModal` for `supabase.auth.updateUser({ password })`.
+  - **In-App Credential Updates:** Users can safely update passwords or change email addresses via `supabase.auth.updateUser()`.
+- **Redirect URL Resolution:** Dynamic client-side resolution via `window.location.origin` (with fallback to `https://tracker.ojeet.tech`). This enables smooth redirect workflows across `localhost:5173`, Vercel branch previews, and production without static configuration mismatch.
 - **Session Persistence:** Configured in `supabase.ts` with `persistSession: true` and `autoRefreshToken: true`.
-- **Profile Provisioning:** Handled via a database trigger (`handle_new_user_profile`) that automatically inserts a `profiles` row when an `auth.users` record is created.
+- **Profile Provisioning & Lifecycle:**
+  - Database trigger `handle_new_user_profile` creates an initial `profiles` row upon new user creation in `auth.users`.
+  - Lazy client-side profile creation/synchronization via `useProfileSync.ts` ensures user metadata (display name, avatars) is backfilled and kept in sync.
 - **RLS Enforcement:** Enabled on all tables. Policies rigorously check `auth.uid() = user_id` for modification. `profiles` and `live_activity` are readable by all authenticated users (peer filtering is intentionally deferred to the client for performance).
 - **Privilege Boundaries:** There is no "admin" role or service-role client used in the codebase. All access is strictly context-bound to the authenticated user.
 

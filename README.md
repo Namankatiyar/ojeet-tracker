@@ -9,6 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Google Auth](https://img.shields.io/badge/Google_Auth-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/identity)
+[![Email Auth](https://img.shields.io/badge/Email_Auth-10B981?style=for-the-badge&logo=minutemailer&logoColor=white)](#)
 <br/>
 
 [![Users](https://img.shields.io/badge/Registered_Users-500%2B-6C63FF?style=for-the-badge&logoColor=white)](#)
@@ -114,7 +115,7 @@ Granular syllabus tracking across **Physics**, **Chemistry**, **Maths**, and **B
 ### 💾 Persistence & Cloud Sync
 
 - ⚡ **Offline-First Architecture** — LocalStorage as primary source of truth for zero-latency operations
-- ☁️ **Robust Sync Engine** — Optional Supabase integration for encrypted cloud backups
+- ☁️ **Multi-Provider Cloud Sync** — Optional Supabase integration for encrypted cloud backups via Google OAuth or Email & Password
 - 🗜️ **Compression & Chunking** — LZ-compression and chunked payloads to minimize egress
 
 <br/>
@@ -142,7 +143,7 @@ Backend (opt.):   Supabase (Auth, Storage, Realtime)
 | `SettingsContext`     | Exam mode (`jee` / `neet`), reset hour, sound preferences|
 | `SubjectDataContext`  | Syllabus metadata, column headers, subject tables        |
 | `UserProgressContext` | Completion percentages, schedules, mock scores           |
-| `RemoteAuthContext`   | Supabase Auth, Google OAuth, session tokens              |
+| `RemoteAuthContext`   | Supabase Auth, Google OAuth & Email/Password, session tokens |
 | `RemoteSyncContext`   | Background delta syncing between LocalStorage & Supabase |
 
 <br/>
