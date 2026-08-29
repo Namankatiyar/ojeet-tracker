@@ -11,9 +11,6 @@ interface RemoteAuthContextType {
   isPromptDismissed: boolean;
   isPasswordRecovery: boolean;
   unconfirmedEmail: string | null;
-  isEmailBannerDismissed: boolean;
-  dismissEmailBanner: () => void;
-  resetEmailBanner: () => void;
   setPendingUnconfirmedEmail: (email: string | null) => void;
   dismissPrompt: () => void;
   resetPrompt: () => void;
@@ -141,7 +138,6 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [pendingUnconfirmedEmail, setPendingUnconfirmedEmailState] = useState<string | null>(
     readPendingUnconfirmedEmail
   );
-  const [isEmailBannerDismissed, setIsEmailBannerDismissed] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -213,24 +209,11 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
     return pendingUnconfirmedEmail;
   }, [user, pendingUnconfirmedEmail]);
-
-  const dismissEmailBanner = useCallback(() => {
-    setIsEmailBannerDismissed(true);
-  }, []);
-
-  const resetEmailBanner = useCallback(() => {
-    setIsEmailBannerDismissed(false);
-  }, []);
-
   const setPendingUnconfirmedEmail = useCallback((email: string | null) => {
     const trimmed = email && email.trim() ? email.trim() : null;
     setPendingUnconfirmedEmailState(trimmed);
     writePendingUnconfirmedEmail(trimmed);
-    if (trimmed) {
-      setIsEmailBannerDismissed(false);
-    }
   }, []);
-
   const dismissPrompt = useCallback(() => {
     setIsPromptDismissed(true);
     if (typeof window !== 'undefined') {
@@ -296,7 +279,6 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const trimmedEmail = email.trim();
         setPendingUnconfirmedEmailState(trimmedEmail);
         writePendingUnconfirmedEmail(trimmedEmail);
-        setIsEmailBannerDismissed(false);
       }
       return { error: null, confirmationRequired };
     },
@@ -319,7 +301,6 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           const trimmedEmail = email.trim();
           setPendingUnconfirmedEmailState(trimmedEmail);
           writePendingUnconfirmedEmail(trimmedEmail);
-          setIsEmailBannerDismissed(false);
         }
         return { error: error.message };
       }
@@ -387,7 +368,6 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const trimmedEmail = newEmail.trim();
         setPendingUnconfirmedEmailState(trimmedEmail);
         writePendingUnconfirmedEmail(trimmedEmail);
-        setIsEmailBannerDismissed(false);
       }
       return { error: null, confirmationRequired };
     },
@@ -423,7 +403,6 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const signOut = useCallback(async () => {
     setPendingUnconfirmedEmailState(null);
     writePendingUnconfirmedEmail(null);
-    setIsEmailBannerDismissed(false);
     clearRemoteSyncMetadata();
 
     if (!isSupabaseConfigured || !supabase) {
@@ -443,9 +422,6 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       isPromptDismissed,
       isPasswordRecovery,
       unconfirmedEmail,
-      isEmailBannerDismissed,
-      dismissEmailBanner,
-      resetEmailBanner,
       setPendingUnconfirmedEmail,
       dismissPrompt,
       resetPrompt,
@@ -461,14 +437,11 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }),
     [
       clearPasswordRecovery,
-      dismissEmailBanner,
       dismissPrompt,
-      isEmailBannerDismissed,
       isLoading,
       isPasswordRecovery,
       isPromptDismissed,
       resendConfirmationEmail,
-      resetEmailBanner,
       resetPassword,
       resetPrompt,
       session,

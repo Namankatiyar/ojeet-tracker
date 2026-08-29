@@ -45,7 +45,7 @@ describe('RemoteAuthContext', () => {
     const { result } = renderHook(() => useRemoteAuth(), { wrapper });
 
     expect(result.current.unconfirmedEmail).toBe('stored@example.com');
-    expect(result.current.isEmailBannerDismissed).toBe(false);
+
   });
 
   it('sets unconfirmedEmail when signUp requires confirmation', async () => {
@@ -86,22 +86,7 @@ describe('RemoteAuthContext', () => {
     expect(localStorage.getItem('ojeet-pending-unconfirmed-email')).toBe('unconfirmed@example.com');
   });
 
-  it('allows dismissing and resetting the email banner', () => {
-    localStorage.setItem('ojeet-pending-unconfirmed-email', 'user@example.com');
-    const { result } = renderHook(() => useRemoteAuth(), { wrapper });
 
-    expect(result.current.isEmailBannerDismissed).toBe(false);
-
-    act(() => {
-      result.current.dismissEmailBanner();
-    });
-    expect(result.current.isEmailBannerDismissed).toBe(true);
-
-    act(() => {
-      result.current.resetEmailBanner();
-    });
-    expect(result.current.isEmailBannerDismissed).toBe(false);
-  });
 
   it('calls resend with unconfirmedEmail when no email param is passed', async () => {
     mockResend.mockResolvedValue({ data: {}, error: null });
