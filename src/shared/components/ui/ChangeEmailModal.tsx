@@ -108,7 +108,7 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <div className="change-email-header-title">
                 <Mail size={20} className="auth-banner-icon" />
                 <h2 id="change-email-modal-title">Change Email</h2>
               </div>
@@ -123,16 +123,15 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="auth-form" style={{ marginTop: 'var(--space-2)' }}>
+            <form onSubmit={handleSubmit} className="auth-form change-email-form">
               <div className="auth-input-group">
                 <label className="auth-label">Current email</label>
                 <input
                   type="text"
-                  className="auth-input"
+                  className="auth-input auth-input-readonly"
                   value={currentEmail || 'Not signed in'}
                   disabled
                   readOnly
-                  style={{ opacity: 0.7 }}
                 />
               </div>
 
@@ -156,8 +155,8 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
                 />
               </div>
 
-              <div className="auth-info-note" style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                <Info size={16} style={{ flexShrink: 0, color: 'var(--accent)', marginTop: '2px' }} />
+              <div className="auth-info-note">
+                <Info size={16} className="auth-info-icon" />
                 <span>
                   Per Supabase security policy, a confirmation link will be sent to both your current email and your new email address.
                 </span>
@@ -171,12 +170,12 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
 
               {successMessage && (
                 <div className="auth-success" role="status">
-                  <CheckCircle size={16} style={{ flexShrink: 0 }} />
+                  <CheckCircle size={16} className="auth-status-icon" />
                   <span>{successMessage}</span>
                 </div>
               )}
 
-              <div className="modal-footer" style={{ marginTop: 'var(--space-4)' }}>
+              <div className="modal-footer">
                 <button
                   type="button"
                   className="action-btn outline small"

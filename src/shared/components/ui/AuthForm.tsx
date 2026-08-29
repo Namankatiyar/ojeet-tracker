@@ -3,7 +3,7 @@ import { CheckCircle, Eye, EyeOff, Loader, WifiOff } from 'lucide-react';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { usePasswordStrength } from '../../hooks/usePasswordStrength';
-import { validatePassword, formatAuthError } from '../../utils/auth';
+import { validatePassword, formatAuthError, isUnconfirmedEmailError } from '../../utils/auth';
 
 export interface AuthFormProps {
   onSuccess?: () => void;
@@ -11,7 +11,6 @@ export interface AuthFormProps {
   onPendingConfirmationChange?: (pending: boolean) => void;
   showOfflineOption?: boolean;
   initialMode?: 'signin' | 'signup';
-  initialDisplayName?: string;
   className?: string;
 }
 
@@ -118,9 +117,10 @@ function PasswordInput({
 interface SignInFlowProps {
   onSuccess?: () => void;
   onForgotPassword: () => void;
+  onPendingConfirmationChange?: (pending: boolean) => void;
 }
 
-function SignInFlow({ onSuccess, onForgotPassword }: SignInFlowProps) {
+function SignInFlow({ onSuccess, onForgotPassword, onPendingConfirmationChange }: SignInFlowProps) {
   const { signInWithPassword, resendConfirmationEmail } = useRemoteAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -145,13 +145,14 @@ function SignInFlow({ onSuccess, onForgotPassword }: SignInFlowProps) {
       const res = await signInWithPassword(email.trim(), password);
       if (res.error) {
         setError(formatAuthError(res.error));
-        const isUnconf =
-          res.error.toLowerCase().includes('email not confirmed') ||
-          res.error.toLowerCase().includes('not confirmed') ||
-          res.error.toLowerCase().includes('email_not_confirmed');
-        setIsUnconfirmed(isUnconf);
+        const unconfirmed = isUnconfirmedEmailError(res.error);
+        setIsUnconfirmed(unconfirmed);
+        if (unconfirmed) {
+          onPendingConfirmationChange?.(true);
+        }
         setLoading(false);
       } else {
+        onPendingConfirmationChange?.(false);
         onSuccess?.();
       }
     } catch (err: unknown) {
@@ -219,23 +220,12 @@ function SignInFlow({ onSuccess, onForgotPassword }: SignInFlowProps) {
       )}
 
       {isUnconfirmed && (
-        <div className="auth-unconfirmed-section ob-unconfirmed-section" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+        <div className="auth-unconfirmed-section ob-unconfirmed-section">
           <button
             type="button"
             className="auth-resend-link ob-resend-link"
             onClick={handleResendConfirmation}
             disabled={resendingConfirm}
-            style={{
-              fontSize: 'var(--text-xs)',
-              color: 'var(--accent)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              textDecoration: 'underline',
-              alignSelf: 'flex-start',
-              fontFamily: 'inherit',
-            }}
           >
             {resendingConfirm ? 'Resending...' : 'Resend confirmation email'}
           </button>
@@ -267,12 +257,13 @@ function SignInFlow({ onSuccess, onForgotPassword }: SignInFlowProps) {
 interface SignUpFlowProps {
   onSuccess?: () => void;
   onPendingConfirmationChange?: (pending: boolean) => void;
-  initialDisplayName?: string;
 }
 
-function SignUpFlow({ onSuccess, onPendingConfirmationChange, initialDisplayName = '' }: SignUpFlowProps) {
+function SignUpFlow({
+  onSuccess,
+  onPendingConfirmationChange,
+}: SignUpFlowProps) {
   const { signUpWithEmail } = useRemoteAuth();
-  const [displayName, setDisplayName] = useState(initialDisplayName);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -296,7 +287,10 @@ function SignUpFlow({ onSuccess, onPendingConfirmationChange, initialDisplayName
     setLoading(true);
 
     try {
-      const res = await signUpWithEmail(email.trim(), password, displayName.trim() || undefined);
+      const res = await signUpWithEmail(
+        email.trim(),
+        password
+      );
       if (res.error) {
         setError(formatAuthError(res.error));
         setLoading(false);
@@ -321,18 +315,6 @@ function SignUpFlow({ onSuccess, onPendingConfirmationChange, initialDisplayName
 
   return (
     <form onSubmit={handleSubmit} className="auth-form ob-email-form">
-      <FormInput
-        id="signup-name"
-        label="Your name (optional)"
-        type="text"
-        placeholder="e.g. Rahul Sharma"
-        value={displayName}
-        onChange={setDisplayName}
-        disabled={loading}
-        autoComplete="name"
-        required={false}
-      />
-
       <FormInput
         id="signup-email"
         label="Email address"
@@ -463,7 +445,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   onPendingConfirmationChange,
   showOfflineOption = false,
   initialMode = 'signin',
-  initialDisplayName = '',
   className = '',
 }) => {
   const { signInWithGoogle } = useRemoteAuth();
@@ -565,12 +546,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             <SignInFlow
               onSuccess={onSuccess}
               onForgotPassword={() => setIsForgotMode(true)}
+              onPendingConfirmationChange={onPendingConfirmationChange}
             />
           ) : (
             <SignUpFlow
               onSuccess={onSuccess}
               onPendingConfirmationChange={onPendingConfirmationChange}
-              initialDisplayName={initialDisplayName}
             />
           )}
         </div>

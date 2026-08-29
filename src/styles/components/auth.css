@@ -317,6 +317,39 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     line-height: 1.5;
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+  }
+
+  .auth-info-icon {
+    flex-shrink: 0;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+
+  .auth-status-icon {
+    flex-shrink: 0;
+  }
+
+  .auth-input.auth-input-readonly,
+  .auth-input:read-only {
+    opacity: 0.7;
+    cursor: default;
+  }
+
+  .change-email-header-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .change-email-form {
+    margin-top: var(--space-2);
+  }
+
+  .change-email-form .modal-footer {
+    margin-top: var(--space-4);
   }
 
   /* ======================== */
@@ -372,7 +405,8 @@
   }
 
   .auth-unconfirmed-section,
-  .ob-unconfirmed-section {
+  .ob-unconfirmed-section,
+  .auth-unconfirmed-box {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
@@ -409,10 +443,10 @@
   .auth-banner,
   .ob-confirm-banner {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
     border: 1px solid var(--accent);
     border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--accent), transparent 90%);
@@ -424,14 +458,14 @@
   .auth-banner.global-email-banner {
     position: relative;
     z-index: 100;
-    margin: var(--space-2) var(--space-4) 0 var(--space-4);
-    border-radius: var(--radius-md);
+    margin: var(--space-2) var(--space-3) 0 var(--space-3);
+    border-radius: var(--radius-sm);
   }
 
   .auth-banner-content,
   .ob-confirm-banner-content {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-2);
     flex: 1;
     min-width: 0;
@@ -441,17 +475,18 @@
   .ob-confirm-banner-icon {
     color: var(--accent);
     flex-shrink: 0;
+    margin-top: 2px;
   }
 
   .auth-banner-text,
   .ob-confirm-banner-text {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
     gap: var(--space-1);
     font-size: var(--text-xs);
     color: var(--text-primary);
     line-height: 1.4;
+    word-break: break-word;
   }
 
   .auth-banner-status {
@@ -469,8 +504,9 @@
   .auth-banner-actions {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: var(--space-2);
-    flex-shrink: 0;
+    width: 100%;
   }
 
   .auth-banner-btn {
@@ -483,6 +519,9 @@
     padding: var(--space-1) var(--space-2);
     cursor: pointer;
     font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
     transition: background-color var(--transition-fast), opacity var(--transition-fast);
   }
 
@@ -513,5 +552,44 @@
   .auth-banner-close:hover,
   .ob-confirm-banner-close:hover {
     color: var(--text-primary);
+  }
+
+  @media (min-width: 48rem) {
+    .auth-banner,
+    .ob-confirm-banner {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+    }
+
+    .auth-banner.global-email-banner {
+      margin: var(--space-2) var(--space-4) 0 var(--space-4);
+      border-radius: var(--radius-md);
+    }
+
+    .auth-banner-content,
+    .ob-confirm-banner-content {
+      align-items: center;
+    }
+
+    .auth-banner-icon,
+    .ob-confirm-banner-icon {
+      margin-top: 0;
+    }
+
+    .auth-banner-text,
+    .ob-confirm-banner-text {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .auth-banner-actions {
+      width: auto;
+      justify-content: flex-start;
+      flex-shrink: 0;
+    }
   }
 }
