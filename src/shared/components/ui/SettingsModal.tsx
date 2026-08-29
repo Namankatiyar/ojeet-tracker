@@ -12,15 +12,20 @@ import {
   Trash2,
   Cloud,
   LogOut,
+  KeyRound,
+  Mail,
 } from 'lucide-react';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useRemoteSync } from '../../../core/context/RemoteSyncContext';
 import { useSettings } from '../../../core/context/UserProgressContext';
 import { supabase } from '../../../shared/lib/supabase';
 import { runPwaRecoveryAndReload } from '../../utils/pwaBridge';
+import { formatAuthError } from '../../utils/auth';
 import { AuthModal } from './AuthModal';
 import { ConfirmationModal } from './ConfirmationModal';
 import { CustomSelect } from './CustomSelect';
+import { ChangePasswordModal } from './ChangePasswordModal';
+import { ChangeEmailModal } from './ChangeEmailModal';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -144,7 +149,10 @@ export function SettingsModal({
   const [authStatus, setAuthStatus] = useState<string>('');
   const [isAuthBusy, setIsAuthBusy] = useState(false);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
-  const { user, isConfigured, signOut, resetPrompt } = useRemoteAuth();
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [isChangeEmailModalOpen, setIsChangeEmailModalOpen] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const { user, isConfigured, signOut, resetPrompt, resetPassword } = useRemoteAuth();
   const {
     status: syncStatus,
     lastSyncedAt,
@@ -236,6 +244,24 @@ export function SettingsModal({
   const modalRoot = document.getElementById('modal-root');
 
   if (!modalRoot) return null;
+
+  const handleResetPassword = async () => {
+    if (!user?.email) return;
+    setIsResettingPassword(true);
+    setAuthStatus('');
+    try {
+      const res = await resetPassword(user.email);
+      if (res.error) {
+        setAuthStatus(formatAuthError(res.error));
+      } else {
+        setAuthStatus(`Password reset email sent to ${user.email}. Check your inbox.`);
+      }
+    } catch (err: unknown) {
+      setAuthStatus(formatAuthError(err));
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
 
   const handleExport = () => {
     try {
@@ -396,7 +422,7 @@ export function SettingsModal({
     setAuthStatus('');
     const { error } = await signOut();
     if (error) {
-      setAuthStatus(error);
+      setAuthStatus(formatAuthError(error));
       setIsAuthBusy(false);
       return;
     }
@@ -814,7 +840,7 @@ export function SettingsModal({
                     <span className="setting-label">Account</span>
                     <span className="setting-description">
                       {user
-                        ? `Signed in as ${user.email ?? 'Unknown email'}`
+                        ? `Signed in as ${user.email ?? 'Unknown email'} (${user.app_metadata?.provider === 'google' ? 'Google' : 'Email'})`
                         : 'Not signed in. Local mode continues to work.'}
                     </span>
                   </div>
@@ -838,30 +864,82 @@ export function SettingsModal({
                   )}
                 </div>
                 {user && (
-                  <div className="settings-row">
-                    <div className="setting-info">
-                      <span className="setting-label">Sync Status</span>
-                      <span className="setting-description">
-                        {syncStatus === 'syncing' && 'Syncing...'}
-                        {syncStatus === 'synced' &&
-                          `Last synced: ${lastSyncedAt ? new Date(lastSyncedAt).toLocaleString() : 'just now'}`}
-                        {syncStatus === 'error' && (syncError || 'Sync failed')}
-                        {syncStatus === 'idle' && 'Idle'}
-                      </span>
-                      <span className="setting-description">
-                        Video logs synced from cloud app:{' '}
-                        {remoteStudyAggregate?.video_watch_45d_json?.length ?? 0}
-                      </span>
+                  <>
+                    {user.app_metadata?.provider !== 'google' && (
+                      <>
+                        <div className="settings-row">
+                          <div className="setting-info">
+                            <span className="setting-label">Email Address</span>
+                            <span className="setting-description">
+                              Update the email address associated with your account.
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="action-btn outline small"
+                            onClick={() => setIsChangeEmailModalOpen(true)}
+                            disabled={isAuthBusy}
+                          >
+                            <Mail size={16} />
+                            Change Email
+                          </button>
+                        </div>
+
+                        <div className="settings-row">
+                          <div className="setting-info">
+                            <span className="setting-label">Password</span>
+                            <span className="setting-description">
+                              Change your account password directly or send a recovery link.
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="action-btn outline small"
+                              onClick={() => setIsChangePasswordModalOpen(true)}
+                              disabled={isAuthBusy}
+                            >
+                              <KeyRound size={16} />
+                              Change Password
+                            </button>
+                            <button
+                              type="button"
+                              className="action-btn outline small"
+                              onClick={handleResetPassword}
+                              disabled={isResettingPassword || isAuthBusy}
+                            >
+                              {isResettingPassword ? 'Sending...' : 'Reset via Email'}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="settings-row">
+                      <div className="setting-info">
+                        <span className="setting-label">Sync Status</span>
+                        <span className="setting-description">
+                          {syncStatus === 'syncing' && 'Syncing...'}
+                          {syncStatus === 'synced' &&
+                            `Last synced: ${lastSyncedAt ? new Date(lastSyncedAt).toLocaleString() : 'just now'}`}
+                          {syncStatus === 'error' && (syncError || 'Sync failed')}
+                          {syncStatus === 'idle' && 'Idle'}
+                        </span>
+                        <span className="setting-description">
+                          Video logs synced from cloud app:{' '}
+                          {remoteStudyAggregate?.video_watch_45d_json?.length ?? 0}
+                        </span>
+                      </div>
+                      <button
+                        className="action-btn outline small"
+                        onClick={() => syncNow()}
+                        disabled={isAuthBusy || syncStatus === 'syncing'}
+                      >
+                        <Cloud size={16} />
+                        {syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
+                      </button>
                     </div>
-                    <button
-                      className="action-btn outline small"
-                      onClick={() => syncNow()}
-                      disabled={isAuthBusy || syncStatus === 'syncing'}
-                    >
-                      <Cloud size={16} />
-                      {syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
-                    </button>
-                  </div>
+                  </>
                 )}
                 {authStatus && (
                   <div className="settings-row vertical">
@@ -937,6 +1015,14 @@ export function SettingsModal({
         onClose={() => setIsSignInModalOpen(false)}
         title="Account Sign In"
         subtitle="Sign in to sync your study data and profile across devices."
+      />
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+      />
+      <ChangeEmailModal
+        isOpen={isChangeEmailModalOpen}
+        onClose={() => setIsChangeEmailModalOpen(false)}
       />
     </>,
     modalRoot
