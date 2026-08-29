@@ -1,3 +1,29 @@
+# [3.6.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.5.0...v3.6.0) (2026-08-29)
+
+
+### Bug Fixes
+
+* **auth:** preserve auth tokens across redirects and use dynamic redirect url ([ce8ac33](https://github.com/Namankatiyar/ojeet-tracker/commit/ce8ac33336654b62f9c8dcdf2b21ee5108ba4b35))
+* **css:** remove extra closing bracket in auth.css ([0f21094](https://github.com/Namankatiyar/ojeet-tracker/commit/0f21094dd6f009ae069d39e7ae8eaae647a9f49d))
+
+
+### Features
+
+* **auth:** add email update support and friendly error formatting ([c2f0b55](https://github.com/Namankatiyar/ojeet-tracker/commit/c2f0b55f277fc4144c982e89119502c331d4f6a4))
+* **auth:** add password reset modal and handle password recovery flow ([3de60fc](https://github.com/Namankatiyar/ojeet-tracker/commit/3de60fc9ddb3770b3b4693a3c93480d5aa54bc12))
+* **auth:** add password strength calculator, hook, and visual meter ([4ec9d60](https://github.com/Namankatiyar/ojeet-tracker/commit/4ec9d60bcc53bc336593311139d9cebbfae80148))
+* **auth:** add persistent global email confirmation banner with resend action ([2789006](https://github.com/Namankatiyar/ojeet-tracker/commit/278900684289dd8eac2c76d74ee5df27d6629323))
+* **auth:** add reusable AuthForm and AuthModal components ([301dfd5](https://github.com/Namankatiyar/ojeet-tracker/commit/301dfd5642d0ad85ee6258350a85d210e2773235))
+* **auth:** add unconfirmed email error detection and auth context state ([4ff695b](https://github.com/Namankatiyar/ojeet-tracker/commit/4ff695be8fd69f1c91db19e343444977189a3738))
+* **auth:** migrate email verification to dashboard notifications ([1bbfe17](https://github.com/Namankatiyar/ojeet-tracker/commit/1bbfe17b793318b8dec8bc67ab6b1b65f8b08527))
+* **auth:** replace google-only sign-in surfaces with unified AuthModal ([007409d](https://github.com/Namankatiyar/ojeet-tracker/commit/007409dbe709e4fdad35635a3cc2426a9f835d35))
+* **auth:** support email signup, signin, and password recovery in RemoteAuthContext ([da02c7e](https://github.com/Namankatiyar/ojeet-tracker/commit/da02c7e0ececa9d718865e86fda4fe8f0c00b4f2))
+* **auth:** update email change modal, auth styles, and remove optional name from signup form ([89f8260](https://github.com/Namankatiyar/ojeet-tracker/commit/89f826053deb4780eac5fca1d9d3d19614b2f118))
+* **notifications:** add support for non-dismissible notifications ([517dc23](https://github.com/Namankatiyar/ojeet-tracker/commit/517dc23826a84a6189176d567c5f317f58c0f0b7))
+* **onboarding:** add email confirmation banner and make name step optional ([f1e9f25](https://github.com/Namankatiyar/ojeet-tracker/commit/f1e9f255d39dd21db34220b01ea113c268755d72))
+* **onboarding:** integrate email auth tabs, password strength meter, and confirmation banner ([196273c](https://github.com/Namankatiyar/ojeet-tracker/commit/196273c20dcf875d3b951e08efcf3b3435d45aa3))
+* **settings:** add in-app password and email change modals ([4e27202](https://github.com/Namankatiyar/ojeet-tracker/commit/4e27202136ab44a0b7848c8da20571716220e4c2))
+
 # [3.5.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.4.2...v3.5.0) (2026-08-25)
 
 
