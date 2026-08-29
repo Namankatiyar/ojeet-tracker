@@ -21,14 +21,17 @@ export function PrivacyPolicyPage() {
           <p>
             The app stores your subject progress, tasks, study sessions, mock scores, exam dates,
             visual preferences, and optional profile settings in localStorage on your device. If you
-            use Google Sign-In, the app only requests your name and email address for account
-            identity.
+            sign in using Google Sign-In or Email and Password authentication, the app only
+            collects your email address and optional display name for account identification and
+            authentication purposes. Passwords are securely hashed and managed by Supabase Auth and
+            are never accessible in plain text.
           </p>
 
           <h2>Cloud Sync and Access</h2>
           <p>
-            After signing in with Google, your tracker data can be stored in the cloud so you can
-            access it across multiple devices using the same account.
+            After signing in with an authenticated account (via Google Sign-In or Email/Password),
+            your tracker data can be securely stored in the cloud so you can access it across multiple
+            devices using the same account.
           </p>
 
           <h2>Data Sharing</h2>

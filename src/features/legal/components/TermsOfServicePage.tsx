@@ -16,11 +16,13 @@ export function TermsOfServicePage() {
             use the app and manage your local data.
           </p>
 
-          <h2>Google Sign-In and Cloud Sync</h2>
+          <h2>Authentication and Cloud Sync</h2>
           <p>
-            The app supports Google Sign-In so you can store data in the cloud and access it from
-            multiple devices. Sign-in requests only your name and email address. No additional
-            personal data is requested by this app for authentication.
+            The app supports both Google OAuth and Email/Password authentication so you can store
+            data in the cloud and access it from multiple devices. Sign-in requests only your email
+            address and optional display name. When registering with email and password, passwords
+            are securely handled and hashed by Supabase Auth. No unnecessary personal data is requested
+            or stored by this app for authentication.
           </p>
 
           <h2>Intended Use</h2>
