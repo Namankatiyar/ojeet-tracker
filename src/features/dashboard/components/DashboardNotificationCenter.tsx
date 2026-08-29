@@ -16,6 +16,7 @@ export interface DashboardNotificationItem {
   primaryAction?: DashboardNotificationAction;
   secondaryAction?: DashboardNotificationAction;
   onDismiss: () => void;
+  dismissible?: boolean;
 }
 
 interface DashboardNotificationCenterProps {
@@ -83,14 +84,16 @@ export function DashboardNotificationCenter({
               >
                 <div className="dashboard-notification-item-head">
                   <h4>{item.title}</h4>
-                  <button
-                    type="button"
-                    className="dashboard-notification-dismiss"
-                    onClick={item.onDismiss}
-                    aria-label={`Dismiss ${item.title}`}
-                  >
-                    <X size={14} />
-                  </button>
+                  {item.dismissible !== false && (
+                    <button
+                      type="button"
+                      className="dashboard-notification-dismiss"
+                      onClick={item.onDismiss}
+                      aria-label={`Dismiss ${item.title}`}
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                 </div>
                 <p>{item.message}</p>
                 {(item.primaryAction || item.secondaryAction) && (
