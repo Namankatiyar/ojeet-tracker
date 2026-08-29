@@ -13,6 +13,7 @@ import {
   LiveActivity,
 } from '../../../shared/types';
 import { getLogicalTodayStr } from '../../../shared/utils/date';
+import { getDisplayName, getAvatarUrl } from '../../../shared/utils/auth';
 import {
   Pencil,
   GraduationCap,
@@ -281,24 +282,16 @@ export const UserProfileCard = memo(function UserProfileCard({
 
   const activeSettings = previewSettings || progressCardSettings;
 
-  const googleName = !remoteProfileData
-    ? user?.user_metadata?.full_name || user?.user_metadata?.name
-    : undefined;
-  const googleAvatar = !remoteProfileData
-    ? user?.user_metadata?.avatar_url || user?.user_metadata?.picture
-    : undefined;
-
   const userName = isSignedOutCurrentUser
     ? ''
     : remoteProfileData?.display_name ||
       remoteProfileData?.username ||
-      activeSettings.userName ||
-      googleName;
+      getDisplayName(user, activeSettings.userName);
   const customAvatarUrl = isSignedOutCurrentUser
     ? ''
     : remoteProfileData
       ? remoteProfileData.avatar_url
-      : activeSettings.customAvatarUrl || googleAvatar;
+      : getAvatarUrl(user, activeSettings.customAvatarUrl) || '';
   const bannerUrl = isSignedOutCurrentUser
     ? ''
     : remoteProfileData

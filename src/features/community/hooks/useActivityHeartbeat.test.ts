@@ -53,6 +53,7 @@ describe('useActivityHeartbeat Hook', () => {
       signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
       resetPassword: vi.fn().mockResolvedValue({ error: null }),
       updatePassword: vi.fn().mockResolvedValue({ error: null }),
+      resendConfirmationEmail: vi.fn().mockResolvedValue({ error: null }),
       clearPasswordRecovery: vi.fn(),
       signOut: vi.fn().mockResolvedValue({ error: null }),
     });

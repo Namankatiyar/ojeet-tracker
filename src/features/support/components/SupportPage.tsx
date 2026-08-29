@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { triggerMassiveConfetti } from '../../../shared/utils/confetti';
 import { useTheme } from '../../../core/context/ThemeContext';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
+import { useUserProgress } from '../../../core/context/UserProgressContext';
 import { AuthModal } from '../../../shared/components/ui/AuthModal';
+import { getDisplayName } from '../../../shared/utils/auth';
 
 // --- Doodles & Icons ---
 const DoodleHeart = ({
@@ -126,6 +128,7 @@ const loadRazorpayScript = () => {
 export const SupportPage: React.FC = () => {
   const { setSupportOverride } = useTheme();
   const { user } = useRemoteAuth();
+  const { progressCardSettings } = useUserProgress();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -174,13 +177,13 @@ export const SupportPage: React.FC = () => {
 
     // 2. Personal info prefilling from user metadata
     setPrefillEmail(user?.email || '');
-    setPrefillName(user?.user_metadata?.full_name || user?.user_metadata?.name || '');
+    setPrefillName(getDisplayName(user, progressCardSettings?.userName));
 
     // 3. Note prefilling
     if (urlNote) {
       setNote(urlNote);
     }
-  }, [searchParams, user]);
+  }, [searchParams, user, progressCardSettings?.userName]);
 
   const handleAmountSelect = (value: string) => {
     setSelectedAmount(value);

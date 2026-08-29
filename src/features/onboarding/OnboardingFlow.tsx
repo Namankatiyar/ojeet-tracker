@@ -11,6 +11,7 @@ import { StepPersonalize } from './steps/StepPersonalize';
 import { StepDiscord } from './steps/StepDiscord';
 import { StepAuth } from './steps/StepAuth';
 import { StepExamSelect } from './steps/StepExamSelect';
+import { getDisplayName } from '../../shared/utils/auth';
 
 interface OnboardingData {
   name: string;
@@ -89,9 +90,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   useEffect(() => {
     if (user && !data.name) {
-      const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
-      if (googleName) {
-        updateData('name', googleName);
+      const resolvedName = getDisplayName(user);
+      if (resolvedName) {
+        updateData('name', resolvedName);
       }
     }
   }, [user, data.name, updateData]);

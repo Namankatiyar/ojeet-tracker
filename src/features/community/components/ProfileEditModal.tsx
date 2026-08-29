@@ -6,6 +6,7 @@ import { useActiveSubjects } from '../../../shared/hooks/useActiveSubjects';
 import { ProgressCardSettings } from '../../../shared/types';
 import { UserProfileCard } from './UserProfileCard';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
+import { getDisplayName, getAvatarUrl } from '../../../shared/utils/auth';
 import { supabase } from '../../../shared/lib/supabase';
 
 const GRADE_OPTIONS = [
@@ -24,13 +25,13 @@ interface ProfileEditModalProps {
 export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileEditModalProps) {
   const { user } = useRemoteAuth();
   const { examMode } = useActiveSubjects();
-  const googleName = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
-  const googleAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '';
+  const defaultName = getDisplayName(user);
+  const defaultAvatar = getAvatarUrl(user) || '';
 
   const [draft, setDraft] = useState({
     ...settings,
-    userName: settings.userName || googleName,
-    customAvatarUrl: settings.customAvatarUrl || googleAvatar,
+    userName: settings.userName || defaultName,
+    customAvatarUrl: settings.customAvatarUrl || defaultAvatar,
   });
 
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -42,13 +43,13 @@ export function ProfileEditModal({ isOpen, onClose, settings, onSave }: ProfileE
     if (isOpen) {
       setDraft({
         ...settings,
-        userName: settings.userName || googleName,
-        customAvatarUrl: settings.customAvatarUrl || googleAvatar,
+        userName: settings.userName || defaultName,
+        customAvatarUrl: settings.customAvatarUrl || defaultAvatar,
       });
       setAvatarUploadError('');
       setIsUploadingAvatar(false);
     }
-  }, [isOpen, settings, googleName, googleAvatar]);
+  }, [isOpen, settings, defaultName, defaultAvatar]);
 
   const handleChange = useCallback((field: keyof ProgressCardSettings, value: string | boolean) => {
     setDraft((prev) => ({ ...prev, [field]: value }));

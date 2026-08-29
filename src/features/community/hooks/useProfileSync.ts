@@ -7,6 +7,7 @@ import { supabase } from '../../../shared/lib/supabase';
 import { StudySession } from '../../../shared/types';
 import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/backoff';
 import { getLogicalTodayStr, getLogicalDate } from '../../../shared/utils/date';
+import { getDisplayName, getAvatarUrl } from '../../../shared/utils/auth';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -139,8 +140,8 @@ export function useProfileSync() {
           .eq('id', user.id)
           .maybeSingle();
 
-        const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
-        const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
+        const resolvedName = getDisplayName(user);
+        const resolvedAvatar = getAvatarUrl(user) || '';
 
         if (!error && data) {
           setProgressCardSettings((prev) => {
@@ -156,15 +157,15 @@ export function useProfileSync() {
             if (data.display_name !== undefined) {
               const nextName = data.display_name !== null ? data.display_name : '';
               if (prev.userName !== nextName) updates.userName = nextName;
-            } else if (!prev.userName && googleName) {
-              updates.userName = googleName;
+            } else if (!prev.userName && resolvedName) {
+              updates.userName = resolvedName;
             }
 
             if (data.avatar_url !== undefined) {
               const nextAvatar = data.avatar_url !== null ? data.avatar_url : '';
               if (prev.customAvatarUrl !== nextAvatar) updates.customAvatarUrl = nextAvatar;
-            } else if (!prev.customAvatarUrl && googleAvatar) {
-              updates.customAvatarUrl = googleAvatar;
+            } else if (!prev.customAvatarUrl && resolvedAvatar) {
+              updates.customAvatarUrl = resolvedAvatar;
             }
 
             if (data.banner_url !== undefined) {
@@ -189,8 +190,8 @@ export function useProfileSync() {
           // Profile row is missing. Insert default profile row immediately to satisfy foreign key constraints
           const initialProfile = {
             id: user.id,
-            display_name: progressCardSettingsRef.current.userName || googleName || 'Student',
-            avatar_url: progressCardSettingsRef.current.customAvatarUrl || googleAvatar || null,
+            display_name: progressCardSettingsRef.current.userName || resolvedName || 'Student',
+            avatar_url: progressCardSettingsRef.current.customAvatarUrl || resolvedAvatar || null,
             grade_status: progressCardSettingsRef.current.gradeStatus || 'Class 12',
             target_exam: progressCardSettingsRef.current.targetExam || 'JEE 2026',
           };
@@ -201,24 +202,24 @@ export function useProfileSync() {
             console.log('Successfully created initial profile row for user:', user.id);
             setProgressCardSettings((prev) => {
               const updates: Partial<typeof prev> = {};
-              if (!prev.userName && googleName) {
-                updates.userName = googleName;
+              if (!prev.userName && resolvedName) {
+                updates.userName = resolvedName;
               }
-              if (!prev.customAvatarUrl && googleAvatar) {
-                updates.customAvatarUrl = googleAvatar;
+              if (!prev.customAvatarUrl && resolvedAvatar) {
+                updates.customAvatarUrl = resolvedAvatar;
               }
               return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
             });
           }
         } else {
-          // Fallback to Google metadata if error occurs
+          // Fallback to auth metadata if error occurs
           setProgressCardSettings((prev) => {
             const updates: Partial<typeof prev> = {};
-            if (!prev.userName && googleName) {
-              updates.userName = googleName;
+            if (!prev.userName && resolvedName) {
+              updates.userName = resolvedName;
             }
-            if (!prev.customAvatarUrl && googleAvatar) {
-              updates.customAvatarUrl = googleAvatar;
+            if (!prev.customAvatarUrl && resolvedAvatar) {
+              updates.customAvatarUrl = resolvedAvatar;
             }
             return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
           });
