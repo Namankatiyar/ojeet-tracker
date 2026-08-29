@@ -175,10 +175,28 @@ export function Dashboard({
     }
   );
   const [pwaBridge, setPwaBridge] = useState(getPwaBridgeState());
-  const { user, isConfigured, isPromptDismissed, dismissPrompt } = useRemoteAuth();
+  const { user, unconfirmedEmail, resendConfirmationEmail, isConfigured, isPromptDismissed, dismissPrompt } = useRemoteAuth();
   const { remoteStudyAggregate } = useRemoteSync();
   const { progress, dailyResetHour } = useUserProgress();
   const { examMode } = useActiveSubjects();
+
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [resendEmailStatus, setResendEmailStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleResendVerification = async () => {
+    if (isResendingEmail || !unconfirmedEmail) return;
+    setIsResendingEmail(true);
+    setResendEmailStatus('idle');
+    try {
+      const res = await resendConfirmationEmail(unconfirmedEmail);
+      if (res.error) setResendEmailStatus('error');
+      else setResendEmailStatus('success');
+    } catch {
+      setResendEmailStatus('error');
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
   const syncPromptEligible = isConfigured && !user && !isPromptDismissed;
 
   const favouriteExam = useMemo(() => examDates.find((e) => e.isFavourite), [examDates]);
@@ -531,6 +549,26 @@ export function Dashboard({
   const notificationItems = useMemo<DashboardNotificationItem[]>(() => {
     const items: DashboardNotificationItem[] = [];
 
+    if (unconfirmedEmail) {
+      items.push({
+        id: 'email-verification',
+        title: 'Verify Your Email',
+        message: `Check your inbox at ${unconfirmedEmail} to confirm your account.`,
+        unread: true,
+        dismissible: false,
+        primaryAction: {
+          label: isResendingEmail
+            ? 'Sending...'
+            : resendEmailStatus === 'success'
+              ? 'Sent'
+              : 'Resend link',
+          onClick: handleResendVerification,
+          disabled: isResendingEmail || resendEmailStatus === 'success',
+        },
+        onDismiss: () => {}, // Cannot be dismissed manually
+      });
+    }
+
     if (syncPromptEligible && !notificationMeta.dismissedContexts[CLOUD_SYNC_CONTEXT]) {
       items.push({
         id: CLOUD_SYNC_CONTEXT,
@@ -602,6 +640,10 @@ export function Dashboard({
 
     return items;
   }, [
+    unconfirmedEmail,
+    isResendingEmail,
+    resendEmailStatus,
+    handleResendVerification,
     syncPromptEligible,
     notificationMeta.dismissedContexts,
     notificationMeta.readContexts,

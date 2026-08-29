@@ -13,14 +13,12 @@ import { getLogicalTodayStr } from '../shared/utils/date';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { SubjectDataProvider } from './context/SubjectDataContext';
 import { UserProgressProvider, useUserProgress } from './context/UserProgressContext';
-import { RemoteAuthProvider, useRemoteAuth } from './context/RemoteAuthContext';
+import { RemoteAuthProvider } from './context/RemoteAuthContext';
 import { RemoteSyncProvider } from './context/RemoteSyncContext';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { useDocumentMetadata } from './hooks/useDocumentMetadata';
 import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 import { useProfileSync } from '../features/community/hooks/useProfileSync';
-import { EmailConfirmationBanner } from '../features/onboarding/components/EmailConfirmationBanner';
-import { AnimatePresence } from 'framer-motion';
 
 import { AppRoutes } from './AppRoutes';
 const ChatDrawer = lazy(() =>
@@ -184,58 +182,51 @@ function AppContent() {
   useAutoShiftTasks(plannerTasks, setPlannerTasks, disableAutoShift, dailyResetHour);
   useDocumentMetadata();
 
-  const { unconfirmedEmail, isEmailBannerDismissed, dismissEmailBanner } = useRemoteAuth();
-  const showEmailBanner = Boolean(unconfirmedEmail && !isEmailBannerDismissed);
 
   return (
-    <div className={`app ${enableAIAgent ? 'has-chat-fab' : ''}`}>
+    <div
+      className={`app ${enableAIAgent ? 'has-chat-fab' : ''}`.trim()}
+    >
       <TopLoader />
       <ProfileSyncManager />
-      <AnimatePresence>
-        {showEmailBanner && (
-          <EmailConfirmationBanner
-            className="global-email-banner"
-            email={unconfirmedEmail || undefined}
-            onDismiss={dismissEmailBanner}
-          />
-        )}
-      </AnimatePresence>
-      <Header
-        currentView={currentView}
-        onNavigate={handleNavigate}
-        theme={theme}
-        onThemeChange={setTheme}
-        onThemeToggle={toggleTheme}
-        accentColor={accentColor}
-        onAccentChange={setAccentColor}
-        useGridBackground={useGridBackground}
-        onUseGridBackgroundChange={setUseGridBackground}
-        disableAutoShift={disableAutoShift}
-        onDisableAutoShiftChange={setDisableAutoShift}
-        enableAIAgent={enableAIAgent}
-        onEnableAIAgentChange={setEnableAIAgent}
-        enableMusicPlayer={enableMusicPlayer}
-        onEnableMusicPlayerChange={setEnableMusicPlayer}
-        dailyResetHour={dailyResetHour}
-        onDailyResetHourChange={setDailyResetHour}
-        backgroundUrl={backgroundUrl}
-        onBackgroundUrlChange={setBackgroundUrl}
-        dimLevel={dimLevel}
-        onDimLevelChange={setDimLevel}
-        glassIntensity={glassIntensity}
-        onGlassIntensityChange={setGlassIntensity}
-        glassRefraction={glassRefraction}
-        onGlassRefractionChange={setGlassRefraction}
-        studySessions={studySessions}
-        mockScores={mockScores}
-        physicsProgress={physicsProgress}
-        chemistryProgress={chemistryProgress}
-        mathsProgress={mathsProgress}
-        biologyProgress={biologyProgress}
-        examDate={primaryExamDate}
-        progressCardSettings={progressCardSettings}
-        onProgressCardSettingsChange={setProgressCardSettings}
-      />
+      <div className="top-header-wrapper">
+        <Header
+          currentView={currentView}
+          onNavigate={handleNavigate}
+          theme={theme}
+          onThemeChange={setTheme}
+          onThemeToggle={toggleTheme}
+          accentColor={accentColor}
+          onAccentChange={setAccentColor}
+          useGridBackground={useGridBackground}
+          onUseGridBackgroundChange={setUseGridBackground}
+          disableAutoShift={disableAutoShift}
+          onDisableAutoShiftChange={setDisableAutoShift}
+          enableAIAgent={enableAIAgent}
+          onEnableAIAgentChange={setEnableAIAgent}
+          enableMusicPlayer={enableMusicPlayer}
+          onEnableMusicPlayerChange={setEnableMusicPlayer}
+          dailyResetHour={dailyResetHour}
+          onDailyResetHourChange={setDailyResetHour}
+          backgroundUrl={backgroundUrl}
+          onBackgroundUrlChange={setBackgroundUrl}
+          dimLevel={dimLevel}
+          onDimLevelChange={setDimLevel}
+          glassIntensity={glassIntensity}
+          onGlassIntensityChange={setGlassIntensity}
+          glassRefraction={glassRefraction}
+          onGlassRefractionChange={setGlassRefraction}
+          studySessions={studySessions}
+          mockScores={mockScores}
+          physicsProgress={physicsProgress}
+          chemistryProgress={chemistryProgress}
+          mathsProgress={mathsProgress}
+          biologyProgress={biologyProgress}
+          examDate={primaryExamDate}
+          progressCardSettings={progressCardSettings}
+          onProgressCardSettingsChange={setProgressCardSettings}
+        />
+      </div>
       <main className="main-content">
         <AppRoutes
           onNavigate={handleNavigate}
