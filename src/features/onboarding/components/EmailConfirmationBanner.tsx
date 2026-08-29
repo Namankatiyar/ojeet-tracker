@@ -15,12 +15,12 @@ export function EmailConfirmationBanner({
   onDismiss,
   className = '',
 }: EmailConfirmationBannerProps) {
-  const { user, resendConfirmationEmail } = useRemoteAuth();
+  const { user, unconfirmedEmail, resendConfirmationEmail } = useRemoteAuth();
   const [resending, setResending] = useState(false);
   const [resendStatus, setResendStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusText, setStatusText] = useState('');
 
-  const targetEmail = email || user?.email || '';
+  const targetEmail = (email || unconfirmedEmail || user?.email || '').trim();
 
   const handleResend = async () => {
     if (!targetEmail.trim() || resending) return;

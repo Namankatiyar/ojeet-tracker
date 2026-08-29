@@ -30,7 +30,7 @@ export function StepName({ value, onChange, onNext, onBack }: StepNameProps) {
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && value.trim()) {
+    if (e.key === 'Enter') {
       onNext();
     }
   };
@@ -45,14 +45,14 @@ export function StepName({ value, onChange, onNext, onBack }: StepNameProps) {
       </motion.p>
       <motion.div className="ob-input-group" variants={fadeUp}>
         <label htmlFor="ob-name-input" className="ob-label">
-          Your name
+          Your name (optional)
         </label>
         <input
           ref={inputRef}
           id="ob-name-input"
           type="text"
           className="ob-input"
-          placeholder="Enter your name"
+          placeholder="Enter your name (optional)"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -66,7 +66,6 @@ export function StepName({ value, onChange, onNext, onBack }: StepNameProps) {
         </button>
         <button
           className="primary-btn ob-continue-btn"
-          disabled={!value.trim()}
           onClick={onNext}
           type="button"
         >

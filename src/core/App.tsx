@@ -20,6 +20,7 @@ import { useDocumentMetadata } from './hooks/useDocumentMetadata';
 import { useAutoShiftTasks } from './hooks/useAutoShiftTasks';
 import { useProfileSync } from '../features/community/hooks/useProfileSync';
 import { EmailConfirmationBanner } from '../features/onboarding/components/EmailConfirmationBanner';
+import { AnimatePresence } from 'framer-motion';
 
 import { AppRoutes } from './AppRoutes';
 const ChatDrawer = lazy(() =>
@@ -183,26 +184,22 @@ function AppContent() {
   useAutoShiftTasks(plannerTasks, setPlannerTasks, disableAutoShift, dailyResetHour);
   useDocumentMetadata();
 
-  const { user } = useRemoteAuth();
-  const [isEmailBannerDismissed, setIsEmailBannerDismissed] = useState(false);
-  const isUnconfirmedEmailUser = Boolean(
-    user &&
-      user.app_metadata?.provider !== 'google' &&
-      !user.confirmed_at &&
-      !user.email_confirmed_at
-  );
+  const { unconfirmedEmail, isEmailBannerDismissed, dismissEmailBanner } = useRemoteAuth();
+  const showEmailBanner = Boolean(unconfirmedEmail && !isEmailBannerDismissed);
 
   return (
     <div className={`app ${enableAIAgent ? 'has-chat-fab' : ''}`}>
       <TopLoader />
       <ProfileSyncManager />
-      {isUnconfirmedEmailUser && !isEmailBannerDismissed && (
-        <EmailConfirmationBanner
-          className="global-email-banner"
-          email={user?.email}
-          onDismiss={() => setIsEmailBannerDismissed(true)}
-        />
-      )}
+      <AnimatePresence>
+        {showEmailBanner && (
+          <EmailConfirmationBanner
+            className="global-email-banner"
+            email={unconfirmedEmail || undefined}
+            onDismiss={dismissEmailBanner}
+          />
+        )}
+      </AnimatePresence>
       <Header
         currentView={currentView}
         onNavigate={handleNavigate}

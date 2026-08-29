@@ -66,7 +66,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setExamMode,
   } = useUserProgress();
 
-  const { user } = useRemoteAuth();
+  const { user, unconfirmedEmail } = useRemoteAuth();
 
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
@@ -217,8 +217,8 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   return (
     <OnboardingLayout>
       <OnboardingProgress current={step} total={TOTAL_STEPS} />
-      {pendingConfirmation && !user && step > 1 && dismissedStep !== step && (
-        <EmailConfirmationBanner onDismiss={() => setDismissedStep(step)} />
+      {(pendingConfirmation || Boolean(unconfirmedEmail)) && !user && step > 1 && dismissedStep !== step && (
+        <EmailConfirmationBanner email={unconfirmedEmail || undefined} onDismiss={() => setDismissedStep(step)} />
       )}
       <div className="ob-step-wrapper">
         <AnimatePresence mode="wait" custom={direction}>
