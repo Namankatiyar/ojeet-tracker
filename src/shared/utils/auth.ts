@@ -6,6 +6,39 @@ export interface PasswordValidationResult {
   error: string | null;
 }
 
+export function normalizeUsername(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
+export function isValidUsername(username: string): boolean {
+  return /^[a-z0-9_]{3,20}$/i.test(username.trim());
+}
+
+export function toSupabaseEmail(username: string): string {
+  return `${normalizeUsername(username)}@ojeet.local`;
+}
+
+export function validateUsername(username: string): { valid: boolean; error: string | null } {
+  const trimmed = username.trim();
+
+  if (trimmed.length < 3) {
+    return { valid: false, error: 'Username must be at least 3 characters long.' };
+  }
+
+  if (trimmed.length > 20) {
+    return { valid: false, error: 'Username must be at most 20 characters long.' };
+  }
+
+  if (!isValidUsername(trimmed)) {
+    return {
+      valid: false,
+      error: 'Username can only contain letters, numbers, and underscores.',
+    };
+  }
+
+  return { valid: true, error: null };
+}
+
 export function validatePassword(
   password: string,
   confirmPassword?: string
@@ -90,9 +123,6 @@ export function getAvatarUrl(
   return null;
 }
 
-/**
- * Checks whether an auth error indicates that the user's email is not confirmed.
- */
 export function isUnconfirmedEmailError(error: unknown): boolean {
   if (!error) return false;
 
@@ -121,9 +151,6 @@ export function isUnconfirmedEmailError(error: unknown): boolean {
   );
 }
 
-/**
- * Maps Supabase auth error messages and unexpected exceptions into user-friendly strings.
- */
 export function formatAuthError(error: unknown): string {
   if (!error) return '';
 
@@ -146,7 +173,7 @@ export function formatAuthError(error: unknown): string {
   const normalized = rawMessage.toLowerCase().trim();
 
   if (normalized.includes('invalid login credentials') || normalized.includes('invalid credentials')) {
-    return 'Incorrect email or password. Please try again.';
+    return 'Incorrect username or password. Please try again.';
   }
 
   if (
@@ -154,11 +181,11 @@ export function formatAuthError(error: unknown): string {
     normalized.includes('already registered') ||
     normalized.includes('email address already in use')
   ) {
-    return 'An account with this email already exists. Try signing in instead.';
+    return 'This username is already taken.';
   }
 
-  if (isUnconfirmedEmailError(error)) {
-    return 'Your email has not been confirmed yet. Please check your inbox or resend the link.';
+  if (normalized.includes('username') && normalized.includes('already')) {
+    return 'This username is already taken.';
   }
 
   if (
