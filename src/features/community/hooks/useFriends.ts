@@ -10,6 +10,11 @@ const LIVE_POLL_BACKOFF_MAX_MS = 300_000; // 5 minutes
 
 // Persist last full profile fetch across route navigations
 let globalLastFullFetchTime = 0;
+// Backoff for full friend fetches while the backend is failing/overloaded.
+const FRIENDS_FETCH_BACKOFF_BASE_MS = 30_000; // 30 seconds
+const FRIENDS_FETCH_BACKOFF_MAX_MS = 600_000; // 10 minutes
+let globalFetchFailCount = 0;
+let globalFetchPausedUntil = 0;
 
 export type FriendProfile = RemoteProfile & {
   live_activity?: LiveActivity | null;
@@ -42,6 +47,8 @@ const sortFriends = (list: FriendProfile[], pinnedIds: string[]): FriendProfile[
 export function useFriends() {
   const location = useLocation();
   const { user, isConfigured, isLoading: isAuthLoading } = useRemoteAuth();
+  // Key callbacks off the stable id: auth events produce new user objects.
+  const userId = user?.id ?? null;
   const [friends, setFriends] = useState<FriendProfile[]>(() => {
     try {
       const cached = localStorage.getItem('jee-community-friends-cache');
@@ -128,7 +135,14 @@ export function useFriends() {
 
   const fetchFriends = useCallback(
     async (force = false) => {
-      if (!user || !isConfigured || !supabase) {
+      if (!userId || !isConfigured || !supabase) {
+        setIsLoading(false);
+        return;
+      }
+      // Backend recently failed: serve cached friends and wait out the backoff
+      // instead of re-fetching on every focus/route change. Explicit (forced)
+      // refreshes still go through.
+      if (!force && Date.now() < globalFetchPausedUntil) {
         setIsLoading(false);
         return;
       }
@@ -156,12 +170,12 @@ export function useFriends() {
         const { data: rels, error: relsError } = await supabase
           .from('peer_relationships')
           .select('user_id_1, user_id_2')
-          .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
+          .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
           .eq('status', 'accepted');
 
         if (relsError) throw relsError;
 
-        const friendIds = rels.map((r) => (r.user_id_1 === user.id ? r.user_id_2 : r.user_id_1));
+        const friendIds = rels.map((r) => (r.user_id_1 === userId ? r.user_id_2 : r.user_id_1));
         friendIdsRef.current = friendIds;
 
         if (friendIds.length === 0) {
@@ -260,17 +274,27 @@ export function useFriends() {
         setFriends(merged);
         localStorage.setItem('jee-community-friends-cache', JSON.stringify(merged));
         globalLastFullFetchTime = Date.now();
+        globalFetchFailCount = 0;
+        globalFetchPausedUntil = 0;
         // Stamp the poll time so the visibility effect's initial call is skipped
         // (fetchFriends already fetched live_activity inside Promise.all).
         lastPollTimeRef.current = Date.now();
       } catch (err: any) {
         console.error('Failed to fetch friends', err);
         setError(err.message || 'Failed to fetch friends');
+        globalFetchFailCount += 1;
+        globalFetchPausedUntil =
+          Date.now() +
+          calculateBackoffWithJitter(
+            globalFetchFailCount - 1,
+            FRIENDS_FETCH_BACKOFF_BASE_MS,
+            FRIENDS_FETCH_BACKOFF_MAX_MS
+          );
       } finally {
         setIsLoading(false);
       }
     },
-    [user, isConfigured, pollLiveActivity]
+    [userId, isConfigured, pollLiveActivity]
   );
 
   useEffect(() => {

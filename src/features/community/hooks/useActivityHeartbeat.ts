@@ -24,6 +24,8 @@ const HEARTBEAT_IDLE_INTERVAL_MS = 300_000;
  */
 export function useActivityHeartbeat() {
   const { user, isConfigured } = useRemoteAuth();
+  // Key effects off the stable id: auth events produce new user objects.
+  const userId = user?.id ?? null;
   const { subjectData } = useSubjectData();
   const { plannerTasks } = useUserProgress();
 
@@ -49,7 +51,7 @@ export function useActivityHeartbeat() {
 
   useEffect(() => {
     const client = supabase;
-    if (!user || !isConfigured || !client) return;
+    if (!userId || !isConfigured || !client) return;
 
     const sendHeartbeat = async (force: boolean = false) => {
       try {
@@ -144,7 +146,7 @@ export function useActivityHeartbeat() {
         }
 
         const payload = {
-          user_id: user.id,
+          user_id: userId,
           is_active: isActive,
           subject,
           chapter_name: chapterName,
@@ -177,7 +179,11 @@ export function useActivityHeartbeat() {
           /* quota exceeded – non-fatal */
         }
 
-        await client.from('live_activity').upsert(payload, { onConflict: 'user_id' });
+        // supabase-js reports HTTP failures (5xx/429) via `error`, not by throwing.
+        const { error } = await client
+          .from('live_activity')
+          .upsert(payload, { onConflict: 'user_id' });
+        if (error) throw error;
         heartbeatFailCountRef.current = 0;
       } catch (err) {
         console.warn('Failed to send heartbeat', err);
@@ -237,5 +243,5 @@ export function useActivityHeartbeat() {
         window.removeEventListener('jee-timer-state-change', handleFocusOrVisible);
       }
     };
-  }, [user, isConfigured]);
+  }, [userId, isConfigured]);
 }
