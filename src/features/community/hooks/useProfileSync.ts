@@ -15,6 +15,8 @@ const getSessionDate = (s: StudySession): string => s.localDate ?? s.startTime.s
 
 export function useProfileSync() {
   const { user, isConfigured, isLoading } = useRemoteAuth();
+  // Key the snapshot effect off the stable id: auth events produce new user objects.
+  const userId = user?.id ?? null;
   const navigate = useNavigate();
   const {
     progressCardSettings,
@@ -268,10 +270,12 @@ export function useProfileSync() {
   const debounceTimeoutRef = useRef<number | null>(null);
   const retryTimeoutRef = useRef<number | null>(null);
   const retryAttemptRef = useRef<number>(0);
+  // While the backend is failing, local edits must not bypass the retry backoff.
+  const pausedUntilRef = useRef<number>(0);
 
   useEffect(() => {
     const client = supabase;
-    if (!user || !isConfigured || !client) return;
+    if (!userId || !isConfigured || !client) return;
     if (!isInitialFetchDone || isFetchingProfileRef.current) return;
 
     const todayStr = getLogicalTodayStr(dailyResetHour);
@@ -423,21 +427,31 @@ export function useProfileSync() {
 
     debounceTimeoutRef.current = window.setTimeout(async () => {
       const executeSync = async () => {
-        if (!isInitialFetchDone || isFetchingProfileRef.current || !user || !client) return;
+        if (!isInitialFetchDone || isFetchingProfileRef.current || !userId || !client) return;
         // Skip while offline; the next local change re-triggers the debounce.
         if (!isOnline()) return;
+        // Still inside a failure backoff window: defer (latest diff wins) instead of
+        // sending a request to a backend that just failed.
+        const waitMs = pausedUntilRef.current - Date.now();
+        if (waitMs > 0) {
+          retryTimeoutRef.current = window.setTimeout(() => {
+            executeSync();
+          }, waitMs);
+          return;
+        }
         try {
           const { error } = await client
             .from('profiles')
-            .upsert({ id: user.id, ...diff }, { onConflict: 'id' });
+            .upsert({ id: userId, ...diff }, { onConflict: 'id' });
           if (error) throw error;
           lastSnapshotRef.current = snapshotStr;
           retryAttemptRef.current = 0;
+          pausedUntilRef.current = 0;
 
           if (lastShowAgendaRef.current !== currentShowAgenda) {
             await client.from('peer_visibility_settings').upsert(
               {
-                user_id: user.id,
+                user_id: userId,
                 show_agenda: currentShowAgenda,
                 updated_at: new Date().toISOString(),
               },
@@ -448,12 +462,13 @@ export function useProfileSync() {
         } catch (err) {
           console.warn('Failed to sync profile snapshot/privacy settings', err);
           retryAttemptRef.current += 1;
+          const backoffDelay = calculateBackoffWithJitter(
+            retryAttemptRef.current - 1,
+            10000,
+            300000
+          );
+          pausedUntilRef.current = Date.now() + backoffDelay;
           if (retryAttemptRef.current <= 4) {
-            const backoffDelay = calculateBackoffWithJitter(
-              retryAttemptRef.current - 1,
-              10000,
-              300000
-            );
             retryTimeoutRef.current = window.setTimeout(() => {
               executeSync();
             }, backoffDelay);
@@ -474,7 +489,7 @@ export function useProfileSync() {
       }
     };
   }, [
-    user,
+    userId,
     isConfigured,
     progressCardSettings,
     plannerTasks,

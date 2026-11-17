@@ -325,6 +325,10 @@ function writeCachedAggregate(aggregate: UserStudyAggregateRow | null) {
 
 export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isConfigured } = useRemoteAuth();
+  // Effects key off the stable user id, not the user object: Supabase emits a new
+  // user object on every auth event (TOKEN_REFRESHED, SIGNED_IN on tab focus, ...),
+  // which would otherwise cancel the retry backoff and fire an immediate sync.
+  const userId = user?.id ?? null;
   const {
     progress,
     setProgress,
@@ -943,14 +947,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           try {
             await runSyncRef.current();
             scheduleSync(nextSyncInterval());
-          } catch (error) {
-            // If sync fails with a "Payload version mismatch" or similar permanent-looking error,
-            // or after too many retries, prioritize a PWA update check.
-            if (retryAttemptRef.current > 5 && navigator.onLine) {
-              console.warn('[Sync] Persistent failures detected. Checking for PWA updates...');
-              if ((window as any).__FORCE_PWA_UPDATE__) (window as any).__FORCE_PWA_UPDATE__();
-            }
-
+          } catch {
+            // Backend unavailable/overloaded: keep the user working locally and retry
+            // with capped exponential backoff. Never reload the page or wipe caches
+            // here — a server outage is not a broken client, and a reload would both
+            // interrupt the user and reset the backoff into an immediate retry loop.
             const backoffDelay = calculateBackoffWithJitter(
               Math.max(0, retryAttemptRef.current - 1),
               SYNC_RETRY_BASE_MS,
@@ -1052,12 +1053,13 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [clearScheduledSync, scheduleSync]);
 
   useEffect(() => {
-    if (!user || !isConfigured) {
+    if (!userId || !isConfigured) {
       clearScheduledSync();
       setStatus('idle');
       setRemoteStudyAggregate(null);
       return;
     }
+    retryAttemptRef.current = 0;
     scheduleSync(0);
     return () => {
       clearScheduledSync();
@@ -1065,7 +1067,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // ponytail: scheduleSync intentionally omitted — it is now stable (depends only on
     // clearScheduledSync). Including it would re-fire on every sync cycle's state update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clearScheduledSync, isConfigured, user]);
+  }, [clearScheduledSync, isConfigured, userId]);
 
   const checkPendingChanges = useCallback(() => {
     const hasDomainEdits = domainKeys.some((domain) => hasLocalUnsyncedEdit(domain));
@@ -1076,9 +1078,12 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // When the tab returns to the foreground, pull the next scheduled sync back to
   // the active cadence. If pending changes exist or > 10 minutes elapsed, sync immediately.
   useEffect(() => {
-    if (!user || !isConfigured) return;
+    if (!userId || !isConfigured) return;
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
+        // While the backend is failing, leave the pending backoff timer alone.
+        // Pulling it forward on every tab switch turns the backoff into polling.
+        if (retryAttemptRef.current > 0) return;
         const isStale = Date.now() - lastSyncCompletedAtRef.current > 10 * 60 * 1000;
         if (checkPendingChanges() || isStale) {
           scheduleSync(0);
@@ -1091,7 +1096,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, isConfigured, scheduleSync, checkPendingChanges]);
+  }, [userId, isConfigured, scheduleSync, checkPendingChanges]);
 
   // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
   const lastPushedAggregateRef = useRef<string | null>(null);
@@ -1101,12 +1106,15 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [remoteStudyAggregate]);
 
   useEffect(() => {
-    if (!user || !isConfigured || !supabase) return;
+    if (!userId || !isConfigured || !supabase) return;
     const supabaseClient = supabase;
 
     const pushAggregate = async () => {
       const currentAgg = remoteStudyAggregateRef.current;
       if (!currentAgg) return;
+      // Backend is currently failing (sync is in backoff): don't add load on every
+      // tab hide. The aggregate is cached locally and pushed once sync recovers.
+      if (retryAttemptRef.current > 0) return;
 
       try {
         // Strip updated_at to ensure single query variant and faster execution.
@@ -1143,7 +1151,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       window.removeEventListener('beforeunload', pushAggregate);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, isConfigured]);
+  }, [userId, isConfigured]);
 
   // Focus/visibility-triggered syncs intentionally removed.
   // App follows a time-based polling model: sync on start, then every 10 minutes.

@@ -149,8 +149,16 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     supabase.auth
       .getSession()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (!isMounted) return;
+        if (error) {
+          // Auth backend unreachable/overloaded: don't treat that as "signed out".
+          // Keep whatever session onAuthStateChange delivered; the app keeps
+          // working locally and auth-js will retry the refresh on its own.
+          console.warn('Failed to get session:', error);
+          setIsLoading(false);
+          return;
+        }
         setSession(data.session ?? null);
         setUser(data.session?.user ?? null);
         setIsLoading(false);
