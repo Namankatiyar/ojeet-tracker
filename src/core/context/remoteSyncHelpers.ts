@@ -335,3 +335,21 @@ export function applyDeltaLogs(
 
   return { sessions, changed };
 }
+
+// ─── Persisted last-pushed domain checksums ─────────────────────────────────
+
+/** Parse the persisted per-domain checksum map; returns {} for anything malformed. */
+export function parsePushedDomainChecksums(raw: string | null): Record<string, string> {
+  if (!raw) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const out: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof value === 'string') out[key] = value;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
