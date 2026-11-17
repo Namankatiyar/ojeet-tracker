@@ -1,3 +1,13 @@
+## [3.8.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.8.0...v3.8.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **auth:** keep session when getSession fails ([cfc489b](https://github.com/Namankatiyar/ojeet-tracker/commit/cfc489ba3bee7d1f721692dba61a1c8170d6247e))
+* **community:** back off on backend failures in heartbeat, friends and profile sync ([1577f81](https://github.com/Namankatiyar/ojeet-tracker/commit/1577f814eac10eb2591d294fe23f2fde1edf3c1a))
+* **supabase:** abort hung requests with a 20s timeout ([75d94af](https://github.com/Namankatiyar/ojeet-tracker/commit/75d94af0c3e6272f5f8bda7913fe5658739eedc9))
+* **sync:** stop reload loop and respect backoff during backend outages ([6ba673e](https://github.com/Namankatiyar/ojeet-tracker/commit/6ba673e9d1d78717440dee47d66bc6fdb7951212))
+
 # [3.8.0](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.7.0...v3.8.0) (2026-10-02)
 
 
