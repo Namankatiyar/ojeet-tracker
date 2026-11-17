@@ -11,6 +11,7 @@ import {
   computeSessionDelta,
   applyDeltaLogs,
   pruneAggregateBuckets,
+  parsePushedDomainChecksums,
   getWeekKey,
   getMonthKey,
   AggregateBucketMap,
@@ -710,5 +711,20 @@ describe('pruneAggregateBuckets', () => {
     pruneAggregateBuckets(aggregate);
 
     expect(Object.keys(aggregate.buckets_daily_json)).toContain(oldKey);
+  });
+});
+
+describe('parsePushedDomainChecksums', () => {
+  it('returns {} for null, malformed, or non-object input', () => {
+    expect(parsePushedDomainChecksums(null)).toEqual({});
+    expect(parsePushedDomainChecksums('{bad')).toEqual({});
+    expect(parsePushedDomainChecksums('[1,2]')).toEqual({});
+    expect(parsePushedDomainChecksums('"x"')).toEqual({});
+  });
+
+  it('keeps only string values', () => {
+    expect(parsePushedDomainChecksums('{"progress":"abc","settings":5}')).toEqual({
+      progress: 'abc',
+    });
   });
 });
