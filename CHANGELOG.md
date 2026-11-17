@@ -1,3 +1,12 @@
+## [3.8.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.8.1...v3.8.2) (2026-11-17)
+
+
+### Bug Fixes
+
+* **community:** stop per-page-load profile writes and rate-limit profile sync ([90394b6](https://github.com/Namankatiyar/ojeet-tracker/commit/90394b62b1a6a2e5d49f091b0b07a0ae5a5ad89d))
+* **db:** drop write-only indexes and suppress no-op profile updates ([cf7ec05](https://github.com/Namankatiyar/ojeet-tracker/commit/cf7ec05075049982303b4deb40cfa0a91ee4bea3))
+* **sync:** skip redundant full-payload pushes after reload and prune old chunks ([e2e4148](https://github.com/Namankatiyar/ojeet-tracker/commit/e2e414868b0ca43daa0d1ca5c42b34545c6825a8))
+
 ## [3.8.1](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.8.0...v3.8.1) (2026-11-17)
 
 
