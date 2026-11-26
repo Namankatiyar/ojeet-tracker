@@ -1,240 +1,113 @@
 # Backend Architecture
 
+> Reconciled against live Supabase project `immvdbsmzfnbsfuhuknh` and codebase on 2026-11-26.
+
 ## 1. Executive Summary
 
-- **Backend Stack:** React/Vite SPA communicating directly with a Supabase (PostgreSQL) backend via `@supabase/supabase-js`.
-- **Data Persistence:** Offline-first architecture. The application state is primarily managed client-side and synchronized to the database as JSON blobs/chunks rather than granular relational rows for individual progress metrics.
-- **Authentication:** Handled exclusively via Supabase Auth (OAuth and email).
-- **Central Design Pattern:** The client stores raw study session logs and syncs an aggregated JSON state back to the database. Triggers and functions in PostgreSQL handle data pruning, timestamping, and aggregate validation.
+- **Backend Stack:** React/Vite SPA communicating with Supabase (PostgreSQL, Auth, Storage, Edge Functions) via `@supabase/supabase-js` (`@supabase/supabase-js@2.98.0`), plus Vercel serverless/edge functions under `api/`.
+- **Data Persistence:** Offline-first architecture. Application state is persisted in `localStorage` and synchronized to Supabase as compressed JSON blobs/chunks (`user_sync_state`, `user_sync_chunks`) alongside append-only session logs (`study_session_log`) and pre-aggregated stats (`user_study_aggregate`).
+- **Authentication:** Handled via Supabase Auth (Google OAuth and email/password).
+- **Maintenance & Aggregation:** `pg_cron` jobs handle leaderboard snapshot refreshes (`refresh_leaderboard_snapshot`) and batched retention pruning (`study_session_log`, `entity_change_log`, `user_sync_chunks`, `cron.job_run_details`, `auth.refresh_tokens`).
 
 ## 2. Backend Surface Map
 
-| Area                     | Files / Locations                            | Responsibility                                                                     |
-| ------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **Supabase Client**      | `src/shared/lib/supabase.ts`                 | Initializes and exports the shared `supabase` client.                              |
-| **Authentication Flow**  | `src/core/context/RemoteAuthContext.tsx`     | Manages session state, OAuth sign-in, and session refreshing.                      |
-| **Data Sync Layer**      | `src/core/context/RemoteSyncContext.tsx`     | Orchestrates the offline-first push/pull synchronization of user state and chunks. |
-| **User Data Management** | `src/shared/components/ui/SettingsModal.tsx` | Contains logic for cascading deletion of user data upon account reset/deletion.    |
-
-_(Note: There are no traditional server API routes or Next.js server actions. All backend interaction is direct client-to-Supabase.)_
+| Area | Files / Locations | Responsibility |
+|---|---|---|
+| **Supabase Client** | `src/shared/lib/supabase.ts` | Initializes `supabase` client with `createTimeoutFetch(20_000)` and custom auth lock. |
+| **Authentication Flow** | `src/core/context/RemoteAuthContext.tsx` | Manages session state, OAuth/email auth, password recovery, and sign-out cleanup. |
+| **Data Sync Layer** | `src/core/context/RemoteSyncContext.tsx` | Orchestrates offline-first push/pull sync of `user_sync_state`, `user_sync_chunks`, `study_session_log`, and `user_study_aggregate`. |
+| **Community & Peers** | `src/features/community/hooks/useProfileSync.ts`, `useFriends.ts`, `useActivityHeartbeat.ts`, `Leaderboard.tsx`, `InviteHandler.tsx`, `ProfileEditModal.tsx` | Syncs profile snapshots/visibility, polls `live_activity` & `profiles`, uploads avatars, handles invites and leaderboards. |
+| **Account Deletion** | `src/shared/components/ui/SettingsModal.tsx`, `supabase/functions/delete-user-account/index.ts` | Invokes `delete-user-account` Edge Function to delete `auth.users` identity (cascading deletes). |
+| **Vercel Functions** | `api/invite-page.js`, `api/invite-image.js`, `api/create-order.js`, `api/verify-payment.js`, `api/edge-meta.js`, `api/subject-prerender.js` | Invite OG meta/PNG generation (via `get_profile_by_invite_code`), Razorpay donation endpoints, and SEO prerendering. |
 
 ## 3. Supabase Project Overview
 
-- **Project / Database:** `immvdbsmzfnbsfuhuknh` (OJEET-Tools)
-- **Auth Configuration:** Sessions persist locally, auto-refreshing enabled.
-- **Storage Usage:** User data is mostly stored as text/JSONB within PostgreSQL tables (`user_sync_state`, `user_sync_chunks`, `user_data_blobs`) rather than Supabase Storage buckets.
-- **Environment Variables:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- **Project / Database:** `immvdbsmzfnbsfuhuknh` (`OJEET-Tools`, Postgres 17)
+- **Auth Configuration:** `persistSession: true`, `autoRefreshToken: true`, `detectSessionInUrl: true`.
+- **Storage Buckets:** `avatars` (public read, 2 MB limit, own-folder write/update/delete) and `branding` (public read).
+- **Environment Variables:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (client); `SUPABASE_SERVICE_ROLE_KEY` (Vercel `api/invite-page.js` / Edge Function).
 
 ## 4. Database Schema
 
-### `profiles`
+> Full column, constraint, index, and trigger reference lives in [SCHEMA.md](./SCHEMA.md) and [supabase/migrations/20261126000000_prod_baseline.sql](./supabase/migrations/20261126000000_prod_baseline.sql).
 
-- **Purpose:** Public/peer-visible user profiles.
-- **Primary key:** `id` (uuid)
-- **Ownership:** Self-owned (`auth.uid() = id`).
-- **Important columns:** `display_name`, `username`, `streak_count`, `lifetime_hours`
-- **RLS:** Self-editable. Readable by all authenticated users (peer filtering is handled client-side).
-
-### `user_sync_state`
-
-- **Purpose:** Tracks the synchronization metadata and the active state payload for a user.
-- **Primary key:** `user_id`
-- **Important columns:** `payload_inline`, `payload_storage`, `payload_version`, `checksum`, `chunk_count`
-- **RLS:** Strictly restricted to `auth.uid() = user_id`.
-
-### `user_sync_chunks`
-
-- **Purpose:** Stores large user state payloads split into chunks when they exceed inline storage limits.
-- **Primary key:** Compound `user_id`, `payload_version`, `chunk_index`
-- **RLS:** Strictly restricted to `auth.uid() = user_id`.
-
-### `user_study_aggregate`
-
-- **Purpose:** Rolled-up study statistics for the user (overall, physics, chemistry, maths).
-- **Primary key:** `user_id`
-- **Important columns:** `total_seconds_overall`, `buckets_daily_json`, `video_watch_45d_json`
-- **RLS:** Strictly restricted to `auth.uid() = user_id`.
-
-### `study_session_log`
-
-- **Purpose:** Granular log of study actions for analytics.
-- **Primary key:** `id`
-- **Important columns:** `user_id`, `client_id`, `session_id`, `action`, `payload`, `created_at`
-- **RLS:** Users can insert and read their own logs. Updates and deletes are disabled (`qual: false`).
-- **Constraints:** `action` is constrained to `'INSERT'` or `'DELETE'` via a CHECK. A `UNIQUE (user_id, session_id)` constraint (`unique_user_session`) prevents duplicate entries at the DB level. A `check_payload_duration` CHECK limits `payload->>'duration'` to ≤ 86 400 seconds.
-
-### `user_data_blobs`
-
-- **Purpose:** Stores individual larger blobs of unstructured user data or backups.
-- **Primary key:** `id`
-- **Ownership:** Self-owned (`auth.uid() = user_id`).
-- **RLS:** Policies strictly enforce `auth.uid() = user_id` for SELECT, INSERT, UPDATE, and DELETE (using `WITH CHECK` clauses where appropriate).
-
-### `peer_relationships` & `peer_visibility_settings` & `live_activity`[^1]
-
-- **Purpose:** Manages peer connections and live study visibility.
-- **Foreign keys:** `peer_relationships` uses two FKs — `user_id_1` and `user_id_2` — both referencing `profiles(id)`. A CHECK constraint enforces `user_id_1 < user_id_2` for canonical ordering. `peer_visibility_settings` and `live_activity` use a single `user_id` FK to `profiles(id)`.
-
-### Relationship Map
-
-```mermaid
-erDiagram
-  PROFILES ||--o| USER_SYNC_STATE : has
-  PROFILES ||--o{ USER_SYNC_CHUNKS : owns
-  PROFILES ||--o| USER_STUDY_AGGREGATE : has
-  PROFILES ||--o{ STUDY_SESSION_LOG : creates
-  PROFILES ||--o{ USER_DATA_BLOBS : owns
-  PROFILES ||--o| LIVE_ACTIVITY : has
-  PROFILES ||--o| PEER_VISIBILITY_SETTINGS : configures
-  PROFILES ||--o{ PEER_RELATIONSHIPS : "user_id_1 / user_id_2"
-```
+- **`profiles`**: User profiles, invite codes, study snapshot metrics (`today_study_seconds`, `today_questions`, `momentum_heatmap`, `todays_tasks`, `streak_count`, `weekly_hours`, `leaderboard_invalidated`). Readable by `authenticated`; self-writable.
+- **`user_sync_state`**: Per-user compressed sync manifest (`payload_inline` up to 512 KB, `payload_storage`, `payload_version`, `checksum`, `exam_mode`). Strict own-row RLS (`(SELECT auth.uid()) = user_id`).
+- **`user_sync_chunks`**: Chunked payloads when compressed state exceeds 512 KB. Strict own-row RLS.
+- **`user_study_aggregate`**: Rolled-up totals (`overall`, `physics`, `chemistry`, `maths`, `biology`) and JSONB buckets (`daily`, `weekly`, `monthly`, `video_watch_45d_json`). Triggers sync `profiles.weekly_hours` when `buckets_weekly_json` changes.
+- **`study_session_log`**: Append-only study session delta log with `UNIQUE (user_id, session_id)` (`unique_user_session`). Updates/deletes blocked by RLS.
+- **`entity_change_log`**: Delta log table for entity-level changes (`domain`, `entity_id`, `action`). Strict own-row SELECT/INSERT RLS.
+- **`peer_relationships`**, **`peer_visibility_settings`**, **`live_activity`**: Peer connections (`user_id_1 < user_id_2`), visibility preferences (own-row RLS; read for peers inside `SECURITY DEFINER` `get_visible_peer_ids`), and live study status (`live_activity_select_v2` via `get_visible_peer_ids`).
+- **`leaderboard_snapshot`**: Materialized top-10 rankings for `daily`, `weekly`, and `monthly` modes (refreshed by `pg_cron` at `:05` and `:35`, skipping writes when unchanged).
+- **`groups`** & **`group_members`**: Study groups and memberships, managed via RPCs (`create_group`, `join_group_by_code`, `get_my_groups`, `kick_group_member`, `leave_group`, `update_group_profile`).
+- **Legacy tables**: `user_data_blobs`, `chapters`.
 
 ## 5. Authentication and Authorization Model
 
-- **Supported Auth Providers & Methods:**
-  - **Google OAuth:** One-click OAuth authentication via `supabase.auth.signInWithOAuth()`.
-  - **Email & Password Sign-Up:** Registered via `supabase.auth.signUp()` with customizable display name metadata.
-  - **Email Confirmation:** Handled via confirmation emails with resend capability (`supabase.auth.resend({ type: 'signup' })`) and an in-app banner for unconfirmed accounts.
-  - **Password Recovery:** Triggered via `supabase.auth.resetPasswordForEmail()`, listening for `PASSWORD_RECOVERY` auth events to mount the in-app `PasswordResetModal` for `supabase.auth.updateUser({ password })`.
-  - **In-App Credential Updates:** Users can safely update passwords or change email addresses via `supabase.auth.updateUser()`.
-- **Redirect URL Resolution:** Dynamic client-side resolution via `window.location.origin` (with fallback to `https://tracker.ojeet.tech`). This enables smooth redirect workflows across `localhost:5173`, Vercel branch previews, and production without static configuration mismatch.
-- **Session Persistence:** Configured in `supabase.ts` with `persistSession: true` and `autoRefreshToken: true`.
-- **Profile Provisioning & Lifecycle:**
-  - Database trigger `handle_new_user_profile` creates an initial `profiles` row upon new user creation in `auth.users`.
-  - Lazy client-side profile creation/synchronization via `useProfileSync.ts` ensures user metadata (display name, avatars) is backfilled and kept in sync.
-- **RLS Enforcement:** Enabled on all tables. Policies rigorously check `auth.uid() = user_id` for modification. `profiles` and `live_activity` are readable by all authenticated users (peer filtering is intentionally deferred to the client for performance).
-- **Privilege Boundaries:** There is no "admin" role or service-role client used in the codebase. All access is strictly context-bound to the authenticated user.
+- **Auth Providers:** Google OAuth (`signInWithOAuth`), email/password (`signUp`, `signInWithPassword`), email verification resend, and password recovery (`resetPasswordForEmail` + `PASSWORD_RECOVERY` event).
+- **Redirect URL Resolution:** Dynamic `window.location.origin` with fallback to `https://tracker.ojeet.tech`.
+- **Profile Provisioning:** Database trigger `on_auth_user_created` (`handle_new_user_profile()`) creates `profiles`, `peer_visibility_settings`, and `live_activity` rows on signup; `useProfileSync` backfills/syncs profile metadata and study snapshots.
+- **RLS Enforcement:** Enabled on all `public` tables and `storage.objects`, using `(SELECT auth.uid())` initplan-optimized policies.
 
 ## 6. Data Flow by Feature
 
 ### Progress Syncing (Offline-First)
 
 ```text
-User interacts with syllabus locally
-→ local storage/state updates
-→ RemoteSyncContext detects changes and queues sync
-→ Supabase operation (insert/update `user_sync_state` & `user_sync_chunks`)
-→ affected table(s): `user_sync_state`, `user_sync_chunks`
-→ returned data confirms version & checksum
-→ local sync state marked as clean
+User interacts locally -> localStorage updates
+-> RemoteSyncContext (mount, 10m/30m poll, visibilitychange)
+-> GET user_sync_state (checksum probe) -> full payload/chunks if changed
+-> GET study_session_log (delta pull) & conditional GET user_study_aggregate
+-> Merge domains -> upsert user_sync_state (+ user_sync_chunks if >512 KB)
+-> Insert pending study_session_log deltas
 ```
 
-### Study Session Analytics
+### Community, Profile Snapshots & Leaderboards
 
-```text
-Study timer ends
-→ RemoteSyncContext buffers a session log event
-→ Supabase operation (insert into `study_session_log`)
-→ affected table(s): `study_session_log`
-→ Database triggers aggregate data asynchronously
-→ Data synced back via `user_study_aggregate`
-```
+- `ProfileSyncManager` (`src/core/App.tsx`) mounts `useProfileSync` globally to upsert `profiles` and `peer_visibility_settings` on a 5s debounce.
+- `CommunityPage` mounts `useActivityHeartbeat` (upserts `live_activity`) and `useFriends` (fetches `peer_relationships`, `profiles`, `live_activity`, and polls `live_activity` every 30s).
+- `Leaderboard` reads `leaderboard_snapshot` by mode (`daily`, `weekly`, `monthly`).
 
-## 7. Database Functions, Triggers, RPCs, and Storage
+## 7. Database Functions, Triggers, RPCs, and Scheduled Jobs
 
-### Active Triggers (live on tables)
+### Active Triggers
 
-| Trigger Name                             | Table                  | Event                   | Function Called                        |
-| ---------------------------------------- | ---------------------- | ----------------------- | -------------------------------------- |
-| `ensure_invite_code`                     | `profiles`             | BEFORE INSERT           | `set_invite_code()`                    |
-| `trg_profiles_updated_at`                | `profiles`             | BEFORE UPDATE           | `set_updated_at()`                     |
-| `trg_user_data_blobs_updated_at`         | `user_data_blobs`      | BEFORE UPDATE           | `set_updated_at()`                     |
-| `trg_user_sync_state_updated_at`         | `user_sync_state`      | BEFORE UPDATE           | `set_updated_at()`                     |
-| `trg_user_study_aggregate_before_upsert` | `user_study_aggregate` | BEFORE INSERT OR UPDATE | `before_upsert_user_study_aggregate()` |
+| Trigger Name | Table | Event | Function Called |
+|---|---|---|---|
+| `on_auth_user_created` | `auth.users` | AFTER INSERT | `handle_new_user_profile()` |
+| `ensure_invite_code` | `public.profiles` | BEFORE INSERT | `set_invite_code()` |
+| `trg_profiles_leaderboard_guardrail_insert` | `public.profiles` | BEFORE INSERT | `check_leaderboard_invalidation()` |
+| `trg_profiles_leaderboard_guardrail_update` | `public.profiles` | BEFORE UPDATE (`WHEN` score/heatmap cols change) | `check_leaderboard_invalidation()` |
+| `trg_profiles_updated_at` | `public.profiles` | BEFORE UPDATE (`WHEN old.* IS DISTINCT FROM new.*`) | `set_updated_at()` |
+| `zz_profiles_suppress_redundant_updates` | `public.profiles` | BEFORE UPDATE | `suppress_redundant_updates_trigger()` |
+| `trg_groups_updated_at` | `public.groups` | BEFORE UPDATE | `set_updated_at()` |
+| `trg_user_data_blobs_updated_at` | `public.user_data_blobs` | BEFORE UPDATE | `set_updated_at()` |
+| `trg_user_sync_state_updated_at` | `public.user_sync_state` | BEFORE UPDATE | `set_updated_at()` |
+| `trg_user_study_aggregate_before_upsert` | `public.user_study_aggregate` | BEFORE INSERT OR UPDATE | `before_upsert_user_study_aggregate()` |
+| `trg_sync_weekly_hours_to_profile_insert` | `public.user_study_aggregate` | AFTER INSERT | `sync_weekly_hours_to_profile()` |
+| `trg_sync_weekly_hours_to_profile_update` | `public.user_study_aggregate` | AFTER UPDATE (`WHEN buckets_weekly_json` changes) | `sync_weekly_hours_to_profile()` |
 
-### Functions / RPCs (public schema)
+### `pg_cron` Scheduled Jobs
 
-**Core / Auth:**
+| Job Name | Schedule | Function |
+|---|---|---|
+| `refresh-leaderboard-snapshot` | `5,35 * * * *` | `public.refresh_leaderboard_snapshot()` |
+| `prune-stale-session-logs` | `10 2 * * *` | `public.cron_prune_stale_session_logs()` |
+| `prune-orphaned-chunks` | `20 2 * * *` | `public.cron_prune_orphaned_chunks()` |
+| `cron_prune_stale_entity_logs` | `30 2 * * *` | `public.cron_prune_stale_entity_logs()` |
+| `prune-cron-job-run-details` | `40 2 * * *` | `public.cron_prune_job_run_details()` |
+| `prune-revoked-refresh-tokens` | `50 2 * * *` | `public.cron_prune_revoked_refresh_tokens()` |
 
-- **`handle_new_user()`**: Creates a row in `auth.users` extensions (companion to profile creation).
-- **`handle_new_user_profile()`**: Creates a row in `profiles` upon new user registration (called by auth trigger).
-- **`set_invite_code()`**: Auto-generates a 4-char `[A-Z0-9]` invite code on profile INSERT.
-- **`set_updated_at()`**: Generic trigger function to stamp `updated_at = now()`.
-- **`set_completed_at()`**: Sets a `completed_at` timestamp field (reserved for future use).
-- **`rls_auto_enable()`**: Utility function to bulk-enable RLS on tables.
+### Key RPCs
 
-**Analytics:**
+- **Peers & Invites:** `add_friend_by_code`, `disconnect_peer`, `get_profile_by_invite_code`, `get_visible_peer_ids`, `send_peer_request_by_invite_code`, `respond_to_peer_request`, `remove_peer`, `are_users_peers`.
+- **Groups:** `create_group`, `get_my_groups`, `join_group_by_code`, `kick_group_member`, `leave_group`, `update_group_profile`, `generate_group_invite_code`.
+- **External Analytics:** `merge_video_logs(new_logs jsonb)` (invoked by an external application; no call site in this frontend codebase).
 
-- **`before_upsert_user_study_aggregate()`**: Pre-processes analytics JSONB (validates structure, coerces types) before INSERT/UPDATE on `user_study_aggregate`.
-- **`compute_session_duration()`**: Helper for calculating study session duration from log entries.
-- **`merge_video_logs(new_logs jsonb)`**: RPC that merges incoming video watch entries into `video_watch_45d_json`, pruning entries older than 45 days. **Called by an external application — no call site exists in this frontend codebase.** The function exists in the DB and may be invoked via cron or a separate service.
-- **`prune_all_video_watch_logs()`**: Bulk-prunes all video watch log entries from `user_study_aggregate`.
-- **`prune_video_watch_entries()`**: Prunes individual stale video watch entries.
+## 8. Appendix: Backend Inventory
 
-**Sync / Pruning (invoked as cron jobs, NOT after-action triggers):**
-
-- **`trigger_prune_stale_session_logs()`**: Callable function that deletes old `study_session_log` rows beyond a retention window.
-- **`trigger_prune_orphaned_chunks()`**: Callable function that deletes `user_sync_chunks` rows not referenced by the current `payload_version`.
-- **`cron_prune_stale_session_logs()`**: Cron-scheduled wrapper that calls `trigger_prune_stale_session_logs()`.
-- **`cron_prune_orphaned_chunks()`**: Cron-scheduled wrapper that calls `trigger_prune_orphaned_chunks()`.
-- **`prune_stale_sync_chunks()`**: Alternative pruning function for sync chunks (overloaded).
-- **`prune_stale_session_logs()`**: Alternative pruning function for session logs.
-
-**Peer System (UI not yet implemented):**[^1]
-
-- **`are_users_peers(uuid, uuid)`**: Legacy function — returns boolean if two users are connected. Deprecated from RLS policies for performance.
-- **`add_friend_by_invite_code(text)`** / **`send_peer_request_by_invite_code(text)`**: Initiates a peer request via invite code lookup.
-- **`respond_to_peer_request(uuid, text)`**: Accepts or rejects a pending peer request.
-- **`remove_peer(uuid)`** / **`disconnect_peer(uuid)`**: Removes an accepted peer connection.
-- **`get_profile_by_invite_code(text)`**: Returns a user's public profile by their invite code.
-
-## 8. Mental Model for Developers
-
-- **Source of truth:** For instantaneous session data, the _Client_ is the source of truth (Offline-First). For historical permanence and peer visibility, _Supabase_ is the source of truth.
-- **Where user identity enters:** `RemoteAuthContext` listens to `supabase.auth.onAuthStateChange`.
-- **How ownership is enforced:** `auth.uid()` in Row-Level Security (RLS) policies.
-- **Data Shape:** Rather than a massive relational graph of every syllabus subtopic a user checked off, progress is chunked/stringified into `user_sync_state` payloads.
-- **Safe layers to modify:** Frontend UI components.
-- **Caution layers:** `RemoteSyncContext.tsx` handles complex chunking, hashing, and version control. Altering this can corrupt user sync states or overwrite cloud saves.
-
-## 9. Important Engineering Constraints
-
-- **Client usage:** Only use `import { supabase } from '../../shared/lib/supabase'` to ensure configuration defaults are respected.
-- **Data modeling:** If adding new user metrics, prefer appending them to the JSONB payload in `user_study_aggregate` rather than creating entirely new relational tables, unless the data needs independent querying or peer visibility.
-- **Deletions:** RLS prevents updating/deleting `study_session_log`. If data must be removed, it requires backend/admin access or a specific pruning RPC. The client cannot forge history edits.
-
-## 10. Risks, Gaps, and Recommendations
-
-### Confirmed issues
-
-- **Account deletion is handled via Edge Function:** Previously, the client manually deleted rows across multiple tables. This has been patched to avoid orphaned data. The client now invokes the `delete-user-account` Edge Function which securely deletes the `auth.users` identity, triggering a robust PostgreSQL `ON DELETE CASCADE` across all user tables to atomically wipe all data.
-- **Analytics Payload Spoofing:** Fixed. Previously, malicious users could spoof focus scores. A `CHECK` constraint now strictly limits `payload->>'duration'` to realistic bounds (24 hours).
-- **Duplicate Session Logs:** Fixed (re-applied 2026-07-02). A `UNIQUE (user_id, session_id)` constraint (`unique_user_session`) on `study_session_log` ensures network retries don't duplicate analytics. This was first attempted in `20260313_p1_backend_fixes.sql` but was not present on the live DB as of the 2026-07-02 audit.
-- **N+1 Performance Bottlenecks:** Fixed (2026-07-02). `are_users_peers()` is removed from all RLS policies. `profiles` SELECT is now open to all `authenticated` users (client-side peer filtering applies). `live_activity` SELECT uses an inline `EXISTS (SELECT 1 FROM peer_relationships …)` subquery gated on `status = 'accepted'` and the `peer_visibility_settings.show_agenda` flag — no function calls, peer-restricted visibility.
-
-### Recommended improvements
-
-- **P1 — Move Data Deletion to RPC:** Instead of 4 separate `.delete()` calls in `SettingsModal.tsx`, create an RPC `delete_user_data()` to ensure atomicity.
-- **P2 — Type Generation:** Keep a routine for generating `database.types.ts` via Supabase CLI to ensure the frontend is aware of the exact schema of `user_study_aggregate` and sync states.
-
-## 11. Backend Change Checklist
-
-- [ ] Add/update migration in `supabase_migrations/`
-- [ ] Add foreign keys and indexes
-- [ ] Enable and test RLS
-- [ ] Add policies for select/insert/update/delete using `auth.uid()`
-- [ ] Update generated types (if applicable)
-- [ ] Update `RemoteSyncContext` if the sync model changes
-- [ ] Validate user input/payload size limits
-- [ ] Verify ownership using `auth.uid()`
-- [ ] Test with two different user accounts to ensure isolation
-- [ ] Verify offline state recovery works after changes
-
-## 12. Appendix: Backend Inventory
-
-- **API Routes:** None (Thick client architecture)
-- **Supabase Clients:** `src/shared/lib/supabase.ts`
-- **Core Tables:** `profiles`, `user_sync_state`, `user_sync_chunks`, `user_study_aggregate`, `study_session_log`, `live_activity`, `peer_relationships`, `peer_visibility_settings`, `user_data_blobs`, `sync_prune_audit_log`, `subjects`, `chapters`
-- **Active DB Triggers:** `ensure_invite_code`, `trg_profiles_updated_at`, `trg_user_data_blobs_updated_at`, `trg_user_sync_state_updated_at`, `trg_user_study_aggregate_before_upsert`
-- **Key RPCs/Functions:** `merge_video_logs`, `handle_new_user_profile`, `set_invite_code`, `before_upsert_user_study_aggregate`, `cron_prune_stale_session_logs`, `cron_prune_orphaned_chunks`, and the full peer system RPC set
-- **Env Vars:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
-
----
-
-**First 30 minutes for a new backend developer:**
-
-1. Open `src/shared/lib/supabase.ts` to see how the client connects.
-2. Read `src/core/context/RemoteAuthContext.tsx` to understand the auth lifecycle.
-3. Deep-dive into `src/core/context/RemoteSyncContext.tsx` – this is the beating heart of the backend logic, handling chunking, versioning, and syncing of the JSON data store.
-
-[^1]: **Note on the Peer System:** The peer system (including `peer_relationships`, `peer_visibility_settings`, `live_activity` tables, and the `are_users_peers` function) is defined in the database schema. However, it currently has no actual implementation, integration, or reference in the frontend UI or any other part of the application codebase.
+- **Vercel Functions (`api/`):** `invite-page.js`, `invite-image.js`, `create-order.js`, `verify-payment.js`, `edge-meta.js`, `subject-prerender.js`
+- **Supabase Edge Functions:** `supabase/functions/delete-user-account/index.ts`
+- **Supabase Client:** `src/shared/lib/supabase.ts`
+- **Core Tables:** `profiles`, `user_sync_state`, `user_sync_chunks`, `user_study_aggregate`, `study_session_log`, `entity_change_log`, `peer_relationships`, `peer_visibility_settings`, `live_activity`, `leaderboard_snapshot`, `groups`, `group_members`, `user_data_blobs`, `chapters`
+- **Migrations Baseline:** `supabase/migrations/20261126000000_prod_baseline.sql` (historical files archived in `supabase/migrations_archive/`)
