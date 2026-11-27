@@ -248,7 +248,7 @@ describe('useProfileSync Hook', () => {
     });
 
     expect(supabase!.from).toHaveBeenCalledWith('profiles');
-    expect(upsertMock).toHaveBeenCalled();
+    expect(updateMock).toHaveBeenCalled();
     vi.useRealTimers();
   });
 
@@ -426,7 +426,12 @@ describe('useProfileSync Hook', () => {
 
     vi.mocked(supabase!.from).mockImplementation((table: string) => {
       if (table === 'peer_visibility_settings') {
-        return { upsert: visUpsertMock } as any;
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+          }),
+          upsert: visUpsertMock,
+        } as any;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -434,6 +439,7 @@ describe('useProfileSync Hook', () => {
         single: singleMock,
         maybeSingle: singleMock,
         insert: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
         upsert: profilesUpsertMock,
       } as any;
     });
@@ -484,7 +490,12 @@ describe('useProfileSync Hook', () => {
     });
     vi.mocked(supabase!.from).mockImplementation((table: string) => {
       if (table === 'peer_visibility_settings') {
-        return { upsert: visUpsertMock } as any;
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+          }),
+          upsert: visUpsertMock,
+        } as any;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -545,6 +556,7 @@ describe('useProfileSync Hook', () => {
       single: singleMock,
       maybeSingle: singleMock,
       insert: vi.fn().mockResolvedValue({ error: null }),
+      update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
       upsert: profilesUpsertMock,
     }) as any);
 
@@ -624,7 +636,12 @@ describe('useProfileSync Hook', () => {
 
     vi.mocked(supabase!.from).mockImplementation((table: string) => {
       if (table === 'peer_visibility_settings') {
-        return { upsert: visUpsertMock } as any;
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+          }),
+          upsert: visUpsertMock,
+        } as any;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -632,6 +649,7 @@ describe('useProfileSync Hook', () => {
         single: singleMock,
         maybeSingle: singleMock,
         insert: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
         upsert: profilesUpsertMock,
       } as any;
     });
@@ -686,7 +704,16 @@ describe('useProfileSync Hook', () => {
       maybeSingle: singleMock,
       insert: vi.fn().mockResolvedValue({ error: null }),
     });
-    vi.mocked(supabase!.from).mockImplementation(() => selectMock() as any);
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        } as any;
+      }
+      return selectMock() as any;
+    });
 
     const { rerender } = renderHook(() => useProfileSync());
 
@@ -723,7 +750,12 @@ describe('useProfileSync Hook', () => {
 
     vi.mocked(supabase!.from).mockImplementation((table: string) => {
       if (table === 'peer_visibility_settings') {
-        return { upsert: visUpsertMock } as any;
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+          }),
+          upsert: visUpsertMock,
+        } as any;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -731,6 +763,7 @@ describe('useProfileSync Hook', () => {
         single: singleMock,
         maybeSingle: singleMock,
         insert: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
         upsert: profilesUpsertMock,
       } as any;
     });
@@ -802,7 +835,12 @@ describe('useProfileSync Hook', () => {
 
     vi.mocked(supabase!.from).mockImplementation((table: string) => {
       if (table === 'peer_visibility_settings') {
-        return { upsert: visUpsertMock } as any;
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+          }),
+          upsert: visUpsertMock,
+        } as any;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -810,6 +848,7 @@ describe('useProfileSync Hook', () => {
         single: singleMock,
         maybeSingle: singleMock,
         insert: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
         upsert: profilesUpsertMock,
       } as any;
     });
@@ -853,7 +892,12 @@ describe('useProfileSync Hook', () => {
 
     vi.mocked(supabase!.from).mockImplementation((table: string) => {
       if (table === 'peer_visibility_settings') {
-        return { upsert: visUpsertMock } as any;
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+          }),
+          upsert: visUpsertMock,
+        } as any;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -861,6 +905,7 @@ describe('useProfileSync Hook', () => {
         single: singleMock,
         maybeSingle: singleMock,
         insert: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
         upsert: profilesUpsertMock,
       } as any;
     });
@@ -914,7 +959,12 @@ describe('useProfileSync Hook', () => {
 
     vi.mocked(supabase!.from).mockImplementation((table: string) => {
       if (table === 'peer_visibility_settings') {
-        return { upsert: visUpsertMock } as any;
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+          }),
+          upsert: visUpsertMock,
+        } as any;
       }
       return {
         select: vi.fn().mockReturnThis(),
@@ -922,6 +972,7 @@ describe('useProfileSync Hook', () => {
         single: singleMock,
         maybeSingle: singleMock,
         insert: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
         upsert: profilesUpsertMock,
       } as any;
     });

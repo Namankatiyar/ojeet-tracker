@@ -18,14 +18,17 @@ import {
 } from '../../features/sync/syncPayload';
 import {
   SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
+  SyncPayloadFormat,
   SyncPayloadV1,
   SyncStorageMode,
 } from '../../features/sync/syncTypes';
 import {
   computeChecksum,
   decompressSyncPayload,
+  encodeSplitSyncPayload,
   encodeSyncPayload,
   reconstructCompressedPayload,
+  reconstructSplitSyncPayload,
 } from '../../features/sync/syncCodec';
 import { mergePayloadDomainsWithPolicy, SyncDomain } from '../../features/sync/syncMerge';
 import { StudySession, Subject } from '../../shared/types';
@@ -111,6 +114,11 @@ interface UserSyncStateRow {
   chunk_count: number;
   payload_bytes: number;
   checksum: string;
+  hot_payload?: string | null;
+  hot_checksum?: string | null;
+  cold_payload?: string | null;
+  cold_checksum?: string | null;
+  payload_format?: SyncPayloadFormat | null;
 }
 
 import {
@@ -297,6 +305,7 @@ function createLocalPayload(params: {
   customColumns: ReturnType<typeof useSubjectData>['customColumns'];
   excludedColumns: ReturnType<typeof useSubjectData>['excludedColumns'];
   materialOrder: ReturnType<typeof useSubjectData>['materialOrder'];
+  plannerCutoffNow?: Date;
 }) {
   const normalizedSubjects = normalizeSubjectsForSync({
     subjectData: params.subjectData,
@@ -318,26 +327,59 @@ function createLocalPayload(params: {
     tombstones: params.tombstones,
     domainsModifiedAt: getDomainsModifiedAtMap(),
     plannerHistoryDays: SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
+    now: params.plannerCutoffNow,
     appVersion: __APP_VERSION__,
     subjects: normalizedSubjects,
   });
 }
 
-// Strategy 1: Lightweight checksum-only fetch (~50 bytes egress vs ~200KB for full payload)
-async function fetchRemoteChecksum(
-  userId: string
-): Promise<{ checksum: string | null; payloadVersion: number | null }> {
-  if (!supabase) return { checksum: null, payloadVersion: null };
+// Strategy 1: Lightweight checksum-only fetch (~80 bytes egress vs ~200KB for full payload)
+async function fetchRemoteChecksum(userId: string): Promise<{
+  checksum: string | null;
+  payloadVersion: number | null;
+  hotChecksum: string | null;
+  coldChecksum: string | null;
+  payloadFormat: SyncPayloadFormat | null;
+}> {
+  if (!supabase) {
+    return {
+      checksum: null,
+      payloadVersion: null,
+      hotChecksum: null,
+      coldChecksum: null,
+      payloadFormat: null,
+    };
+  }
 
   const { data, error, status } = await supabase
     .from('user_sync_state')
-    .select('checksum,payload_version')
+    .select('checksum,payload_version,hot_checksum,cold_checksum,payload_format')
     .eq('user_id', userId)
-    .maybeSingle<{ checksum: string; payload_version: number }>();
+    .maybeSingle<{
+      checksum: string;
+      payload_version: number;
+      hot_checksum?: string | null;
+      cold_checksum?: string | null;
+      payload_format?: SyncPayloadFormat | null;
+    }>();
 
   if (error) throwSyncError(error, status);
-  if (!data) return { checksum: null, payloadVersion: null };
-  return { checksum: data.checksum, payloadVersion: data.payload_version };
+  if (!data) {
+    return {
+      checksum: null,
+      payloadVersion: null,
+      hotChecksum: null,
+      coldChecksum: null,
+      payloadFormat: null,
+    };
+  }
+  return {
+    checksum: data.checksum,
+    payloadVersion: data.payload_version,
+    hotChecksum: data.hot_checksum ?? null,
+    coldChecksum: data.cold_checksum ?? null,
+    payloadFormat: data.payload_format ?? null,
+  };
 }
 
 async function fetchRemotePayload(
@@ -347,12 +389,25 @@ async function fetchRemotePayload(
 
   const { data, error, status } = await supabase
     .from('user_sync_state')
-    .select('payload_inline,payload_storage,payload_version,chunk_count,payload_bytes,checksum')
+    .select(
+      'payload_inline,payload_storage,payload_version,chunk_count,payload_bytes,checksum,hot_payload,hot_checksum,cold_payload,cold_checksum,payload_format'
+    )
     .eq('user_id', userId)
     .maybeSingle<UserSyncStateRow>();
 
   if (error) throwSyncError(error, status);
   if (!data) return { payload: null, row: null };
+
+  // Prefer split_v2 only when payload_inline is null (meaning a legacy client hasn't overwritten it).
+  if (
+    data.payload_format === 'split_v2' &&
+    data.payload_inline === null &&
+    data.hot_payload &&
+    data.cold_payload
+  ) {
+    const payload = reconstructSplitSyncPayload(data.hot_payload, data.cold_payload);
+    return { payload, row: data };
+  }
 
   let compressedPayload = data.payload_inline ?? '';
   if (data.payload_storage === 'chunked') {
@@ -505,12 +560,26 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const lastPushedDomainChecksumsRef = useRef<Record<string, string>>({});
   const pushedChecksumsUserIdRef = useRef<string | null>(null);
   const syncInFlightRef = useRef(false);
+  const pushAggregateInFlightRef = useRef(false);
+  const hasPulledSessionLogsRef = useRef(false);
   const authPausedRef = useRef(false);
   const scheduledTimerRef = useRef<number | null>(null);
   const scheduledDueAtRef = useRef<number | null>(null);
   const pendingOnlineListenerRef = useRef<(() => void) | null>(null);
   const retryAttemptRef = useRef(0);
   const lastSyncCompletedAtRef = useRef<number>(0);
+  const latestSettingsRef = useRef({
+    enableAIAgent,
+    enableMusicPlayer,
+    examMode,
+    neetMockExamPresets,
+  });
+  latestSettingsRef.current = {
+    enableAIAgent,
+    enableMusicPlayer,
+    examMode,
+    neetMockExamPresets,
+  };
   const domainSnapshotsRef = useRef<Record<SyncDomain, string | null>>({
     progress: null,
     plannerTasks: null,
@@ -526,7 +595,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const latestStudySessionsRef = useRef(studySessions);
   // Stable refs for runSync/user/isConfigured so scheduleSync closure never goes stale
   // without recreating the callback itself (which would re-fire the startup useEffect).
-  const runSyncRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const runSyncRef = useRef<(options?: { isManual?: boolean }) => Promise<void>>(() =>
+    Promise.resolve()
+  );
   const userRef = useRef(user);
   const isConfiguredRef = useRef(isConfigured);
 
@@ -613,6 +684,29 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         materialOrder: resolvedMaterialOrder,
       });
 
+      const resolvedEnableAIAgent =
+        payload.domains.settings.enableAIAgent !== undefined
+          ? payload.domains.settings.enableAIAgent
+          : latestSettingsRef.current.enableAIAgent;
+      const resolvedEnableMusicPlayer =
+        payload.domains.settings.enableMusicPlayer !== undefined
+          ? payload.domains.settings.enableMusicPlayer
+          : latestSettingsRef.current.enableMusicPlayer;
+      const resolvedExamMode =
+        payload.domains.settings.examMode !== undefined
+          ? payload.domains.settings.examMode
+          : latestSettingsRef.current.examMode;
+      const resolvedJeePresets =
+        payload.domains.settings.mockExamPresets &&
+        payload.domains.settings.mockExamPresets.length > 0
+          ? payload.domains.settings.mockExamPresets
+          : defaultMockExamPresets;
+      const resolvedNeetPresets =
+        payload.domains.settings.neetMockExamPresets !== undefined &&
+        payload.domains.settings.neetMockExamPresets.length > 0
+          ? payload.domains.settings.neetMockExamPresets
+          : latestSettingsRef.current.neetMockExamPresets;
+
       appliedDomainSnapshotsRef.current = {
         progress: JSON.stringify(payload.domains.progress),
         plannerTasks: JSON.stringify(payload.domains.plannerTasks),
@@ -620,19 +714,15 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         examDates: JSON.stringify(payload.domains.examDates),
         settings: JSON.stringify({
           disableAutoShift: payload.domains.settings.disableAutoShift,
-          enableAIAgent: payload.domains.settings.enableAIAgent,
-          enableMusicPlayer: payload.domains.settings.enableMusicPlayer,
+          enableAIAgent: resolvedEnableAIAgent,
+          enableMusicPlayer: resolvedEnableMusicPlayer,
           progressCardSettings: {
             visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
             showTasks: payload.domains.settings.progressCardSettings.showTasks ?? true,
           },
-          mockExamPresets:
-            payload.domains.settings.mockExamPresets &&
-            payload.domains.settings.mockExamPresets.length > 0
-              ? payload.domains.settings.mockExamPresets
-              : defaultMockExamPresets,
-          examMode: payload.domains.settings.examMode,
-          neetMockExamPresets: payload.domains.settings.neetMockExamPresets,
+          mockExamPresets: resolvedJeePresets,
+          examMode: resolvedExamMode,
+          neetMockExamPresets: resolvedNeetPresets,
         }),
         subjects: payload.domains.subjects ? nextSubjectsSnapshot : null,
       };
@@ -653,12 +743,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         visibleStats: payload.domains.settings.progressCardSettings.visibleStats,
         showTasks: payload.domains.settings.progressCardSettings.showTasks ?? true,
       }));
-      setJeeMockExamPresets(
-        payload.domains.settings.mockExamPresets &&
-          payload.domains.settings.mockExamPresets.length > 0
-          ? payload.domains.settings.mockExamPresets
-          : defaultMockExamPresets
-      );
+      setJeeMockExamPresets(resolvedJeePresets);
       if (payload.domains.settings.examMode !== undefined) {
         setExamMode(payload.domains.settings.examMode);
       }
@@ -712,7 +797,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     ]
   );
 
-  const runSync = useCallback(async () => {
+  const runSync = useCallback(async (options?: { isManual?: boolean }) => {
     if (!user || !isConfigured || !supabase) return;
     if (syncInFlightRef.current) return;
 
@@ -722,6 +807,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setLastError(null);
 
     try {
+      const lastPushAt = readStorageValue(LAST_SUCCESSFUL_PUSH_AT_KEY);
+      const hasPlannerEdit = hasLocalUnsyncedEdit('plannerTasks');
+      const plannerCutoffNow =
+        !hasPlannerEdit && lastPushAt ? new Date(lastPushAt) : undefined;
+
       const localPayload = createLocalPayload({
         progress,
         plannerTasks,
@@ -738,14 +828,20 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         customColumns,
         excludedColumns,
         materialOrder,
+        plannerCutoffNow,
       });
 
       // --- Strategy 1: Checksum-gated fetch ---
-      // First, fetch only the remote checksum (~50 bytes egress) to decide
+      // First, fetch only the remote checksum (~80 bytes egress vs ~200KB for full payload) to decide
       // whether a full payload download is necessary.
       const cachedRemoteChecksum = readStorageValue(REMOTE_CHECKSUM_KEY);
-      const { checksum: remoteChecksumLite, payloadVersion: remotePayloadVersionLite } =
-        await fetchRemoteChecksum(user.id);
+      const {
+        checksum: remoteChecksumLite,
+        payloadVersion: remotePayloadVersionLite,
+        hotChecksum: remoteHotChecksumLite,
+        coldChecksum: remoteColdChecksumLite,
+        payloadFormat: remotePayloadFormatLite,
+      } = await fetchRemoteChecksum(user.id);
 
       const remoteUnchanged =
         remoteChecksumLite !== null && remoteChecksumLite === cachedRemoteChecksum;
@@ -759,7 +855,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         remotePayload = result.payload;
         row = result.row;
       } else {
-        // Synthesize a minimal row so the push-check below works
+        // Synthesize a minimal row so the push-check and split_v2 hot-update check work
         row = remoteChecksumLite
           ? {
               payload_inline: null,
@@ -770,31 +866,43 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               chunk_count: 0,
               payload_bytes: 0,
               checksum: remoteChecksumLite,
+              hot_checksum: remoteHotChecksumLite,
+              cold_checksum: remoteColdChecksumLite,
+              payload_format: remotePayloadFormatLite ?? 'legacy_v1',
             }
           : null;
       }
 
       // --- Delta Strategy: Pull Study Session Logs ---
       let deltaCursor = readDeltaCursor();
+      let newLogs: StudySessionLogEntry[] = [];
+      const shouldPullSessionLogs =
+        !hasPulledSessionLogsRef.current ||
+        !remoteUnchanged ||
+        pendingSessionLogsRef.current.length > 0 ||
+        Boolean(options?.isManual);
 
-      // 1. Pull changes
-      const {
-        data: newLogsRaw,
-        error: deltaPullError,
-        status: deltaPullStatus,
-      } = await supabase
-        .from('study_session_log')
-        .select('id,user_id,client_id,session_id,action,payload,created_at')
-        .eq('user_id', user.id)
-        .gt('created_at', deltaCursor.created_at)
-        .order('created_at', { ascending: true })
-        .order('id', { ascending: true })
-        .limit(500);
+      if (shouldPullSessionLogs) {
+        // 1. Pull changes
+        const {
+          data: newLogsRaw,
+          error: deltaPullError,
+          status: deltaPullStatus,
+        } = await supabase
+          .from('study_session_log')
+          .select('id,user_id,client_id,session_id,action,payload,created_at')
+          .eq('user_id', user.id)
+          .gt('created_at', deltaCursor.created_at)
+          .order('created_at', { ascending: true })
+          .order('id', { ascending: true })
+          .limit(500);
 
-      if (deltaPullError) throwSyncError(deltaPullError, deltaPullStatus);
-      const newLogs = (newLogsRaw ?? []).filter((log) =>
-        isLogAfterCursor(log, deltaCursor)
-      ) as StudySessionLogEntry[];
+        if (deltaPullError) throwSyncError(deltaPullError, deltaPullStatus);
+        hasPulledSessionLogsRef.current = true;
+        newLogs = (newLogsRaw ?? []).filter((log) =>
+          isLogAfterCursor(log, deltaCursor)
+        ) as StudySessionLogEntry[];
+      }
 
       // --- Strategy 5: Conditional aggregate sync ---
       // Only fetch the full study aggregate when studySessions have unsynced local edits or remote changed.
@@ -814,6 +922,13 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           remoteStudyAggregateRef.current = remoteAggregate;
           setRemoteStudyAggregate(remoteAggregate);
           writeCachedAggregate(remoteAggregate);
+          // Initialize baseline on cold load so unchanged remote aggregate is not echoed back
+          if (remoteAggregate && lastPushedAggregateRef.current === null) {
+            const { updated_at: _u, ...baselinePayload } = remoteAggregate;
+            const baselineStr = JSON.stringify(pruneAggregateBuckets(baselinePayload));
+            lastPushedAggregateRef.current = baselineStr;
+            writePushedAggregate(user.id, baselineStr);
+          }
         } else {
           remoteAggregate = currentAggregate;
         }
@@ -827,6 +942,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const mergedPayload = remotePayload
         ? mergePayloadDomainsWithPolicy(localPayload, remotePayload, {
             hasLocalUnsyncedEdit: (domain) => hasLocalUnsyncedEdit(domain),
+            now: plannerCutoffNow,
           })
         : localPayload;
       const localDomainChecksum = await computeChecksum(JSON.stringify(localPayload.domains));
@@ -863,43 +979,94 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       );
       const shouldPush = !row || (encoded.checksum !== remoteChecksum && anyDomainDirty);
 
+      let pushedStorageMode: SyncStorageMode = encoded.storage;
       if (shouldPush) {
         const nextPayloadVersion = (row?.payload_version ?? 0) + 1;
+        const splitEncoded = await encodeSplitSyncPayload(mergedPayload);
 
-        const manifestRow = {
-          user_id: user.id,
-          payload_inline: encoded.storage === 'inline' ? encoded.compressed : null,
-          payload_storage: encoded.storage,
-          payload_version: nextPayloadVersion,
-          chunk_count: encoded.storage === 'chunked' ? encoded.chunkCount : 0,
-          payload_bytes: encoded.compressedBytes,
-          checksum: encoded.checksum,
-          client_updated_at: new Date().toISOString(),
-          app_version: __APP_VERSION__,
-        };
+        if (splitEncoded?.fitsSplitInline) {
+          pushedStorageMode = 'inline';
+          const canHotOnlyUpdate =
+            Boolean(row) &&
+            row?.payload_format === 'split_v2' &&
+            row?.payload_inline === null &&
+            row?.cold_checksum === splitEncoded.coldChecksum;
 
-        const { error: manifestError, status: manifestStatus } = await supabase
-          .from('user_sync_state')
-          .upsert(manifestRow, { onConflict: 'user_id' }); // Removing .select() completely suppresses RETURNING * in supabase-js v2
-        if (manifestError) throwSyncError(manifestError, manifestStatus);
+          if (canHotOnlyUpdate) {
+            // Hot-only UPDATE omits cold_payload and payload_inline so Postgres reuses TOAST pointers.
+            const { error: updateError, status: updateStatus } = await supabase
+              .from('user_sync_state')
+              .update({
+                hot_payload: splitEncoded.hotCompressed,
+                hot_checksum: splitEncoded.hotChecksum,
+                checksum: encoded.checksum,
+                payload_version: nextPayloadVersion,
+                payload_bytes: splitEncoded.hotBytes + splitEncoded.coldBytes,
+                client_updated_at: new Date().toISOString(),
+                app_version: __APP_VERSION__,
+              })
+              .eq('user_id', user.id);
+            if (updateError) throwSyncError(updateError, updateStatus);
+          } else {
+            const manifestRow = {
+              user_id: user.id,
+              payload_inline: null,
+              payload_storage: 'inline' as SyncStorageMode,
+              payload_version: nextPayloadVersion,
+              chunk_count: 0,
+              payload_bytes: splitEncoded.hotBytes + splitEncoded.coldBytes,
+              checksum: encoded.checksum,
+              hot_payload: splitEncoded.hotCompressed,
+              hot_checksum: splitEncoded.hotChecksum,
+              cold_payload: splitEncoded.coldCompressed,
+              cold_checksum: splitEncoded.coldChecksum,
+              payload_format: 'split_v2' as SyncPayloadFormat,
+              client_updated_at: new Date().toISOString(),
+              app_version: __APP_VERSION__,
+            };
 
-        if (encoded.storage === 'chunked') {
-          const chunkRows = encoded.chunks.map((chunk, index) => ({
+            const { error: manifestError, status: manifestStatus } = await supabase
+              .from('user_sync_state')
+              .upsert(manifestRow, { onConflict: 'user_id' });
+            if (manifestError) throwSyncError(manifestError, manifestStatus);
+          }
+        } else {
+          const manifestRow = {
             user_id: user.id,
+            payload_inline: encoded.storage === 'inline' ? encoded.compressed : null,
+            payload_storage: encoded.storage,
             payload_version: nextPayloadVersion,
-            chunk_index: index,
-            chunk_data: chunk,
-          }));
+            chunk_count: encoded.storage === 'chunked' ? encoded.chunkCount : 0,
+            payload_bytes: encoded.compressedBytes,
+            checksum: encoded.checksum,
+            payload_format: 'legacy_v1' as SyncPayloadFormat,
+            client_updated_at: new Date().toISOString(),
+            app_version: __APP_VERSION__,
+          };
 
-          const { error: chunkError, status: chunkStatus } = await supabase
-            .from('user_sync_chunks')
-            .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' }); // Removing .select() suppresses RETURNING *
-          if (chunkError) throwSyncError(chunkError, chunkStatus);
+          const { error: manifestError, status: manifestStatus } = await supabase
+            .from('user_sync_state')
+            .upsert(manifestRow, { onConflict: 'user_id' }); // Removing .select() completely suppresses RETURNING * in supabase-js v2
+          if (manifestError) throwSyncError(manifestError, manifestStatus);
+
+          if (encoded.storage === 'chunked') {
+            const chunkRows = encoded.chunks.map((chunk, index) => ({
+              user_id: user.id,
+              payload_version: nextPayloadVersion,
+              chunk_index: index,
+              chunk_data: chunk,
+            }));
+
+            const { error: chunkError, status: chunkStatus } = await supabase
+              .from('user_sync_chunks')
+              .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' }); // Removing .select() suppresses RETURNING *
+            if (chunkError) throwSyncError(chunkError, chunkStatus);
+          }
         }
         // No DB trigger prunes old chunk versions (dropped in 20260626171500), and the nightly
         // cron only runs once a day, so delete superseded versions now. Only needed when this
         // push or the previous remote payload was chunked. Failure must not fail the sync.
-        if (encoded.storage === 'chunked' || row?.payload_storage === 'chunked') {
+        if (pushedStorageMode === 'chunked' || row?.payload_storage === 'chunked') {
           try {
             const { error: pruneError } = await supabase
               .from('user_sync_chunks')
@@ -916,12 +1083,15 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         writePushedDomainChecksums(user.id, mergedDomainChecksums);
       }
 
-      // Cache the remote checksum locally to enable checksum-gating on next cycle
-      writeStorageValue(REMOTE_CHECKSUM_KEY, encoded.checksum);
+      // Cache the actual server checksum locally to enable checksum-gating on next cycle
       if (shouldPush) {
-        writeStorageValue(REMOTE_STORAGE_KEY, encoded.storage);
-      } else if (needsFullFetch && row) {
-        writeStorageValue(REMOTE_STORAGE_KEY, row.payload_storage);
+        writeStorageValue(REMOTE_CHECKSUM_KEY, encoded.checksum);
+        writeStorageValue(REMOTE_STORAGE_KEY, pushedStorageMode);
+      } else if (remoteChecksum) {
+        writeStorageValue(REMOTE_CHECKSUM_KEY, remoteChecksum);
+        if (needsFullFetch && row) {
+          writeStorageValue(REMOTE_STORAGE_KEY, row.payload_storage);
+        }
       }
 
       // --- Delta Strategy: Apply Pull and Push Study Session Logs ---
@@ -1235,7 +1405,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!userRef.current || !isConfiguredRef.current || authPausedRef.current) return;
     clearScheduledSync();
     try {
-      await runSyncRef.current();
+      await runSyncRef.current({ isManual: true });
       if (!authPausedRef.current) {
         scheduleSync(nextSyncInterval());
       }
@@ -1258,6 +1428,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!userId || !isConfigured) {
       clearScheduledSync();
       authPausedRef.current = false;
+      hasPulledSessionLogsRef.current = false;
       retryAttemptRef.current = 0;
       pushedChecksumsUserIdRef.current = null;
       lastPushedDomainChecksumsRef.current = {};
@@ -1298,8 +1469,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return hasDomainEdits || hasPendingLogs;
   }, []);
 
-  // When the tab returns to the foreground, pull the next scheduled sync back to
-  // the active cadence. If pending changes exist or > 10 minutes elapsed, sync immediately.
+  // When the tab returns to the foreground, enforce the >= 10m minimum interval
+  // so rapid tab switches don't trigger immediate DB pushes.
   useEffect(() => {
     if (!userId || !isConfigured) return;
     const handleVisibilityChange = () => {
@@ -1307,11 +1478,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         // While the backend is failing or auth-paused, leave the pending state alone.
         // Pulling it forward on every tab switch turns the backoff into polling.
         if (retryAttemptRef.current > 0 || authPausedRef.current) return;
-        const isStale = Date.now() - lastSyncCompletedAtRef.current > 10 * 60 * 1000;
-        if (checkPendingChanges() || isStale) {
+        const elapsed = Date.now() - lastSyncCompletedAtRef.current;
+        if (elapsed >= SYNC_BATCH_INTERVAL_MS) {
           scheduleSync(0);
         } else {
-          scheduleSync(SYNC_BATCH_INTERVAL_MS);
+          scheduleSync(SYNC_BATCH_INTERVAL_MS - elapsed);
         }
       }
     };
@@ -1319,7 +1490,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [userId, isConfigured, scheduleSync, checkPendingChanges]);
+  }, [userId, isConfigured, scheduleSync]);
 
   // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
   useEffect(() => {
@@ -1331,12 +1502,14 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const supabaseClient = supabase;
 
     const pushAggregate = async () => {
+      if (pushAggregateInFlightRef.current) return;
       const currentAgg = remoteStudyAggregateRef.current;
       if (!currentAgg) return;
       // Backend is currently failing (sync is in backoff) or auth-paused: don't add
       // load on every tab hide. The aggregate is cached locally and pushed once sync recovers.
       if (retryAttemptRef.current > 0 || authPausedRef.current) return;
 
+      pushAggregateInFlightRef.current = true;
       try {
         // Strip updated_at to ensure single query variant and faster execution.
         // PERF (Issue #2): prune daily buckets on the write side too so the JSONB
@@ -1360,6 +1533,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
       } catch (err) {
         console.warn('Failed to upsert aggregate', err);
+      } finally {
+        pushAggregateInFlightRef.current = false;
       }
     };
 

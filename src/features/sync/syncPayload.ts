@@ -1,7 +1,9 @@
-import { Subject, SubjectData } from '../../shared/types';
+import { Chapter, Subject, SubjectData } from '../../shared/types';
 import { formatDateLocal } from '../../shared/utils/date';
 import { BUNDLED_SUBJECT_DATA, getBundledSubjectData } from '../../shared/utils/syllabusData';
 import {
+  SubjectDataDelta,
+  SyncedSubjectDataEntry,
   SyncPayloadInput,
   SyncPayloadV1,
   SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
@@ -27,6 +29,20 @@ function hasNonEmptySubjectStringMap(map?: Partial<Record<Subject, string[]>> | 
   return Object.values(map).some((entries) => Array.isArray(entries) && entries.length > 0);
 }
 
+export function isSubjectDataDelta(
+  entry: SyncedSubjectDataEntry | null | undefined
+): entry is SubjectDataDelta {
+  return Boolean(entry && typeof entry === 'object' && 'isDelta' in entry && entry.isDelta === true);
+}
+
+function areChaptersEqual(ch: Chapter, bCh: Chapter): boolean {
+  if (ch.serial !== bCh.serial || ch.name !== bCh.name) return false;
+  if (Boolean(ch.isCustom) !== Boolean(bCh.isCustom)) return false;
+  if (!areStringArraysEqual(ch.materials, bCh.materials)) return false;
+  if (!areStringArraysEqual(ch.subtopics, bCh.subtopics)) return false;
+  return true;
+}
+
 /**
  * Fast structural check comparing a subject's SubjectData against the canonical bundled syllabus.
  */
@@ -49,48 +65,111 @@ export function isSubjectDataEqualToBundled(
   for (let i = 0; i < bundled.chapters.length; i += 1) {
     const ch = data.chapters[i];
     const bCh = bundled.chapters[i];
-    if (!ch) return false;
-    if (ch.serial !== bCh.serial || ch.name !== bCh.name) return false;
-    if (Boolean(ch.isCustom) !== Boolean(bCh.isCustom)) return false;
-    if (!areStringArraysEqual(ch.materials, bCh.materials)) return false;
-    if (!areStringArraysEqual(ch.subtopics, bCh.subtopics)) return false;
+    if (!ch || !areChaptersEqual(ch, bCh)) return false;
   }
 
   return true;
 }
 
 /**
- * Returns only subjects whose SubjectData differs from the bundled syllabus defaults.
+ * Hydrates a single subject entry (either a compact SubjectDataDelta or a legacy full SubjectData)
+ * against the bundled syllabus defaults.
+ */
+export function hydrateSubjectDataEntry(
+  subject: Subject,
+  entry: SyncedSubjectDataEntry | null | undefined
+): SubjectData {
+  if (!entry) return getBundledSubjectData(subject);
+  if (!isSubjectDataDelta(entry)) {
+    return entry;
+  }
+
+  const base = getBundledSubjectData(subject);
+  if (entry.materialNames) {
+    base.materialNames = [...entry.materialNames];
+  }
+  if (entry.deletedChapterSerials && entry.deletedChapterSerials.length > 0) {
+    const deletedSet = new Set(entry.deletedChapterSerials);
+    base.chapters = base.chapters.filter((ch) => !deletedSet.has(ch.serial));
+  }
+  if (entry.upsertChapters && entry.upsertChapters.length > 0) {
+    const indexBySerial = new Map(base.chapters.map((ch, idx) => [ch.serial, idx]));
+    for (const ch of entry.upsertChapters) {
+      const existingIdx = indexBySerial.get(ch.serial);
+      if (existingIdx !== undefined) {
+        base.chapters[existingIdx] = ch;
+      } else {
+        indexBySerial.set(ch.serial, base.chapters.length);
+        base.chapters.push(ch);
+      }
+    }
+  }
+  return base;
+}
+
+/**
+ * Returns only compact deltas for subjects whose SubjectData differs from the bundled syllabus defaults.
  * Unmodified and null/missing subjects are omitted to eliminate sync payload bloat.
  */
 export function getCustomSubjectDataForSync(
-  subjectData?: Partial<Record<Subject, SubjectData | null>> | null
-): Partial<Record<Subject, SubjectData>> {
-  const custom: Partial<Record<Subject, SubjectData>> = {};
+  subjectData?: Partial<Record<Subject, SyncedSubjectDataEntry | null>> | null
+): Partial<Record<Subject, SyncedSubjectDataEntry>> {
+  const custom: Partial<Record<Subject, SyncedSubjectDataEntry>> = {};
   if (!subjectData) return custom;
 
   for (const subject of ALL_SUBJECTS) {
-    const data = subjectData[subject];
-    if (!data) continue;
-    if (!isSubjectDataEqualToBundled(subject, data)) {
-      custom[subject] = data;
+    const raw = subjectData[subject];
+    if (!raw) continue;
+    const data = isSubjectDataDelta(raw) ? hydrateSubjectDataEntry(subject, raw) : raw;
+    if (isSubjectDataEqualToBundled(subject, data)) continue;
+
+    const bundled = BUNDLED_SUBJECT_DATA[subject];
+    const bundledMap = new Map(bundled.chapters.map((ch) => [ch.serial, ch]));
+    const localMap = new Map(data.chapters.map((ch) => [ch.serial, ch]));
+
+    const upsertChapters: Chapter[] = [];
+    for (const ch of data.chapters) {
+      const bCh = bundledMap.get(ch.serial);
+      if (!bCh || !areChaptersEqual(ch, bCh)) {
+        upsertChapters.push(ch);
+      }
     }
+
+    const deletedChapterSerials: number[] = [];
+    for (const bCh of bundled.chapters) {
+      if (!localMap.has(bCh.serial)) {
+        deletedChapterSerials.push(bCh.serial);
+      }
+    }
+
+    const delta: SubjectDataDelta = { isDelta: true };
+    if (!areStringArraysEqual(data.materialNames, bundled.materialNames)) {
+      delta.materialNames = [...data.materialNames];
+    }
+    if (upsertChapters.length > 0) {
+      delta.upsertChapters = upsertChapters;
+    }
+    if (deletedChapterSerials.length > 0) {
+      delta.deletedChapterSerials = deletedChapterSerials;
+    }
+
+    custom[subject] = delta;
   }
 
   return custom;
 }
 
 /**
- * Hydrates a sparse or omitted subjectData map with cloned bundled syllabus defaults.
+ * Hydrates a sparse or omitted subjectData map (deltas or legacy full objects) with cloned bundled syllabus defaults.
  */
 export function hydrateSubjectDataWithBundledDefaults(
-  subjectData?: Partial<Record<Subject, SubjectData | null>> | null
+  subjectData?: Partial<Record<Subject, SyncedSubjectDataEntry | null>> | null
 ): Record<Subject, SubjectData> {
   return {
-    physics: subjectData?.physics ?? getBundledSubjectData('physics'),
-    chemistry: subjectData?.chemistry ?? getBundledSubjectData('chemistry'),
-    maths: subjectData?.maths ?? getBundledSubjectData('maths'),
-    biology: subjectData?.biology ?? getBundledSubjectData('biology'),
+    physics: hydrateSubjectDataEntry('physics', subjectData?.physics),
+    chemistry: hydrateSubjectDataEntry('chemistry', subjectData?.chemistry),
+    maths: hydrateSubjectDataEntry('maths', subjectData?.maths),
+    biology: hydrateSubjectDataEntry('biology', subjectData?.biology),
   };
 }
 
@@ -115,7 +194,7 @@ export function normalizeSubjectsForSync(
 
   return {
     // Runtime omits unmodified keys; cast keeps compatibility with SyncPayloadV1's Record shape.
-    subjectData: customSubjectData as Record<Subject, SubjectData | null>,
+    subjectData: customSubjectData as Record<Subject, SyncedSubjectDataEntry | null>,
     customColumns: subjects.customColumns,
     excludedColumns: subjects.excludedColumns,
     materialOrder: subjects.materialOrder,

@@ -5,12 +5,47 @@ import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { RemoteProfile, LiveActivity } from '../../../shared/types';
 import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/backoff';
 
+const LIVE_POLL_INTERVAL_MS = 120_000; // 2 minutes (aligned with heartbeat cadence)
 const LIVE_POLL_BACKOFF_BASE_MS = 30_000; // 30 seconds
 const LIVE_POLL_BACKOFF_MAX_MS = 300_000; // 5 minutes
 const PROFILE_FRIEND_COLUMNS =
   'id, display_name, username, avatar_url, banner_url, custom_status, streak_count, discord_tag, grade_status, target_exam, today_study_seconds, today_questions, momentum_heatmap, todays_tasks, updated_at';
 
-// Persist last full profile fetch across route navigations
+const LAST_FULL_FETCH_STORAGE_KEY = 'jee-community-friends-last-fetch';
+
+const readLastFullFetchTime = (uid: string | null): number => {
+  if (!uid) return 0;
+  try {
+    const raw = localStorage.getItem(LAST_FULL_FETCH_STORAGE_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      parsed.userId === uid &&
+      typeof parsed.fetchedAt === 'number' &&
+      Number.isFinite(parsed.fetchedAt)
+    ) {
+      return parsed.fetchedAt;
+    }
+  } catch {
+    /* ignore */
+  }
+  return 0;
+};
+
+const writeLastFullFetchTime = (uid: string | null, fetchedAt: number) => {
+  try {
+    if (!uid || fetchedAt === 0) {
+      localStorage.removeItem(LAST_FULL_FETCH_STORAGE_KEY);
+    } else {
+      localStorage.setItem(LAST_FULL_FETCH_STORAGE_KEY, JSON.stringify({ userId: uid, fetchedAt }));
+    }
+  } catch {
+    /* ignore */
+  }
+};
+
+// Persist last full profile fetch across route navigations and page reloads
 let globalLastFullFetchTime = 0;
 // Backoff for full friend fetches while the backend is failing/overloaded.
 const FRIENDS_FETCH_BACKOFF_BASE_MS = 30_000; // 30 seconds
@@ -97,13 +132,14 @@ export function useFriends(options?: UseFriendsOptions) {
   const enabledRef = useRef<boolean>(enabled);
   enabledRef.current = enabled;
 
-  // Handle logout and userId-change cleanup
+  // Handle logout and userId-change cleanup, and hydrate persisted fetch timestamp on reload
   useEffect(() => {
     if (!isAuthLoading && !userId) {
       setFriends([]);
       friendIdsRef.current = [];
       localStorage.removeItem('jee-community-friends-cache');
       globalLastFullFetchTime = 0;
+      writeLastFullFetchTime(null, 0);
       globalFetchFailCount = 0;
       globalFetchPausedUntil = 0;
       globalLastUserId = null;
@@ -119,11 +155,14 @@ export function useFriends(options?: UseFriendsOptions) {
         friendIdsRef.current = [];
         localStorage.removeItem('jee-community-friends-cache');
         globalLastFullFetchTime = 0;
+        writeLastFullFetchTime(null, 0);
         globalFetchFailCount = 0;
         globalFetchPausedUntil = 0;
         lastPollTimeRef.current = 0;
         pollFailCountRef.current = 0;
         pollPausedUntilRef.current = 0;
+      } else if (globalLastFullFetchTime === 0) {
+        globalLastFullFetchTime = readLastFullFetchTime(userId);
       }
       globalLastUserId = userId;
     }
@@ -235,10 +274,12 @@ export function useFriends(options?: UseFriendsOptions) {
         if (friendIds.length === 0) {
           setFriends([]);
           localStorage.removeItem('jee-community-friends-cache');
-          globalLastFullFetchTime = Date.now();
+          const fetchedAt = Date.now();
+          globalLastFullFetchTime = fetchedAt;
+          writeLastFullFetchTime(userId, fetchedAt);
           globalFetchFailCount = 0;
           globalFetchPausedUntil = 0;
-          lastPollTimeRef.current = Date.now();
+          lastPollTimeRef.current = fetchedAt;
           setIsLoading(false);
           return;
         }
@@ -327,12 +368,14 @@ export function useFriends(options?: UseFriendsOptions) {
 
         setFriends(merged);
         localStorage.setItem('jee-community-friends-cache', JSON.stringify(merged));
-        globalLastFullFetchTime = Date.now();
+        const fetchedAt = Date.now();
+        globalLastFullFetchTime = fetchedAt;
+        writeLastFullFetchTime(userId, fetchedAt);
         globalFetchFailCount = 0;
         globalFetchPausedUntil = 0;
         // Stamp the poll time so the visibility effect's initial call is skipped
         // (fetchFriends already fetched live_activity inside Promise.all).
-        lastPollTimeRef.current = Date.now();
+        lastPollTimeRef.current = fetchedAt;
       } catch (err: any) {
         console.error('Failed to fetch friends', err);
         setError(err.message || 'Failed to fetch friends');
@@ -372,7 +415,7 @@ export function useFriends(options?: UseFriendsOptions) {
     const startPolling = () => {
       if (interval) clearInterval(interval);
       if (enabledRef.current && friendIdsRef.current.length > 0) {
-        interval = setInterval(pollLiveActivity, 30000);
+        interval = setInterval(pollLiveActivity, LIVE_POLL_INTERVAL_MS);
       }
     };
 

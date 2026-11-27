@@ -197,6 +197,21 @@ describe('syncPayload', () => {
 
     expect(payloadWithCustomChapter.domains.subjects).toBeDefined();
     expect(Object.keys(payloadWithCustomChapter.domains.subjects!.subjectData)).toEqual(['physics']);
+    const physicsDelta = payloadWithCustomChapter.domains.subjects!.subjectData.physics as any;
+    expect(physicsDelta.isDelta).toBe(true);
+    expect(physicsDelta.upsertChapters).toHaveLength(1);
+    expect(physicsDelta.upsertChapters[0].serial).toBe(99);
+
+    // Round-trip hydration restores full SubjectData including bundled chapters + custom chapter
+    const roundTripped = hydrateSubjectDataWithBundledDefaults(
+      payloadWithCustomChapter.domains.subjects!.subjectData
+    );
+    expect(roundTripped.physics.chapters).toHaveLength(
+      getBundledSubjectData('physics').chapters.length + 1
+    );
+    expect(roundTripped.physics.chapters.find((c) => c.serial === 99)?.name).toBe(
+      'Custom Relativity'
+    );
 
     const payloadWithColumnsOnly = buildSyncPayload({
       progress: baseProgress,

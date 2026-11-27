@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   computeChecksum,
   decompressSyncPayload,
+  encodeSplitSyncPayload,
   encodeSyncPayload,
   reconstructCompressedPayload,
+  reconstructSplitSyncPayload,
   splitCompressedPayload,
   upgradeSyncPayloadToV2,
 } from './syncCodec';
@@ -104,5 +106,16 @@ describe('syncCodec', () => {
     const encodedV1 = await encodeSyncPayload(v1Payload as any);
     const decompressed = decompressSyncPayload(encodedV1.compressed);
     expect(decompressed.schemaVersion).toBe(2);
+  });
+
+  it('encodes and reconstructs split_v2 hot and cold payloads losslessly', async () => {
+    const split = await encodeSplitSyncPayload(payload);
+    expect(split.fitsSplitInline).toBe(true);
+    expect(split.hotChecksum).toBeTruthy();
+    expect(split.coldChecksum).toBeTruthy();
+
+    const reconstructed = reconstructSplitSyncPayload(split.hotCompressed, split.coldCompressed);
+    expect(reconstructed.schemaVersion).toBe(SYNC_SCHEMA_VERSION);
+    expect(reconstructed.domains).toEqual(payload.domains);
   });
 });

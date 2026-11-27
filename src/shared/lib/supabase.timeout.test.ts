@@ -123,7 +123,7 @@ describe('createBoundedAuthLock', () => {
     );
   });
 
-  it('falls back to processLock on SecurityError or NotSupportedError', async () => {
+  it('falls back to processLock on SecurityError, NotSupportedError, or Web Lock acquire timeout', async () => {
     for (const errorName of ['SecurityError', 'NotSupportedError']) {
       const requestMock = vi.fn().mockRejectedValue(new DOMException('Denied', errorName));
       Object.defineProperty(globalThis.navigator, 'locks', {
@@ -137,6 +137,23 @@ describe('createBoundedAuthLock', () => {
       );
       expect(requestMock).toHaveBeenCalledTimes(1);
     }
+
+    // Timeout error with isAcquireTimeout = true (NavigatorLockAcquireTimeoutError)
+    const timeoutErr = Object.assign(new Error('Lock timed out'), {
+      name: 'NavigatorLockAcquireTimeoutError',
+      isAcquireTimeout: true,
+    });
+    const timeoutRequestMock = vi.fn().mockRejectedValue(timeoutErr);
+    Object.defineProperty(globalThis.navigator, 'locks', {
+      configurable: true,
+      value: { request: timeoutRequestMock },
+    });
+
+    const lock = createBoundedAuthLock();
+    await expect(lock('fallback-timeout', 2_000, async () => 'recovered')).resolves.toBe(
+      'recovered'
+    );
+    expect(timeoutRequestMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -334,11 +351,21 @@ describe('createResilientAuthFetch', () => {
     expect(blocked.status).toBe(503);
     expect(baseFetch).toHaveBeenCalledTimes(1);
 
-    // Network recovery clears cooldown and failCount immediately
+    // Network recovery clears cooldown, failCount, and inFlightUntil immediately
+    localStorage.setItem(
+      AUTH_REFRESH_GUARD_KEY,
+      JSON.stringify({
+        failCount: 1,
+        cooldownUntil: Date.now() + 30_000,
+        inFlightUntil: Date.now() + 20_000,
+        ownerId: 'stale-tab',
+      })
+    );
     window.dispatchEvent(new Event('online'));
     const clearedState = JSON.parse(localStorage.getItem(AUTH_REFRESH_GUARD_KEY) || '{}');
     expect(clearedState.failCount).toBe(0);
     expect(clearedState.cooldownUntil).toBe(0);
+    expect(clearedState.inFlightUntil).toBe(0);
 
     const recovered = await resilientFetch(REFRESH_URL, { method: 'POST' });
     expect(recovered.status).toBe(200);

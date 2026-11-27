@@ -1,6 +1,7 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import {
   EncodedPayload,
+  EncodedSplitPayload,
   SyncChunkRow,
   SyncPayloadV1,
   SYNC_MAX_COMPRESSED_BYTES,
@@ -154,5 +155,106 @@ export async function encodeSyncPayload(
     checksum,
     chunkCount: chunks.length,
     chunks,
+  };
+}
+
+function compressDomainGroup(data: unknown): string {
+  const compressed = compressToEncodedURIComponent(JSON.stringify(data));
+  if (!compressed) {
+    throw new Error('Failed to compress split sync domain group.');
+  }
+  return compressed;
+}
+
+function decompressDomainGroup<T>(compressed: string): T {
+  const decompressed = decompressFromEncodedURIComponent(compressed);
+  if (!decompressed) {
+    throw new Error('Failed to decompress split sync domain group.');
+  }
+  return JSON.parse(decompressed) as T;
+}
+
+/**
+ * Encodes a SyncPayloadV1 into separate hot (progress, plannerTasks) and cold
+ * (mockScores, examDates, settings, subjects, tombstones, modifiedAt) compressed blobs
+ * for split_v2 storage, avoiding TOAST write amplification on cold domains.
+ */
+export async function encodeSplitSyncPayload(
+  payload: SyncPayloadV1,
+  maxBytes = SYNC_MAX_COMPRESSED_BYTES
+): Promise<EncodedSplitPayload> {
+  const hotObj = {
+    progress: payload.domains.progress,
+    plannerTasks: payload.domains.plannerTasks,
+  };
+  const coldObj: Record<string, unknown> = {
+    mockScores: payload.domains.mockScores,
+    examDates: payload.domains.examDates,
+    settings: payload.domains.settings,
+  };
+  if (payload.domains.subjects !== undefined) coldObj.subjects = payload.domains.subjects;
+  if (payload.domains.tombstones !== undefined) coldObj.tombstones = payload.domains.tombstones;
+  if (payload.domains.modifiedAt !== undefined) coldObj.modifiedAt = payload.domains.modifiedAt;
+
+  const hotSerialized = JSON.stringify(hotObj);
+  const coldSerialized = JSON.stringify(coldObj);
+  const hotCompressed = compressDomainGroup(hotObj);
+  const coldCompressed = compressDomainGroup(coldObj);
+  const hotBytes = getUtf8ByteLength(hotCompressed);
+  const coldBytes = getUtf8ByteLength(coldCompressed);
+
+  const [hotChecksum, coldChecksum, checksum] = await Promise.all([
+    computeChecksum(hotSerialized),
+    computeChecksum(coldSerialized),
+    computeChecksum(JSON.stringify(payload.domains)),
+  ]);
+
+  return {
+    hotCompressed,
+    hotBytes,
+    hotChecksum,
+    coldCompressed,
+    coldBytes,
+    coldChecksum,
+    checksum,
+    fitsSplitInline: hotBytes <= maxBytes && coldBytes <= maxBytes,
+  };
+}
+
+/**
+ * Reconstructs a SyncPayloadV1 from split_v2 hot_payload and cold_payload columns.
+ */
+export function reconstructSplitSyncPayload(
+  hotCompressed: string,
+  coldCompressed: string
+): SyncPayloadV1 {
+  const hot = decompressDomainGroup<{
+    progress: SyncPayloadV1['domains']['progress'];
+    plannerTasks: SyncPayloadV1['domains']['plannerTasks'];
+  }>(hotCompressed);
+  const cold = decompressDomainGroup<{
+    mockScores: SyncPayloadV1['domains']['mockScores'];
+    examDates: SyncPayloadV1['domains']['examDates'];
+    settings: SyncPayloadV1['domains']['settings'];
+    subjects?: SyncPayloadV1['domains']['subjects'];
+    tombstones?: SyncPayloadV1['domains']['tombstones'];
+    modifiedAt?: SyncPayloadV1['domains']['modifiedAt'];
+  }>(coldCompressed);
+
+  const domains: SyncPayloadV1['domains'] = {
+    progress: hot.progress,
+    plannerTasks: hot.plannerTasks,
+    mockScores: cold.mockScores,
+    examDates: cold.examDates,
+    settings: cold.settings,
+  };
+  if (cold.subjects !== undefined) domains.subjects = cold.subjects;
+  if (cold.tombstones !== undefined) domains.tombstones = cold.tombstones;
+  if (cold.modifiedAt !== undefined) domains.modifiedAt = cold.modifiedAt;
+
+  return {
+    schemaVersion: SYNC_SCHEMA_VERSION,
+    generatedAt: new Date().toISOString(),
+    domains,
   };
 }

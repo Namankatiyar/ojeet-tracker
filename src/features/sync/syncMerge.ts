@@ -64,7 +64,8 @@ function mergeItemList<T extends { id: string }>(
   remoteTombstones: SyncTombstone[] = [],
   fallbackLocalTime?: string,
   fallbackRemoteTime?: string,
-  preferLocalTie = false
+  preferLocalTie = false,
+  referenceNowMs: number = Date.now()
 ): { mergedItems: T[]; mergedTombstones: SyncTombstone[] } {
   // 1. Combine tombstones by item ID, taking the newest deletedAt timestamp
   const tombstoneMap: Record<string, SyncTombstone> = {};
@@ -128,12 +129,11 @@ function mergeItemList<T extends { id: string }>(
     mergedItems.push(winner);
   }
 
-  // 3. Prune tombstones older than retention threshold
-  const nowMs = Date.now();
+  // 3. Prune tombstones older than retention threshold using deterministic referenceNowMs
   const prunedTombstones = Object.values(tombstoneMap).filter((t) => {
     const deletedTime = Date.parse(t.deletedAt);
     if (Number.isNaN(deletedTime)) return false;
-    return nowMs - deletedTime <= TOMBSTONE_RETENTION_MS;
+    return referenceNowMs - deletedTime <= TOMBSTONE_RETENTION_MS;
   });
 
   return { mergedItems, mergedTombstones: prunedTombstones };
@@ -195,6 +195,7 @@ export function mergePayloadDomainsWithPolicy(
     (localPayload.generatedAt && !Number.isNaN(Date.parse(localPayload.generatedAt))
       ? new Date(localPayload.generatedAt)
       : new Date());
+  const referenceNowMs = referenceNow.getTime();
   const plannerHistoryDays = options.plannerHistoryDays ?? SYNC_DEFAULT_PLANNER_HISTORY_DAYS;
 
   // 1. Progress domain (per-chapter union + LWW)
@@ -225,7 +226,8 @@ export function mergePayloadDomainsWithPolicy(
     remotePayload.domains.tombstones?.plannerTasks,
     fallbackLocalTime,
     fallbackRemoteTime,
-    options.hasLocalUnsyncedEdit('plannerTasks')
+    options.hasLocalUnsyncedEdit('plannerTasks'),
+    referenceNowMs
   );
   tasksResult.mergedItems.sort((a, b) => {
     const d = (a.date || '').localeCompare(b.date || '');
@@ -240,7 +242,8 @@ export function mergePayloadDomainsWithPolicy(
     remotePayload.domains.tombstones?.mockScores,
     fallbackLocalTime,
     fallbackRemoteTime,
-    options.hasLocalUnsyncedEdit('mockScores')
+    options.hasLocalUnsyncedEdit('mockScores'),
+    referenceNowMs
   );
   scoresResult.mergedItems.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
@@ -251,7 +254,8 @@ export function mergePayloadDomainsWithPolicy(
     remotePayload.domains.tombstones?.examDates,
     fallbackLocalTime,
     fallbackRemoteTime,
-    options.hasLocalUnsyncedEdit('examDates')
+    options.hasLocalUnsyncedEdit('examDates'),
+    referenceNowMs
   );
   examsResult.mergedItems.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   // Ensure at most one primary exam (pick newest modified or first)
@@ -278,7 +282,8 @@ export function mergePayloadDomainsWithPolicy(
     remotePayload.domains.tombstones?.mockExamPresets,
     fallbackLocalTime,
     fallbackRemoteTime,
-    options.hasLocalUnsyncedEdit('settings')
+    options.hasLocalUnsyncedEdit('settings'),
+    referenceNowMs
   );
 
   const neetPresetsResult = mergeItemList<MockExamPreset>(
@@ -288,7 +293,8 @@ export function mergePayloadDomainsWithPolicy(
     remotePayload.domains.tombstones?.mockExamPresets,
     fallbackLocalTime,
     fallbackRemoteTime,
-    options.hasLocalUnsyncedEdit('settings')
+    options.hasLocalUnsyncedEdit('settings'),
+    referenceNowMs
   );
 
   // 3. Settings singleton (excluding mockExamPresets)

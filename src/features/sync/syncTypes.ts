@@ -1,5 +1,6 @@
 import {
   AppProgress,
+  Chapter,
   ExamEntry,
   MockScore,
   PlannerTask,
@@ -15,6 +16,20 @@ export const SYNC_DEFAULT_PLANNER_HISTORY_DAYS = 60;
 export const SYNC_MAX_COMPRESSED_BYTES = 512 * 1024;
 
 export type SyncStorageMode = 'inline' | 'chunked';
+export type SyncPayloadFormat = 'legacy_v1' | 'split_v2';
+
+/**
+ * Compact delta representation of SubjectData relative to the bundled syllabus.
+ * Legacy full SubjectData objects are still accepted on read for backwards compatibility.
+ */
+export interface SubjectDataDelta {
+  isDelta: true;
+  materialNames?: string[];
+  upsertChapters?: Chapter[];
+  deletedChapterSerials?: number[];
+}
+
+export type SyncedSubjectDataEntry = SubjectData | SubjectDataDelta;
 
 export interface SyncTombstone {
   id: string;
@@ -58,7 +73,7 @@ export interface SyncPayloadV1 {
       neetMockExamPresets?: MockExamPreset[];
     };
     subjects?: {
-      subjectData: Record<Subject, SubjectData | null>;
+      subjectData: Record<Subject, SyncedSubjectDataEntry | null>;
       customColumns: Record<Subject, string[]>;
       excludedColumns: Record<Subject, string[]>;
       materialOrder: Record<Subject, string[]>;
@@ -88,7 +103,7 @@ export interface SyncPayloadInput {
   now?: Date;
   plannerHistoryDays?: number;
   subjects?: {
-    subjectData: Record<Subject, SubjectData | null>;
+    subjectData: Record<Subject, SyncedSubjectDataEntry | null>;
     customColumns: Record<Subject, string[]>;
     excludedColumns: Record<Subject, string[]>;
     materialOrder: Record<Subject, string[]>;
@@ -118,6 +133,17 @@ export interface EncodedPayloadChunked {
 }
 
 export type EncodedPayload = EncodedPayloadInline | EncodedPayloadChunked;
+
+export interface EncodedSplitPayload {
+  hotCompressed: string;
+  hotBytes: number;
+  hotChecksum: string;
+  coldCompressed: string;
+  coldBytes: number;
+  coldChecksum: string;
+  checksum: string;
+  fitsSplitInline: boolean;
+}
 
 export interface SyncChunkRow {
   chunk_index: number;

@@ -317,4 +317,23 @@ describe('syncMerge', () => {
     });
     expect(Object.keys(mergedMixed.domains.subjects!.subjectData)).toEqual(['chemistry']);
   });
+
+  it('uses deterministic referenceNowMs for tombstone pruning instead of wall-clock Date.now()', () => {
+    const local = makeBasePayload();
+    local.generatedAt = '2026-03-07T10:00:00.000Z';
+    const remote = makeBasePayload();
+    remote.generatedAt = '2026-03-07T10:00:00.000Z';
+    // Tombstone from 2026-01-10 is 56 days before 2026-03-07 (retained), even if Date.now() is much later
+    remote.domains.tombstones = {
+      plannerTasks: [{ id: 't-old', deletedAt: '2026-01-10T10:00:00.000Z' }],
+    };
+
+    const merged = mergePayloadDomainsWithPolicy(local, remote, {
+      hasLocalUnsyncedEdit: () => false,
+      now: new Date('2026-03-07T10:00:00.000Z'),
+    });
+    expect(merged.domains.tombstones?.plannerTasks).toEqual([
+      { id: 't-old', deletedAt: '2026-01-10T10:00:00.000Z' },
+    ]);
+  });
 });
