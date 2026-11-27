@@ -20,6 +20,7 @@ export default async function handler(req, res) {
   const inviteCode = req.query.inviteCode || req.query.code;
 
   if (!inviteCode) {
+    res.setHeader('Cache-Control', 'no-store');
     return res.status(400).send('Missing invite code');
   }
 
@@ -100,6 +101,10 @@ export default async function handler(req, res) {
     );
 
     res.setHeader('Content-Type', 'text/html');
+    res.setHeader(
+      'Cache-Control',
+      error ? 'no-store' : 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600'
+    );
     return res.status(200).send(html);
   } catch (error) {
     console.error('Error rendering invite page:', error);
@@ -111,8 +116,10 @@ export default async function handler(req, res) {
       }
       const html = fs.readFileSync(htmlPath, 'utf8');
       res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Cache-Control', 'no-store');
       return res.status(200).send(html);
     } catch (e) {
+      res.setHeader('Cache-Control', 'no-store');
       return res.status(500).send('Internal Server Error');
     }
   }

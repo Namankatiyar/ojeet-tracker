@@ -11,6 +11,7 @@ interface RemoteAuthContextType {
   isPromptDismissed: boolean;
   isPasswordRecovery: boolean;
   unconfirmedEmail: string | null;
+  authEventEpoch: number;
   setPendingUnconfirmedEmail: (email: string | null) => void;
   dismissPrompt: () => void;
   resetPrompt: () => void;
@@ -135,6 +136,7 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isLoading, setIsLoading] = useState<boolean>(isSupabaseConfigured);
   const [isPromptDismissed, setIsPromptDismissed] = useState<boolean>(readPromptDismissed);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState<boolean>(false);
+  const [authEventEpoch, setAuthEventEpoch] = useState<number>(0);
   const [pendingUnconfirmedEmail, setPendingUnconfirmedEmailState] = useState<string | null>(
     readPendingUnconfirmedEmail
   );
@@ -177,6 +179,9 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession ?? null);
       setUser(nextSession?.user ?? null);
+      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        setAuthEventEpoch((prev) => prev + 1);
+      }
       if (event === 'PASSWORD_RECOVERY') {
         setIsPasswordRecovery(true);
       }
@@ -430,6 +435,7 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       isPromptDismissed,
       isPasswordRecovery,
       unconfirmedEmail,
+      authEventEpoch,
       setPendingUnconfirmedEmail,
       dismissPrompt,
       resetPrompt,
@@ -444,6 +450,7 @@ export const RemoteAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       signOut,
     }),
     [
+      authEventEpoch,
       clearPasswordRecovery,
       dismissPrompt,
       isLoading,

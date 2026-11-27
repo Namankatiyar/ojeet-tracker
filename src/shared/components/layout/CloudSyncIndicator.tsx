@@ -40,6 +40,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
   type IndicatorState =
     | 'offline'
     | 'not-signed-in'
+    | 'auth-error'
     | 'syncing'
     | 'queued'
     | 'synced'
@@ -51,6 +52,8 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
     currentState = 'offline';
   } else if (!user) {
     currentState = 'not-signed-in';
+  } else if (status === 'auth_error') {
+    currentState = 'auth-error';
   } else if (status === 'error') {
     currentState = 'error';
   } else if (status === 'syncing') {
@@ -62,7 +65,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
   }
 
   const handleClick = () => {
-    if (currentState === 'not-signed-in') {
+    if (currentState === 'not-signed-in' || currentState === 'auth-error') {
       if (onOpenSignIn) onOpenSignIn();
     } else if (
       currentState === 'synced' ||
@@ -88,6 +91,13 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
           label: 'Local Only',
           dotClass: '',
           title: 'Not signed in. Click to sign in and sync across devices.',
+        };
+      case 'auth-error':
+        return {
+          icon: <CloudOff size={compact ? 18 : 20} className="cloud-sync-icon auth-error" />,
+          label: 'Session Expired',
+          dotClass: 'dot-red',
+          title: 'Session expired. Click to sign in again and resume cloud sync.',
         };
       case 'syncing':
         return {
@@ -127,7 +137,10 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
     <button
       type="button"
       className={`cloud-sync-indicator-btn ${compact ? 'compact' : ''} state-${currentState}`}
-      onClick={handleClick}
+      onClick={(e) => {
+        if (showLabel) e.stopPropagation();
+        handleClick();
+      }}
       title={title}
       aria-label={`Cloud Sync Status: ${label}`}
     >
@@ -144,7 +157,11 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
 
   if (showLabel) {
     return (
-      <div className="cloud-sync-labeled-wrapper" onClick={handleClick} title={title}>
+      <div
+        className={`cloud-sync-labeled-wrapper state-${currentState}`}
+        onClick={handleClick}
+        title={title}
+      >
         {buttonElement}
         <span className="cloud-sync-label-text">{label}</span>
       </div>

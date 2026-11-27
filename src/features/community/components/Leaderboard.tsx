@@ -2,11 +2,23 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../shared/lib/supabase';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { LeaderboardEntry, LeaderboardMode } from '../../../shared/types';
+import { isOnline } from '../../../shared/utils/backoff';
 import { Trophy, Award, User, AlertCircle, Sun, Calendar } from 'lucide-react';
 
 interface LeaderboardProps {
   onSignInClick: () => void;
 }
+
+const LEADERBOARD_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+interface LeaderboardCacheEntry {
+  entries: LeaderboardEntry[];
+  isSelfInvalidated: boolean;
+  snapshotAt: string | null;
+  fetchedAt: number;
+}
+
+const leaderboardCache = new Map<string, LeaderboardCacheEntry>();
 
 const MODE_CONFIG: Record<
   LeaderboardMode,
@@ -15,19 +27,19 @@ const MODE_CONFIG: Record<
   daily: {
     label: 'Today',
     hoursSuffix: 'hrs / day',
-    description: 'Ranked by study hours today. Refreshes every 15 minutes.',
+    description: 'Ranked by study hours today. Refreshes every 30 minutes.',
     icon: Sun,
   },
   weekly: {
     label: 'This week',
     hoursSuffix: 'hrs / wk',
-    description: 'Ranked by study hours over the last 7 days. Refreshes every 15 minutes.',
+    description: 'Ranked by study hours over the last 7 days. Refreshes every 30 minutes.',
     icon: Calendar,
   },
   monthly: {
     label: 'This month',
     hoursSuffix: 'hrs / mo',
-    description: 'Ranked by study hours over the last 30 days. Refreshes every 15 minutes.',
+    description: 'Ranked by study hours over the last 30 days. Refreshes every 30 minutes.',
     icon: Trophy,
   },
 };
@@ -181,6 +193,30 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
 
   useEffect(() => {
     if (!userId || !supabase) {
+      if (!userId) {
+        leaderboardCache.clear();
+      }
+      setIsLoading(false);
+      return;
+    }
+
+    const cacheKey = `${userId}:${activeMode}`;
+    const cached = leaderboardCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < LEADERBOARD_CACHE_TTL_MS) {
+      setEntries(cached.entries);
+      setIsSelfInvalidated(cached.isSelfInvalidated);
+      setSnapshotAt(cached.snapshotAt);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!isOnline()) {
+      if (cached) {
+        setEntries(cached.entries);
+        setIsSelfInvalidated(cached.isSelfInvalidated);
+        setSnapshotAt(cached.snapshotAt);
+      }
       setIsLoading(false);
       return;
     }
@@ -204,20 +240,30 @@ export function Leaderboard({ onSignInClick }: LeaderboardProps) {
         let selfFlagged = false;
         const inSnapshot = standings?.some(s => s.user_id === userId);
         if (!inSnapshot) {
-          const { data: selfProfile } = await supabase
+          const { data: selfProfile, error: selfErr } = await supabase
             .from('profiles')
             .select('leaderboard_invalidated')
             .eq('id', userId)
             .maybeSingle();
+          if (selfErr) throw selfErr;
           if (selfProfile) {
             selfFlagged = selfProfile.leaderboard_invalidated || false;
           }
         }
 
+        const nextEntries = (standings ?? []) as LeaderboardEntry[];
+        const nextSnapshotAt = standings?.[0]?.snapshot_at ?? null;
+        leaderboardCache.set(cacheKey, {
+          entries: nextEntries,
+          isSelfInvalidated: selfFlagged,
+          snapshotAt: nextSnapshotAt,
+          fetchedAt: Date.now(),
+        });
+
         if (!cancelled) {
-          setEntries((standings ?? []) as LeaderboardEntry[]);
+          setEntries(nextEntries);
           setIsSelfInvalidated(selfFlagged);
-          setSnapshotAt(standings?.[0]?.snapshot_at ?? null);
+          setSnapshotAt(nextSnapshotAt);
         }
       } catch (err: any) {
         console.error('Failed to fetch leaderboard:', err);

@@ -121,4 +121,48 @@ describe('RemoteAuthContext', () => {
     expect(result.current.unconfirmedEmail).toBeNull();
     expect(localStorage.getItem('ojeet-pending-unconfirmed-email')).toBeNull();
   });
+
+  it('increments authEventEpoch only on TOKEN_REFRESHED and SIGNED_IN', () => {
+    let authChangeHandler: ((event: string, session: any) => void) | null = null;
+    mockOnAuthStateChange.mockImplementation((cb: (event: string, session: any) => void) => {
+      authChangeHandler = cb;
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+
+    const { result } = renderHook(() => useRemoteAuth(), { wrapper });
+    expect(result.current.authEventEpoch).toBe(0);
+    expect(authChangeHandler).not.toBeNull();
+
+    const fakeSession = { user: { id: 'u1', email: 'a@b.com' } };
+
+    act(() => {
+      authChangeHandler!('INITIAL_SESSION', fakeSession);
+    });
+    expect(result.current.authEventEpoch).toBe(0);
+
+    act(() => {
+      authChangeHandler!('PASSWORD_RECOVERY', fakeSession);
+    });
+    expect(result.current.authEventEpoch).toBe(0);
+
+    act(() => {
+      authChangeHandler!('USER_UPDATED', fakeSession);
+    });
+    expect(result.current.authEventEpoch).toBe(0);
+
+    act(() => {
+      authChangeHandler!('TOKEN_REFRESHED', fakeSession);
+    });
+    expect(result.current.authEventEpoch).toBe(1);
+
+    act(() => {
+      authChangeHandler!('SIGNED_IN', fakeSession);
+    });
+    expect(result.current.authEventEpoch).toBe(2);
+
+    act(() => {
+      authChangeHandler!('SIGNED_OUT', null);
+    });
+    expect(result.current.authEventEpoch).toBe(2);
+  });
 });

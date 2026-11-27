@@ -3,6 +3,12 @@ import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { Subject, SubjectData } from '../../shared/types';
 import { parseSubjectJSON } from '../../shared/utils/jsonParser';
 import { getAllBundledSubjectData, getBundledSubjectData } from '../../shared/utils/syllabusData';
+import {
+  getCustomSubjectDataForSync,
+  hydrateSubjectDataWithBundledDefaults,
+} from '../../features/sync/syncPayload';
+
+export { getCustomSubjectDataForSync, hydrateSubjectDataWithBundledDefaults, getBundledSubjectData };
 
 // Graceful migration from old CSV syllabus data to new JSON syllabus (v2026)
 if (typeof window !== 'undefined') {
@@ -108,7 +114,8 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       try {
         const data = await parseSubjectJSON(subject);
         setSubjectData((prev) => {
-          const existing = prev[subject];
+          const safePrev = prev || { physics: null, chemistry: null, maths: null, biology: null };
+          const existing = safePrev[subject];
           if (existing && existing.chapters && existing.chapters.length > 0) {
             const mergedChapters = existing.chapters.map((c) => {
               const match = data.chapters.find(
@@ -129,14 +136,14 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
             }
 
             return {
-              ...prev,
+              ...safePrev,
               [subject]: {
                 ...existing,
                 chapters: mergedChapters,
               },
             };
           }
-          return { ...prev, [subject]: data };
+          return { ...safePrev, [subject]: data };
         });
       } catch (error) {
         console.error(`Failed to load ${subject} data:`, error);
@@ -144,7 +151,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
 
     (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).forEach((sub) => {
-      if (!subjectData[sub]) {
+      if (!subjectData?.[sub]) {
         loadSubjectData(sub);
       }
     });
@@ -160,18 +167,18 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       biology: null,
     };
     (['physics', 'chemistry', 'maths', 'biology'] as Subject[]).forEach((subject) => {
-      const data = subjectData[subject] || getBundledSubjectData(subject);
+      const data = subjectData?.[subject] || getBundledSubjectData(subject);
       if (!data) return;
 
-      const custom = customColumns[subject] || [];
-      const excluded = excludedColumns[subject] || [];
+      const custom = customColumns?.[subject] || [];
+      const excluded = excludedColumns?.[subject] || [];
 
       const uniqueCustom = custom.filter((c) => !data.materialNames.includes(c));
       let activeMaterials = [...data.materialNames, ...uniqueCustom].filter(
         (m) => !excluded.includes(m)
       );
 
-      const order = materialOrder[subject] || [];
+      const order = materialOrder?.[subject] || [];
 
       if (order.length > 0) {
         const orderedActive = order.filter((m) => activeMaterials.includes(m));
@@ -193,18 +200,19 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const handleAddColumn = useCallback(
     (subject: Subject, columnName: string) => {
-      if (!columnName.trim()) return;
-      if (excludedColumns[subject]?.includes(columnName.trim())) {
+      const trimmed = columnName.trim();
+      if (!trimmed) return;
+      if (excludedColumns?.[subject]?.includes(trimmed)) {
         setExcludedColumns((prev) => ({
           ...prev,
-          [subject]: prev[subject].filter((c) => c !== columnName.trim()),
+          [subject]: (prev?.[subject] || []).filter((c) => c !== trimmed),
         }));
         return;
       }
 
       setCustomColumns((prev) => ({
         ...prev,
-        [subject]: [...(prev[subject] || []), columnName.trim()],
+        [subject]: [...(prev?.[subject] || []), trimmed],
       }));
     },
     [excludedColumns, setExcludedColumns, setCustomColumns]
@@ -212,17 +220,17 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const handleRemoveColumn = useCallback(
     (subject: Subject, columnName: string) => {
-      const isCustom = customColumns[subject]?.includes(columnName);
+      const isCustom = customColumns?.[subject]?.includes(columnName);
 
       if (isCustom) {
         setCustomColumns((prev) => ({
           ...prev,
-          [subject]: prev[subject].filter((c) => c !== columnName),
+          [subject]: (prev?.[subject] || []).filter((c) => c !== columnName),
         }));
       } else {
         setExcludedColumns((prev) => ({
           ...prev,
-          [subject]: [...(prev[subject] || []), columnName],
+          [subject]: [...(prev?.[subject] || []), columnName],
         }));
       }
     },
@@ -242,8 +250,8 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const handleAddChapter = useCallback(
     (subject: Subject, name: string) => {
       setSubjectData((prev) => {
-        const data = prev[subject];
-        if (!data) return prev;
+        const safePrev = prev || { physics: null, chemistry: null, maths: null, biology: null };
+        const data = safePrev[subject] ?? getBundledSubjectData(subject);
 
         const maxSerial = data.chapters.reduce((max, c) => Math.max(max, c.serial), 0);
         const newChapter = {
@@ -254,7 +262,7 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
         };
 
         return {
-          ...prev,
+          ...safePrev,
           [subject]: {
             ...data,
             chapters: [...data.chapters, newChapter],
@@ -268,11 +276,11 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const handleRemoveChapter = useCallback(
     (subject: Subject, serial: number) => {
       setSubjectData((prev) => {
-        const data = prev[subject];
-        if (!data) return prev;
+        const safePrev = prev || { physics: null, chemistry: null, maths: null, biology: null };
+        const data = safePrev[subject] ?? getBundledSubjectData(subject);
 
         return {
-          ...prev,
+          ...safePrev,
           [subject]: {
             ...data,
             chapters: data.chapters.filter((c) => c.serial !== serial),
@@ -286,11 +294,11 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const handleRenameChapter = useCallback(
     (subject: Subject, serial: number, newName: string) => {
       setSubjectData((prev) => {
-        const data = prev[subject];
-        if (!data) return prev;
+        const safePrev = prev || { physics: null, chemistry: null, maths: null, biology: null };
+        const data = safePrev[subject] ?? getBundledSubjectData(subject);
 
         return {
-          ...prev,
+          ...safePrev,
           [subject]: {
             ...data,
             chapters: data.chapters.map((c) => (c.serial === serial ? { ...c, name: newName } : c)),
@@ -304,11 +312,11 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const handleReorderChapters = useCallback(
     (subject: Subject, newOrderChapters: any[]) => {
       setSubjectData((prev) => {
-        const data = prev[subject];
-        if (!data) return prev;
+        const safePrev = prev || { physics: null, chemistry: null, maths: null, biology: null };
+        const data = safePrev[subject] ?? getBundledSubjectData(subject);
 
         return {
-          ...prev,
+          ...safePrev,
           [subject]: {
             ...data,
             chapters: newOrderChapters,
@@ -323,10 +331,10 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     (subject: Subject, serial: number, name: string) => {
       if (!name.trim()) return;
       setSubjectData((prev) => {
-        const data = prev[subject];
-        if (!data) return prev;
+        const safePrev = prev || { physics: null, chemistry: null, maths: null, biology: null };
+        const data = safePrev[subject] ?? getBundledSubjectData(subject);
         return {
-          ...prev,
+          ...safePrev,
           [subject]: {
             ...data,
             chapters: data.chapters.map((c) =>
@@ -344,10 +352,10 @@ export const SubjectDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const handleRemoveSubtopic = useCallback(
     (subject: Subject, serial: number, name: string) => {
       setSubjectData((prev) => {
-        const data = prev[subject];
-        if (!data) return prev;
+        const safePrev = prev || { physics: null, chemistry: null, maths: null, biology: null };
+        const data = safePrev[subject] ?? getBundledSubjectData(subject);
         return {
-          ...prev,
+          ...safePrev,
           [subject]: {
             ...data,
             chapters: data.chapters.map((c) =>

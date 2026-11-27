@@ -65,14 +65,17 @@ vi.mock('../../../core/context/UserProgressContext', () => ({
 }));
 
 const mockSyncNow = vi.fn();
+const mockUseRemoteSync = vi.fn(() => ({
+  status: 'idle' as string,
+  lastSyncedAt: null as string | null,
+  lastError: null as string | null,
+  remoteStudyAggregate: null,
+  syncNow: mockSyncNow,
+  hasPendingChanges: () => false,
+}));
+
 vi.mock('../../../core/context/RemoteSyncContext', () => ({
-  useRemoteSync: () => ({
-    status: 'idle',
-    lastSyncedAt: null,
-    lastError: null,
-    remoteStudyAggregate: null,
-    syncNow: mockSyncNow,
-  }),
+  useRemoteSync: () => mockUseRemoteSync(),
 }));
 
 // Mock Navigation
@@ -130,6 +133,14 @@ describe('SettingsModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseRemoteSync.mockReturnValue({
+      status: 'idle',
+      lastSyncedAt: null,
+      lastError: null,
+      remoteStudyAggregate: null,
+      syncNow: mockSyncNow,
+      hasPendingChanges: () => false,
+    });
     // Create modal root for portal
     const modalRoot = document.createElement('div');
     modalRoot.id = 'modal-root';
@@ -279,6 +290,29 @@ describe('SettingsModal', () => {
     const syncBtn = screen.getByText('Sync Now').closest('button');
     if (syncBtn) fireEvent.click(syncBtn);
     expect(mockSyncNow).toHaveBeenCalled();
+  });
+
+  it('shows session expired message and disables Sync Now when syncStatus is auth_error', () => {
+    mockUseRemoteSync.mockReturnValue({
+      status: 'auth_error',
+      lastSyncedAt: null,
+      lastError: 'Session expired — sign in again to resume sync',
+      remoteStudyAggregate: null,
+      syncNow: mockSyncNow,
+      hasPendingChanges: () => false,
+    });
+
+    render(
+      <BrowserRouter>
+        <SettingsModal {...defaultProps} />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText('Session expired — please sign in again')).toBeInTheDocument();
+    const syncBtn = screen.getByRole('button', { name: /sync now/i });
+    expect(syncBtn).toBeDisabled();
+    fireEvent.click(syncBtn);
+    expect(mockSyncNow).not.toHaveBeenCalled();
   });
 
   it('calls signOut when Sign Out is clicked', async () => {

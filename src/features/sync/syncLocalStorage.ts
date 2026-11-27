@@ -8,7 +8,7 @@ import {
   SubjectData,
   MockExamPreset,
 } from '../../shared/types';
-import { buildSyncPayload } from './syncPayload';
+import { buildSyncPayload, hydrateSubjectDataWithBundledDefaults } from './syncPayload';
 import { SyncPayloadV1, SyncTombstoneMap } from './syncTypes';
 import { defaultMockExamPresets } from '../../core/context/UserProgressContext';
 
@@ -81,7 +81,7 @@ function readJson<T>(key: string, fallback: T): T {
   const raw = localStorage.getItem(key);
   if (!raw) return fallback;
   try {
-    return JSON.parse(raw) as T;
+    return (JSON.parse(raw) as T) ?? fallback;
   } catch {
     return fallback;
   }
@@ -125,22 +125,33 @@ export function buildSyncPayloadFromLocalStorage(options?: {
       readJson<{ settings?: string; subjects?: string }>(SYNC_LOCAL_KEYS.domainsModifiedAt, {}),
     subjects: includeSubjects
       ? {
-          subjectData: readJson<Record<Subject, SubjectData | null>>(
-            SYNC_LOCAL_KEYS.subjectData,
-            defaultSubjectDataRecord
+          subjectData: hydrateSubjectDataWithBundledDefaults(
+            readJson<Record<Subject, SubjectData | null>>(
+              SYNC_LOCAL_KEYS.subjectData,
+              defaultSubjectDataRecord
+            )
           ),
-          customColumns: readJson<Record<Subject, string[]>>(
-            SYNC_LOCAL_KEYS.customColumns,
-            defaultSubjectStringMap
-          ),
-          excludedColumns: readJson<Record<Subject, string[]>>(
-            SYNC_LOCAL_KEYS.excludedColumns,
-            defaultSubjectStringMap
-          ),
-          materialOrder: readJson<Record<Subject, string[]>>(
-            SYNC_LOCAL_KEYS.materialOrder,
-            defaultSubjectStringMap
-          ),
+          customColumns: {
+            ...defaultSubjectStringMap,
+            ...readJson<Record<Subject, string[]>>(
+              SYNC_LOCAL_KEYS.customColumns,
+              defaultSubjectStringMap
+            ),
+          },
+          excludedColumns: {
+            ...defaultSubjectStringMap,
+            ...readJson<Record<Subject, string[]>>(
+              SYNC_LOCAL_KEYS.excludedColumns,
+              defaultSubjectStringMap
+            ),
+          },
+          materialOrder: {
+            ...defaultSubjectStringMap,
+            ...readJson<Record<Subject, string[]>>(
+              SYNC_LOCAL_KEYS.materialOrder,
+              defaultSubjectStringMap
+            ),
+          },
         }
       : undefined,
   });

@@ -7,6 +7,8 @@ import { calculateBackoffWithJitter, isOnline } from '../../../shared/utils/back
 
 const LIVE_POLL_BACKOFF_BASE_MS = 30_000; // 30 seconds
 const LIVE_POLL_BACKOFF_MAX_MS = 300_000; // 5 minutes
+const PROFILE_FRIEND_COLUMNS =
+  'id, display_name, username, avatar_url, banner_url, custom_status, streak_count, discord_tag, grade_status, target_exam, today_study_seconds, today_questions, momentum_heatmap, todays_tasks, updated_at';
 
 // Persist last full profile fetch across route navigations
 let globalLastFullFetchTime = 0;
@@ -15,6 +17,7 @@ const FRIENDS_FETCH_BACKOFF_BASE_MS = 30_000; // 30 seconds
 const FRIENDS_FETCH_BACKOFF_MAX_MS = 600_000; // 10 minutes
 let globalFetchFailCount = 0;
 let globalFetchPausedUntil = 0;
+let globalLastUserId: string | null = null;
 
 export type FriendProfile = RemoteProfile & {
   live_activity?: LiveActivity | null;
@@ -44,7 +47,12 @@ const sortFriends = (list: FriendProfile[], pinnedIds: string[]): FriendProfile[
   return enriched.map((item) => item.f);
 };
 
-export function useFriends() {
+export interface UseFriendsOptions {
+  enabled?: boolean;
+}
+
+export function useFriends(options?: UseFriendsOptions) {
+  const enabled = options?.enabled ?? true;
   const location = useLocation();
   const { user, isConfigured, isLoading: isAuthLoading } = useRemoteAuth();
   // Key callbacks off the stable id: auth events produce new user objects.
@@ -67,14 +75,6 @@ export function useFriends() {
   });
   const [error, setError] = useState<string | null>(null);
 
-  // Handle logout cleanup
-  useEffect(() => {
-    if (!isAuthLoading && !user) {
-      setFriends([]);
-      localStorage.removeItem('jee-community-friends-cache');
-    }
-  }, [user, isAuthLoading]);
-
   // Keep friend IDs in a ref so the polling interval can access them without recreating
   const friendIdsRef = useRef<string[]>(
     (() => {
@@ -92,14 +92,53 @@ export function useFriends() {
   // Consecutive live-activity poll failures, used to back off the next attempt.
   const pollFailCountRef = useRef<number>(0);
   const pollPausedUntilRef = useRef<number>(0);
+  const isPollingRef = useRef<boolean>(false);
+  const isFetchingFriendsRef = useRef<boolean>(false);
+  const enabledRef = useRef<boolean>(enabled);
+  enabledRef.current = enabled;
+
+  // Handle logout and userId-change cleanup
+  useEffect(() => {
+    if (!isAuthLoading && !userId) {
+      setFriends([]);
+      friendIdsRef.current = [];
+      localStorage.removeItem('jee-community-friends-cache');
+      globalLastFullFetchTime = 0;
+      globalFetchFailCount = 0;
+      globalFetchPausedUntil = 0;
+      globalLastUserId = null;
+      lastPollTimeRef.current = 0;
+      pollFailCountRef.current = 0;
+      pollPausedUntilRef.current = 0;
+      return;
+    }
+
+    if (userId) {
+      if (globalLastUserId !== null && globalLastUserId !== userId) {
+        setFriends([]);
+        friendIdsRef.current = [];
+        localStorage.removeItem('jee-community-friends-cache');
+        globalLastFullFetchTime = 0;
+        globalFetchFailCount = 0;
+        globalFetchPausedUntil = 0;
+        lastPollTimeRef.current = 0;
+        pollFailCountRef.current = 0;
+        pollPausedUntilRef.current = 0;
+      }
+      globalLastUserId = userId;
+    }
+  }, [userId, isAuthLoading]);
 
   const pollLiveActivity = useCallback(async () => {
     const friendIds = friendIdsRef.current;
-    if (!isConfigured || !supabase || friendIds.length === 0) return;
-    // Skip while offline or inside a post-failure backoff window; the interval
-    // will retry on its next tick.
+    if (!enabledRef.current || !isConfigured || !supabase || friendIds.length === 0) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    // Skip while offline, inside a post-failure backoff window, or while another poll/fetch is in-flight.
     if (!isOnline() || Date.now() < pollPausedUntilRef.current) return;
+    if (isPollingRef.current || isFetchingFriendsRef.current) return;
 
+    isPollingRef.current = true;
+    lastPollTimeRef.current = Date.now();
     try {
       const { data, error } = await supabase
         .from('live_activity')
@@ -130,12 +169,22 @@ export function useFriends() {
         LIVE_POLL_BACKOFF_MAX_MS
       );
       pollPausedUntilRef.current = Date.now() + backoff;
+    } finally {
+      isPollingRef.current = false;
     }
   }, [isConfigured]);
 
   const fetchFriends = useCallback(
     async (force = false) => {
       if (!userId || !isConfigured || !supabase) {
+        setIsLoading(false);
+        return;
+      }
+      if (!force && !enabledRef.current) {
+        setIsLoading(false);
+        return;
+      }
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
         setIsLoading(false);
         return;
       }
@@ -151,6 +200,9 @@ export function useFriends() {
         setIsLoading(false);
         return;
       }
+      if (isFetchingFriendsRef.current) {
+        return;
+      }
 
       const now = Date.now();
       // If not forced and less than 5 minutes have passed, skip full fetch
@@ -163,6 +215,8 @@ export function useFriends() {
         return;
       }
 
+      isFetchingFriendsRef.current = true;
+      lastPollTimeRef.current = now;
       setError(null);
 
       try {
@@ -181,6 +235,10 @@ export function useFriends() {
         if (friendIds.length === 0) {
           setFriends([]);
           localStorage.removeItem('jee-community-friends-cache');
+          globalLastFullFetchTime = Date.now();
+          globalFetchFailCount = 0;
+          globalFetchPausedUntil = 0;
+          lastPollTimeRef.current = Date.now();
           setIsLoading(false);
           return;
         }
@@ -200,17 +258,12 @@ export function useFriends() {
         const filteredCache = cachedFriends.filter((f) => friendIds.includes(f.id));
 
         // 2. Fetch Lightweight Metadata & Timestamps in Parallel
-        const [profilesTimestampsRes, visibilityRes, liveRes] = await Promise.all([
+        const [profilesTimestampsRes, liveRes] = await Promise.all([
           supabase.from('profiles').select('id, updated_at').in('id', friendIds),
-          supabase
-            .from('peer_visibility_settings')
-            .select('user_id, show_agenda')
-            .in('user_id', friendIds),
           supabase.from('live_activity').select('*').in('user_id', friendIds),
         ]);
 
         if (profilesTimestampsRes.error) throw profilesTimestampsRes.error;
-        if (visibilityRes.error) throw visibilityRes.error;
         if (liveRes.error) throw liveRes.error;
 
         // Determine which profile IDs we need to fetch fully
@@ -236,7 +289,10 @@ export function useFriends() {
 
         let freshProfiles: any[] = [];
         if (idsToFetch.length > 0) {
-          const { data, error } = await supabase.from('profiles').select('*').in('id', idsToFetch);
+          const { data, error } = await supabase
+            .from('profiles')
+            .select(PROFILE_FRIEND_COLUMNS)
+            .in('id', idsToFetch);
 
           if (error) throw error;
           freshProfiles = data;
@@ -262,12 +318,10 @@ export function useFriends() {
           }
 
           const live = liveRes.data.find((l) => l.user_id === id);
-          const vis = visibilityRes.data.find((v) => v.user_id === id);
 
           return {
             ...profile,
             live_activity: live || null,
-            peer_visibility_settings: vis ? { show_agenda: vis.show_agenda } : null,
           };
         });
 
@@ -291,25 +345,33 @@ export function useFriends() {
             FRIENDS_FETCH_BACKOFF_MAX_MS
           );
       } finally {
+        isFetchingFriendsRef.current = false;
         setIsLoading(false);
       }
     },
     [userId, isConfigured, pollLiveActivity]
   );
 
+  const hasFriends = friends.length > 0;
+
   useEffect(() => {
+    if (!enabled) return;
     const now = Date.now();
     if (globalLastFullFetchTime === 0 || now - globalLastFullFetchTime > 300000) {
       fetchFriends(false);
     }
-  }, [location.pathname]);
+  }, [location.pathname, fetchFriends, enabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const startPolling = () => {
       if (interval) clearInterval(interval);
-      if (friendIdsRef.current.length > 0) {
+      if (enabledRef.current && friendIdsRef.current.length > 0) {
         interval = setInterval(pollLiveActivity, 30000);
       }
     };
@@ -322,6 +384,10 @@ export function useFriends() {
     };
 
     const handleFocusOrVisible = () => {
+      if (!enabledRef.current) {
+        stopPolling();
+        return;
+      }
       const isVisible = document.visibilityState === 'visible';
       const isFocused = document.hasFocus();
 
@@ -332,22 +398,24 @@ export function useFriends() {
 
       startPolling();
 
-      if (isFocused) {
+      if (isFocused || globalLastFullFetchTime === 0) {
         const now = Date.now();
-        // Throttle immediate re-fetch to once every 60 seconds
-        if (now - lastPollTimeRef.current > 60000) {
+        const isFullFetchStale =
+          globalLastFullFetchTime === 0 || now - globalLastFullFetchTime >= 300000;
+
+        if (isFullFetchStale && now >= globalFetchPausedUntil) {
+          // fetchFriends fetches live_activity and stamps lastPollTimeRef
+          fetchFriends(false);
+        } else if (now - lastPollTimeRef.current > 60000) {
           pollLiveActivity();
         }
-
-        // Refresh full profiles on window focus (respects 5-minute cache)
-        fetchFriends(false);
       }
     };
 
     // Initial setup
     if (document.visibilityState === 'visible' && document.hasFocus()) {
       // Only fire an extra pollLiveActivity if fetchFriends hasn't already fetched
-      // live_activity recently (it stamps lastPollTimeRef on success).
+      // live_activity recently or isn't currently in-flight.
       if (Date.now() - lastPollTimeRef.current > 60000) {
         pollLiveActivity();
       }
@@ -364,7 +432,7 @@ export function useFriends() {
       document.removeEventListener('visibilitychange', handleFocusOrVisible);
       window.removeEventListener('focus', handleFocusOrVisible);
     };
-  }, [pollLiveActivity, fetchFriends]);
+  }, [pollLiveActivity, fetchFriends, enabled, hasFriends]);
 
   const disconnectFriend = useCallback(
     async (friendId: string) => {

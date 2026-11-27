@@ -11,15 +11,15 @@
  *
  * @param attempt  Zero-based retry attempt (0 = first backoff after a failure).
  * @param baseMs   Base delay for the first backoff.
- * @param maxMs    Upper bound for the exponential term (before jitter).
- * @returns Delay in ms, never negative.
+ * @param maxMs    Upper bound for the returned delay (after jitter).
+ * @returns Delay in ms, never negative and never exceeding `maxMs`.
  */
 export function calculateBackoffWithJitter(attempt: number, baseMs: number, maxMs: number): number {
-  const safeAttempt = Math.max(0, attempt);
+  const safeAttempt = Math.max(0, Number.isFinite(attempt) ? attempt : 0);
   const exp = Math.min(maxMs, baseMs * 2 ** safeAttempt);
   // +/- 20% jitter
   const jitter = (Math.random() * 0.4 - 0.2) * exp;
-  return Math.max(0, Math.floor(exp + jitter));
+  return Math.max(0, Math.min(maxMs, Math.floor(exp + jitter)));
 }
 
 /** True when the browser reports an online connection (or cannot tell). */

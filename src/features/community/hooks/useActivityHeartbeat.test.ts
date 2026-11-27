@@ -47,6 +47,7 @@ describe('useActivityHeartbeat Hook', () => {
       isPromptDismissed: false,
       isPasswordRecovery: false,
       unconfirmedEmail: null,
+      authEventEpoch: 0,
       setPendingUnconfirmedEmail: vi.fn(),
       updateEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
       dismissPrompt: vi.fn(),
@@ -205,5 +206,98 @@ describe('useActivityHeartbeat Hook', () => {
 
     // No extra heartbeats should have been sent while hidden
     expect(vi.mocked(supabase!.from).mock.calls.length).toBe(initialCalls);
+  });
+
+  it('should respect sessionStorage dedup on remount when state has not changed', async () => {
+    const upsertMock = vi.fn().mockResolvedValue({ data: null, error: null });
+    vi.mocked(supabase!.from).mockReturnValue({ upsert: upsertMock } as any);
+
+    const { unmount } = renderHook(() => useActivityHeartbeat());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeTruthy();
+
+    unmount();
+    vi.advanceTimersByTime(30_000);
+
+    // Remount within idle throttle window with unchanged state -> should skip upsert
+    renderHook(() => useActivityHeartbeat());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+
+    // Now change state and remount -> should send immediately despite throttle window
+    localStorage.setItem(
+      'jee-timer-engine',
+      JSON.stringify({ engineState: 'running', runStartedAtMs: Date.now() })
+    );
+    renderHook(() => useActivityHeartbeat());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should NOT advance lastHeartbeatPayloadRef or sessionStorage when upsert fails', async () => {
+    const upsertMock = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.mocked(supabase!.from).mockReturnValue({ upsert: upsertMock } as any);
+
+    renderHook(() => useActivityHeartbeat());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeNull();
+    expect(localStorage.getItem('ojee-last-heartbeat-at')).toBeNull();
+
+    // Next attempt succeeds because lastHeartbeatPayloadRef did not advance
+    upsertMock.mockResolvedValueOnce({ data: null, error: null });
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+      await Promise.resolve();
+    });
+
+    expect(upsertMock).toHaveBeenCalledTimes(2);
+    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeTruthy();
+  });
+
+  it('should trigger backoff when upsert returns an { error } response', async () => {
+    localStorage.setItem(
+      'jee-timer-engine',
+      JSON.stringify({ engineState: 'running', runStartedAtMs: Date.now() })
+    );
+
+    const upsertMock = vi
+      .fn()
+      .mockResolvedValue({ data: null, error: { message: 'Service Unavailable', status: 503 } });
+    vi.mocked(supabase!.from).mockReturnValue({ upsert: upsertMock } as any);
+
+    renderHook(() => useActivityHeartbeat());
+
+    // 1st error on mount
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeNull();
+
+    // Advance 120s for 2nd interval tick -> triggers 2nd error and activates backoff pause
+    await act(async () => {
+      vi.advanceTimersByTime(120_000);
+      await Promise.resolve();
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(2);
+
+    // Focus 10s later should be suppressed by backoff pause
+    await act(async () => {
+      vi.advanceTimersByTime(10_000);
+      window.dispatchEvent(new Event('focus'));
+      await Promise.resolve();
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(2);
   });
 });

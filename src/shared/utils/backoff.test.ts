@@ -39,6 +39,18 @@ describe('calculateBackoffWithJitter', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0); // maximum negative jitter
     expect(calculateBackoffWithJitter(0, 1000, 300000)).toBeGreaterThanOrEqual(0);
   });
+
+  it('clamps final delay to maxMs even with maximum positive jitter', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.9999); // +20% jitter
+    expect(calculateBackoffWithJitter(20, 1000, 300000)).toBe(300000);
+  });
+
+  it('treats non-finite attempts (NaN, Infinity, -Infinity) as 0', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5); // zero jitter
+    expect(calculateBackoffWithJitter(Number.NaN, 1000, 300000)).toBe(1000);
+    expect(calculateBackoffWithJitter(Number.POSITIVE_INFINITY, 1000, 300000)).toBe(1000);
+    expect(calculateBackoffWithJitter(Number.NEGATIVE_INFINITY, 1000, 300000)).toBe(1000);
+  });
 });
 
 describe('isOnline', () => {

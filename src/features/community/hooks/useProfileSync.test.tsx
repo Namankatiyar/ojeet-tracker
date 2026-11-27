@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useProfileSync } from './useProfileSync';
 import { useRemoteAuth } from '../../../core/context/RemoteAuthContext';
 import { useUserProgress } from '../../../core/context/UserProgressContext';
@@ -71,6 +72,7 @@ describe('useProfileSync Hook', () => {
       isPromptDismissed: false,
       isPasswordRecovery: false,
       unconfirmedEmail: null,
+      authEventEpoch: 0,
       setPendingUnconfirmedEmail: vi.fn(),
       updateEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
       dismissPrompt: vi.fn(),
@@ -263,6 +265,7 @@ describe('useProfileSync Hook', () => {
       isPromptDismissed: false,
       isPasswordRecovery: false,
       unconfirmedEmail: null,
+      authEventEpoch: 0,
       setPendingUnconfirmedEmail: vi.fn(),
       updateEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
       dismissPrompt: vi.fn(),
@@ -378,6 +381,527 @@ describe('useProfileSync Hook', () => {
 
     // Should overwrite stale localStorage value with DB value
     expect(finalSettings.customAvatarUrl).toBe('https://xyz.com/new-custom-avatar.jpg');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'visible',
+    });
+  });
+
+  const makeAuthState = (overrides: Record<string, unknown> = {}) =>
+    ({
+      user: mockUser,
+      isConfigured: true,
+      isLoading: false,
+      session: null,
+      authEventEpoch: 0,
+      isPromptDismissed: false,
+      isPasswordRecovery: false,
+      unconfirmedEmail: null,
+      setPendingUnconfirmedEmail: vi.fn(),
+      updateEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
+      dismissPrompt: vi.fn(),
+      resetPrompt: vi.fn(),
+      signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
+      signUpWithEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
+      signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
+      resetPassword: vi.fn().mockResolvedValue({ error: null }),
+      updatePassword: vi.fn().mockResolvedValue({ error: null }),
+      resendConfirmationEmail: vi.fn().mockResolvedValue({ error: null }),
+      clearPasswordRecovery: vi.fn(),
+      signOut: vi.fn().mockResolvedValue({ error: null }),
+      ...overrides,
+    }) as any;
+
+  it('hydrates persisted snapshot & agenda from localStorage on cold mount for zero redundant writes and avoids echoing DB metadata', async () => {
+    vi.useFakeTimers();
+
+    const profilesUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const visUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return { upsert: visUpsertMock } as any;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: singleMock,
+        maybeSingle: singleMock,
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        upsert: profilesUpsertMock,
+      } as any;
+    });
+
+    const initialSettings = {
+      ...defaultProgressSettings,
+      userName: 'Hydrated User',
+      customAvatarUrl: 'https://example.com/old.png',
+    };
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: initialSettings,
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    // 1. First mount syncs once and persists snapshot + agenda keys in localStorage
+    const first = renderHook(() => useProfileSync());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+    expect(visUpsertMock).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('ojeet-remote-sync-profile-snapshot-user-123')).not.toBeNull();
+    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('true');
+
+    first.unmount();
+    profilesUpsertMock.mockClear();
+    visUpsertMock.mockClear();
+
+    // 2. Cold remount with DB returning updated display_name & avatar_url (edited on another device)
+    const dbUpdatedSingle = vi.fn().mockResolvedValue({
+      data: {
+        display_name: 'Device A Name',
+        avatar_url: 'https://example.com/device-a.png',
+        banner_url: null,
+        custom_status: null,
+        grade_status: 'Class 12',
+        target_exam: 'JEE 2026',
+      },
+      error: null,
+    });
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return { upsert: visUpsertMock } as any;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: dbUpdatedSingle,
+        maybeSingle: dbUpdatedSingle,
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        upsert: profilesUpsertMock,
+      } as any;
+    });
+
+    // Use real React state for progressCardSettings so DB updates flow into the snapshot effect
+    const second = renderHook(() => {
+      const [settings, setSettings] = useState(initialSettings);
+      vi.mocked(useUserProgress).mockReturnValue({
+        progressCardSettings: settings,
+        setProgressCardSettings: setSettings,
+        studySessions: [],
+        plannerTasks: [],
+        dailyQuestionLogs: {},
+      } as any);
+      return useProfileSync();
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    // Zero redundant writes on cold mount even though DB updated display_name & avatar_url
+    expect(profilesUpsertMock).not.toHaveBeenCalled();
+    expect(visUpsertMock).not.toHaveBeenCalled();
+
+    const persisted = JSON.parse(
+      localStorage.getItem('ojeet-remote-sync-profile-snapshot-user-123') ?? '{}'
+    );
+    expect(persisted.display_name).toBe('Device A Name');
+    expect(persisted.avatar_url).toBe('https://example.com/device-a.png');
+
+    second.unmount();
+  });
+
+  it('enforces hard stop after retryAttemptRef > 4 even on timerUpdateTrigger and local edits during backoff', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    const profilesUpsertMock = vi
+      .fn()
+      .mockResolvedValue({ error: { status: 500, message: 'Internal Server Error' } });
+    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+
+    vi.mocked(supabase!.from).mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
+      upsert: profilesUpsertMock,
+    }) as any);
+
+    const settings1 = { ...defaultProgressSettings, userName: 'User One' };
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: settings1,
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    const { rerender } = renderHook(() => useProfileSync());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Initial attempt (t=5s) -> attempt 1
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+
+    // 4 automatic retries with exact backoff (Math.random = 0.5 -> 0 jitter): 10s, 20s, 40s, 80s
+    for (const delay of [10_000, 20_000, 40_000, 80_000]) {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(delay);
+      });
+    }
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(5);
+
+    // Now retryAttemptRef === 5 (> 4) and pausedUntilRef is ~160s ahead.
+    // Fire timerUpdateTrigger (structural change on localStorage) and advance timers
+    localStorage.setItem('jee-timer-engine', JSON.stringify({ engineState: 'running', mode: 'stopwatch', phase: null }));
+    await act(async () => {
+      window.dispatchEvent(new Event('jee-timer-state-change'));
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(5);
+
+    // Make a local edit while still in backoff window (waitMs > 0) and advance past backoff
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: { ...settings1, userName: 'User Edited During Backoff' },
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+    rerender();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300_000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(5);
+
+    // Subsequent timerUpdateTrigger after backoff with unchanged snapshot still stays stopped
+    localStorage.setItem('jee-timer-engine', JSON.stringify({ engineState: 'paused', mode: 'stopwatch', phase: null }));
+    await act(async () => {
+      window.dispatchEvent(new Event('jee-timer-state-change'));
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(5);
+  });
+
+  it('checks peer_visibility_settings error before updating localStorage and retries on failure', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    const profilesUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const visUpsertMock = vi
+      .fn()
+      .mockResolvedValueOnce({ error: { status: 500, message: 'Visibility upsert failed' } })
+      .mockResolvedValueOnce({ error: null });
+    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return { upsert: visUpsertMock } as any;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: singleMock,
+        maybeSingle: singleMock,
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        upsert: profilesUpsertMock,
+      } as any;
+    });
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: { ...defaultProgressSettings, userName: 'Agenda User' },
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    renderHook(() => useProfileSync());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+    expect(visUpsertMock).toHaveBeenCalledTimes(1);
+    // Must NOT persist agenda key when peer_visibility_settings failed
+    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBeNull();
+
+    // Retry fires after 10s backoff, succeeds, and persists agenda without repeating profiles upsert
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+
+    expect(visUpsertMock).toHaveBeenCalledTimes(2);
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('true');
+  });
+
+  it('does not re-run fetchProfileDetails or handlePendingInvite when TOKEN_REFRESHED delivers a new user object with the same userId', async () => {
+    localStorage.setItem('pending_invite_code', 'ABCD');
+    vi.mocked(supabase!.rpc).mockResolvedValue({ data: null, error: null } as any);
+
+    const singleMock = vi.fn().mockResolvedValue({
+      data: {
+        invite_code: 'OSUD',
+        display_name: 'Student',
+      },
+      error: null,
+    });
+    const selectMock = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: singleMock,
+      maybeSingle: singleMock,
+      insert: vi.fn().mockResolvedValue({ error: null }),
+    });
+    vi.mocked(supabase!.from).mockImplementation(() => selectMock() as any);
+
+    const { rerender } = renderHook(() => useProfileSync());
+
+    await waitFor(() => {
+      expect(singleMock).toHaveBeenCalledTimes(1);
+      expect(supabase!.rpc).toHaveBeenCalledTimes(1);
+    });
+
+    // Simulate TOKEN_REFRESHED: new user object reference, identical id
+    vi.mocked(useRemoteAuth).mockReturnValue(
+      makeAuthState({
+        user: { ...mockUser, app_metadata: { provider: 'google', refreshedAt: 2 } },
+        authEventEpoch: 1,
+      })
+    );
+    rerender();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(singleMock).toHaveBeenCalledTimes(1);
+    expect(supabase!.rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('pauses sync on 401/PGRST301 auth error without burning retries and recovers when authEventEpoch increments', async () => {
+    vi.useFakeTimers();
+
+    const profilesUpsertMock = vi
+      .fn()
+      .mockResolvedValue({ error: { status: 401, code: 'PGRST301', message: 'JWT expired' } });
+    const visUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return { upsert: visUpsertMock } as any;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: singleMock,
+        maybeSingle: singleMock,
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        upsert: profilesUpsertMock,
+      } as any;
+    });
+
+    const baseSettings = { ...defaultProgressSettings, userName: 'Auth User' };
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: baseSettings,
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    const { rerender } = renderHook(() => useProfileSync());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // First attempt hits 401 -> authPausedRef = true
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+
+    // Advancing long periods or making local edits does NOT burn retries while auth-paused
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(120_000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: { ...baseSettings, userName: 'Auth User Edited' },
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+    rerender();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+
+    // Auth recovers (TOKEN_REFRESHED / SIGNED_IN increments authEventEpoch)
+    profilesUpsertMock.mockResolvedValue({ error: null });
+    vi.mocked(useRemoteAuth).mockReturnValue(makeAuthState({ authEventEpoch: 1 }));
+    rerender();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(2);
+    expect(visUpsertMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips executeSync when document.visibilityState is hidden and flushes when tab becomes visible', async () => {
+    vi.useFakeTimers();
+
+    let visibility: DocumentVisibilityState = 'hidden';
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => visibility,
+    });
+
+    const profilesUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const visUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return { upsert: visUpsertMock } as any;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: singleMock,
+        maybeSingle: singleMock,
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        upsert: profilesUpsertMock,
+      } as any;
+    });
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: { ...defaultProgressSettings, userName: 'Hidden Tab User' },
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    renderHook(() => useProfileSync());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Debounce fires while hidden -> must skip upsert
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(profilesUpsertMock).not.toHaveBeenCalled();
+
+    // Tab becomes visible -> dirty sync flushes immediately
+    visibility = 'visible';
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+      await Promise.resolve();
+    });
+
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+    expect(visUpsertMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores cross-tab storage ticks with unchanged structural timer signature so debounce is not starved', async () => {
+    vi.useFakeTimers();
+
+    const profilesUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const visUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return { upsert: visUpsertMock } as any;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: singleMock,
+        maybeSingle: singleMock,
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        upsert: profilesUpsertMock,
+      } as any;
+    });
+
+    localStorage.setItem(
+      'jee-timer-engine',
+      JSON.stringify({ engineState: 'running', phase: null, mode: 'stopwatch', runStartedAtMs: 1000 })
+    );
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: { ...defaultProgressSettings, userName: 'Debounce User' },
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    renderHook(() => useProfileSync());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Advance 3s into the 5s debounce
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(profilesUpsertMock).not.toHaveBeenCalled();
+
+    // Another tab writes updated runStartedAtMs with identical engineState|phase|mode
+    localStorage.setItem(
+      'jee-timer-engine',
+      JSON.stringify({ engineState: 'running', phase: null, mode: 'stopwatch', runStartedAtMs: 4000 })
+    );
+    await act(async () => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'jee-timer-engine' }));
+    });
+
+    // Remaining 2s completes the original 5s debounce without starvation
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
   });
 });
 

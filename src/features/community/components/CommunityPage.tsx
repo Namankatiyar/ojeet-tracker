@@ -19,18 +19,19 @@ import { Users, Trophy, CheckCircle, AlertCircle, X } from 'lucide-react';
 type CommunityTab = 'friends' | 'leaderboard';
 
 export function CommunityPage() {
-  // PERF-008: Heartbeat only fires while this page is mounted
-  const triggerHeartbeat = useActivityHeartbeat;
-  triggerHeartbeat();
-
   const [activeTab, setActiveTab] = useState<CommunityTab>('friends');
+  // PERF-008: Heartbeat only fires while this page is mounted
+  useActivityHeartbeat();
+
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedFriendForDisconnect, setSelectedFriendForDisconnect] =
     useState<FriendProfile | null>(null);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const { progressCardSettings, setProgressCardSettings } = useUserProgress();
-  const { friends, refresh: refreshFriends, disconnectFriend, pinnedIds, togglePin } = useFriends();
+  const { friends, refresh: refreshFriends, disconnectFriend, pinnedIds, togglePin } = useFriends({
+    enabled: activeTab === 'friends',
+  });
   const { user } = useRemoteAuth();
   const [isSyncPromptOpen, setIsSyncPromptOpen] = useState(false);
 

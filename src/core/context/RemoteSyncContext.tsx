@@ -11,7 +11,11 @@ import { useRemoteAuth } from './RemoteAuthContext';
 import { useUserProgress, defaultMockExamPresets } from './UserProgressContext';
 import { useSubjectData } from './SubjectDataContext';
 import { supabase } from '../../shared/lib/supabase';
-import { buildSyncPayload } from '../../features/sync/syncPayload';
+import {
+  buildSyncPayload,
+  hydrateSubjectDataWithBundledDefaults,
+  normalizeSubjectsForSync,
+} from '../../features/sync/syncPayload';
 import {
   SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
   SyncPayloadV1,
@@ -24,10 +28,72 @@ import {
   reconstructCompressedPayload,
 } from '../../features/sync/syncCodec';
 import { mergePayloadDomainsWithPolicy, SyncDomain } from '../../features/sync/syncMerge';
-import { StudySession } from '../../shared/types';
+import { StudySession, Subject } from '../../shared/types';
 import { calculateBackoffWithJitter, isOnline } from '../../shared/utils/backoff';
 
-type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
+export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'auth_error';
+
+const AUTH_ERROR_CODES = new Set(['PGRST301', 'PGRST302', 'PGRST303', '42501']);
+const AUTH_ERROR_MESSAGE_REGEX = /jwt expired|invalid jwt|permission denied for table|unauthorized/i;
+const SESSION_EXPIRED_MESSAGE = 'Session expired — sign in again to resume sync';
+
+export class SyncRequestError extends Error {
+  status?: number;
+  code?: string;
+  isAuthError: boolean;
+
+  constructor(params: { message: string; status?: number; code?: string; isAuthError: boolean }) {
+    super(params.message);
+    this.name = 'SyncRequestError';
+    this.status = params.status;
+    this.code = params.code;
+    this.isAuthError = params.isAuthError;
+  }
+}
+
+export function isSyncAuthError(error: unknown, statusOverride?: number): boolean {
+  if (error instanceof SyncRequestError) {
+    return error.isAuthError;
+  }
+  const errObj = error && typeof error === 'object' ? (error as Record<string, unknown>) : null;
+  const status = statusOverride ?? (typeof errObj?.status === 'number' ? errObj.status : undefined);
+  const code = typeof errObj?.code === 'string' ? errObj.code : undefined;
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof errObj?.message === 'string'
+        ? errObj.message
+        : '';
+
+  if (status === 401) return true;
+  if (code && AUTH_ERROR_CODES.has(code)) return true;
+  if (AUTH_ERROR_MESSAGE_REGEX.test(message)) return true;
+  return false;
+}
+
+export function throwSyncError(
+  error: { message?: string; code?: string; status?: number } | unknown,
+  status?: number
+): never {
+  const errObj = error && typeof error === 'object' ? (error as Record<string, unknown>) : null;
+  const resolvedStatus =
+    status ?? (typeof errObj?.status === 'number' ? errObj.status : undefined);
+  const code = typeof errObj?.code === 'string' ? errObj.code : undefined;
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof errObj?.message === 'string' && errObj.message
+        ? errObj.message
+        : 'Remote sync failed.';
+  const isAuthError = isSyncAuthError({ message, code, status: resolvedStatus }, resolvedStatus);
+
+  throw new SyncRequestError({
+    message,
+    status: resolvedStatus,
+    code,
+    isAuthError,
+  });
+}
 
 interface RemoteSyncContextType {
   status: SyncStatus;
@@ -69,6 +135,8 @@ const DOMAIN_CONTENT_MODIFIED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-cont
 const REMOTE_CHECKSUM_KEY = `${REMOTE_SYNC_META_PREFIX}remote-checksum`;
 const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-delta-synced-at`;
 const CACHED_AGGREGATE_KEY = `${REMOTE_SYNC_META_PREFIX}cached-aggregate`;
+const PUSHED_AGGREGATE_PREFIX = `${REMOTE_SYNC_META_PREFIX}pushed-aggregate-`;
+const PUSHED_DOMAINS_PREFIX = `${REMOTE_SYNC_META_PREFIX}pushed-domains-`;
 const DEFAULT_DELTA_CURSOR = { created_at: '2000-01-01T00:00:00.000Z' };
 
 const SYNC_BATCH_INTERVAL_MS = 600_000; // 10 minutes — active (tab visible) polling cadence
@@ -200,6 +268,15 @@ function getDomainsModifiedAtMap(): { settings?: string; subjects?: string } {
   return map;
 }
 
+function emptySubjectStringMap(): Record<Subject, string[]> {
+  return {
+    physics: [],
+    chemistry: [],
+    maths: [],
+    biology: [],
+  };
+}
+
 function createLocalPayload(params: {
   progress: ReturnType<typeof useUserProgress>['progress'];
   plannerTasks: ReturnType<typeof useUserProgress>['plannerTasks'];
@@ -217,6 +294,13 @@ function createLocalPayload(params: {
   excludedColumns: ReturnType<typeof useSubjectData>['excludedColumns'];
   materialOrder: ReturnType<typeof useSubjectData>['materialOrder'];
 }) {
+  const normalizedSubjects = normalizeSubjectsForSync({
+    subjectData: params.subjectData,
+    customColumns: params.customColumns,
+    excludedColumns: params.excludedColumns,
+    materialOrder: params.materialOrder,
+  });
+
   return buildSyncPayload({
     progress: params.progress,
     plannerTasks: params.plannerTasks,
@@ -231,12 +315,7 @@ function createLocalPayload(params: {
     domainsModifiedAt: getDomainsModifiedAtMap(),
     plannerHistoryDays: SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
     appVersion: __APP_VERSION__,
-    subjects: {
-      subjectData: params.subjectData,
-      customColumns: params.customColumns,
-      excludedColumns: params.excludedColumns,
-      materialOrder: params.materialOrder,
-    },
+    subjects: normalizedSubjects,
   });
 }
 
@@ -246,13 +325,13 @@ async function fetchRemoteChecksum(
 ): Promise<{ checksum: string | null; payloadVersion: number | null }> {
   if (!supabase) return { checksum: null, payloadVersion: null };
 
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from('user_sync_state')
     .select('checksum,payload_version')
     .eq('user_id', userId)
     .maybeSingle<{ checksum: string; payload_version: number }>();
 
-  if (error) throw new Error(error.message);
+  if (error) throwSyncError(error, status);
   if (!data) return { checksum: null, payloadVersion: null };
   return { checksum: data.checksum, payloadVersion: data.payload_version };
 }
@@ -262,25 +341,25 @@ async function fetchRemotePayload(
 ): Promise<{ payload: SyncPayloadV1 | null; row: UserSyncStateRow | null }> {
   if (!supabase) return { payload: null, row: null };
 
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from('user_sync_state')
     .select('payload_inline,payload_storage,payload_version,chunk_count,payload_bytes,checksum')
     .eq('user_id', userId)
     .maybeSingle<UserSyncStateRow>();
 
-  if (error) throw new Error(error.message);
+  if (error) throwSyncError(error, status);
   if (!data) return { payload: null, row: null };
 
   let compressedPayload = data.payload_inline ?? '';
   if (data.payload_storage === 'chunked') {
-    const { data: chunkRows, error: chunkError } = await supabase
+    const { data: chunkRows, error: chunkError, status: chunkStatus } = await supabase
       .from('user_sync_chunks')
       .select('chunk_index,chunk_data')
       .eq('user_id', userId)
       .eq('payload_version', data.payload_version)
       .order('chunk_index', { ascending: true });
 
-    if (chunkError) throw new Error(chunkError.message);
+    if (chunkError) throwSyncError(chunkError, chunkStatus);
     compressedPayload = reconstructCompressedPayload(chunkRows ?? []);
   }
 
@@ -298,14 +377,42 @@ const AGGREGATE_SELECT_COLUMNS =
 async function fetchRemoteStudyAggregate(userId: string): Promise<UserStudyAggregateRow | null> {
   if (!supabase) return null;
 
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from('user_study_aggregate')
     .select(AGGREGATE_SELECT_COLUMNS)
     .eq('user_id', userId)
     .maybeSingle<UserStudyAggregateRow>();
 
-  if (error) throw new Error(error.message);
+  if (error) throwSyncError(error, status);
   return data ?? null;
+}
+
+function readPushedDomainChecksums(userId: string | null): Record<string, string> {
+  if (!userId) return {};
+  const raw = readStorageValue(`${PUSHED_DOMAINS_PREFIX}${userId}`);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as Record<string, string>;
+    }
+  } catch {
+    // Ignore malformed persisted checksums
+  }
+  return {};
+}
+
+function writePushedDomainChecksums(userId: string, checksums: Record<string, string>) {
+  writeStorageValue(`${PUSHED_DOMAINS_PREFIX}${userId}`, JSON.stringify(checksums));
+}
+
+function readPushedAggregate(userId: string | null): string | null {
+  if (!userId) return null;
+  return readStorageValue(`${PUSHED_AGGREGATE_PREFIX}${userId}`);
+}
+
+function writePushedAggregate(userId: string, serializedAggregate: string) {
+  writeStorageValue(`${PUSHED_AGGREGATE_PREFIX}${userId}`, serializedAggregate);
 }
 
 function readCachedAggregate(): UserStudyAggregateRow | null {
@@ -324,7 +431,7 @@ function writeCachedAggregate(aggregate: UserStudyAggregateRow | null) {
 }
 
 export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isConfigured } = useRemoteAuth();
+  const { user, isConfigured, authEventEpoch = 0 } = useRemoteAuth();
   // Effects key off the stable user id, not the user object: Supabase emits a new
   // user object on every auth event (TOKEN_REFRESHED, SIGNED_IN on tab focus, ...),
   // which would otherwise cancel the retry backoff and fire an immediate sync.
@@ -368,16 +475,6 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setMaterialOrder,
   } = useSubjectData();
 
-  // Rescue lost study sessions: If local sessions are wiped but a sync cursor exists,
-  // clear the cursor to force a full re-fetch from Supabase.
-  useEffect(() => {
-    const cursor = readStorageValue(LAST_SESSION_DELTA_SYNCED_KEY);
-    if (studySessions.length === 0 && cursor) {
-      console.warn('Recovering lost study sessions: clearing sync cursor.');
-      window.localStorage.removeItem(LAST_SESSION_DELTA_SYNCED_KEY);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   const [status, setStatus] = useState<SyncStatus>('idle');
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() =>
     readStorageValue(LAST_SYNCED_AT_KEY)
@@ -386,6 +483,8 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [remoteStudyAggregate, setRemoteStudyAggregate] = useState<UserStudyAggregateRow | null>(
     () => readCachedAggregate()
   );
+  const remoteStudyAggregateRef = useRef(remoteStudyAggregate);
+  const lastPushedAggregateRef = useRef<string | null>(null);
   const appliedDomainSnapshotsRef = useRef<Record<SyncDomain, string | null>>({
     progress: null,
     plannerTasks: null,
@@ -401,8 +500,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // pushed skips the write entirely.
   const lastPushedDomainChecksumsRef = useRef<Record<string, string>>({});
   const syncInFlightRef = useRef(false);
+  const authPausedRef = useRef(false);
   const scheduledTimerRef = useRef<number | null>(null);
   const scheduledDueAtRef = useRef<number | null>(null);
+  const pendingOnlineListenerRef = useRef<(() => void) | null>(null);
   const retryAttemptRef = useRef(0);
   const lastSyncCompletedAtRef = useRef<number>(0);
   const domainSnapshotsRef = useRef<Record<SyncDomain, string | null>>({
@@ -483,10 +584,30 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       scheduledTimerRef.current = null;
       scheduledDueAtRef.current = null;
     }
+    if (pendingOnlineListenerRef.current && typeof window !== 'undefined') {
+      window.removeEventListener('online', pendingOnlineListenerRef.current);
+      pendingOnlineListenerRef.current = null;
+    }
   }, []);
 
   const applyMergedPayload = useCallback(
     (payload: SyncPayloadV1) => {
+      const hydratedSubjectData = hydrateSubjectDataWithBundledDefaults(
+        payload.domains.subjects?.subjectData
+      );
+      const resolvedCustomColumns =
+        payload.domains.subjects?.customColumns ?? emptySubjectStringMap();
+      const resolvedExcludedColumns =
+        payload.domains.subjects?.excludedColumns ?? emptySubjectStringMap();
+      const resolvedMaterialOrder =
+        payload.domains.subjects?.materialOrder ?? emptySubjectStringMap();
+      const nextSubjectsSnapshot = JSON.stringify({
+        subjectData: hydratedSubjectData,
+        customColumns: resolvedCustomColumns,
+        excludedColumns: resolvedExcludedColumns,
+        materialOrder: resolvedMaterialOrder,
+      });
+
       appliedDomainSnapshotsRef.current = {
         progress: JSON.stringify(payload.domains.progress),
         plannerTasks: JSON.stringify(payload.domains.plannerTasks),
@@ -508,14 +629,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           examMode: payload.domains.settings.examMode,
           neetMockExamPresets: payload.domains.settings.neetMockExamPresets,
         }),
-        subjects: payload.domains.subjects
-          ? JSON.stringify({
-              subjectData: payload.domains.subjects.subjectData,
-              customColumns: payload.domains.subjects.customColumns,
-              excludedColumns: payload.domains.subjects.excludedColumns,
-              materialOrder: payload.domains.subjects.materialOrder,
-            })
-          : null,
+        subjects: payload.domains.subjects ? nextSubjectsSnapshot : null,
       };
 
       setProgress(payload.domains.progress);
@@ -550,11 +664,16 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setNeetMockExamPresets(payload.domains.settings.neetMockExamPresets);
       }
 
-      if (payload.domains.subjects) {
-        setSubjectData(payload.domains.subjects.subjectData);
-        setCustomColumns(payload.domains.subjects.customColumns);
-        setExcludedColumns(payload.domains.subjects.excludedColumns);
-        setMaterialOrder(payload.domains.subjects.materialOrder);
+      if (
+        payload.domains.subjects ||
+        (domainSnapshotsRef.current.subjects !== null &&
+          domainSnapshotsRef.current.subjects !== nextSubjectsSnapshot)
+      ) {
+        appliedDomainSnapshotsRef.current.subjects = nextSubjectsSnapshot;
+        setSubjectData(hydratedSubjectData);
+        setCustomColumns(resolvedCustomColumns);
+        setExcludedColumns(resolvedExcludedColumns);
+        setMaterialOrder(resolvedMaterialOrder);
       }
       // Absorb merged tombstones so this device's next payload carries the union.
       // Always set (defaulting to empty) so tombstones the merge discarded — because an
@@ -652,7 +771,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       let deltaCursor = readDeltaCursor();
 
       // 1. Pull changes
-      const { data: newLogsRaw, error: deltaPullError } = await supabase
+      const {
+        data: newLogsRaw,
+        error: deltaPullError,
+        status: deltaPullStatus,
+      } = await supabase
         .from('study_session_log')
         .select('id,user_id,client_id,session_id,action,payload,created_at')
         .eq('user_id', user.id)
@@ -661,7 +784,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         .order('id', { ascending: true })
         .limit(500);
 
-      if (deltaPullError) throw new Error(deltaPullError.message);
+      if (deltaPullError) throwSyncError(deltaPullError, deltaPullStatus);
       const newLogs = (newLogsRaw ?? []).filter((log) =>
         isLogAfterCursor(log, deltaCursor)
       ) as StudySessionLogEntry[];
@@ -670,20 +793,22 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // Only fetch the full study aggregate when studySessions have unsynced local edits or remote changed.
       const hasPendingSessionLogs = pendingSessionLogsRef.current.length > 0;
       const remoteAggregateDirty = !remoteUnchanged || newLogs.length > 0;
+      const currentAggregate = remoteStudyAggregateRef.current;
       const shouldLoadAggregate =
-        hasPendingSessionLogs || remoteAggregateDirty || !remoteStudyAggregate;
+        hasPendingSessionLogs || remoteAggregateDirty || !currentAggregate;
 
       let remoteAggregate: UserStudyAggregateRow | null = null;
       let videoMergeResult = { sessions: latestStudySessionsRef.current, changed: false };
       let capturedVideoLogs: any[] = [];
 
       if (shouldLoadAggregate) {
-        if (remoteAggregateDirty || !remoteStudyAggregate) {
+        if (remoteAggregateDirty || !currentAggregate) {
           remoteAggregate = await fetchRemoteStudyAggregate(user.id);
+          remoteStudyAggregateRef.current = remoteAggregate;
           setRemoteStudyAggregate(remoteAggregate);
           writeCachedAggregate(remoteAggregate);
         } else {
-          remoteAggregate = remoteStudyAggregate;
+          remoteAggregate = currentAggregate;
         }
         capturedVideoLogs = remoteAggregate?.video_watch_45d_json ?? [];
         videoMergeResult = mergeRemoteVideoLogsIntoSessions(
@@ -714,10 +839,15 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // from what was last successfully pushed.
       const mergedDomainChecksums: Record<string, string> = {};
       for (const [key, value] of Object.entries(mergedPayload.domains)) {
+        if (value === undefined) continue;
         mergedDomainChecksums[key] = await computeChecksum(JSON.stringify(value));
       }
-      const anyDomainDirty = Object.entries(mergedDomainChecksums).some(
-        ([key, hash]) => hash !== lastPushedDomainChecksumsRef.current[key]
+      const allDomainKeys = new Set([
+        ...Object.keys(mergedDomainChecksums),
+        ...Object.keys(lastPushedDomainChecksumsRef.current),
+      ]);
+      const anyDomainDirty = Array.from(allDomainKeys).some(
+        (key) => mergedDomainChecksums[key] !== lastPushedDomainChecksumsRef.current[key]
       );
       const shouldPush = !row || (encoded.checksum !== remoteChecksum && anyDomainDirty);
 
@@ -736,10 +866,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           app_version: __APP_VERSION__,
         };
 
-        const { error: manifestError } = await supabase
+        const { error: manifestError, status: manifestStatus } = await supabase
           .from('user_sync_state')
           .upsert(manifestRow, { onConflict: 'user_id' }); // Removing .select() completely suppresses RETURNING * in supabase-js v2
-        if (manifestError) throw new Error(manifestError.message);
+        if (manifestError) throwSyncError(manifestError, manifestStatus);
 
         if (encoded.storage === 'chunked') {
           const chunkRows = encoded.chunks.map((chunk, index) => ({
@@ -749,14 +879,15 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             chunk_data: chunk,
           }));
 
-          const { error: chunkError } = await supabase
+          const { error: chunkError, status: chunkStatus } = await supabase
             .from('user_sync_chunks')
             .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' }); // Removing .select() suppresses RETURNING *
-          if (chunkError) throw new Error(chunkError.message);
+          if (chunkError) throwSyncError(chunkError, chunkStatus);
         }
         // Database triggers automatically prune old chunks when the user_sync_state is updated.
         // Remember what was pushed so future cycles can skip no-op rewrites.
         lastPushedDomainChecksumsRef.current = mergedDomainChecksums;
+        writePushedDomainChecksums(user.id, mergedDomainChecksums);
       }
 
       // Cache the remote checksum locally to enable checksum-gating on next cycle
@@ -789,13 +920,21 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           action: log.action,
           payload: log.payload,
         }));
-        const { data: insertedLogs, error: deltaPushError } = await supabase
+        // NOTE: Because study_session_log has UNIQUE (user_id, session_id) and FOR UPDATE
+        // USING (false), ignoreDuplicates: true prevents 409 conflict loops by ignoring
+        // post-insert edits/deletes for the same session_id server-side unless the table
+        // schema is later changed to support append-only event keys.
+        const {
+          data: insertedLogs,
+          error: deltaPushError,
+          status: deltaPushStatus,
+        } = await supabase
           .from('study_session_log')
-          .insert(rowsToInsert)
+          .upsert(rowsToInsert, { onConflict: 'user_id,session_id', ignoreDuplicates: true })
           .select('id, created_at');
 
         if (deltaPushError) {
-          throw new Error(deltaPushError.message);
+          throwSyncError(deltaPushError, deltaPushStatus);
         }
 
         pendingSessionLogsRef.current = pendingSessionLogsRef.current.slice(pendingToPush.length);
@@ -864,17 +1003,26 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         // The throttled path below (hourly interval + beforeunload + visibilitychange→hidden)
         // with its content-equality guard (lastPushedAggregateRef) handles all DB writes.
         // If the tab crashes before either trigger fires, data is safe locally (writeCachedAggregate).
+        remoteStudyAggregateRef.current = mergedAggregateRow;
         setRemoteStudyAggregate(mergedAggregateRow);
         writeCachedAggregate(mergedAggregateRow);
       }
 
       const syncedAt = new Date().toISOString();
       markCleanDomainsAsSynced(syncStartTimeIso);
+      authPausedRef.current = false;
       setLastSyncedAt(syncedAt);
       setStatus('synced');
       retryAttemptRef.current = 0;
       lastSyncCompletedAtRef.current = Date.now();
     } catch (error) {
+      if (isSyncAuthError(error)) {
+        authPausedRef.current = true;
+        clearScheduledSync();
+        setLastError(SESSION_EXPIRED_MESSAGE);
+        setStatus('auth_error');
+        throw error;
+      }
       const message = error instanceof Error ? error.message : 'Remote sync failed.';
       setLastError(message);
       setStatus('error');
@@ -885,6 +1033,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [
     applyMergedPayload,
+    clearScheduledSync,
     customColumns,
     disableAutoShift,
     examDates,
@@ -917,7 +1066,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const scheduleSync = useCallback(
     (delayMs: number) => {
-      if (!userRef.current || !isConfiguredRef.current) return;
+      if (!userRef.current || !isConfiguredRef.current || authPausedRef.current) return;
       const dueAt = Date.now() + Math.max(0, delayMs);
       const currentDueAt = scheduledDueAtRef.current;
 
@@ -932,22 +1081,37 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           scheduledTimerRef.current = null;
           scheduledDueAtRef.current = null;
 
+          if (authPausedRef.current) return;
+
           // Offline: don't burn a request. Sync immediately on reconnect, and keep a
           // long fallback timer in case the online event never fires.
           if (!isOnline()) {
-            const onOnline = () => {
-              window.removeEventListener('online', onOnline);
-              scheduleSync(0);
-            };
-            window.addEventListener('online', onOnline);
             scheduleSync(SYNC_RETRY_MAX_MS);
+            if (typeof window !== 'undefined' && !pendingOnlineListenerRef.current) {
+              const onOnline = () => {
+                if (pendingOnlineListenerRef.current === onOnline) {
+                  pendingOnlineListenerRef.current = null;
+                }
+                window.removeEventListener('online', onOnline);
+                scheduleSync(0);
+              };
+              pendingOnlineListenerRef.current = onOnline;
+              window.addEventListener('online', onOnline);
+            }
             return;
           }
 
           try {
             await runSyncRef.current();
-            scheduleSync(nextSyncInterval());
-          } catch {
+            if (!authPausedRef.current) {
+              scheduleSync(nextSyncInterval());
+            }
+          } catch (error) {
+            if (authPausedRef.current || isSyncAuthError(error)) {
+              authPausedRef.current = true;
+              clearScheduledSync();
+              return;
+            }
             // Backend unavailable/overloaded: keep the user working locally and retry
             // with capped exponential backoff. Never reload the page or wipe caches
             // here — a server outage is not a broken client, and a reload would both
@@ -1037,12 +1201,19 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [studySessions]);
 
   const syncNow = useCallback(async () => {
-    if (!userRef.current || !isConfiguredRef.current) return;
+    if (!userRef.current || !isConfiguredRef.current || authPausedRef.current) return;
     clearScheduledSync();
     try {
       await runSyncRef.current();
-      scheduleSync(nextSyncInterval());
-    } catch {
+      if (!authPausedRef.current) {
+        scheduleSync(nextSyncInterval());
+      }
+    } catch (error) {
+      if (authPausedRef.current || isSyncAuthError(error)) {
+        authPausedRef.current = true;
+        clearScheduledSync();
+        return;
+      }
       const backoffDelay = calculateBackoffWithJitter(
         Math.max(0, retryAttemptRef.current - 1),
         SYNC_RETRY_BASE_MS,
@@ -1055,11 +1226,20 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     if (!userId || !isConfigured) {
       clearScheduledSync();
-      setStatus('idle');
+      authPausedRef.current = false;
+      retryAttemptRef.current = 0;
+      lastPushedDomainChecksumsRef.current = {};
+      lastPushedAggregateRef.current = null;
+      remoteStudyAggregateRef.current = null;
       setRemoteStudyAggregate(null);
+      setLastError(null);
+      setStatus('idle');
       return;
     }
+    authPausedRef.current = false;
     retryAttemptRef.current = 0;
+    lastPushedDomainChecksumsRef.current = readPushedDomainChecksums(userId);
+    lastPushedAggregateRef.current = readPushedAggregate(userId);
     scheduleSync(0);
     return () => {
       clearScheduledSync();
@@ -1068,6 +1248,16 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // clearScheduledSync). Including it would re-fire on every sync cycle's state update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearScheduledSync, isConfigured, userId]);
+
+  // Resume sync ONLY if it was paused due to an auth error and auth state later recovered.
+  useEffect(() => {
+    if (authEventEpoch === 0) return;
+    if (!userId || !isConfigured) return;
+    if (!authPausedRef.current) return;
+    authPausedRef.current = false;
+    retryAttemptRef.current = 0;
+    scheduleSync(0);
+  }, [authEventEpoch, isConfigured, scheduleSync, userId]);
 
   const checkPendingChanges = useCallback(() => {
     const hasDomainEdits = domainKeys.some((domain) => hasLocalUnsyncedEdit(domain));
@@ -1081,9 +1271,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!userId || !isConfigured) return;
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // While the backend is failing, leave the pending backoff timer alone.
+        // While the backend is failing or auth-paused, leave the pending state alone.
         // Pulling it forward on every tab switch turns the backoff into polling.
-        if (retryAttemptRef.current > 0) return;
+        if (retryAttemptRef.current > 0 || authPausedRef.current) return;
         const isStale = Date.now() - lastSyncCompletedAtRef.current > 10 * 60 * 1000;
         if (checkPendingChanges() || isStale) {
           scheduleSync(0);
@@ -1099,8 +1289,6 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [userId, isConfigured, scheduleSync, checkPendingChanges]);
 
   // Strategy 4: Debounce the Study Aggregate Upsert to run on an interval or beforeunload.
-  const lastPushedAggregateRef = useRef<string | null>(null);
-  const remoteStudyAggregateRef = useRef(remoteStudyAggregate);
   useEffect(() => {
     remoteStudyAggregateRef.current = remoteStudyAggregate;
   }, [remoteStudyAggregate]);
@@ -1112,9 +1300,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const pushAggregate = async () => {
       const currentAgg = remoteStudyAggregateRef.current;
       if (!currentAgg) return;
-      // Backend is currently failing (sync is in backoff): don't add load on every
-      // tab hide. The aggregate is cached locally and pushed once sync recovers.
-      if (retryAttemptRef.current > 0) return;
+      // Backend is currently failing (sync is in backoff) or auth-paused: don't add
+      // load on every tab hide. The aggregate is cached locally and pushed once sync recovers.
+      if (retryAttemptRef.current > 0 || authPausedRef.current) return;
 
       try {
         // Strip updated_at to ensure single query variant and faster execution.
@@ -1125,11 +1313,17 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const currentStr = JSON.stringify(prunedUpsertPayload);
         if (currentStr === lastPushedAggregateRef.current) return;
 
-        const { error } = await supabaseClient
+        const { error, status: aggStatus } = await supabaseClient
           .from('user_study_aggregate')
           .upsert(prunedUpsertPayload, { onConflict: 'user_id' }); // Removing .select() suppresses RETURNING *
         if (!error) {
           lastPushedAggregateRef.current = currentStr;
+          writePushedAggregate(userId, currentStr);
+        } else if (isSyncAuthError(error, aggStatus)) {
+          authPausedRef.current = true;
+          clearScheduledSync();
+          setLastError(SESSION_EXPIRED_MESSAGE);
+          setStatus('auth_error');
         }
       } catch (err) {
         console.warn('Failed to upsert aggregate', err);

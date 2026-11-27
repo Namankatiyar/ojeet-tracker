@@ -63,6 +63,7 @@ describe('Stress & Edge Case Empirical Verification Suite', () => {
       isPromptDismissed: false,
       isPasswordRecovery: false,
       unconfirmedEmail: null,
+      authEventEpoch: 0,
       setPendingUnconfirmedEmail: vi.fn(),
       updateEmail: vi.fn().mockResolvedValue({ error: null, confirmationRequired: false }),
       dismissPrompt: vi.fn(),

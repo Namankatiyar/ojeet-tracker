@@ -6,7 +6,13 @@ import {
   PlannerTask,
   Subject,
 } from '../../shared/types';
-import { SyncPayloadV1, SyncTombstone, SyncTombstoneMap } from './syncTypes';
+import { filterPlannerTasksForSync, normalizeSubjectsForSync } from './syncPayload';
+import {
+  SYNC_DEFAULT_PLANNER_HISTORY_DAYS,
+  SyncPayloadV1,
+  SyncTombstone,
+  SyncTombstoneMap,
+} from './syncTypes';
 
 export type SyncDomain =
   | 'progress'
@@ -18,6 +24,8 @@ export type SyncDomain =
 
 interface MergeOptions {
   hasLocalUnsyncedEdit: (domain: SyncDomain) => boolean;
+  now?: Date;
+  plannerHistoryDays?: number;
 }
 
 const TOMBSTONE_RETENTION_MS = 60 * 24 * 60 * 60 * 1000; // 60 days
@@ -182,6 +190,12 @@ export function mergePayloadDomainsWithPolicy(
 ): SyncPayloadV1 {
   const fallbackLocalTime = localPayload.generatedAt;
   const fallbackRemoteTime = remotePayload.generatedAt;
+  const referenceNow =
+    options.now ??
+    (localPayload.generatedAt && !Number.isNaN(Date.parse(localPayload.generatedAt))
+      ? new Date(localPayload.generatedAt)
+      : new Date());
+  const plannerHistoryDays = options.plannerHistoryDays ?? SYNC_DEFAULT_PLANNER_HISTORY_DAYS;
 
   // 1. Progress domain (per-chapter union + LWW)
   const mergedProgress = mergeProgress(
@@ -192,10 +206,21 @@ export function mergePayloadDomainsWithPolicy(
     options.hasLocalUnsyncedEdit('progress')
   );
 
-  // 2. List domains
+  // 2. List domains (symmetrically apply the 60-day plannerTasks retention window on both sides)
+  const filteredLocalPlannerTasks = filterPlannerTasksForSync(
+    localPayload.domains.plannerTasks ?? [],
+    referenceNow,
+    plannerHistoryDays
+  );
+  const filteredRemotePlannerTasks = filterPlannerTasksForSync(
+    remotePayload.domains.plannerTasks ?? [],
+    referenceNow,
+    plannerHistoryDays
+  );
+
   const tasksResult = mergeItemList<PlannerTask>(
-    localPayload.domains.plannerTasks,
-    remotePayload.domains.plannerTasks,
+    filteredLocalPlannerTasks,
+    filteredRemotePlannerTasks,
     localPayload.domains.tombstones?.plannerTasks,
     remotePayload.domains.tombstones?.plannerTasks,
     fallbackLocalTime,
@@ -292,22 +317,37 @@ export function mergePayloadDomainsWithPolicy(
   // 4. Subjects singleton
   let mergedSubjects = remotePayload.domains.subjects;
   let winningSubjectsTimeStr = remotePayload.domains.modifiedAt?.subjects;
+  const localSubTime = localPayload.domains.modifiedAt?.subjects
+    ? Date.parse(localPayload.domains.modifiedAt.subjects)
+    : 0;
+  const remoteSubTime = remotePayload.domains.modifiedAt?.subjects
+    ? Date.parse(remotePayload.domains.modifiedAt.subjects)
+    : 0;
+  const preferLocalSubjects = options.hasLocalUnsyncedEdit('subjects');
+
   if (localPayload.domains.subjects && remotePayload.domains.subjects) {
-    const localSubTime = localPayload.domains.modifiedAt?.subjects
-      ? Date.parse(localPayload.domains.modifiedAt.subjects)
-      : 0;
-    const remoteSubTime = remotePayload.domains.modifiedAt?.subjects
-      ? Date.parse(remotePayload.domains.modifiedAt.subjects)
-      : 0;
-    const preferLocalSubjects = options.hasLocalUnsyncedEdit('subjects');
     if (localSubTime > remoteSubTime || (localSubTime === remoteSubTime && preferLocalSubjects)) {
       mergedSubjects = localPayload.domains.subjects;
       winningSubjectsTimeStr = localPayload.domains.modifiedAt?.subjects;
     }
   } else if (localPayload.domains.subjects) {
-    mergedSubjects = localPayload.domains.subjects;
+    if (!(remoteSubTime > localSubTime)) {
+      mergedSubjects = localPayload.domains.subjects;
+      winningSubjectsTimeStr = localPayload.domains.modifiedAt?.subjects;
+    }
+  } else if (remotePayload.domains.subjects) {
+    if (
+      localSubTime > remoteSubTime ||
+      (localSubTime === remoteSubTime && localSubTime > 0 && preferLocalSubjects)
+    ) {
+      mergedSubjects = undefined;
+      winningSubjectsTimeStr = localPayload.domains.modifiedAt?.subjects;
+    }
+  } else if (localSubTime > remoteSubTime || (localSubTime === remoteSubTime && preferLocalSubjects)) {
     winningSubjectsTimeStr = localPayload.domains.modifiedAt?.subjects;
   }
+
+  mergedSubjects = normalizeSubjectsForSync(mergedSubjects);
 
   // Collect tombstones and modifiedAt
   const mergedTombstones: SyncTombstoneMap = {};

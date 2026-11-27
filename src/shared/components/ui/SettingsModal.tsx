@@ -923,6 +923,8 @@ export function SettingsModal({
                           {syncStatus === 'synced' &&
                             `Last synced: ${lastSyncedAt ? new Date(lastSyncedAt).toLocaleString() : 'just now'}`}
                           {syncStatus === 'error' && (syncError || 'Sync failed')}
+                          {syncStatus === 'auth_error' &&
+                            'Session expired — please sign in again'}
                           {syncStatus === 'idle' && 'Idle'}
                         </span>
                         <span className="setting-description">
@@ -933,7 +935,11 @@ export function SettingsModal({
                       <button
                         className="action-btn outline small"
                         onClick={() => syncNow()}
-                        disabled={isAuthBusy || syncStatus === 'syncing'}
+                        disabled={
+                          isAuthBusy ||
+                          syncStatus === 'syncing' ||
+                          syncStatus === 'auth_error'
+                        }
                       >
                         <Cloud size={16} />
                         {syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
