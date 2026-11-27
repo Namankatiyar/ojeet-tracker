@@ -149,11 +149,12 @@ function recordRefreshFailure(): Response {
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => {
     const current = readGuardState();
-    if (current.failCount !== 0 || current.cooldownUntil !== 0) {
+    if (current.failCount !== 0 || current.cooldownUntil !== 0 || current.inFlightUntil !== 0) {
       writeGuardState({
         ...current,
         failCount: 0,
         cooldownUntil: 0,
+        inFlightUntil: 0,
       });
     }
   });
@@ -163,7 +164,7 @@ if (typeof window !== 'undefined') {
  * Bounded cross-tab auth lock using Web Locks (`navigatorLock`) with a bounded
  * acquisition timeout (`1s..10s`, preserving `0` try-lock) and automatic fallback
  * to `processLock` in environments without Web Locks or where Locks throw
- * `SecurityError` / `NotSupportedError`.
+ * `SecurityError`, `NotSupportedError`, or acquire timeout errors.
  */
 export function createBoundedAuthLock() {
   return async <R>(
@@ -181,8 +182,15 @@ export function createBoundedAuthLock() {
           err && typeof err === 'object' && 'name' in err
             ? (err as { name?: unknown }).name
             : undefined;
-        if (errName === 'SecurityError' || errName === 'NotSupportedError') {
-          return await processLock(name, acquireTimeout, fn);
+        const isAcquireTimeout =
+          Boolean(
+            err &&
+              typeof err === 'object' &&
+              'isAcquireTimeout' in err &&
+              (err as { isAcquireTimeout?: unknown }).isAcquireTimeout
+          ) || errName === 'NavigatorLockAcquireTimeoutError';
+        if (errName === 'SecurityError' || errName === 'NotSupportedError' || isAcquireTimeout) {
+          return await processLock(name, boundedTimeout, fn);
         }
         throw err;
       }
