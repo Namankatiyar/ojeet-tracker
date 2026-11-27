@@ -13,6 +13,40 @@ const HEARTBEAT_BACKOFF_MAX_MS = 300_000; // 5 minutes
 // write per 5 minutes instead of paying the active cadence.
 const HEARTBEAT_ACTIVE_INTERVAL_MS = 120_000;
 const HEARTBEAT_IDLE_INTERVAL_MS = 300_000;
+const HEARTBEAT_THROTTLE_SLACK_MS = 5_000;
+const HEARTBEAT_PAYLOAD_STORAGE_KEY = 'ojee-last-heartbeat-payload';
+const HEARTBEAT_AT_STORAGE_KEY = 'ojee-last-heartbeat-at';
+
+function getSharedLastHeartbeatAt(userId: string): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const raw = localStorage.getItem(HEARTBEAT_AT_STORAGE_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.userId === userId && typeof parsed.sentAt === 'number') {
+      return parsed.sentAt;
+    }
+    if (typeof parsed === 'number' && Number.isFinite(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // Ignore storage read/parse errors
+  }
+  return 0;
+}
+
+function clearHeartbeatStorage(): void {
+  try {
+    sessionStorage.removeItem(HEARTBEAT_PAYLOAD_STORAGE_KEY);
+  } catch {
+    // non-fatal
+  }
+  try {
+    localStorage.removeItem(HEARTBEAT_AT_STORAGE_KEY);
+  } catch {
+    // non-fatal
+  }
+}
 
 /**
  * PERF-008: Live activity heartbeat — extracted from useProfileSync so it only
@@ -42,18 +76,46 @@ export function useActivityHeartbeat() {
   const lastHeartbeatPayloadRef = useRef<string | null>(
     // Persist across Community page unmount/remount within the same browser session
     // so navigating back doesn't force a redundant is_active:false upsert.
-    typeof window !== 'undefined' ? sessionStorage.getItem('ojee-last-heartbeat-payload') : null
+    typeof window !== 'undefined' ? sessionStorage.getItem(HEARTBEAT_PAYLOAD_STORAGE_KEY) : null
   );
-  const lastHeartbeatSentAtRef = useRef<number>(0);
+  const lastHeartbeatSentAtRef = useRef<number>(
+    userId ? getSharedLastHeartbeatAt(userId) : 0
+  );
   const heartbeatFailCountRef = useRef<number>(0);
   const heartbeatPausedUntilRef = useRef<number>(0);
-  const hasSentInitialHeartbeatRef = useRef<boolean>(false);
+  const isSendingRef = useRef<boolean>(false);
+  const prevUserIdRef = useRef<string | null>(userId);
 
   useEffect(() => {
     const client = supabase;
-    if (!userId || !isConfigured || !client) return;
+    if (!userId || !isConfigured || !client) {
+      if (!userId) {
+        lastHeartbeatPayloadRef.current = null;
+        lastHeartbeatSentAtRef.current = 0;
+        heartbeatFailCountRef.current = 0;
+        heartbeatPausedUntilRef.current = 0;
+        prevUserIdRef.current = null;
+        clearHeartbeatStorage();
+      }
+      return;
+    }
+
+    if (prevUserIdRef.current !== null && prevUserIdRef.current !== userId) {
+      lastHeartbeatPayloadRef.current = null;
+      lastHeartbeatSentAtRef.current = 0;
+      heartbeatFailCountRef.current = 0;
+      heartbeatPausedUntilRef.current = 0;
+      clearHeartbeatStorage();
+    } else if (lastHeartbeatSentAtRef.current === 0) {
+      lastHeartbeatSentAtRef.current = getSharedLastHeartbeatAt(userId);
+    }
+    prevUserIdRef.current = userId;
 
     const sendHeartbeat = async (force: boolean = false) => {
+      if (isSendingRef.current) {
+        return;
+      }
+      isSendingRef.current = true;
       try {
         const now = Date.now();
         if (now < heartbeatPausedUntilRef.current) {
@@ -162,21 +224,20 @@ export function useActivityHeartbeat() {
         const stateChanged = payloadStr !== lastHeartbeatPayloadRef.current;
 
         // Skip if not forced, state hasn't changed, and we're inside the throttle window.
-        // Idle state uses a much longer window: an inactive user with the Community page
-        // open drops from 1 write/min → 1 write/5 min.
+        // Subtract small slack so 120s/300s interval ticks don't skip 1ms early due to await latency.
         const throttleWindowMs = isActive
           ? HEARTBEAT_ACTIVE_INTERVAL_MS
           : HEARTBEAT_IDLE_INTERVAL_MS;
-        if (!force && !stateChanged && now - lastHeartbeatSentAtRef.current < throttleWindowMs) {
+        const lastSentAt = Math.max(
+          lastHeartbeatSentAtRef.current,
+          getSharedLastHeartbeatAt(userId)
+        );
+        if (
+          !force &&
+          !stateChanged &&
+          now - lastSentAt < throttleWindowMs - HEARTBEAT_THROTTLE_SLACK_MS
+        ) {
           return;
-        }
-
-        lastHeartbeatSentAtRef.current = now;
-        lastHeartbeatPayloadRef.current = payloadStr;
-        try {
-          sessionStorage.setItem('ojee-last-heartbeat-payload', payloadStr);
-        } catch {
-          /* quota exceeded – non-fatal */
         }
 
         // supabase-js reports HTTP failures (5xx/429) via `error`, not by throwing.
@@ -184,9 +245,38 @@ export function useActivityHeartbeat() {
           .from('live_activity')
           .upsert(payload, { onConflict: 'user_id' });
         if (error) throw error;
+
+        const sentAt = Date.now();
+        lastHeartbeatSentAtRef.current = sentAt;
+        lastHeartbeatPayloadRef.current = payloadStr;
         heartbeatFailCountRef.current = 0;
+        heartbeatPausedUntilRef.current = 0;
+        try {
+          sessionStorage.setItem(HEARTBEAT_PAYLOAD_STORAGE_KEY, payloadStr);
+        } catch {
+          /* quota exceeded – non-fatal */
+        }
+        try {
+          localStorage.setItem(
+            HEARTBEAT_AT_STORAGE_KEY,
+            JSON.stringify({ userId, sentAt })
+          );
+        } catch {
+          /* quota exceeded – non-fatal */
+        }
       } catch (err) {
         console.warn('Failed to send heartbeat', err);
+        const errObj = err as { status?: number; code?: string; message?: string } | null;
+        const isAuthError =
+          errObj?.status === 401 ||
+          errObj?.status === 403 ||
+          errObj?.code === 'PGRST301' ||
+          /jwt|unauthorized|auth/i.test(errObj?.message || '');
+        if (isAuthError) {
+          lastHeartbeatPayloadRef.current = null;
+          lastHeartbeatSentAtRef.current = 0;
+          clearHeartbeatStorage();
+        }
         heartbeatFailCountRef.current += 1;
         // Progressive jittered backoff instead of a fixed 5-minute pause, so
         // recovering clients don't all retry in a synchronized wave.
@@ -201,15 +291,12 @@ export function useActivityHeartbeat() {
           );
           heartbeatPausedUntilRef.current = Date.now() + pauseMs;
         }
+      } finally {
+        isSendingRef.current = false;
       }
     };
 
-    if (!hasSentInitialHeartbeatRef.current) {
-      hasSentInitialHeartbeatRef.current = true;
-      sendHeartbeat(true);
-    } else {
-      sendHeartbeat(false);
-    }
+    sendHeartbeat(false);
 
     const handleFocusOrVisible = () => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {

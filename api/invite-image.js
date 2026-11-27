@@ -14,6 +14,7 @@ export default async function handler(req, res) {
     const code = url.searchParams.get('code');
 
     if (!code) {
+      res.setHeader('Cache-Control', 'no-store');
       return res.status(400).send('Missing invite code');
     }
 
@@ -30,6 +31,7 @@ export default async function handler(req, res) {
     ).replace(/^"|"$/g, '');
 
     if (!supabaseUrl || !supabaseKey) {
+      res.setHeader('Cache-Control', 'no-store');
       return res.status(500).send('Supabase URL or Key is missing in environment variables');
     }
 
@@ -42,10 +44,18 @@ export default async function handler(req, res) {
       error = res.error;
     } catch (err) {
       console.error('Supabase RPC fetch failed:', err);
+      res.setHeader('Cache-Control', 'no-store');
       return res.status(500).send(`Supabase RPC error: ${err.message}`);
     }
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      console.error('Supabase RPC error:', error);
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(500).send(`Supabase RPC error: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60');
       return res.status(404).send('User not found');
     }
 
