@@ -586,26 +586,31 @@ export function useProfileSync() {
     };
 
     const snapshotStr = JSON.stringify(snapshot);
-    if (lastSnapshotRef.current === snapshotStr) return;
+    const currentShowAgenda = progressCardSettings.showTasks !== false;
+    const agendaChanged = lastShowAgendaRef.current !== currentShowAgenda;
 
-    const lastSnapshot = lastSnapshotRef.current ? JSON.parse(lastSnapshotRef.current) : null;
-    let diff: any = snapshot;
+    if (lastSnapshotRef.current === snapshotStr && !agendaChanged) return;
 
-    if (lastSnapshot) {
-      diff = {};
-      for (const key in snapshot) {
-        if (
-          JSON.stringify(snapshot[key as keyof typeof snapshot]) !==
-          JSON.stringify(lastSnapshot[key])
-        ) {
-          diff[key] = snapshot[key as keyof typeof snapshot];
+    let diff: any = {};
+    if (lastSnapshotRef.current !== snapshotStr) {
+      const lastSnapshot = lastSnapshotRef.current ? JSON.parse(lastSnapshotRef.current) : null;
+      diff = snapshot;
+
+      if (lastSnapshot) {
+        diff = {};
+        for (const key in snapshot) {
+          if (
+            JSON.stringify(snapshot[key as keyof typeof snapshot]) !==
+            JSON.stringify(lastSnapshot[key])
+          ) {
+            diff[key] = snapshot[key as keyof typeof snapshot];
+          }
         }
       }
     }
 
-    if (Object.keys(diff).length === 0) return;
+    if (Object.keys(diff).length === 0 && !agendaChanged) return;
 
-    const currentShowAgenda = progressCardSettings.showTasks !== false;
     const hasGenuineContentChange =
       lastFailedSnapshotRef.current !== null &&
       (snapshotStr !== lastFailedSnapshotRef.current ||
@@ -650,7 +655,7 @@ export function useProfileSync() {
         return;
       }
       try {
-        if (lastSnapshotRef.current !== snapshotStr) {
+        if (lastSnapshotRef.current !== snapshotStr && Object.keys(diff).length > 0) {
           const { error } = await client
             .from('profiles')
             .upsert({ id: userId, ...diff }, { onConflict: 'id' });
