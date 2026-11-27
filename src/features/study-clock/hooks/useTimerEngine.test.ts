@@ -189,5 +189,61 @@ describe('useTimerEngine syncNow', () => {
     const saved = JSON.parse(savedRaw ?? '{}');
     expect(saved.accumulatedActiveMs).toBe(2 * 60 * 1000);
     expect(saved.runStartedAtMs).toBe(laterMs);
+
+    act(() => {
+      result.current.reset();
+    });
+  });
+});
+
+describe('useTimerEngine event & storage throttling', () => {
+  it('does not dispatch jee-timer-state-change or rewrite localStorage on 1s ticks while running', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000);
+
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    const setItemSpy = vi.spyOn(localStorage, 'setItem');
+
+    const countStateChangeEvents = () =>
+      dispatchSpy.mock.calls.filter(([evt]) => (evt as Event).type === 'jee-timer-state-change')
+        .length;
+    const countEngineWrites = () =>
+      setItemSpy.mock.calls.filter(([key]) => key === 'jee-timer-engine').length;
+
+    const { result } = renderHook(() => useTimerEngine());
+
+    // Cold idle mount should not emit spurious state-change events
+    expect(countStateChangeEvents()).toBe(0);
+
+    act(() => {
+      result.current.start();
+    });
+
+    expect(countStateChangeEvents()).toBe(1);
+    const writesAfterStart = countEngineWrites();
+    expect(writesAfterStart).toBeGreaterThanOrEqual(1);
+
+    // Advance 5 seconds (5 x 1s ticks): elapsed updates, but no state-change flood or 1s storage writes
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+
+    expect(result.current.elapsedMs).toBe(5_000);
+    expect(countStateChangeEvents()).toBe(1);
+    expect(countEngineWrites()).toBe(writesAfterStart);
+
+    // Resetting from running -> idle dispatches once; resetting again while idle does not
+    act(() => {
+      result.current.reset();
+    });
+    expect(countStateChangeEvents()).toBe(2);
+
+    act(() => {
+      result.current.reset();
+    });
+    expect(countStateChangeEvents()).toBe(2);
+
+    dispatchSpy.mockRestore();
+    setItemSpy.mockRestore();
   });
 });

@@ -190,7 +190,7 @@ let lastDispatchedStateSummary = '';
 function saveState(state: PersistedTimerState) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   if (typeof window !== 'undefined') {
-    const summary = `${state.engineState}|${state.phase}|${state.mode}|${state.runStartedAtMs}|${state.currentIntervalIndex}`;
+    const summary = `${state.engineState}|${state.phase}|${state.mode}|${state.currentIntervalIndex}`;
     if (summary !== lastDispatchedStateSummary) {
       lastDispatchedStateSummary = summary;
       window.dispatchEvent(new Event('jee-timer-state-change'));
@@ -201,8 +201,12 @@ function saveState(state: PersistedTimerState) {
 function clearState() {
   localStorage.removeItem(STORAGE_KEY);
   if (typeof window !== 'undefined') {
+    const shouldDispatch =
+      lastDispatchedStateSummary !== '' && lastDispatchedStateSummary !== 'idle';
     lastDispatchedStateSummary = '';
-    window.dispatchEvent(new Event('jee-timer-state-change'));
+    if (shouldDispatch) {
+      window.dispatchEvent(new Event('jee-timer-state-change'));
+    }
   }
 }
 
@@ -541,12 +545,15 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
   );
 
   const reconcileNow = useCallback(
-    (sourceState?: PersistedTimerState, nowOverride?: number) => {
+    (sourceState?: PersistedTimerState, nowOverride?: number, persistIfUnchanged = true) => {
       const currentState = sourceState ?? timerStateRef.current;
       const now = nowOverride ?? Date.now();
       const result = reconcileTimerState(currentState, now);
+      const stateChanged = !statesMatch(result.nextState, currentState);
       applyReconcileResult(result);
-      persistSnapshot(result.nextState, now);
+      if (persistIfUnchanged || sourceState !== undefined || stateChanged) {
+        persistSnapshot(result.nextState, now);
+      }
       return result.nextState;
     },
     [applyReconcileResult, persistSnapshot]
@@ -575,7 +582,7 @@ export function useTimerEngine(options: UseTimerEngineOptions = {}): UseTimerEng
     if (timerState.engineState !== 'running') return;
 
     const tick = () => {
-      reconcileNow();
+      reconcileNow(undefined, undefined, false);
     };
 
     tick();

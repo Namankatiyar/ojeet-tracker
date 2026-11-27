@@ -10,13 +10,73 @@ import { getLogicalTodayStr, getLogicalDate } from '../../../shared/utils/date';
 import { getDisplayName, getAvatarUrl } from '../../../shared/utils/auth';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const PROFILE_SNAPSHOT_KEY_PREFIX = 'ojeet-remote-sync-profile-snapshot-';
+const PROFILE_AGENDA_KEY_PREFIX = 'ojeet-remote-sync-profile-agenda-';
+
+const getProfileSnapshotKey = (userId: string) => `${PROFILE_SNAPSHOT_KEY_PREFIX}${userId}`;
+const getProfileAgendaKey = (userId: string) => `${PROFILE_AGENDA_KEY_PREFIX}${userId}`;
+
+const clearPersistedProfileSyncKeys = (userId: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(getProfileSnapshotKey(userId));
+    localStorage.removeItem(getProfileAgendaKey(userId));
+  } catch {
+    /* ignore */
+  }
+};
+
+// Guard: never persist base64 data URIs to profiles.avatar_url/banner_url.
+// Only internet image URLs are allowed.
+const sanitizeImageUrl = (value?: string): string | null => {
+  if (!value || /^data:/i.test(value)) return null;
+  return value;
+};
+
+const isProfileAuthError = (err: unknown): boolean => {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { status?: unknown; code?: unknown; message?: unknown };
+  if (e.status === 401) return true;
+  const code = typeof e.code === 'string' ? e.code : '';
+  if (code === 'PGRST301' || code === 'PGRST302' || code === 'PGRST303' || code === '42501') {
+    return true;
+  }
+  const message = typeof e.message === 'string' ? e.message : '';
+  return /jwt expired|invalid jwt|permission denied for table|unauthorized/i.test(message);
+};
+
+const getTimerStructuralSignature = (): string => {
+  try {
+    const rawTimer = localStorage.getItem('jee-timer-engine');
+    let engineState = '';
+    let phase = '';
+    let mode = '';
+    if (rawTimer) {
+      const parsed = JSON.parse(rawTimer);
+      engineState = parsed.engineState ?? '';
+      phase = parsed.phase ?? '';
+      mode = parsed.mode ?? '';
+    }
+    const taskType = localStorage.getItem('studyClock_taskType') ?? '';
+    const selectedTaskId = localStorage.getItem('studyClock_selectedTaskId') ?? '';
+    return `${engineState}|${phase}|${mode}|${taskType}|${selectedTaskId}`;
+  } catch {
+    return '';
+  }
+};
 
 const getSessionDate = (s: StudySession): string => s.localDate ?? s.startTime.slice(0, 10);
 
 export function useProfileSync() {
-  const { user, isConfigured, isLoading } = useRemoteAuth();
-  // Key the snapshot effect off the stable id: auth events produce new user objects.
+  const auth = useRemoteAuth() as ReturnType<typeof useRemoteAuth> & {
+    authEventEpoch?: number;
+  };
+  const { user, isConfigured, isLoading } = auth;
+  const authEventEpoch = auth.authEventEpoch ?? 0;
+  // Key effects off the stable id: auth events produce new user objects.
   const userId = user?.id ?? null;
+  const userRef = useRef(user);
+  userRef.current = user;
   const navigate = useNavigate();
   const {
     progressCardSettings,
@@ -34,7 +94,19 @@ export function useProfileSync() {
   const isFetchingProfileRef = useRef(false);
   const [isInitialFetchDone, setIsInitialFetchDone] = useState(false);
   const lastSnapshotRef = useRef<string | null>(null);
+  const lastShowAgendaRef = useRef<boolean | null>(null);
+  const lastFailedSnapshotRef = useRef<string | null>(null);
+  const lastFailedShowAgendaRef = useRef<boolean | null>(null);
+  const debounceTimeoutRef = useRef<number | null>(null);
+  const retryTimeoutRef = useRef<number | null>(null);
+  const retryAttemptRef = useRef<number>(0);
+  // While the backend is failing, local edits must not bypass the retry backoff.
+  const pausedUntilRef = useRef<number>(0);
+  const authPausedRef = useRef<boolean>(false);
+  const isDirtyWhileHiddenRef = useRef<boolean>(false);
+  const pendingExecuteSyncRef = useRef<(() => void) | null>(null);
   const [timerUpdateTrigger, setTimerUpdateTrigger] = useState(0);
+  const [authRecoveryTrigger, setAuthRecoveryTrigger] = useState(0);
 
   useEffect(() => {
     subjectDataRef.current = subjectData;
@@ -46,13 +118,24 @@ export function useProfileSync() {
     progressCardSettingsRef.current = progressCardSettings;
   }, [progressCardSettings]);
 
-  // Handle logout cleanup
-  const prevUserRef = useRef<typeof user>(null);
+  // Handle logout cleanup & userId hydration
+  const prevUserIdRef = useRef<string | null>(null);
   useEffect(() => {
-    // If we transitioned from a logged-in user to null (logout)
-    if (prevUserRef.current && !user && !isLoading) {
+    const prevUserId = prevUserIdRef.current;
+
+    // Logout transition: logged-in user -> null (once auth loading finishes)
+    if (prevUserId && !userId && !isLoading) {
       setIsInitialFetchDone(false);
       lastSnapshotRef.current = null;
+      lastShowAgendaRef.current = null;
+      lastFailedSnapshotRef.current = null;
+      lastFailedShowAgendaRef.current = null;
+      retryAttemptRef.current = 0;
+      pausedUntilRef.current = 0;
+      authPausedRef.current = false;
+      isDirtyWhileHiddenRef.current = false;
+      pendingExecuteSyncRef.current = null;
+      clearPersistedProfileSyncKeys(prevUserId);
       setProgressCardSettings((prev) => ({
         ...prev,
         inviteCode: '',
@@ -62,16 +145,85 @@ export function useProfileSync() {
         bannerUrl: '',
         customStatus: '',
       }));
+      prevUserIdRef.current = null;
+      return;
     }
-    if (!isLoading) {
-      prevUserRef.current = user;
+
+    // Switched directly from one userId to another userId
+    if (prevUserId && userId && prevUserId !== userId) {
+      setIsInitialFetchDone(false);
+      lastSnapshotRef.current = null;
+      lastShowAgendaRef.current = null;
+      lastFailedSnapshotRef.current = null;
+      lastFailedShowAgendaRef.current = null;
+      retryAttemptRef.current = 0;
+      pausedUntilRef.current = 0;
+      authPausedRef.current = false;
+      isDirtyWhileHiddenRef.current = false;
+      pendingExecuteSyncRef.current = null;
+      clearPersistedProfileSyncKeys(prevUserId);
     }
-  }, [user, isLoading, setProgressCardSettings]);
+
+    // Hydrate persisted snapshot & agenda flag when userId initializes
+    if (userId && prevUserId !== userId) {
+      retryAttemptRef.current = 0;
+      pausedUntilRef.current = 0;
+      authPausedRef.current = false;
+      isDirtyWhileHiddenRef.current = false;
+      lastFailedSnapshotRef.current = null;
+      lastFailedShowAgendaRef.current = null;
+      try {
+        const rawSnapshot = localStorage.getItem(getProfileSnapshotKey(userId));
+        if (rawSnapshot) {
+          const parsed = JSON.parse(rawSnapshot);
+          if (parsed && typeof parsed === 'object') {
+            lastSnapshotRef.current = rawSnapshot;
+          }
+        }
+        const rawAgenda = localStorage.getItem(getProfileAgendaKey(userId));
+        if (rawAgenda === 'true') {
+          lastShowAgendaRef.current = true;
+        } else if (rawAgenda === 'false') {
+          lastShowAgendaRef.current = false;
+        }
+      } catch {
+        /* ignore corrupt storage */
+      }
+      prevUserIdRef.current = userId;
+    }
+  }, [userId, isLoading, setProgressCardSettings]);
+
+  // Recover from auth pause when TOKEN_REFRESHED or SIGNED_IN increments authEventEpoch
+  const prevAuthEventEpochRef = useRef<number>(authEventEpoch);
+  useEffect(() => {
+    if (authEventEpoch === prevAuthEventEpochRef.current) return;
+    prevAuthEventEpochRef.current = authEventEpoch;
+    if (!authPausedRef.current) return;
+    authPausedRef.current = false;
+    retryAttemptRef.current = 0;
+    pausedUntilRef.current = 0;
+    setAuthRecoveryTrigger((n) => n + 1);
+  }, [authEventEpoch]);
+
+  // Flush deferred hidden-tab sync when tab becomes visible
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isDirtyWhileHiddenRef.current) {
+        isDirtyWhileHiddenRef.current = false;
+        pendingExecuteSyncRef.current?.();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Post-login check for pending invite code
   useEffect(() => {
     const client = supabase;
-    if (!user || !isConfigured || !client) return;
+    if (!userId || !isConfigured || !client) return;
 
     const handlePendingInvite = async () => {
       const pendingCode = localStorage.getItem('pending_invite_code');
@@ -121,15 +273,18 @@ export function useProfileSync() {
     };
 
     handlePendingInvite();
-  }, [user, isConfigured, navigate]);
+  }, [userId, isConfigured, navigate]);
 
   // 0. Fetch invite_code, discord_tag, display_name, and avatar_url from backend on authentication
   useEffect(() => {
     const client = supabase;
-    if (!user || !isConfigured || !client) {
+    const currentUser = userRef.current;
+    if (!userId || !currentUser || !isConfigured || !client) {
       setIsInitialFetchDone(false);
       return;
     }
+
+    let cancelled = false;
 
     const fetchProfileDetails = async () => {
       isFetchingProfileRef.current = true;
@@ -139,13 +294,51 @@ export function useProfileSync() {
           .select(
             'invite_code, discord_tag, display_name, avatar_url, banner_url, custom_status, grade_status, target_exam'
           )
-          .eq('id', user.id)
+          .eq('id', currentUser.id)
           .maybeSingle();
 
-        const resolvedName = getDisplayName(user);
-        const resolvedAvatar = getAvatarUrl(user) || '';
+        if (cancelled) return;
+
+        const resolvedName = getDisplayName(currentUser);
+        const resolvedAvatar = getAvatarUrl(currentUser) || '';
 
         if (!error && data) {
+          // Update persisted static metadata fields so DB-fetched edits aren't echoed back as an upsert.
+          if (lastSnapshotRef.current) {
+            try {
+              const parsedSnapshot = JSON.parse(lastSnapshotRef.current);
+              if (parsedSnapshot && typeof parsedSnapshot === 'object') {
+                if (data.display_name !== undefined) {
+                  parsedSnapshot.display_name = data.display_name || null;
+                }
+                if (data.avatar_url !== undefined) {
+                  parsedSnapshot.avatar_url = sanitizeImageUrl(data.avatar_url ?? undefined);
+                }
+                if (data.banner_url !== undefined) {
+                  parsedSnapshot.banner_url = sanitizeImageUrl(data.banner_url ?? undefined);
+                }
+                if (data.custom_status !== undefined) {
+                  parsedSnapshot.custom_status = data.custom_status || null;
+                }
+                if (data.grade_status !== undefined && data.grade_status !== null) {
+                  parsedSnapshot.grade_status = data.grade_status || null;
+                }
+                if (data.target_exam !== undefined && data.target_exam !== null) {
+                  parsedSnapshot.target_exam = data.target_exam || null;
+                }
+                const updatedSnapshotStr = JSON.stringify(parsedSnapshot);
+                lastSnapshotRef.current = updatedSnapshotStr;
+                try {
+                  localStorage.setItem(getProfileSnapshotKey(currentUser.id), updatedSnapshotStr);
+                } catch {
+                  /* ignore quota errors */
+                }
+              }
+            } catch {
+              /* ignore corrupt snapshot */
+            }
+          }
+
           setProgressCardSettings((prev) => {
             const updates: Partial<typeof prev> = {};
             if (data.invite_code !== undefined && data.invite_code !== null && prev.inviteCode !== data.invite_code) {
@@ -191,17 +384,18 @@ export function useProfileSync() {
         } else if (!error && !data) {
           // Profile row is missing. Insert default profile row immediately to satisfy foreign key constraints
           const initialProfile = {
-            id: user.id,
+            id: currentUser.id,
             display_name: progressCardSettingsRef.current.userName || resolvedName || 'Student',
             avatar_url: progressCardSettingsRef.current.customAvatarUrl || resolvedAvatar || null,
             grade_status: progressCardSettingsRef.current.gradeStatus || 'Class 12',
             target_exam: progressCardSettingsRef.current.targetExam || 'JEE 2026',
           };
           const { error: insertErr } = await client.from('profiles').insert(initialProfile);
+          if (cancelled) return;
           if (insertErr) {
             console.error('Failed to create initial profile row:', insertErr);
           } else {
-            console.log('Successfully created initial profile row for user:', user.id);
+            console.log('Successfully created initial profile row for user:', currentUser.id);
             setProgressCardSettings((prev) => {
               const updates: Partial<typeof prev> = {};
               if (!prev.userName && resolvedName) {
@@ -230,12 +424,17 @@ export function useProfileSync() {
         console.warn('Failed to fetch profile details', err);
       } finally {
         isFetchingProfileRef.current = false;
-        setIsInitialFetchDone(true);
+        if (!cancelled) {
+          setIsInitialFetchDone(true);
+        }
       }
     };
 
     fetchProfileDetails();
-  }, [user, isConfigured, setProgressCardSettings]);
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, isConfigured, setProgressCardSettings]);
 
   // PERF-008: The live activity heartbeat has been extracted into useActivityHeartbeat.ts
   // and is now mounted only inside CommunityPage, so it doesn't fire on every page.
@@ -245,9 +444,16 @@ export function useProfileSync() {
     studySessionsRef.current = studySessions;
   }, [studySessions]);
 
-  // Timer sync listener
+  // Timer sync listener (compares lightweight structural signature so 1s ticks in other tabs don't starve debounce)
   useEffect(() => {
-    const handleTimerChange = () => setTimerUpdateTrigger((t) => t + 1);
+    let lastTimerSignature = getTimerStructuralSignature();
+    const handleTimerChange = () => {
+      const nextSignature = getTimerStructuralSignature();
+      if (nextSignature !== lastTimerSignature) {
+        lastTimerSignature = nextSignature;
+        setTimerUpdateTrigger((t) => t + 1);
+      }
+    };
     window.addEventListener('jee-timer-state-change', handleTimerChange);
     const handleStorage = (e: StorageEvent) => {
       if (
@@ -266,13 +472,6 @@ export function useProfileSync() {
   }, []);
 
   // 2. Debounced Profile Snapshot Sync
-  const lastShowAgendaRef = useRef<boolean | null>(null);
-  const debounceTimeoutRef = useRef<number | null>(null);
-  const retryTimeoutRef = useRef<number | null>(null);
-  const retryAttemptRef = useRef<number>(0);
-  // While the backend is failing, local edits must not bypass the retry backoff.
-  const pausedUntilRef = useRef<number>(0);
-
   useEffect(() => {
     const client = supabase;
     if (!userId || !isConfigured || !client) return;
@@ -368,15 +567,6 @@ export function useProfileSync() {
       }
     }
 
-    // Guard: never persist base64 data URIs to profiles.avatar_url/banner_url.
-    // Only internet image URLs are allowed. A legacy data: URI left in
-    // localStorage would otherwise re-sync a ~257 KB blob into every profile
-    // row (and into the leaderboard snapshot + friend fetches). Drop it.
-    const sanitizeImageUrl = (value?: string): string | null => {
-      if (!value || /^data:/i.test(value)) return null;
-      return value;
-    };
-
     // NOTE: weekly_hours is intentionally NOT written here. It is owned solely by
     // the DB trigger `sync_weekly_hours_to_profile` (fires on user_study_aggregate
     // upsert) to avoid a dual-writer conflict where the client's rolling-7-day value
@@ -416,6 +606,21 @@ export function useProfileSync() {
     if (Object.keys(diff).length === 0) return;
 
     const currentShowAgenda = progressCardSettings.showTasks !== false;
+    const hasGenuineContentChange =
+      lastFailedSnapshotRef.current !== null &&
+      (snapshotStr !== lastFailedSnapshotRef.current ||
+        currentShowAgenda !== lastFailedShowAgendaRef.current);
+
+    if (
+      retryAttemptRef.current > 4 &&
+      hasGenuineContentChange &&
+      Date.now() >= pausedUntilRef.current
+    ) {
+      retryAttemptRef.current = 0;
+      pausedUntilRef.current = 0;
+      lastFailedSnapshotRef.current = null;
+      lastFailedShowAgendaRef.current = null;
+    }
 
     if (debounceTimeoutRef.current) {
       window.clearTimeout(debounceTimeoutRef.current);
@@ -425,62 +630,100 @@ export function useProfileSync() {
       window.clearTimeout(retryTimeoutRef.current);
     }
 
-    debounceTimeoutRef.current = window.setTimeout(async () => {
-      const executeSync = async () => {
-        if (!isInitialFetchDone || isFetchingProfileRef.current || !userId || !client) return;
-        // Skip while offline; the next local change re-triggers the debounce.
-        if (!isOnline()) return;
-        // Still inside a failure backoff window: defer (latest diff wins) instead of
-        // sending a request to a backend that just failed.
-        const waitMs = pausedUntilRef.current - Date.now();
-        if (waitMs > 0) {
-          retryTimeoutRef.current = window.setTimeout(() => {
-            executeSync();
-          }, waitMs);
-          return;
-        }
-        try {
+    const executeSync = async () => {
+      if (!isInitialFetchDone || isFetchingProfileRef.current || !userId || !client) return;
+      if (authPausedRef.current) return;
+      if (retryAttemptRef.current > 4) return;
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        isDirtyWhileHiddenRef.current = true;
+        return;
+      }
+      // Skip while offline; the next local change re-triggers the debounce.
+      if (!isOnline()) return;
+      // Still inside a failure backoff window: defer (latest diff wins) instead of
+      // sending a request to a backend that just failed.
+      const waitMs = pausedUntilRef.current - Date.now();
+      if (waitMs > 0) {
+        retryTimeoutRef.current = window.setTimeout(() => {
+          executeSync();
+        }, waitMs);
+        return;
+      }
+      try {
+        if (lastSnapshotRef.current !== snapshotStr) {
           const { error } = await client
             .from('profiles')
             .upsert({ id: userId, ...diff }, { onConflict: 'id' });
           if (error) throw error;
           lastSnapshotRef.current = snapshotStr;
-          retryAttemptRef.current = 0;
-          pausedUntilRef.current = 0;
-
-          if (lastShowAgendaRef.current !== currentShowAgenda) {
-            await client.from('peer_visibility_settings').upsert(
-              {
-                user_id: userId,
-                show_agenda: currentShowAgenda,
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: 'user_id' }
-            );
-            lastShowAgendaRef.current = currentShowAgenda;
-          }
-        } catch (err) {
-          console.warn('Failed to sync profile snapshot/privacy settings', err);
-          retryAttemptRef.current += 1;
-          const backoffDelay = calculateBackoffWithJitter(
-            retryAttemptRef.current - 1,
-            10000,
-            300000
-          );
-          pausedUntilRef.current = Date.now() + backoffDelay;
-          if (retryAttemptRef.current <= 4) {
-            retryTimeoutRef.current = window.setTimeout(() => {
-              executeSync();
-            }, backoffDelay);
-          } else {
-            console.warn('Max retry attempts reached for profile sync. Giving up until next change.');
+          try {
+            localStorage.setItem(getProfileSnapshotKey(userId), snapshotStr);
+          } catch {
+            /* ignore quota errors */
           }
         }
-      };
+
+        if (lastShowAgendaRef.current !== currentShowAgenda) {
+          const { error: visError } = await client.from('peer_visibility_settings').upsert(
+            {
+              user_id: userId,
+              show_agenda: currentShowAgenda,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' }
+          );
+          if (visError) throw visError;
+          lastShowAgendaRef.current = currentShowAgenda;
+          try {
+            localStorage.setItem(getProfileAgendaKey(userId), JSON.stringify(currentShowAgenda));
+          } catch {
+            /* ignore quota errors */
+          }
+        }
+
+        retryAttemptRef.current = 0;
+        pausedUntilRef.current = 0;
+        lastFailedSnapshotRef.current = null;
+        lastFailedShowAgendaRef.current = null;
+        isDirtyWhileHiddenRef.current = false;
+      } catch (err) {
+        if (isProfileAuthError(err)) {
+          authPausedRef.current = true;
+          if (retryTimeoutRef.current) {
+            window.clearTimeout(retryTimeoutRef.current);
+            retryTimeoutRef.current = null;
+          }
+          console.warn('Profile sync paused due to auth error until session refreshes:', err);
+          return;
+        }
+        console.warn('Failed to sync profile snapshot/privacy settings', err);
+        lastFailedSnapshotRef.current = snapshotStr;
+        lastFailedShowAgendaRef.current = currentShowAgenda;
+        retryAttemptRef.current += 1;
+        const backoffDelay = calculateBackoffWithJitter(
+          retryAttemptRef.current - 1,
+          10000,
+          300000
+        );
+        pausedUntilRef.current = Date.now() + backoffDelay;
+        if (retryAttemptRef.current <= 4) {
+          retryTimeoutRef.current = window.setTimeout(() => {
+            executeSync();
+          }, backoffDelay);
+        } else {
+          console.warn('Max retry attempts reached for profile sync. Giving up until next change.');
+        }
+      }
+    };
+
+    pendingExecuteSyncRef.current = executeSync;
+
+    debounceTimeoutRef.current = window.setTimeout(() => {
       executeSync();
     }, 5000); // 5-second debounce
 
     return () => {
+      pendingExecuteSyncRef.current = null;
       if (debounceTimeoutRef.current) {
         window.clearTimeout(debounceTimeoutRef.current);
       }
@@ -497,5 +740,7 @@ export function useProfileSync() {
     studySessions,
     isInitialFetchDone,
     timerUpdateTrigger,
+    authRecoveryTrigger,
+    dailyResetHour,
   ]);
 }
