@@ -323,52 +323,81 @@ export function useProfileSync() {
         profileExistsRef.current = false;
       }
       try {
-        const { data, error } = await client
-          .from('profiles')
-          .select(
-            'invite_code, discord_tag, display_name, avatar_url, banner_url, custom_status, grade_status, target_exam'
-          )
-          .eq('id', currentUser.id)
-          .maybeSingle();
+        const [profileRes, visibilityRes] = await Promise.all([
+          client
+            .from('profiles')
+            .select(
+              'invite_code, discord_tag, display_name, avatar_url, banner_url, custom_status, grade_status, target_exam, today_study_seconds, today_questions, momentum_heatmap, todays_tasks, streak_count'
+            )
+            .eq('id', currentUser.id)
+            .maybeSingle(),
+          client
+            .from('peer_visibility_settings')
+            .select('show_agenda')
+            .eq('user_id', currentUser.id)
+            .maybeSingle(),
+        ]);
 
         if (cancelled) return;
+
+        const { data, error } = profileRes;
+        if (!visibilityRes.error && visibilityRes.data && typeof visibilityRes.data.show_agenda === 'boolean') {
+          lastShowAgendaRef.current = visibilityRes.data.show_agenda;
+          writeStore(agendaKey(currentUser.id), String(visibilityRes.data.show_agenda));
+        }
 
         const resolvedName = getDisplayName(currentUser);
         const resolvedAvatar = getAvatarUrl(currentUser) || '';
 
         if (!error && data) {
           profileExistsRef.current = true;
-          // Update persisted static metadata fields so DB-fetched edits aren't echoed back as an upsert.
+          // Hydrate snapshot from DB even on fresh browser/cleared storage so unchanged
+          // cold mounts don't trigger redundant profile updates.
+          let parsedSnapshot: Record<string, any> | null = null;
           if (lastSnapshotRef.current) {
             try {
-              const parsedSnapshot = JSON.parse(lastSnapshotRef.current);
-              if (parsedSnapshot && typeof parsedSnapshot === 'object') {
-                if (data.display_name !== undefined) {
-                  parsedSnapshot.display_name = data.display_name || null;
-                }
-                if (data.avatar_url !== undefined) {
-                  parsedSnapshot.avatar_url = sanitizeImageUrl(data.avatar_url ?? undefined);
-                }
-                if (data.banner_url !== undefined) {
-                  parsedSnapshot.banner_url = sanitizeImageUrl(data.banner_url ?? undefined);
-                }
-                if (data.custom_status !== undefined) {
-                  parsedSnapshot.custom_status = data.custom_status || null;
-                }
-                if (data.grade_status !== undefined && data.grade_status !== null) {
-                  parsedSnapshot.grade_status = data.grade_status || null;
-                }
-                if (data.target_exam !== undefined && data.target_exam !== null) {
-                  parsedSnapshot.target_exam = data.target_exam || null;
-                }
-                const updatedSnapshotStr = JSON.stringify(parsedSnapshot);
-                lastSnapshotRef.current = updatedSnapshotStr;
-                writeStore(snapshotKey(currentUser.id), updatedSnapshotStr);
+              const parsed = JSON.parse(lastSnapshotRef.current);
+              if (parsed && typeof parsed === 'object') {
+                parsedSnapshot = parsed;
               }
             } catch {
               /* ignore corrupt snapshot */
             }
           }
+          const nextSnapshot: Record<string, any> = parsedSnapshot ?? {
+            grade_status: data.grade_status ?? null,
+            target_exam: data.target_exam ?? null,
+            display_name: data.display_name ?? null,
+            avatar_url: sanitizeImageUrl(data.avatar_url ?? undefined),
+            banner_url: sanitizeImageUrl(data.banner_url ?? undefined),
+            custom_status: data.custom_status ?? null,
+            today_study_seconds: data.today_study_seconds ?? 0,
+            today_questions: data.today_questions ?? 0,
+            momentum_heatmap: Array.isArray(data.momentum_heatmap) ? data.momentum_heatmap : [],
+            todays_tasks: Array.isArray(data.todays_tasks) ? data.todays_tasks : [],
+            streak_count: data.streak_count ?? 0,
+          };
+          if (data.display_name !== undefined) {
+            nextSnapshot.display_name = data.display_name || null;
+          }
+          if (data.avatar_url !== undefined) {
+            nextSnapshot.avatar_url = sanitizeImageUrl(data.avatar_url ?? undefined);
+          }
+          if (data.banner_url !== undefined) {
+            nextSnapshot.banner_url = sanitizeImageUrl(data.banner_url ?? undefined);
+          }
+          if (data.custom_status !== undefined) {
+            nextSnapshot.custom_status = data.custom_status || null;
+          }
+          if (data.grade_status !== undefined && data.grade_status !== null) {
+            nextSnapshot.grade_status = data.grade_status || null;
+          }
+          if (data.target_exam !== undefined && data.target_exam !== null) {
+            nextSnapshot.target_exam = data.target_exam || null;
+          }
+          const updatedSnapshotStr = JSON.stringify(nextSnapshot);
+          lastSnapshotRef.current = updatedSnapshotStr;
+          writeStore(snapshotKey(currentUser.id), updatedSnapshotStr);
           setProgressCardSettings((prev) => {
             const updates: Partial<typeof prev> = {};
             if (data.invite_code !== undefined && data.invite_code !== null && prev.inviteCode !== data.invite_code) {
@@ -432,6 +461,7 @@ export function useProfileSync() {
             console.error('Failed to create initial profile row:', insertErr);
           } else {
             console.log('Successfully created initial profile row for user:', currentUser.id);
+            profileExistsRef.current = true;
             setProgressCardSettings((prev) => {
               const updates: Partial<typeof prev> = {};
               if (!prev.userName && resolvedName) {
@@ -788,10 +818,11 @@ export function useProfileSync() {
       executeSync(false);
     }, delay);
 
-    // Best effort: push the pending write before the tab goes away (ignores the floor,
-    // still respects failure backoff, auth pause, retry cap, and offline state).
+    // Best effort: push the pending write before the tab goes away, while still respecting
+    // the 2-minute write floor, failure backoff, auth pause, retry cap, and offline state.
     const flushPending = () => {
       if (!pending || pausedUntilRef.current > Date.now()) return;
+      if (hasProfileDiff && Date.now() < lastWriteAtRef.current + MIN_WRITE_INTERVAL_MS) return;
       pending = false;
       if (debounceTimeoutRef.current) window.clearTimeout(debounceTimeoutRef.current);
       executeSync(true);

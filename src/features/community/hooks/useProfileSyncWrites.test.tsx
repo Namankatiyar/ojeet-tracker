@@ -28,6 +28,8 @@ const baseSettings = {
 
 const profileRow = { invite_code: 'X' };
 let profileData: any;
+let insertResult: any;
+let visibilityData: any;
 let updateResult: any;
 const profileUpdate = vi.fn();
 const profileUpsert = vi.fn();
@@ -38,6 +40,9 @@ function setupSupabase() {
   vi.mocked(supabase!.from).mockImplementation(((table: string) => {
     if (table === 'peer_visibility_settings') {
       return {
+        select: () => ({
+          eq: () => ({ maybeSingle: () => Promise.resolve({ data: visibilityData, error: null }) }),
+        }),
         upsert: (...a: any[]) => {
           agendaUpsert(...a);
           const error = agendaFailuresLeft > 0 ? { message: 'boom' } : null;
@@ -50,7 +55,7 @@ function setupSupabase() {
       select: () => ({
         eq: () => ({ maybeSingle: () => Promise.resolve({ data: profileData, error: null }) }),
       }),
-      insert: () => Promise.resolve({ error: null }),
+      insert: () => Promise.resolve(insertResult),
       update: (payload: any) => {
         profileUpdate(payload);
         return { eq: () => Promise.resolve(updateResult) };
@@ -93,6 +98,8 @@ describe('useProfileSync write path', () => {
     agendaFailuresLeft = 0;
     vi.useFakeTimers();
     profileData = profileRow;
+    insertResult = { error: null };
+    visibilityData = null;
     updateResult = { data: null, error: null };
     vi.mocked(useRemoteAuth).mockReturnValue({ user, isConfigured: true, isLoading: false } as any);
     setupSupabase();
@@ -115,13 +122,63 @@ describe('useProfileSync write path', () => {
     expect(profileUpsert).not.toHaveBeenCalled();
   });
 
-  it('upserts when row existence is unknown', async () => {
+  it('upserts when row existence is unknown (missing row and initial insert fails)', async () => {
     profileData = null;
+    insertResult = { error: { message: 'insert failed' } };
     renderHook(() => useProfileSync());
     await flush();
     await advance(5000);
     expect(profileUpsert).toHaveBeenCalledTimes(1);
     expect(profileUpdate).not.toHaveBeenCalled();
+  });
+
+  it('uses UPDATE (not upsert) after inserting a missing profile row', async () => {
+    profileData = null;
+    insertResult = { error: null };
+    const { rerender } = renderHook(() => useProfileSync());
+    await flush();
+    await advance(5000);
+    expect(profileUpdate).toHaveBeenCalledTimes(1);
+    expect(profileUpsert).not.toHaveBeenCalled();
+
+    useSettings({ ...baseSettings, customStatus: 'after-insert' });
+    rerender();
+    await advance(120000);
+    expect(profileUpdate).toHaveBeenCalledTimes(2);
+    expect(profileUpdate).toHaveBeenLastCalledWith({ custom_status: 'after-insert' });
+    expect(profileUpsert).not.toHaveBeenCalled();
+  });
+
+  it('does not write profiles or peer_visibility_settings on cold mount when DB values match', async () => {
+    const emptyHeatmap = Array.from({ length: 7 }, (_, idx) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - idx));
+      const labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      return { dayLabel: labels[d.getDay()], level: 0, seconds: 0 };
+    });
+    profileData = {
+      invite_code: 'X',
+      display_name: 'Name',
+      avatar_url: null,
+      banner_url: null,
+      custom_status: null,
+      grade_status: 'Class 12',
+      target_exam: 'JEE 2026',
+      today_study_seconds: 0,
+      today_questions: 0,
+      momentum_heatmap: emptyHeatmap,
+      todays_tasks: [],
+      streak_count: 0,
+    };
+    visibilityData = { show_agenda: true };
+
+    renderHook(() => useProfileSync());
+    await flush();
+    await advance(10 * 60 * 1000);
+
+    expect(profileUpdate).not.toHaveBeenCalled();
+    expect(profileUpsert).not.toHaveBeenCalled();
+    expect(agendaUpsert).not.toHaveBeenCalled();
   });
 
   it('treats a 0-row UPDATE (DB-suppressed no-op) as written, without upserting', async () => {
@@ -209,20 +266,37 @@ describe('useProfileSync write path', () => {
     expect(profileUpdate).toHaveBeenCalledTimes(2);
   });
 
-  it('flushes a pending write on pagehide', async () => {
+  it('respects 2-minute cooldown on pagehide/hidden flush and flushes on pagehide once outside cooldown', async () => {
     const { rerender } = renderHook(() => useProfileSync());
     await flush();
     await advance(5000);
-    useSettings({ ...baseSettings, customStatus: 'late' });
+    expect(profileUpdate).toHaveBeenCalledTimes(1);
+
+    // Edit inside 2-minute cooldown: pagehide must NOT bypass MIN_WRITE_INTERVAL_MS
+    useSettings({ ...baseSettings, customStatus: 'too-soon' });
     rerender();
     await advance(1000);
-    expect(profileUpdate).toHaveBeenCalledTimes(1);
     await act(async () => {
       window.dispatchEvent(new Event('pagehide'));
       await Promise.resolve();
     });
     await flush();
+    expect(profileUpdate).toHaveBeenCalledTimes(1);
+
+    // Advance past 2-minute cooldown, then make another edit and trigger pagehide during 5s debounce
+    await advance(120000);
     expect(profileUpdate).toHaveBeenCalledTimes(2);
+
+    await advance(120000);
+    useSettings({ ...baseSettings, customStatus: 'late' });
+    rerender();
+    await advance(1000);
+    await act(async () => {
+      window.dispatchEvent(new Event('pagehide'));
+      await Promise.resolve();
+    });
+    await flush();
+    expect(profileUpdate).toHaveBeenCalledTimes(3);
     expect(profileUpdate).toHaveBeenLastCalledWith({ custom_status: 'late' });
   });
 

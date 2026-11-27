@@ -453,4 +453,105 @@ describe('useFriends Hook', () => {
       'friend-offline-staler',
     ]);
   });
+
+  it('should skip full fetch on reload when persisted last-fetch timestamp is within 5 minutes', async () => {
+    const cachedFriends = [{ id: 'friend-1', username: 'friend_one', streak_count: 5 }];
+    localStorage.setItem('jee-community-friends-cache', JSON.stringify(cachedFriends));
+    localStorage.setItem(
+      'jee-community-friends-last-fetch',
+      JSON.stringify({ userId: 'user-123', fetchedAt: Date.now() - 60_000 })
+    );
+
+    vi.mocked(supabase!.from).mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      then: vi.fn((onFulfilled) => onFulfilled({ data: [], error: null })),
+    }) as any);
+
+    renderHook(() => useFriends());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const relCalls = vi
+      .mocked(supabase!.from)
+      .mock.calls.filter((c) => c[0] === 'peer_relationships');
+    const profileCalls = vi
+      .mocked(supabase!.from)
+      .mock.calls.filter((c) => c[0] === 'profiles');
+    expect(relCalls.length).toBe(0);
+    expect(profileCalls.length).toBe(0);
+  });
+
+  it('should poll live_activity every 120s instead of 30s and pause when hidden', async () => {
+    vi.useFakeTimers();
+    try {
+      const mockRels = [{ user_id_1: 'user-123', user_id_2: 'friend-1', status: 'accepted' }];
+      const mockProfiles = [{ id: 'friend-1', updated_at: '2026-07-02T12:00:00Z' }];
+      const mockLive = [{ user_id: 'friend-1', is_active: true, subject: 'physics' }];
+
+      vi.mocked(supabase!.from).mockImplementation((table: string) => {
+        let data: any = [];
+        if (table === 'peer_relationships') data = mockRels;
+        else if (table === 'profiles') data = mockProfiles;
+        else if (table === 'live_activity') data = mockLive;
+
+        return {
+          select: vi.fn().mockReturnThis(),
+          or: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          then: vi.fn((onFulfilled) => onFulfilled({ data, error: null })),
+        } as any;
+      });
+
+      renderHook(() => useFriends());
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(
+        vi.mocked(supabase!.from).mock.calls.filter((c) => c[0] === 'live_activity').length
+      ).toBe(1);
+      vi.clearAllMocks();
+
+      // At 90s (< 120s), no background poll should have fired
+      await act(async () => {
+        vi.advanceTimersByTime(90_000);
+        await Promise.resolve();
+      });
+      expect(
+        vi.mocked(supabase!.from).mock.calls.filter((c) => c[0] === 'live_activity').length
+      ).toBe(0);
+
+      // At 120s, one background poll fires
+      await act(async () => {
+        vi.advanceTimersByTime(30_000);
+        await Promise.resolve();
+      });
+      expect(
+        vi.mocked(supabase!.from).mock.calls.filter((c) => c[0] === 'live_activity').length
+      ).toBe(1);
+
+      // Hide tab and advance another 240s -> no polls while hidden
+      vi.clearAllMocks();
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => 'hidden',
+      });
+      await act(async () => {
+        document.dispatchEvent(new Event('visibilitychange'));
+        vi.advanceTimersByTime(240_000);
+        await Promise.resolve();
+      });
+      expect(
+        vi.mocked(supabase!.from).mock.calls.filter((c) => c[0] === 'live_activity').length
+      ).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

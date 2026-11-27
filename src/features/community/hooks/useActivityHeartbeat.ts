@@ -37,7 +37,7 @@ function getSharedLastHeartbeatAt(userId: string): number {
 
 function clearHeartbeatStorage(): void {
   try {
-    sessionStorage.removeItem(HEARTBEAT_PAYLOAD_STORAGE_KEY);
+    localStorage.removeItem(HEARTBEAT_PAYLOAD_STORAGE_KEY);
   } catch {
     // non-fatal
   }
@@ -74,9 +74,9 @@ export function useActivityHeartbeat() {
   }, [plannerTasks]);
 
   const lastHeartbeatPayloadRef = useRef<string | null>(
-    // Persist across Community page unmount/remount within the same browser session
-    // so navigating back doesn't force a redundant is_active:false upsert.
-    typeof window !== 'undefined' ? sessionStorage.getItem(HEARTBEAT_PAYLOAD_STORAGE_KEY) : null
+    // Persist across tabs and page reloads so opening /community in a new tab
+    // doesn't reset the payload ref and bypass the 2m/5m throttle.
+    typeof window !== 'undefined' ? localStorage.getItem(HEARTBEAT_PAYLOAD_STORAGE_KEY) : null
   );
   const lastHeartbeatSentAtRef = useRef<number>(
     userId ? getSharedLastHeartbeatAt(userId) : 0
@@ -154,13 +154,12 @@ export function useActivityHeartbeat() {
               ? timerState.runStartedAtMs - (timerState.accumulatedActiveMs || 0)
               : timerState.startTimestamp || null;
             if (startMs) {
-              // PERF (Issue #5): Round to the nearest minute, not second. started_at is
+              // PERF (Issue #5): Floor to the minute, not round/second. started_at is
               // derived as runStartedAtMs - accumulatedActiveMs, which shifts every
-              // second while the timer runs — per-second rounding still drifted between
-              // heartbeats and defeated payload dedup, causing an upsert on every tick.
-              // Minute granularity keeps started_at stable for a full minute of elapsed time.
-              const roundedStartMs = Math.round(startMs / 60_000) * 60_000;
-              startedAt = new Date(roundedStartMs).toISOString();
+              // second while the timer runs; flooring avoids 1ms jitter near :30.000
+              // flipping started_at by 60s and defeating payload dedup.
+              const flooredStartMs = Math.floor(startMs / 60_000) * 60_000;
+              startedAt = new Date(flooredStartMs).toISOString();
             }
 
             const rawType = localStorage.getItem('studyClock_taskType');
@@ -252,7 +251,7 @@ export function useActivityHeartbeat() {
         heartbeatFailCountRef.current = 0;
         heartbeatPausedUntilRef.current = 0;
         try {
-          sessionStorage.setItem(HEARTBEAT_PAYLOAD_STORAGE_KEY, payloadStr);
+          localStorage.setItem(HEARTBEAT_PAYLOAD_STORAGE_KEY, payloadStr);
         } catch {
           /* quota exceeded – non-fatal */
         }

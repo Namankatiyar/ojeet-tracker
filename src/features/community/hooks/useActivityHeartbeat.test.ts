@@ -208,7 +208,7 @@ describe('useActivityHeartbeat Hook', () => {
     expect(vi.mocked(supabase!.from).mock.calls.length).toBe(initialCalls);
   });
 
-  it('should respect sessionStorage dedup on remount when state has not changed', async () => {
+  it('should respect localStorage dedup across tabs/remounts when state has not changed', async () => {
     const upsertMock = vi.fn().mockResolvedValue({ data: null, error: null });
     vi.mocked(supabase!.from).mockReturnValue({ upsert: upsertMock } as any);
 
@@ -217,12 +217,13 @@ describe('useActivityHeartbeat Hook', () => {
       await Promise.resolve();
     });
     expect(upsertMock).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeTruthy();
+    expect(localStorage.getItem('ojee-last-heartbeat-payload')).toBeTruthy();
 
     unmount();
+    sessionStorage.clear();
     vi.advanceTimersByTime(30_000);
 
-    // Remount within idle throttle window with unchanged state -> should skip upsert
+    // Remount with empty sessionStorage (simulating new tab) within idle throttle window -> should skip upsert
     renderHook(() => useActivityHeartbeat());
     await act(async () => {
       await Promise.resolve();
@@ -241,7 +242,7 @@ describe('useActivityHeartbeat Hook', () => {
     expect(upsertMock).toHaveBeenCalledTimes(2);
   });
 
-  it('should NOT advance lastHeartbeatPayloadRef or sessionStorage when upsert fails', async () => {
+  it('should NOT advance lastHeartbeatPayloadRef or localStorage when upsert fails', async () => {
     const upsertMock = vi.fn().mockRejectedValueOnce(new Error('Network error'));
     vi.mocked(supabase!.from).mockReturnValue({ upsert: upsertMock } as any);
 
@@ -251,7 +252,7 @@ describe('useActivityHeartbeat Hook', () => {
     });
 
     expect(upsertMock).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeNull();
+    expect(localStorage.getItem('ojee-last-heartbeat-payload')).toBeNull();
     expect(localStorage.getItem('ojee-last-heartbeat-at')).toBeNull();
 
     // Next attempt succeeds because lastHeartbeatPayloadRef did not advance
@@ -262,7 +263,7 @@ describe('useActivityHeartbeat Hook', () => {
     });
 
     expect(upsertMock).toHaveBeenCalledTimes(2);
-    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeTruthy();
+    expect(localStorage.getItem('ojee-last-heartbeat-payload')).toBeTruthy();
   });
 
   it('should trigger backoff when upsert returns an { error } response', async () => {
@@ -283,7 +284,7 @@ describe('useActivityHeartbeat Hook', () => {
       await Promise.resolve();
     });
     expect(upsertMock).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem('ojee-last-heartbeat-payload')).toBeNull();
+    expect(localStorage.getItem('ojee-last-heartbeat-payload')).toBeNull();
 
     // Advance 120s for 2nd interval tick -> triggers 2nd error and activates backoff pause
     await act(async () => {
@@ -299,5 +300,76 @@ describe('useActivityHeartbeat Hook', () => {
       await Promise.resolve();
     });
     expect(upsertMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('should floor started_at to the minute so 1ms jitter near :30.000 does not flip started_at', async () => {
+    const upsertMock = vi.fn().mockResolvedValue({ data: null, error: null });
+    vi.mocked(supabase!.from).mockReturnValue({ upsert: upsertMock } as any);
+
+    const baseMinuteMs = Date.UTC(2026, 6, 1, 10, 0, 0);
+    // 10:00:29.999
+    localStorage.setItem(
+      'jee-timer-engine',
+      JSON.stringify({ engineState: 'running', runStartedAtMs: baseMinuteMs + 29_999 })
+    );
+
+    renderHook(() => useActivityHeartbeat());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    expect(upsertMock.mock.calls[0][0].started_at).toBe(new Date(baseMinuteMs).toISOString());
+
+    // Jitter by +2ms to 10:00:30.001 (would have rounded to 10:01:00 with Math.round)
+    localStorage.setItem(
+      'jee-timer-engine',
+      JSON.stringify({ engineState: 'running', runStartedAtMs: baseMinuteMs + 30_001 })
+    );
+    await act(async () => {
+      vi.advanceTimersByTime(5_000);
+      window.dispatchEvent(new Event('focus'));
+      await Promise.resolve();
+    });
+    // started_at stays floored to 10:00:00, so stateChanged is false and no redundant upsert fires
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should send NEET biology subject heartbeats with resolved chapter name', async () => {
+    const upsertMock = vi.fn().mockResolvedValue({ data: null, error: null });
+    vi.mocked(supabase!.from).mockReturnValue({ upsert: upsertMock } as any);
+
+    vi.mocked(useSubjectData).mockReturnValue({
+      subjectData: {
+        physics: null,
+        chemistry: null,
+        maths: null,
+        biology: {
+          chapters: [{ serial: 3, name: 'Cell Cycle and Cell Division' }],
+        },
+      },
+    } as any);
+
+    localStorage.setItem(
+      'jee-timer-engine',
+      JSON.stringify({ engineState: 'running', runStartedAtMs: Date.now() })
+    );
+    localStorage.setItem('studyClock_taskType', JSON.stringify('chapter'));
+    localStorage.setItem('studyClock_selectedSubject', JSON.stringify('biology'));
+    localStorage.setItem('studyClock_selectedChapter', JSON.stringify(3));
+    localStorage.setItem('studyClock_selectedMaterial', JSON.stringify('NCERT'));
+
+    renderHook(() => useActivityHeartbeat());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    expect(upsertMock.mock.calls[0][0]).toMatchObject({
+      is_active: true,
+      subject: 'biology',
+      chapter_serial: 3,
+      chapter_name: 'Cell Cycle and Cell Division',
+      material: 'NCERT',
+    });
   });
 });
