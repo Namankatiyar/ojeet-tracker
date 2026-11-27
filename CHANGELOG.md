@@ -1,3 +1,19 @@
+## [3.8.3](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.8.2...v3.8.3) (2026-11-27)
+
+
+### Bug Fixes
+
+* **auth:** add resilient refresh guard and bounded cross-tab auth lock ([ef48dc6](https://github.com/Namankatiyar/ojeet-tracker/commit/ef48dc625d5e8ebd7648b813ad596581a6457bf3))
+* **community:** fix 1s timer event flood, profile retry-cap bypass, and cold-mount writes ([ec83e01](https://github.com/Namankatiyar/ojeet-tracker/commit/ec83e01400945f61380e513c6a7573edabde594b))
+* **community:** prevent 500 invite-image caching and agenda-only sync skip ([bc6dbf2](https://github.com/Namankatiyar/ojeet-tracker/commit/bc6dbf2d1eebd1a65ee72b83e8947be079ce7150))
+* **sync:** omit bundled syllabus from payload and filter planner history symmetrically ([720cde8](https://github.com/Namankatiyar/ojeet-tracker/commit/720cde8beb66dde6da12dadd6ca71a551ccffded))
+* **sync:** stop 409/401 loops, persist sync state, and surface auth_error UI ([601335a](https://github.com/Namankatiyar/ojeet-tracker/commit/601335afa7f217785f8bd62c8f01a09ecabad47e))
+
+
+### Performance Improvements
+
+* **community:** tighten polling, heartbeats, leaderboard cache, invite headers, and backoff ([4e52e16](https://github.com/Namankatiyar/ojeet-tracker/commit/4e52e1633a8c884b1942131639c5c9ac2bfd7dd5))
+
 ## [3.8.2](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.8.1...v3.8.2) (2026-11-17)
 
 
