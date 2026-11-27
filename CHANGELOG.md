@@ -1,3 +1,14 @@
+## [3.8.4](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.8.3...v3.8.4) (2026-11-27)
+
+
+### Bug Fixes
+
+* **auth:** fallback to process lock on timeout and clear inflight state ([822f4da](https://github.com/Namankatiyar/ojeet-tracker/commit/822f4da613adcab3b1d883bbdeccea0d27f946a5))
+* **community:** enforce write cooldowns and reduce polling ([f3e0c5e](https://github.com/Namankatiyar/ojeet-tracker/commit/f3e0c5eedf189818e4f66887100cb383624c10ca))
+* **db:** remediate wal drain, triggers, leaderboard, and rls scans ([fc47bb1](https://github.com/Namankatiyar/ojeet-tracker/commit/fc47bb1128167e9af8c6c7958711e2fd889708ce))
+* **pwa:** accelerate service worker update checks and activation ([f75fdf4](https://github.com/Namankatiyar/ojeet-tracker/commit/f75fdf4f1b71d8dacc3589223324347d75d33a1e))
+* **sync:** split hot/cold payloads, delta subjects, and curb polling ([b647aab](https://github.com/Namankatiyar/ojeet-tracker/commit/b647aab059bc6195d7ffda31cf8a7915c4a2ae77))
+
 ## [3.8.3](https://github.com/Namankatiyar/ojeet-tracker/compare/v3.8.2...v3.8.3) (2026-11-27)
 
 
