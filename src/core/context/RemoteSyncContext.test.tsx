@@ -9,6 +9,7 @@ import { SYNC_SCHEMA_VERSION } from '../../features/sync/syncTypes';
 type TableCalls = {
   selects: string[];
   upserts: Array<{ rows: unknown; options?: unknown }>;
+  updates: Array<{ values: unknown }>;
   inserts: number;
 };
 
@@ -130,7 +131,7 @@ const supabaseState = vi.hoisted(() => {
 
   const ensureTable = (table: string) => {
     if (!tables.has(table)) {
-      tables.set(table, { selects: [], upserts: [], inserts: 0 });
+      tables.set(table, { selects: [], upserts: [], updates: [], inserts: 0 });
     }
     return tables.get(table)!;
   };
@@ -140,6 +141,9 @@ const supabaseState = vi.hoisted(() => {
   };
   const recordUpsert = (table: string, rows?: unknown, options?: unknown) => {
     ensureTable(table).upserts.push({ rows, options });
+  };
+  const recordUpdate = (table: string, values?: unknown) => {
+    ensureTable(table).updates.push({ values });
   };
   const recordInsert = (table: string) => {
     ensureTable(table).inserts += 1;
@@ -237,6 +241,14 @@ const supabaseState = vi.hoisted(() => {
           },
         };
       },
+      update(values?: unknown) {
+        recordUpdate(table, values);
+        return {
+          eq() {
+            return Promise.resolve({ data: null, error: null });
+          },
+        };
+      },
       insert() {
         recordInsert(table);
         return {
@@ -283,7 +295,18 @@ const codecMocks = vi.hoisted(() => ({
     checksum: 'abc',
     chunkCount: 0,
   }),
+  encodeSplitSyncPayload: vi.fn().mockResolvedValue({
+    hotCompressed: 'hot',
+    hotBytes: 3,
+    hotChecksum: 'hot-cs',
+    coldCompressed: 'cold',
+    coldBytes: 4,
+    coldChecksum: 'cold-cs',
+    checksum: 'abc',
+    fitsSplitInline: true,
+  }),
   reconstructCompressedPayload: vi.fn(),
+  reconstructSplitSyncPayload: vi.fn(),
 }));
 
 vi.mock('../../shared/lib/supabase', () => ({
@@ -379,7 +402,18 @@ describe('RemoteSyncContext egress optimizations & resilience', () => {
       checksum: 'abc',
       chunkCount: 0,
     });
+    codecMocks.encodeSplitSyncPayload.mockReset().mockResolvedValue({
+      hotCompressed: 'hot',
+      hotBytes: 3,
+      hotChecksum: 'hot-cs',
+      coldCompressed: 'cold',
+      coldBytes: 4,
+      coldChecksum: 'cold-cs',
+      checksum: 'abc',
+      fitsSplitInline: true,
+    });
     codecMocks.reconstructCompressedPayload.mockReset();
+    codecMocks.reconstructSplitSyncPayload.mockReset();
 
     localStorage.clear();
     localStorage.setItem('ojeet-remote-sync-remote-checksum', 'abc');
@@ -411,7 +445,9 @@ describe('RemoteSyncContext egress optimizations & resilience', () => {
     );
 
     const userSync = supabaseState.tables.get('user_sync_state');
-    expect(userSync?.selects).toContain('checksum,payload_version');
+    expect(userSync?.selects).toContain(
+      'checksum,payload_version,hot_checksum,cold_checksum,payload_format'
+    );
     const fetchedPayload = (userSync?.selects ?? []).some(
       (sel) => sel.includes('payload_inline') || sel.includes('payload_storage')
     );
@@ -881,5 +917,227 @@ describe('RemoteSyncContext egress optimizations & resilience', () => {
     expect(hydratedArg.chemistry).toEqual(getBundledSubjectData('chemistry'));
     expect(hydratedArg.maths).toEqual(getBundledSubjectData('maths'));
     expect(hydratedArg.biology).toEqual(getBundledSubjectData('biology'));
+  });
+
+  it('uses hot-only UPDATE without cold_payload/payload_inline when split_v2 cold_checksum matches', async () => {
+    codecMocks.computeChecksum.mockImplementation(async (val: string) => `hash:${val.length}`);
+    codecMocks.encodeSyncPayload.mockResolvedValue({
+      storage: 'inline',
+      compressed: 'x',
+      compressedBytes: 1,
+      checksum: 'new-overall-cs',
+      chunkCount: 0,
+    });
+    codecMocks.encodeSplitSyncPayload.mockResolvedValue({
+      hotCompressed: 'new-hot',
+      hotBytes: 7,
+      hotChecksum: 'new-hot-cs',
+      coldCompressed: 'same-cold',
+      coldBytes: 9,
+      coldChecksum: 'cold-cs-1',
+      checksum: 'new-overall-cs',
+      fitsSplitInline: true,
+    });
+
+    supabaseState.setTableOverride('user_sync_state', {
+      maybeSingle: () => ({
+        data: {
+          checksum: 'old-overall-cs',
+          payload_version: 5,
+          hot_checksum: 'old-hot-cs',
+          cold_checksum: 'cold-cs-1',
+          payload_format: 'split_v2',
+        },
+        error: null,
+      }),
+    });
+    // remoteUnchanged = true so synthesized row has payload_format: 'split_v2', cold_checksum: 'cold-cs-1', payload_inline: null
+    localStorage.setItem('ojeet-remote-sync-remote-checksum', 'old-overall-cs');
+
+    let latestCtx: ReturnType<typeof useRemoteSync> | null = null;
+    render(
+      <RemoteSyncProvider>
+        <SyncProbe onContext={(ctx) => (latestCtx = ctx)} />
+      </RemoteSyncProvider>
+    );
+
+    await waitFor(() => {
+      expect(latestCtx?.status).toBe('synced');
+    });
+
+    const userSync = supabaseState.tables.get('user_sync_state');
+    expect(userSync?.upserts ?? []).toHaveLength(0);
+    expect(userSync?.updates).toHaveLength(1);
+    const updatePayload = userSync!.updates[0].values as Record<string, unknown>;
+    expect(updatePayload.hot_payload).toBe('new-hot');
+    expect(updatePayload.hot_checksum).toBe('new-hot-cs');
+    expect(updatePayload).not.toHaveProperty('cold_payload');
+    expect(updatePayload).not.toHaveProperty('payload_inline');
+  });
+
+  it('caches remoteChecksum (not encoded.checksum) when shouldPush is false', async () => {
+    codecMocks.computeChecksum.mockResolvedValue('same-domain-hash');
+    codecMocks.encodeSyncPayload.mockResolvedValue({
+      storage: 'inline',
+      compressed: 'x',
+      compressedBytes: 1,
+      checksum: 'local-different-checksum',
+      chunkCount: 0,
+    });
+
+    // Persisted domain checksums match -> anyDomainDirty is false -> shouldPush is false
+    localStorage.setItem(
+      'ojeet-remote-sync-pushed-domains-user-1',
+      JSON.stringify({
+        progress: 'same-domain-hash',
+        plannerTasks: 'same-domain-hash',
+        mockScores: 'same-domain-hash',
+        examDates: 'same-domain-hash',
+        settings: 'same-domain-hash',
+      })
+    );
+    localStorage.setItem('ojeet-remote-sync-remote-checksum', 'server-checksum-123');
+    supabaseState.setTableOverride('user_sync_state', {
+      maybeSingle: () => ({
+        data: { checksum: 'server-checksum-123', payload_version: 1 },
+        error: null,
+      }),
+    });
+
+    let latestCtx: ReturnType<typeof useRemoteSync> | null = null;
+    render(
+      <RemoteSyncProvider>
+        <SyncProbe onContext={(ctx) => (latestCtx = ctx)} />
+      </RemoteSyncProvider>
+    );
+
+    await waitFor(() => {
+      expect(latestCtx?.status).toBe('synced');
+    });
+
+    expect(localStorage.getItem('ojeet-remote-sync-remote-checksum')).toBe('server-checksum-123');
+  });
+
+  it('does not bypass 10m cooldown on visibilitychange -> visible even when pending changes exist', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let latestCtx: ReturnType<typeof useRemoteSync> | null = null;
+
+    const { rerender } = render(
+      <RemoteSyncProvider>
+        <SyncProbe onContext={(ctx) => (latestCtx = ctx)} />
+      </RemoteSyncProvider>
+    );
+
+    await waitFor(() => {
+      expect(latestCtx?.status).toBe('synced');
+    });
+    const selectsAfterMount = supabaseState.tables.get('user_sync_state')?.selects.length ?? 0;
+
+    // Introduce a pending change
+    testState.progressData.progress = {
+      physics: { 1: { completed: { ncert: true }, priority: 'high' } },
+      chemistry: {},
+      maths: {},
+      biology: {},
+    };
+    rerender(
+      <RemoteSyncProvider>
+        <SyncProbe onContext={(ctx) => (latestCtx = ctx)} />
+      </RemoteSyncProvider>
+    );
+
+    // Tab switches to visible 10s after last sync -> must NOT trigger immediate sync
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'visible',
+    });
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+
+    expect(supabaseState.tables.get('user_sync_state')?.selects.length ?? 0).toBe(
+      selectsAfterMount
+    );
+  });
+
+  it('deduplicates concurrent pushAggregate calls and avoids cold-load echo', async () => {
+    const remoteAggRow = {
+      user_id: 'user-1',
+      total_seconds_overall: 900,
+      total_seconds_physics: 900,
+      total_seconds_chemistry: 0,
+      total_seconds_maths: 0,
+      buckets_daily_json: {},
+      buckets_weekly_json: {},
+      buckets_monthly_json: {},
+      video_watch_45d_json: [],
+      updated_at: '2026-06-01T00:00:00.000Z',
+    };
+
+    supabaseState.setTableOverride('user_study_aggregate', {
+      maybeSingle: () => ({ data: remoteAggRow, error: null }),
+    });
+
+    let latestCtx: ReturnType<typeof useRemoteSync> | null = null;
+    render(
+      <RemoteSyncProvider>
+        <SyncProbe onContext={(ctx) => (latestCtx = ctx)} />
+      </RemoteSyncProvider>
+    );
+
+    await waitFor(() => {
+      expect(latestCtx?.status).toBe('synced');
+    });
+
+    // Cold load: firing visibilitychange(hidden) + beforeunload must NOT echo unchanged remote aggregate
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'hidden',
+    });
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+      window.dispatchEvent(new Event('beforeunload'));
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(supabaseState.tables.get('user_study_aggregate')?.upserts ?? []).toHaveLength(0);
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'visible',
+    });
+  });
+
+  it('skips study_session_log polling on 10m background ticks when remote is unchanged and no pending logs exist', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let latestCtx: ReturnType<typeof useRemoteSync> | null = null;
+
+    render(
+      <RemoteSyncProvider>
+        <SyncProbe onContext={(ctx) => (latestCtx = ctx)} />
+      </RemoteSyncProvider>
+    );
+
+    await waitFor(() => {
+      expect(latestCtx?.status).toBe('synced');
+    });
+    // Initial mount pulls study_session_log once
+    expect(supabaseState.tables.get('study_session_log')?.selects).toHaveLength(1);
+
+    // Advance 10 minutes for routine background tick with remoteUnchanged=true
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600_000);
+    });
+
+    // user_sync_state checksum was checked again, but study_session_log was NOT re-polled
+    expect(supabaseState.tables.get('user_sync_state')?.selects.length).toBeGreaterThanOrEqual(2);
+    expect(supabaseState.tables.get('study_session_log')?.selects).toHaveLength(1);
   });
 });
