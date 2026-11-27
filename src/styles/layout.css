@@ -300,6 +300,19 @@ html[data-theme^='dark-'] .cloud-sync-indicator-btn:hover {
   color: #e11d48;
 }
 
+.cloud-sync-indicator-btn.state-auth-error {
+  border-color: var(--color-status-error);
+  background: var(--color-priority-high-bg);
+}
+
+.cloud-sync-indicator-btn.state-auth-error:hover {
+  border-color: var(--color-status-error);
+}
+
+.cloud-sync-indicator-btn.state-auth-error .cloud-sync-icon {
+  color: var(--color-status-error);
+}
+
 .cloud-sync-indicator-btn.state-syncing .cloud-sync-icon {
   color: #f59e0b;
 }
@@ -431,6 +444,10 @@ html[data-theme^='dark-'] .cloud-sync-indicator-btn:hover {
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.cloud-sync-labeled-wrapper.state-auth-error .cloud-sync-label-text {
+  color: var(--color-status-error);
 }
 
 /* Responsive Layout */
