@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { buildSyncPayload, filterPlannerTasksForSync } from './syncPayload';
+import {
+  buildSyncPayload,
+  filterPlannerTasksForSync,
+  getCustomSubjectDataForSync,
+  hydrateSubjectDataWithBundledDefaults,
+  isSubjectDataEqualToBundled,
+} from './syncPayload';
 import { AppProgress, ProgressCardSettings } from '../../shared/types';
+import { getAllBundledSubjectData, getBundledSubjectData } from '../../shared/utils/syllabusData';
 
 const baseProgress: AppProgress = {
   physics: {},
@@ -129,5 +136,105 @@ describe('syncPayload', () => {
 
     expect(payloadWithoutMetadata.domains.tombstones).toBeUndefined();
     expect(payloadWithoutMetadata.domains.modifiedAt).toBeUndefined();
+  });
+
+  it('omits unmodified bundled subjectData via getCustomSubjectDataForSync and omits domains.subjects when empty', () => {
+    const bundledAll = getAllBundledSubjectData();
+    expect(isSubjectDataEqualToBundled('physics', bundledAll.physics)).toBe(true);
+    expect(getCustomSubjectDataForSync(bundledAll)).toEqual({});
+    expect(
+      getCustomSubjectDataForSync({ physics: null, chemistry: null, maths: null, biology: null })
+    ).toEqual({});
+
+    const emptyColumns = { physics: [], chemistry: [], maths: [], biology: [] };
+    const payload = buildSyncPayload({
+      progress: baseProgress,
+      plannerTasks: [],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings,
+      mockExamPresets: [],
+      subjects: {
+        subjectData: bundledAll,
+        customColumns: emptyColumns,
+        excludedColumns: emptyColumns,
+        materialOrder: emptyColumns,
+      },
+    });
+
+    expect(payload.domains.subjects).toBeUndefined();
+  });
+
+  it('retains only modified subjectData keys and preserves domains.subjects when custom columns exist', () => {
+    const bundledAll = getAllBundledSubjectData();
+    bundledAll.physics.chapters.push({
+      serial: 99,
+      name: 'Custom Relativity',
+      materials: [...bundledAll.physics.materialNames],
+      isCustom: true,
+    });
+
+    const customOnly = getCustomSubjectDataForSync(bundledAll);
+    expect(Object.keys(customOnly)).toEqual(['physics']);
+
+    const emptyColumns = { physics: [], chemistry: [], maths: [], biology: [] };
+    const payloadWithCustomChapter = buildSyncPayload({
+      progress: baseProgress,
+      plannerTasks: [],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings,
+      mockExamPresets: [],
+      subjects: {
+        subjectData: bundledAll,
+        customColumns: emptyColumns,
+        excludedColumns: emptyColumns,
+        materialOrder: emptyColumns,
+      },
+    });
+
+    expect(payloadWithCustomChapter.domains.subjects).toBeDefined();
+    expect(Object.keys(payloadWithCustomChapter.domains.subjects!.subjectData)).toEqual(['physics']);
+
+    const payloadWithColumnsOnly = buildSyncPayload({
+      progress: baseProgress,
+      plannerTasks: [],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings,
+      mockExamPresets: [],
+      subjects: {
+        subjectData: getAllBundledSubjectData(),
+        customColumns: { physics: ['HC Verma'], chemistry: [], maths: [], biology: [] },
+        excludedColumns: emptyColumns,
+        materialOrder: emptyColumns,
+      },
+    });
+
+    expect(payloadWithColumnsOnly.domains.subjects).toBeDefined();
+    expect(payloadWithColumnsOnly.domains.subjects!.subjectData).toEqual({});
+    expect(payloadWithColumnsOnly.domains.subjects!.customColumns.physics).toEqual(['HC Verma']);
+  });
+
+  it('hydrates missing or null subjectData keys with bundled defaults', () => {
+    const customPhysics = getBundledSubjectData('physics');
+    customPhysics.chapters[0].name = 'Custom Units & Measurements';
+
+    const hydrated = hydrateSubjectDataWithBundledDefaults({
+      physics: customPhysics,
+      chemistry: null,
+    });
+
+    expect(hydrated.physics.chapters[0].name).toBe('Custom Units & Measurements');
+    expect(hydrated.chemistry.chapters).toHaveLength(25);
+    expect(hydrated.maths.chapters).toHaveLength(25);
+    expect(hydrated.biology.chapters).toHaveLength(33);
+
+    const hydratedEmpty = hydrateSubjectDataWithBundledDefaults(undefined);
+    expect(hydratedEmpty.physics.chapters).toHaveLength(25);
+    expect(hydratedEmpty.biology.chapters).toHaveLength(33);
   });
 });

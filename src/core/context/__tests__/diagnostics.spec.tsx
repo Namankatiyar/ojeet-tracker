@@ -1,6 +1,6 @@
 import React, { Profiler } from 'react';
 import { render, act } from '@testing-library/react';
-import { describe, it, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import fs from 'fs';
 import path from 'path';
@@ -44,7 +44,9 @@ import { Dashboard } from '../../../features/dashboard/components/Dashboard';
 
 // Import merge function and compressor to simulate audits
 import { mergePayloadDomainsWithPolicy } from '../../../features/sync/syncMerge';
+import { buildSyncPayload } from '../../../features/sync/syncPayload';
 import { compressSyncPayload } from '../../../features/sync/syncCodec';
+import { getAllBundledSubjectData } from '../../../shared/utils/syllabusData';
 
 // Mock react-chartjs-2 since it requires canvas and is not used directly or crashes in jsdom
 vi.mock('react-chartjs-2', () => ({
@@ -382,4 +384,73 @@ describe('OJEE-Tracker Performance and Sync Diagnostics Suite', () => {
     // eslint-disable-next-line no-console
     console.log(`Diagnostics report successfully written to ${reportPath}`);
   }, 60000);
+
+  it('omits unmodified bundled subjectData from sync payloads to eliminate TOAST bloat', () => {
+    const bundledAll = getAllBundledSubjectData();
+    const emptyColumns = { physics: [], chemistry: [], maths: [], biology: [] };
+
+    const unmodifiedPayload = buildSyncPayload({
+      progress: { physics: {}, chemistry: {}, maths: {}, biology: {} },
+      plannerTasks: [],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings: {
+        userName: '',
+        customAvatarUrl: '',
+        visibleStats: {
+          totalStudyTime: true,
+          highestMockScore: true,
+          highestDailyHours: true,
+          highestWeekAverage: true,
+          physicsTime: true,
+          chemistryTime: true,
+          mathsTime: true,
+          physicsProgress: true,
+          chemistryProgress: true,
+          mathsProgress: true,
+          examCountdown: true,
+        },
+      },
+      mockExamPresets: [],
+      subjects: {
+        subjectData: bundledAll,
+        customColumns: emptyColumns,
+        excludedColumns: emptyColumns,
+        materialOrder: emptyColumns,
+      },
+    });
+
+    expect(unmodifiedPayload.domains.subjects).toBeUndefined();
+    const compactBytes = new Blob([compressSyncPayload(unmodifiedPayload)]).size;
+    expect(compactBytes).toBeLessThan(2048);
+
+    // Customizing a single subject preserves only that subject in domains.subjects.subjectData
+    const customSubjects = getAllBundledSubjectData();
+    customSubjects.maths.chapters.push({
+      serial: 99,
+      name: 'Extra Maths Topic',
+      materials: [...customSubjects.maths.materialNames],
+      isCustom: true,
+    });
+
+    const partialCustomPayload = buildSyncPayload({
+      progress: { physics: {}, chemistry: {}, maths: {}, biology: {} },
+      plannerTasks: [],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings: unmodifiedPayload.domains.settings.progressCardSettings as any,
+      mockExamPresets: [],
+      subjects: {
+        subjectData: customSubjects,
+        customColumns: emptyColumns,
+        excludedColumns: emptyColumns,
+        materialOrder: emptyColumns,
+      },
+    });
+
+    expect(partialCustomPayload.domains.subjects).toBeDefined();
+    expect(Object.keys(partialCustomPayload.domains.subjects!.subjectData)).toEqual(['maths']);
+  });
 });

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { mergePayloadDomainsWithPolicy } from './syncMerge';
+import { buildSyncPayload } from './syncPayload';
 import { SyncPayloadV1 } from './syncTypes';
+import { getAllBundledSubjectData, getBundledSubjectData } from '../../shared/utils/syllabusData';
 
 const makeBasePayload = (): SyncPayloadV1 => ({
   schemaVersion: 2,
@@ -201,5 +203,118 @@ describe('syncMerge', () => {
     });
 
     expect(merged.domains.settings.disableAutoShift).toBe(true);
+  });
+
+  it('symmetrically filters >60-day plannerTasks on remotePayload to prevent midnight resurrection', () => {
+    const now = new Date('2026-03-08T00:05:00.000Z'); // 61 days after 2026-01-06
+    const local = buildSyncPayload({
+      progress: { physics: {}, chemistry: {}, maths: {}, biology: {} },
+      plannerTasks: [
+        {
+          id: 'expired-task',
+          title: 'Expired 61 days ago',
+          date: '2026-01-06',
+          time: '10:00',
+          completed: true,
+          type: 'custom',
+        },
+        {
+          id: 'boundary-task',
+          title: 'Exactly 60 days ago',
+          date: '2026-01-07',
+          time: '10:00',
+          completed: true,
+          type: 'custom',
+        },
+      ],
+      mockScores: [],
+      examDates: [],
+      disableAutoShift: false,
+      progressCardSettings: makeBasePayload().domains.settings.progressCardSettings as any,
+      mockExamPresets: [],
+      now,
+    });
+
+    // Local payload already dropped the 61-day-old task
+    expect(local.domains.plannerTasks.map((t) => t.id)).toEqual(['boundary-task']);
+
+    // Remote payload fetched from DB still holds the 61-day-old task
+    const remote = makeBasePayload();
+    remote.generatedAt = '2026-03-07T23:55:00.000Z';
+    remote.domains.plannerTasks = [
+      {
+        id: 'expired-task',
+        title: 'Expired 61 days ago',
+        date: '2026-01-06',
+        time: '10:00',
+        completed: true,
+        type: 'custom',
+      },
+      {
+        id: 'boundary-task',
+        title: 'Exactly 60 days ago',
+        date: '2026-01-07',
+        time: '10:00',
+        completed: true,
+        type: 'custom',
+      },
+      {
+        id: 'future-task',
+        title: 'Future task',
+        date: '2026-03-10',
+        time: '09:00',
+        completed: false,
+        type: 'custom',
+      },
+    ];
+
+    const merged = mergePayloadDomainsWithPolicy(local, remote, {
+      hasLocalUnsyncedEdit: () => false,
+    });
+
+    expect(merged.domains.plannerTasks.map((t) => t.id)).toEqual([
+      'boundary-task',
+      'future-task',
+    ]);
+  });
+
+  it('strips legacy unmodified bundled subjects during merge and respects newer bundled revert', () => {
+    const emptyColumns = { physics: [], chemistry: [], maths: [], biology: [] };
+    const local = makeBasePayload();
+    local.domains.modifiedAt = { subjects: '2026-03-08T10:00:00.000Z' };
+
+    const remote = makeBasePayload();
+    remote.domains.subjects = {
+      subjectData: getAllBundledSubjectData(),
+      customColumns: emptyColumns,
+      excludedColumns: emptyColumns,
+      materialOrder: emptyColumns,
+    };
+    remote.domains.modifiedAt = { subjects: '2026-03-07T10:00:00.000Z' };
+
+    const merged = mergePayloadDomainsWithPolicy(local, remote, {
+      hasLocalUnsyncedEdit: () => false,
+    });
+    expect(merged.domains.subjects).toBeUndefined();
+
+    // Even when remote wins timestamp, unmodified bundled data is normalized away
+    const olderLocal = makeBasePayload();
+    const customChem = getBundledSubjectData('chemistry');
+    customChem.chapters[0].name = 'Modified Chemistry Ch 1';
+    const remoteWithMixed = makeBasePayload();
+    remoteWithMixed.domains.subjects = {
+      subjectData: {
+        ...getAllBundledSubjectData(),
+        chemistry: customChem,
+      },
+      customColumns: emptyColumns,
+      excludedColumns: emptyColumns,
+      materialOrder: emptyColumns,
+    };
+
+    const mergedMixed = mergePayloadDomainsWithPolicy(olderLocal, remoteWithMixed, {
+      hasLocalUnsyncedEdit: () => false,
+    });
+    expect(Object.keys(mergedMixed.domains.subjects!.subjectData)).toEqual(['chemistry']);
   });
 });

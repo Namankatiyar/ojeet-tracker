@@ -94,4 +94,35 @@ describe('SubjectDataContext offline bundled integration', () => {
     const updatedCh1 = result.current.mergedSubjectData.physics?.chapters.find((c) => c.serial === 1);
     expect(updatedCh1?.subtopics).not.toContain('Custom Subtopic 101');
   });
+
+  it('hydrates null or omitted subject keys from bundled defaults during mutations instead of no-oping', () => {
+    window.localStorage.setItem(
+      'jee-tracker-subject-data',
+      JSON.stringify({ physics: null, chemistry: null })
+    );
+    window.localStorage.setItem('jee-tracker-custom-columns', JSON.stringify({}));
+    window.localStorage.setItem('jee-tracker-excluded-columns', JSON.stringify({}));
+
+    const { result } = renderHook(() => useSubjectData(), { wrapper });
+
+    // Trigger mutations synchronously while localStorage had null/missing subjects
+    act(() => {
+      result.current.handleAddChapter('physics', 'Quantum Optics');
+      result.current.handleAddSubtopic('chemistry', 1, 'Custom Chem Subtopic');
+      result.current.handleRenameChapter('maths', 1, 'Renamed Sets');
+      result.current.handleRemoveChapter('biology', 1);
+      result.current.handleAddColumn('physics', 'Irodov');
+    });
+
+    expect(result.current.subjectData.physics?.chapters).toHaveLength(26);
+    expect(result.current.subjectData.physics?.chapters[25].name).toBe('Quantum Optics');
+    expect(result.current.subjectData.chemistry?.chapters.find((c) => c.serial === 1)?.subtopics).toContain(
+      'Custom Chem Subtopic'
+    );
+    expect(result.current.subjectData.maths?.chapters.find((c) => c.serial === 1)?.name).toBe(
+      'Renamed Sets'
+    );
+    expect(result.current.subjectData.biology?.chapters).toHaveLength(32);
+    expect(result.current.mergedSubjectData.physics?.materialNames).toContain('Irodov');
+  });
 });
