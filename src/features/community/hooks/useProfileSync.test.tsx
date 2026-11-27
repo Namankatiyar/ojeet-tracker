@@ -463,8 +463,8 @@ describe('useProfileSync Hook', () => {
 
     expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
     expect(visUpsertMock).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem('ojeet-remote-sync-profile-snapshot-user-123')).not.toBeNull();
-    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('true');
+    expect(localStorage.getItem('ojeet-profile-sync:snapshot:user-123')).not.toBeNull();
+    expect(localStorage.getItem('ojeet-profile-sync:show-agenda:user-123')).toBe('true');
 
     first.unmount();
     profilesUpsertMock.mockClear();
@@ -492,6 +492,7 @@ describe('useProfileSync Hook', () => {
         single: dbUpdatedSingle,
         maybeSingle: dbUpdatedSingle,
         insert: vi.fn().mockResolvedValue({ error: null }),
+        update: vi.fn().mockReturnValue({ eq: profilesUpsertMock }),
         upsert: profilesUpsertMock,
       } as any;
     });
@@ -521,7 +522,7 @@ describe('useProfileSync Hook', () => {
     expect(visUpsertMock).not.toHaveBeenCalled();
 
     const persisted = JSON.parse(
-      localStorage.getItem('ojeet-remote-sync-profile-snapshot-user-123') ?? '{}'
+      localStorage.getItem('ojeet-profile-sync:snapshot:user-123') ?? '{}'
     );
     expect(persisted.display_name).toBe('Device A Name');
     expect(persisted.avatar_url).toBe('https://example.com/device-a.png');
@@ -655,7 +656,7 @@ describe('useProfileSync Hook', () => {
     expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
     expect(visUpsertMock).toHaveBeenCalledTimes(1);
     // Must NOT persist agenda key when peer_visibility_settings failed
-    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBeNull();
+    expect(localStorage.getItem('ojeet-profile-sync:show-agenda:user-123')).toBeNull();
 
     // Retry fires after 10s backoff, succeeds, and persists agenda without repeating profiles upsert
     await act(async () => {
@@ -664,7 +665,7 @@ describe('useProfileSync Hook', () => {
 
     expect(visUpsertMock).toHaveBeenCalledTimes(2);
     expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('true');
+    expect(localStorage.getItem('ojeet-profile-sync:show-agenda:user-123')).toBe('true');
   });
 
   it('does not re-run fetchProfileDetails or handlePendingInvite when TOKEN_REFRESHED delivers a new user object with the same userId', async () => {
@@ -950,7 +951,7 @@ describe('useProfileSync Hook', () => {
 
     expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
     expect(visUpsertMock).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('true');
+    expect(localStorage.getItem('ojeet-profile-sync:show-agenda:user-123')).toBe('true');
 
     profilesUpsertMock.mockClear();
     visUpsertMock.mockClear();
@@ -978,7 +979,7 @@ describe('useProfileSync Hook', () => {
       }),
       { onConflict: 'user_id' }
     );
-    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('false');
+    expect(localStorage.getItem('ojeet-profile-sync:show-agenda:user-123')).toBe('false');
   });
 });
 

@@ -118,6 +118,7 @@ import {
   computeLocalStudyAggregate,
   computeSessionDelta,
   mergeRemoteVideoLogsIntoSessions,
+  parsePushedDomainChecksums,
   pruneAggregateBuckets,
 } from './remoteSyncHelpers';
 import type { StudySessionLogEntry, UserStudyAggregateRow } from './remoteSyncHelpers';
@@ -133,6 +134,9 @@ const DOMAIN_EDITED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-edited-at-`;
 // last-write-wins clock for singleton domains (settings, subjects) across devices.
 const DOMAIN_CONTENT_MODIFIED_AT_PREFIX = `${REMOTE_SYNC_META_PREFIX}domain-content-modified-at-`;
 const REMOTE_CHECKSUM_KEY = `${REMOTE_SYNC_META_PREFIX}remote-checksum`;
+// Storage mode ('inline' | 'chunked') of the remote payload we last saw/pushed; lets us know
+// whether stale chunk rows may exist even when the lite checksum fetch skips the full row.
+const REMOTE_STORAGE_KEY = `${REMOTE_SYNC_META_PREFIX}remote-storage`;
 const LAST_SESSION_DELTA_SYNCED_KEY = `${REMOTE_SYNC_META_PREFIX}last-session-delta-synced-at`;
 const CACHED_AGGREGATE_KEY = `${REMOTE_SYNC_META_PREFIX}cached-aggregate`;
 const PUSHED_AGGREGATE_PREFIX = `${REMOTE_SYNC_META_PREFIX}pushed-aggregate-`;
@@ -389,21 +393,19 @@ async function fetchRemoteStudyAggregate(userId: string): Promise<UserStudyAggre
 
 function readPushedDomainChecksums(userId: string | null): Record<string, string> {
   if (!userId) return {};
-  const raw = readStorageValue(`${PUSHED_DOMAINS_PREFIX}${userId}`);
-  if (!raw) return {};
   try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return parsed as Record<string, string>;
-    }
+    return parsePushedDomainChecksums(readStorageValue(`${PUSHED_DOMAINS_PREFIX}${userId}`));
   } catch {
-    // Ignore malformed persisted checksums
+    return {};
   }
-  return {};
 }
 
 function writePushedDomainChecksums(userId: string, checksums: Record<string, string>) {
-  writeStorageValue(`${PUSHED_DOMAINS_PREFIX}${userId}`, JSON.stringify(checksums));
+  try {
+    writeStorageValue(`${PUSHED_DOMAINS_PREFIX}${userId}`, JSON.stringify(checksums));
+  } catch {
+    // Storage unavailable/full: worst case is one redundant push after the next reload.
+  }
 }
 
 function readPushedAggregate(userId: string | null): string | null {
@@ -498,7 +500,10 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // any byte changes (e.g. progress ticks during an active study session). With
   // per-domain checksums, a cycle whose merged output is identical to what was last
   // pushed skips the write entirely.
+  // Persisted per user in localStorage and hydrated lazily (see runSync) so a page reload
+  // does not make every domain look dirty and re-upload the full blob.
   const lastPushedDomainChecksumsRef = useRef<Record<string, string>>({});
+  const pushedChecksumsUserIdRef = useRef<string | null>(null);
   const syncInFlightRef = useRef(false);
   const authPausedRef = useRef(false);
   const scheduledTimerRef = useRef<number | null>(null);
@@ -758,7 +763,9 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         row = remoteChecksumLite
           ? {
               payload_inline: null,
-              payload_storage: 'inline' as SyncStorageMode,
+              payload_storage: (readStorageValue(REMOTE_STORAGE_KEY) === 'chunked'
+                ? 'chunked'
+                : 'inline') as SyncStorageMode,
               payload_version: remotePayloadVersionLite ?? 0,
               chunk_count: 0,
               payload_bytes: 0,
@@ -842,6 +849,11 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (value === undefined) continue;
         mergedDomainChecksums[key] = await computeChecksum(JSON.stringify(value));
       }
+      // Hydrate from localStorage on first use / when the signed-in user changes.
+      if (pushedChecksumsUserIdRef.current !== user.id) {
+        lastPushedDomainChecksumsRef.current = readPushedDomainChecksums(user.id);
+        pushedChecksumsUserIdRef.current = user.id;
+      }
       const allDomainKeys = new Set([
         ...Object.keys(mergedDomainChecksums),
         ...Object.keys(lastPushedDomainChecksumsRef.current),
@@ -884,14 +896,33 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             .upsert(chunkRows, { onConflict: 'user_id,payload_version,chunk_index' }); // Removing .select() suppresses RETURNING *
           if (chunkError) throwSyncError(chunkError, chunkStatus);
         }
-        // Database triggers automatically prune old chunks when the user_sync_state is updated.
-        // Remember what was pushed so future cycles can skip no-op rewrites.
+        // No DB trigger prunes old chunk versions (dropped in 20260626171500), and the nightly
+        // cron only runs once a day, so delete superseded versions now. Only needed when this
+        // push or the previous remote payload was chunked. Failure must not fail the sync.
+        if (encoded.storage === 'chunked' || row?.payload_storage === 'chunked') {
+          try {
+            const { error: pruneError } = await supabase
+              .from('user_sync_chunks')
+              .delete()
+              .eq('user_id', user.id)
+              .lt('payload_version', nextPayloadVersion);
+            if (pruneError) console.warn('Failed to prune old sync chunks:', pruneError.message);
+          } catch (pruneErr) {
+            console.warn('Failed to prune old sync chunks:', pruneErr);
+          }
+        }
+        // Remember what was pushed so future cycles can skip no-op rewrites (also across reloads).
         lastPushedDomainChecksumsRef.current = mergedDomainChecksums;
         writePushedDomainChecksums(user.id, mergedDomainChecksums);
       }
 
       // Cache the remote checksum locally to enable checksum-gating on next cycle
       writeStorageValue(REMOTE_CHECKSUM_KEY, encoded.checksum);
+      if (shouldPush) {
+        writeStorageValue(REMOTE_STORAGE_KEY, encoded.storage);
+      } else if (needsFullFetch && row) {
+        writeStorageValue(REMOTE_STORAGE_KEY, row.payload_storage);
+      }
 
       // --- Delta Strategy: Apply Pull and Push Study Session Logs ---
       let applyDeltaChanges = false;
@@ -1228,6 +1259,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       clearScheduledSync();
       authPausedRef.current = false;
       retryAttemptRef.current = 0;
+      pushedChecksumsUserIdRef.current = null;
       lastPushedDomainChecksumsRef.current = {};
       lastPushedAggregateRef.current = null;
       remoteStudyAggregateRef.current = null;
@@ -1238,6 +1270,7 @@ export const RemoteSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
     authPausedRef.current = false;
     retryAttemptRef.current = 0;
+    pushedChecksumsUserIdRef.current = userId;
     lastPushedDomainChecksumsRef.current = readPushedDomainChecksums(userId);
     lastPushedAggregateRef.current = readPushedAggregate(userId);
     scheduleSync(0);

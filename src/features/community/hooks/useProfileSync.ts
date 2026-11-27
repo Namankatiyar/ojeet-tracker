@@ -10,20 +10,10 @@ import { getLogicalTodayStr, getLogicalDate } from '../../../shared/utils/date';
 import { getDisplayName, getAvatarUrl } from '../../../shared/utils/auth';
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-const PROFILE_SNAPSHOT_KEY_PREFIX = 'ojeet-remote-sync-profile-snapshot-';
-const PROFILE_AGENDA_KEY_PREFIX = 'ojeet-remote-sync-profile-agenda-';
-
-const getProfileSnapshotKey = (userId: string) => `${PROFILE_SNAPSHOT_KEY_PREFIX}${userId}`;
-const getProfileAgendaKey = (userId: string) => `${PROFILE_AGENDA_KEY_PREFIX}${userId}`;
 
 const clearPersistedProfileSyncKeys = (userId: string) => {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.removeItem(getProfileSnapshotKey(userId));
-    localStorage.removeItem(getProfileAgendaKey(userId));
-  } catch {
-    /* ignore */
-  }
+  writeStore(snapshotKey(userId), null);
+  writeStore(agendaKey(userId), null);
 };
 
 // Guard: never persist base64 data URIs to profiles.avatar_url/banner_url.
@@ -62,6 +52,30 @@ const getTimerStructuralSignature = (): string => {
     return `${engineState}|${phase}|${mode}|${taskType}|${selectedTaskId}`;
   } catch {
     return '';
+  }
+};
+
+// Minimum gap between successful profile writes; changes inside it coalesce into one trailing write.
+const MIN_WRITE_INTERVAL_MS = 2 * 60 * 1000;
+const DEBOUNCE_MS = 5000;
+
+// Last snapshot/show-agenda known to be on the server, per user, so a page reload
+// doesn't resend an unchanged full snapshot. Storage may be unavailable: never throw.
+const snapshotKey = (uid: string) => `ojeet-profile-sync:snapshot:${uid}`;
+const agendaKey = (uid: string) => `ojeet-profile-sync:show-agenda:${uid}`;
+const readStore = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const writeStore = (key: string, value: string | null) => {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {
+    /* ignore */
   }
 };
 
@@ -105,6 +119,11 @@ export function useProfileSync() {
   const authPausedRef = useRef<boolean>(false);
   const isDirtyWhileHiddenRef = useRef<boolean>(false);
   const pendingExecuteSyncRef = useRef<(() => void) | null>(null);
+  // True once we know the profiles row exists (fetched or written), so we can UPDATE
+  // instead of upsert (an upsert fires BEFORE INSERT triggers even for existing rows).
+  const profileExistsRef = useRef(false);
+  const lastWriteAtRef = useRef(0);
+  const hydratedForUserRef = useRef<string | null>(null);
   const [timerUpdateTrigger, setTimerUpdateTrigger] = useState(0);
   const [authRecoveryTrigger, setAuthRecoveryTrigger] = useState(0);
 
@@ -135,6 +154,9 @@ export function useProfileSync() {
       authPausedRef.current = false;
       isDirtyWhileHiddenRef.current = false;
       pendingExecuteSyncRef.current = null;
+      profileExistsRef.current = false;
+      hydratedForUserRef.current = null;
+      lastWriteAtRef.current = 0;
       clearPersistedProfileSyncKeys(prevUserId);
       setProgressCardSettings((prev) => ({
         ...prev,
@@ -161,33 +183,38 @@ export function useProfileSync() {
       authPausedRef.current = false;
       isDirtyWhileHiddenRef.current = false;
       pendingExecuteSyncRef.current = null;
+      profileExistsRef.current = false;
+      hydratedForUserRef.current = null;
+      lastWriteAtRef.current = 0;
       clearPersistedProfileSyncKeys(prevUserId);
     }
 
     // Hydrate persisted snapshot & agenda flag when userId initializes
-    if (userId && prevUserId !== userId) {
+    if (userId && (prevUserId !== userId || hydratedForUserRef.current !== userId)) {
+      hydratedForUserRef.current = userId;
       retryAttemptRef.current = 0;
       pausedUntilRef.current = 0;
       authPausedRef.current = false;
       isDirtyWhileHiddenRef.current = false;
       lastFailedSnapshotRef.current = null;
       lastFailedShowAgendaRef.current = null;
-      try {
-        const rawSnapshot = localStorage.getItem(getProfileSnapshotKey(userId));
-        if (rawSnapshot) {
+      profileExistsRef.current = false;
+      const rawSnapshot = readStore(snapshotKey(userId));
+      if (rawSnapshot) {
+        try {
           const parsed = JSON.parse(rawSnapshot);
           if (parsed && typeof parsed === 'object') {
             lastSnapshotRef.current = rawSnapshot;
           }
+        } catch {
+          /* ignore corrupt storage */
         }
-        const rawAgenda = localStorage.getItem(getProfileAgendaKey(userId));
-        if (rawAgenda === 'true') {
-          lastShowAgendaRef.current = true;
-        } else if (rawAgenda === 'false') {
-          lastShowAgendaRef.current = false;
-        }
-      } catch {
-        /* ignore corrupt storage */
+      }
+      const rawAgenda = readStore(agendaKey(userId));
+      if (rawAgenda === 'true') {
+        lastShowAgendaRef.current = true;
+      } else if (rawAgenda === 'false') {
+        lastShowAgendaRef.current = false;
       }
       prevUserIdRef.current = userId;
     }
@@ -288,6 +315,13 @@ export function useProfileSync() {
 
     const fetchProfileDetails = async () => {
       isFetchingProfileRef.current = true;
+      if (hydratedForUserRef.current !== currentUser.id) {
+        hydratedForUserRef.current = currentUser.id;
+        lastSnapshotRef.current = readStore(snapshotKey(currentUser.id));
+        const storedAgenda = readStore(agendaKey(currentUser.id));
+        lastShowAgendaRef.current = storedAgenda === null ? null : storedAgenda === 'true';
+        profileExistsRef.current = false;
+      }
       try {
         const { data, error } = await client
           .from('profiles')
@@ -303,6 +337,7 @@ export function useProfileSync() {
         const resolvedAvatar = getAvatarUrl(currentUser) || '';
 
         if (!error && data) {
+          profileExistsRef.current = true;
           // Update persisted static metadata fields so DB-fetched edits aren't echoed back as an upsert.
           if (lastSnapshotRef.current) {
             try {
@@ -328,17 +363,12 @@ export function useProfileSync() {
                 }
                 const updatedSnapshotStr = JSON.stringify(parsedSnapshot);
                 lastSnapshotRef.current = updatedSnapshotStr;
-                try {
-                  localStorage.setItem(getProfileSnapshotKey(currentUser.id), updatedSnapshotStr);
-                } catch {
-                  /* ignore quota errors */
-                }
+                writeStore(snapshotKey(currentUser.id), updatedSnapshotStr);
               }
             } catch {
               /* ignore corrupt snapshot */
             }
           }
-
           setProgressCardSettings((prev) => {
             const updates: Partial<typeof prev> = {};
             if (data.invite_code !== undefined && data.invite_code !== null && prev.inviteCode !== data.invite_code) {
@@ -382,6 +412,12 @@ export function useProfileSync() {
             return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
           });
         } else if (!error && !data) {
+          // Row is missing: any persisted snapshot is stale, resend everything.
+          profileExistsRef.current = false;
+          lastSnapshotRef.current = null;
+          lastShowAgendaRef.current = null;
+          writeStore(snapshotKey(currentUser.id), null);
+          writeStore(agendaKey(currentUser.id), null);
           // Profile row is missing. Insert default profile row immediately to satisfy foreign key constraints
           const initialProfile = {
             id: currentUser.id,
@@ -588,12 +624,16 @@ export function useProfileSync() {
     const snapshotStr = JSON.stringify(snapshot);
     const currentShowAgenda = progressCardSettings.showTasks !== false;
     const agendaChanged = lastShowAgendaRef.current !== currentShowAgenda;
-
     if (lastSnapshotRef.current === snapshotStr && !agendaChanged) return;
 
     let diff: any = {};
     if (lastSnapshotRef.current !== snapshotStr) {
-      const lastSnapshot = lastSnapshotRef.current ? JSON.parse(lastSnapshotRef.current) : null;
+      let lastSnapshot: any = null;
+      try {
+        lastSnapshot = lastSnapshotRef.current ? JSON.parse(lastSnapshotRef.current) : null;
+      } catch {
+        lastSnapshot = null;
+      }
       diff = snapshot;
 
       if (lastSnapshot) {
@@ -609,7 +649,8 @@ export function useProfileSync() {
       }
     }
 
-    if (Object.keys(diff).length === 0 && !agendaChanged) return;
+    const hasProfileDiff = Object.keys(diff).length > 0;
+    if (!hasProfileDiff && !agendaChanged) return;
 
     const hasGenuineContentChange =
       lastFailedSnapshotRef.current !== null &&
@@ -635,11 +676,17 @@ export function useProfileSync() {
       window.clearTimeout(retryTimeoutRef.current);
     }
 
-    const executeSync = async () => {
+    let pending = true;
+
+    const executeSync = async (allowWhenHidden = false) => {
       if (!isInitialFetchDone || isFetchingProfileRef.current || !userId || !client) return;
       if (authPausedRef.current) return;
       if (retryAttemptRef.current > 4) return;
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      if (
+        !allowWhenHidden &&
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
+      ) {
         isDirtyWhileHiddenRef.current = true;
         return;
       }
@@ -650,22 +697,29 @@ export function useProfileSync() {
       const waitMs = pausedUntilRef.current - Date.now();
       if (waitMs > 0) {
         retryTimeoutRef.current = window.setTimeout(() => {
-          executeSync();
+          executeSync(allowWhenHidden);
         }, waitMs);
         return;
       }
       try {
-        if (lastSnapshotRef.current !== snapshotStr && Object.keys(diff).length > 0) {
-          const { error } = await client
-            .from('profiles')
-            .upsert({ id: userId, ...diff }, { onConflict: 'id' });
-          if (error) throw error;
-          lastSnapshotRef.current = snapshotStr;
-          try {
-            localStorage.setItem(getProfileSnapshotKey(userId), snapshotStr);
-          } catch {
-            /* ignore quota errors */
+        if (lastSnapshotRef.current !== snapshotStr && hasProfileDiff) {
+          if (profileExistsRef.current) {
+            // UPDATE skips the BEFORE INSERT triggers an upsert would fire. No RETURNING:
+            // the DB suppresses no-op updates (zz_profiles_suppress_redundant_updates), so
+            // "0 rows" is expected and must not be mistaken for a missing row.
+            const { error } = await client.from('profiles').update(diff).eq('id', userId);
+            if (error) throw error;
+          } else {
+            // Row existence unknown: upsert.
+            const { error } = await client
+              .from('profiles')
+              .upsert({ id: userId, ...diff }, { onConflict: 'id' });
+            if (error) throw error;
           }
+          profileExistsRef.current = true;
+          lastSnapshotRef.current = snapshotStr;
+          lastWriteAtRef.current = Date.now();
+          writeStore(snapshotKey(userId), snapshotStr);
         }
 
         if (lastShowAgendaRef.current !== currentShowAgenda) {
@@ -677,13 +731,10 @@ export function useProfileSync() {
             },
             { onConflict: 'user_id' }
           );
+          // Throw so the backoff below retries it (a retried profile UPDATE is a DB no-op).
           if (visError) throw visError;
           lastShowAgendaRef.current = currentShowAgenda;
-          try {
-            localStorage.setItem(getProfileAgendaKey(userId), JSON.stringify(currentShowAgenda));
-          } catch {
-            /* ignore quota errors */
-          }
+          writeStore(agendaKey(userId), String(currentShowAgenda));
         }
 
         retryAttemptRef.current = 0;
@@ -721,14 +772,40 @@ export function useProfileSync() {
       }
     };
 
-    pendingExecuteSyncRef.current = executeSync;
+    pendingExecuteSyncRef.current = () => {
+      pending = false;
+      executeSync(false);
+    };
 
+    // Debounce, but never write sooner than MIN_WRITE_INTERVAL_MS after the last
+    // successful write. This effect re-runs on every change and clears the timer,
+    // so exactly one trailing write exists and it always carries the latest snapshot.
+    const delay = hasProfileDiff
+      ? Math.max(DEBOUNCE_MS, lastWriteAtRef.current + MIN_WRITE_INTERVAL_MS - Date.now())
+      : DEBOUNCE_MS;
     debounceTimeoutRef.current = window.setTimeout(() => {
-      executeSync();
-    }, 5000); // 5-second debounce
+      pending = false;
+      executeSync(false);
+    }, delay);
+
+    // Best effort: push the pending write before the tab goes away (ignores the floor,
+    // still respects failure backoff, auth pause, retry cap, and offline state).
+    const flushPending = () => {
+      if (!pending || pausedUntilRef.current > Date.now()) return;
+      pending = false;
+      if (debounceTimeoutRef.current) window.clearTimeout(debounceTimeoutRef.current);
+      executeSync(true);
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') flushPending();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pagehide', flushPending);
 
     return () => {
       pendingExecuteSyncRef.current = null;
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', flushPending);
       if (debounceTimeoutRef.current) {
         window.clearTimeout(debounceTimeoutRef.current);
       }
