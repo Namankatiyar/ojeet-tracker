@@ -6,11 +6,12 @@ Offline-first JEE & NEET syllabus tracker & study planner. Vite + React 18.3.1 +
 - **Package manager**: pnpm only — `pnpm install`, `pnpm run dev`, `pnpm run build`, `pnpm test`, `pnpm exec`. Never `npm`/`yarn`/`bun`.
 - **Styling**: Vanilla CSS, no Tailwind. Every color/spacing/font MUST use a token (`var(--color-...)`) — never hardcode. Check `DESIGN_SYSTEM.md` before writing any CSS.
 - **Mobile-first UI**: Always design, structure, and style UI components with a mobile-first approach. Every single UI element, layout, and page implemented must be fully responsive, visually polished, and highly usable on both mobile (narrow viewports) and desktop (wide viewports). No feature or UI can be shipped if it is not mobile-friendly.
-- **Branches**: Cut from the current branch always. Prefix with `feature/`, `fix/`, `docs/`, `style/`, `refactor/`, or `chore/`.
+- **Branches**: Cut from the current branch if working on major changes. Prefix with `feature/`, `fix/`, `docs/`, `style/`, `refactor/`, or `chore/`.
 - **Commits**: Conventional Commits format — `type(scope): subject`.
 - **Committing User Changes**: When asked to commit uncommitted work, review and split the work into logical, sequential commits using Conventional Commits.
 - **Testing & Building**: Do not autonomously run `pnpm test` or `pnpm build` before committing. The user prefers to run test suites locally unless explicitly requested.
-- **Before any PR**: `pnpm run lint`, `pnpm run build`, `pnpm test` must all pass locally.
+- **Before any PR**: `pnpm run lint`, `pnpm run build`,  must all pass locally.
+- **Never run full test suite. Only run tests related to what is being worked on.**
 
 ## Tech Stack
 - Vite + React 18.3.1 + TypeScript
@@ -36,29 +37,7 @@ Cascade layers, lowest → highest priority:
 - Glassmorphic panels (`html[data-theme='dark-glass']`): desktop only (≥48rem). Solid-color fallback below 48rem and in `dark-solid`.
 - Subject colors: use `.text-physics` / `.text-chemistry` / `.text-maths` utility classes, never hardcoded hex values.
 
-## Skill Workflow
-For any non-trivial task, invoke the matching skill(s) below *before* writing code — don't skip straight to implementation.
 
-| Situation | Skill(s), in order |
-|---|---|
-| Confusing bug | `diagnosing-bugs` |
-| Correctness-critical code | `tdd` |
-
-Other available skills: `code-review`, `codebase-design`, `domain-modeling`, `prototype`, `research`, `resolving-merge-conflicts`, `scaffold-exercises`, `setup-pre-commit`, `wizard`, `writing-for-agents`, `grilling`, `migrate-to-shoehorn`, `git-guardrails-claude-code`.
-
-## Agent skills
-
-### Issue tracker
-
-GitHub Issues (using `gh` CLI). See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Canonical 5 triage roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context (`CONTEXT.md` and `docs/adr/` at repo root). See `docs/agents/domain.md`.
 
 ## Git & GitHub
 - PRs: push to remote, base `develop`, use `.github/pull_request_template.md`
