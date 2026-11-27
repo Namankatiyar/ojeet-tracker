@@ -523,6 +523,7 @@ export default async function handler(req, res) {
     if (e.cause) {
       console.error('Error cause details:', e.cause);
     }
+    res.setHeader('Cache-Control', 'no-store');
     return res.status(500).send(`Failed to generate image: ${e.message}`);
   }
 }

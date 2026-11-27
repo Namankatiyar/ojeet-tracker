@@ -903,5 +903,82 @@ describe('useProfileSync Hook', () => {
     });
     expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
   });
+
+  it('still syncs peer_visibility_settings when showTasks toggles while todayTasks is empty and profile snapshot is unchanged', async () => {
+    vi.useFakeTimers();
+
+    const profilesUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const visUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const singleMock = vi.fn().mockResolvedValue({ data: null, error: null });
+
+    vi.mocked(supabase!.from).mockImplementation((table: string) => {
+      if (table === 'peer_visibility_settings') {
+        return { upsert: visUpsertMock } as any;
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: singleMock,
+        maybeSingle: singleMock,
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        upsert: profilesUpsertMock,
+      } as any;
+    });
+
+    const initialSettings = {
+      ...defaultProgressSettings,
+      userName: 'Agenda Toggle User',
+      showTasks: true,
+    };
+
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: initialSettings,
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+
+    const { rerender } = renderHook(() => useProfileSync());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(profilesUpsertMock).toHaveBeenCalledTimes(1);
+    expect(visUpsertMock).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('true');
+
+    profilesUpsertMock.mockClear();
+    visUpsertMock.mockClear();
+
+    // Toggle showTasks with empty plannerTasks (profile snapshot string is identical)
+    vi.mocked(useUserProgress).mockReturnValue({
+      progressCardSettings: { ...initialSettings, showTasks: false },
+      setProgressCardSettings: mockProgressCardSettings,
+      studySessions: [],
+      plannerTasks: [],
+      dailyQuestionLogs: {},
+    } as any);
+    rerender();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(profilesUpsertMock).not.toHaveBeenCalled();
+    expect(visUpsertMock).toHaveBeenCalledTimes(1);
+    expect(visUpsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-123',
+        show_agenda: false,
+      }),
+      { onConflict: 'user_id' }
+    );
+    expect(localStorage.getItem('ojeet-remote-sync-profile-agenda-user-123')).toBe('false');
+  });
 });
 
